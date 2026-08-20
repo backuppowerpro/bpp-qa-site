@@ -112,13 +112,14 @@
     marker.setAttribute('aria-label', 'Quality assurance environment');
     marker.textContent = 'QA TEST';
     marker.style.cssText = [
-      'position:fixed',
-      'left:6px',
-      'bottom:max(6px, env(safe-area-inset-bottom))',
+      'position:sticky',
+      'top:0',
       'z-index:2147483647',
+      'width:max-content',
+      'margin:0 auto',
       'padding:4px 8px',
       'border:1px solid rgba(7,27,53,.28)',
-      'border-radius:999px',
+      'border-radius:0 0 9px 9px',
       'background:#ffcc00',
       'color:#071b35',
       'box-shadow:0 2px 8px rgba(7,27,53,.18)',
