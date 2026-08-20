@@ -65,6 +65,48 @@
     }
   }
 
+  function qaOpenMapResponse(value) {
+    try {
+      const url = new URL(String(value), window.location.href);
+      if (url.hostname === 'nominatim.openstreetmap.org') {
+        const query = (url.searchParams.get('q') || 'QA test address').trim();
+        const isHome = /22\s+kimbell/i.test(query);
+        const seed = Array.from(query).reduce((total, character) => total + character.charCodeAt(0), 0);
+        const lat = isHome ? 34.8526 : 34.80 + ((seed % 120) / 1000);
+        const lon = isHome ? -82.394 : -82.48 + ((seed % 140) / 1000);
+        return new Response(JSON.stringify([{
+          place_id: `qa-${seed}`,
+          display_name: `${query}, synthetic QA result`,
+          lat: String(lat),
+          lon: String(lon),
+        }]), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', 'X-BPP-QA-Mock': 'nominatim-geocode' },
+        });
+      }
+      if (url.hostname === 'router.project-osrm.org') {
+        return new Response(JSON.stringify({
+          code: 'Ok',
+          routes: [{ duration: 1320, distance: 28163.4 }],
+        }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', 'X-BPP-QA-Mock': 'osrm-route' },
+        });
+      }
+    } catch (_error) {}
+    return null;
+  }
+
+  function externalMapProvider(value) {
+    try {
+      const hostname = new URL(String(value), window.location.href).hostname;
+      return hostname === 'nominatim.openstreetmap.org'
+        || hostname === 'router.project-osrm.org';
+    } catch (_error) {
+      return false;
+    }
+  }
+
   function safeImageSource(value) {
     try {
       const url = new URL(String(value || ''), window.location.href);
@@ -146,6 +188,8 @@
     const value = input instanceof Request ? input.url : input;
     const mapboxResponse = qaMapboxResponse(value);
     if (mapboxResponse) return Promise.resolve(mapboxResponse);
+    const openMapResponse = qaOpenMapResponse(value);
+    if (openMapResponse) return Promise.resolve(openMapResponse);
     stopProductionRequest(value);
     return originalFetch(input, init);
   };
@@ -153,6 +197,9 @@
   const originalXhrOpen = XMLHttpRequest.prototype.open;
   XMLHttpRequest.prototype.open = function (method, url) {
     stopProductionRequest(url);
+    if (externalMapProvider(url)) {
+      throw new Error('QA safety guard blocked an external map-provider request.');
+    }
     return originalXhrOpen.apply(this, arguments);
   };
 
