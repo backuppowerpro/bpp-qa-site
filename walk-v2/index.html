@@ -1,0 +1,1977 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta name="referrer" content="strict-origin-when-cross-origin">
+
+
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://us.i.posthog.com https://us-assets.i.posthog.com https://connect.facebook.net 'sha256-SILzPhfLYZcCd4Tf0iA88+GJxTW0Ww/xsABc9z+kB/M=' 'sha256-G+RGGG/nS7Jz0Zp8ZGoJDT28GiNgr71xVKUjVbBKqLc=' 'sha256-wygnGpICbMppymZ/+XZT8Vgnv0wtsjTA4zJ1JolzPtc=' 'sha256-8D3LGBD86E4uSFC42nggO2UYeAOHJnZE1qO2PPhWGcM=' 'sha256-C6KL4dSidAIfZ88IF8QeDABri3YwVT+gwqSqUoxZEOU=' 'sha256-YfuANaWbTUPEzg51WvON89PNKstzj8CEJXM5uqvbi5o='; script-src-attr 'none'; style-src 'self'; style-src-elem 'self' https://fonts.googleapis.com 'sha256-KsnKCsHbsnK9PU8OK0Oo9U0PAjUXKo/Dxx4RfSK54z8=' 'sha256-0Iyyv4VKPnVS157Xktla6XdEbzCmufeHLHEeNrA4/ks=' 'sha256-BuvqUh7iB0AoDfKg/8gV96gGldTNPPeIA/fLsxb6ADs='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.facebook.com; connect-src 'self' https://api.mapbox.com https://hfatblrcwytxvijjhpal.supabase.co https://us.i.posthog.com https://us-assets.i.posthog.com https://*.posthog.com https://www.facebook.com; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
+<script src="/walk-v2/no-js-bootstrap.js"></script>
+<script>/* Entry mode + dynamic hero (Key 2026-07-01 / 2026-07-13 / paid fast lane 2026-07-13):
+   src=home -> home hero
+   src=city_<slug> -> city hero
+   src=meta|google|lp OR paid click ids -> paid hero
+   anything else (cold / direct) -> default hero
+   Mode registers as PostHog walk_entry so every walk_v2_* event carries it. */
+(function(){
+  var mode='direct', src='', ch='direct';
+  try {
+    var p = new URLSearchParams(location.search);
+    src = p.get('src') || '';
+    var us = (p.get('utm_source') || '').toLowerCase();
+    var paidClick = !!(p.get('fbclid') || p.get('gclid') || p.get('gbraid') || p.get('wbraid'));
+    if (src === 'home') mode = 'home';
+    else if (/^city_/.test(src)) mode = 'city';
+    else if (src === 'meta' || src === 'google' || src === 'lp' || paidClick) mode = 'paid';
+    /* Same rules as attribution() below so PostHog channel + CRM lead_channel agree. */
+    if (p.get('fbclid') || us === 'meta' || us === 'facebook' || us === 'instagram' || src === 'meta' || src === 'lp') ch = 'meta';
+    else if (p.get('gclid') || p.get('gbraid') || p.get('wbraid') || (us === 'google' && /cpc|ppc|paid/.test((p.get('utm_medium') || '').toLowerCase())) || src === 'google') ch = 'google';
+    else if (us) ch = (/google|bing|yahoo|duckduckgo/.test(us) ? 'organic' : (/fb|facebook|insta|meta|tiktok|linkedin|youtube|snap/.test(us) ? 'social' : 'referral'));
+    else if (/^city_/.test(src) || src === 'city-hub') ch = 'local';
+    else if (src === 'quote') ch = 'get-quote';
+    else if (src) ch = 'direct';
+  } catch(e){}
+  if (mode === 'home' || mode === 'city' || mode === 'paid') document.documentElement.classList.add('walk-lean');
+  if (mode === 'paid') document.documentElement.classList.add('walk-paid');
+  window.__WALK_ENTRY = mode;
+  window.__WALK_SRC = src;
+  window.__WALK_CHANNEL = ch;
+  window.addEventListener('DOMContentLoaded', function(){
+    try { if (window.posthog) posthog.register({ walk_entry: mode, walk_src: src || 'none', channel: ch }); } catch(e){}
+  });
+})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>Backup Power Pro · Get Your Quote</title>
+<meta name="description" content="Get a free quote for generator inlet installation in Upstate SC. Licensed, permitted, inspected. Ballpark on the walk; firm number by text from Key." />
+<meta name="theme-color" content="#0b1f3b" />
+<link rel="icon" href="/favicon.png" type="image/png" />
+<link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.jpg" />
+<link rel="manifest" href="/site.webmanifest" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://qa.backuppowerpro.com/walk-v2/" />
+<meta property="og:title" content="Backup Power Pro · Get Your Quote" />
+<meta property="og:description" content="Get a free quote for generator inlet installation in Upstate SC. Licensed, permitted, inspected. Ballpark on the walk; firm number by text from Key." />
+<meta property="og:image" content="https://qa.backuppowerpro.com/og-image.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<style>
+  :root {
+    --navy: #0b1f3b;
+    --navy-mid: #1a3a5c;
+    --navy-deep: #081730;
+    --gold: #ffba00;
+    --gold-hover: #ffc519;
+    --gold-ink: #8a5a00;
+    --gold-tint: #fff7e0;
+    --bg: #eef1f6;
+    --page: #fafbfc;
+    --card: #ffffff;
+    --sunken: #f4f6fa;
+    --edge: rgba(11, 31, 59, 0.10);
+    --edge-soft: rgba(11, 31, 59, 0.07);
+    --text: #16243a;
+    --muted: #4d5a6e;
+    --faint: #5d6b7e;
+    --green: #059669;
+    --green-tint: #ecfdf3;
+    --red: #dc2626;
+
+    --shadow-sm: 0 2px 6px rgba(11,31,59,0.06), 0 1px 2px rgba(11,31,59,0.04);
+    --shadow-md: 0 10px 28px rgba(11,31,59,0.10), 0 2px 8px rgba(11,31,59,0.05);
+    --shadow-lift: 0 18px 44px rgba(11,31,59,0.14), 0 4px 12px rgba(11,31,59,0.06);
+    --shadow-gold: 0 6px 24px rgba(255,186,0,0.30);
+
+    --r-md: 14px;
+    --r-lg: 20px;
+    --r-pill: 100px;
+
+    --head: 'Outfit', sans-serif;
+    --body: 'Inter', system-ui, -apple-system, sans-serif;
+    --script: 'Dancing Script', cursive;
+
+    --dur: 220ms;
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+
+  html, body {
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  button {
+    font-family: inherit;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  input { font-family: inherit; -webkit-appearance: none; appearance: none; }
+  button:focus-visible, input:focus-visible, a:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+  svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+
+  .stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 48px;
+    padding: 28px 14px 96px;
+  }
+  .state-label {
+    width: 390px;
+    max-width: 100%;
+    font-family: var(--head);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: -34px;
+    padding-left: 4px;
+  }
+  .state-label.wide { width: 1080px; }
+  .snapshot { pointer-events: none; }
+
+  /* ================= page frame ================= */
+  .page {
+    width: 390px;
+    max-width: 100%;
+    background: var(--page);
+    border-radius: 24px;
+    box-shadow: var(--shadow-md), inset 0 0 0 1px var(--edge-soft);
+    overflow: hidden;
+    container-type: inline-size;
+    container-name: page;
+  }
+  .page.w-desktop { width: 1080px; }
+  /* staging: the comp's own desktop composition activates responsively
+     (the comps showed it via a snapshot clone with .w-desktop) */
+  @media (min-width: 1140px) {
+    .page { width: 1080px; }
+  }
+
+  .page * { text-wrap: pretty; }
+
+  /* ================= scroll reveal ================= */
+  .rv {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 560ms var(--ease), transform 560ms var(--ease);
+    transition-delay: var(--rvd, 0ms);
+  }
+  .rv.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .rv { opacity: 1; transform: none; transition: none; }
+  }
+  /* JS-off / JS-failure safety: without JS the scroll-reveal never runs, so
+     reveal all content (incl. the form) up front instead of a blank page. */
+  .no-js .rv { opacity: 1; transform: none; transition: none; }
+  /* Paid entry keeps the same integrated proof contract with immediate content. */
+  .walk-paid .rv { opacity: 1; transform: none; transition: none; }
+  .walk-paid .form-card { box-shadow: var(--shadow-md), inset 0 0 0 1px var(--edge-soft); }
+  /* Paid informative hero: a bit more room for the service boundary. */
+  .walk-paid .hero .sub { max-width: 46ch; }
+  /* Quiet field ok: engineered check, not busy chrome. Old-person sized. */
+  .field.ok input { box-shadow: inset 0 0 0 2px rgba(5,150,105,0.45); padding-right: 44px; }
+  .field .ok-mark {
+    display: none; position: absolute; right: 14px; top: 38px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--green-tint); color: var(--green);
+    align-items: center; justify-content: center; pointer-events: none;
+  }
+  .field.ok .ok-mark { display: flex; }
+  .field .ok-mark svg { width: 12px; height: 12px; stroke-width: 2.6; }
+
+  /* ================= 1. site header ================= */
+  .site-head {
+    height: 56px;
+    background: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 20px;
+  }
+  .head-call {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 8px 2px;
+    color: var(--gold);
+    font-family: var(--head);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 8px 0;
+    box-sizing: border-box;
+  }
+  .lockup .bolt {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--gold);
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+  .lockup .bolt svg { width: 14px; height: 14px; fill: var(--navy); stroke: none; }
+  .lockup .wm {
+    font-family: var(--head);
+    font-weight: 800;
+    font-size: 13.5px;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .lockup .wm small {
+    display: block;
+    font-size: 7px;
+    font-weight: 600;
+    letter-spacing: 0.34em;
+    color: var(--gold);
+    margin-top: 3px;
+    white-space: nowrap;
+  }
+
+  /* ================= 2. hero, integrated proof direction A ================= */
+  .hero {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto;
+    width: 100%;
+    min-height: 0;
+    overflow: hidden;
+    background:
+      radial-gradient(100% 70% at 0 0, rgba(35,72,119,.6), transparent 64%),
+      var(--navy);
+    color: #fff;
+  }
+  .hero .textzone {
+    padding: 17px 20px 14px;
+  }
+  .hero .eyebrow {
+    max-width: 34ch;
+    margin: 0 0 9px;
+    color: var(--gold);
+    font-family: var(--head);
+    font-weight: 700;
+    font-size: 11px;
+    line-height: 1.2;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  .hero h1 {
+    max-width: none;
+    margin: 0;
+    color: #fff;
+    font-family: var(--head);
+    font-weight: 750;
+    font-size: clamp(19px, 6.15vw, 24px);
+    line-height: 1.08;
+    letter-spacing: -.03em;
+  }
+  .hero h1 .hero-line {
+    display: block;
+    white-space: nowrap;
+  }
+  .hero .sub {
+    max-width: 39ch;
+    margin: 10px 0 0;
+    color: #dbe5f2;
+    font-size: 15.5px;
+    line-height: 1.46;
+  }
+  .hero .identity {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: 92px 1fr;
+    gap: 14px;
+    align-items: center;
+  }
+  .hero .portrait {
+    width: 92px;
+    height: 92px;
+    border: 3px solid var(--gold);
+    border-radius: 50%;
+    background: url('/assets/images/key-headshot.jpg') center 42% / cover no-repeat;
+  }
+  .hero .identity strong { display: block; font-family: var(--head); font-size: 18px; line-height: 1.2; }
+  .hero .identity span {
+    display: block;
+    margin-top: 3px;
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .hero .identity-rating {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    line-height: 1;
+  }
+  .hero .identity-rating b {
+    color: var(--gold);
+    font-size: 11px;
+    letter-spacing: .08em;
+  }
+  .hero .identity-rating em {
+    color: #fff;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 750;
+  }
+  .hero .process {
+    margin: 12px 0 0;
+    color: #dbe4f2;
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+  .hero .process strong { color: #fff; }
+  .proof-carousel {
+    position: relative;
+    padding: 14px 0 0;
+    background: var(--page);
+  }
+  .proof-track {
+    display: flex;
+    gap: 10px;
+    padding: 0 18px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 18px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    touch-action: pan-y;
+    cursor: grab;
+  }
+  .proof-track.is-dragging { cursor: grabbing; }
+  .proof-track:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: -3px;
+    border-radius: 16px;
+  }
+  .proof-track::-webkit-scrollbar { display: none; }
+  .proof-slide {
+    flex: 0 0 calc(100% - 48px);
+    height: 184px;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: var(--shadow-sm), inset 0 0 0 1px rgba(11,31,59,.06);
+  }
+  .proof-slide .proof-image {
+    width: 61%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .proof-slide .proof-copy {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    padding: 13px 12px;
+    color: var(--navy);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.42;
+  }
+  .proof-slide--image .proof-image {
+    width: 100%;
+  }
+  .proof-slide--image {
+    background: transparent;
+    box-shadow: none;
+  }
+  .proof-slide--image .proof-copy {
+    position: absolute;
+    inset: auto 0 0;
+    margin: 0;
+    min-height: 52px;
+    padding: 17px 16px 13px;
+    align-items: flex-end;
+    background: linear-gradient(180deg, transparent, rgba(7,23,45,.9));
+    color: #fff;
+    font-family: var(--head);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .proof-slide--review {
+    align-items: stretch;
+    background: linear-gradient(160deg, #fff, #f5f7fb);
+  }
+  .proof-review {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    margin: 0;
+    padding: 14px 18px 10px;
+    color: var(--navy);
+  }
+  .proof-review::before {
+    content: "“";
+    height: 20px;
+    color: var(--gold);
+    font-family: Georgia, serif;
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .proof-review p {
+    margin: 3px 0 0;
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  .proof-review .review-stars {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 2px;
+    color: var(--gold);
+    font-size: 11px;
+    line-height: 1;
+    letter-spacing: .08em;
+  }
+  .proof-review cite {
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 11.5px;
+    font-style: normal;
+    font-weight: 750;
+    line-height: 1.3;
+  }
+  @media (max-width: 340px) {
+    .proof-slide--image .proof-copy {
+      padding-right: 4px;
+      padding-left: 4px;
+      font-size: 14px;
+      letter-spacing: -0.01em;
+    }
+  }
+  .hero .photozone {
+    position: relative;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1.1fr .9fr;
+    gap: 2px;
+    overflow: hidden;
+    background: #07172d;
+  }
+  .hero .photoframe {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    background: var(--navy); overflow: hidden;
+  }
+  .hero .ph-slide {
+    position: absolute; inset: 0;
+    background-size: cover; background-repeat: no-repeat;
+    opacity: 0; transition: opacity 1.2s ease;
+  }
+  .hero .ph-slide.on { opacity: 1; }
+  .hero .review {
+    position: absolute;
+    z-index: 2;
+    left: 16px;
+    right: 16px;
+    bottom: 10px;
+    margin: 0;
+    padding: 9px 10px;
+    border-left: 3px solid var(--gold);
+    background: rgba(7,23,45,.92);
+    color: #fff;
+    font-size: 13px;
+    line-height: 1.32;
+  }
+  .hero .review cite {
+    display: block;
+    margin-top: 3px;
+    color: #d9e4f0;
+    font-style: normal;
+    font-weight: 750;
+  }
+  .hero .ctazone { background: var(--navy); padding: 10px 20px calc(18px + env(safe-area-inset-bottom)); }
+  .hero .cta {
+    display: flex; align-items: center; justify-content: center; gap: 11px;
+    width: 100%; min-height: 56px; padding: 0 26px;
+    background: var(--gold); color: var(--navy);
+    font-family: var(--head); font-weight: 700; font-size: 19px; letter-spacing: -0.01em;
+    border: 0; border-radius: 100px; cursor: pointer; text-decoration: none;
+    box-shadow: var(--shadow-gold);
+  }
+  .hero .cta svg { width: 19px; height: 19px; fill: none; stroke: var(--navy); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+  @media (max-width: 759px) and (max-height: 700px) {
+    .hero .textzone { padding-top: 12px; padding-bottom: 8px; }
+    .hero .ctazone { padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+  }
+  @container page (min-width: 760px) {
+    .hero {
+      width: 100%;
+      height: auto;
+      min-height: 0;
+      margin: 0;
+    }
+    .hero .textzone { padding: 34px 42px 30px; }
+    .hero .ctazone { grid-area: cta; padding: 12px 42px 48px; }
+    .hero h1 { max-width: 20ch; font-size: 36px; line-height: 1.05; }
+    .hero .sub { font-size: 17px; }
+    .hero .identity { grid-template-columns: 92px 1fr; }
+    .hero .portrait { width: 92px; height: 92px; }
+    .hero .process { max-width: 48ch; }
+    .hero .review { left: 22px; right: 22px; bottom: 20px; padding: 11px 13px; font-size: 13.5px; }
+    .hero .cta { align-self: flex-start; width: auto; min-width: 300px; }
+    .proof-carousel { padding-right: 0; padding-left: 0; }
+    .proof-slide { flex-basis: calc(100% - 48px); }
+  }
+
+  /* ================= body grid ================= */
+  .body-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 26px 20px 8px;
+  }
+  .col-main { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+  .col-trust { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+  @container page (min-width: 760px) {
+    .site-head { padding: 0 48px; }
+    .body-grid {
+      grid-template-columns: 1fr;
+      max-width: 620px;
+      margin: 0 auto;
+      gap: 22px;
+      padding: 36px 24px 12px;
+    }
+    /* .page prefix (visual sweep 2026-07-18): dead-rule fix, see outlet.html */
+    .page .foot { padding-left: 48px; padding-right: 48px; }
+  }
+
+  /* ================= 4. form card ================= */
+  .form-card {
+    background: var(--card);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-lift), inset 0 0 0 1px var(--edge-soft);
+    padding: 24px 22px 26px;
+  }
+  .form-card .fc-title {
+    font-family: var(--head);
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    color: var(--navy);
+    margin: 0 0 18px;
+  }
+  .fields { display: flex; flex-direction: column; gap: 16px; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; position: relative; }
+  .field label {
+    font-family: var(--head);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--navy);
+  }
+  .field input {
+    height: 52px;
+    padding: 0 16px;
+    font-size: 16px;
+    color: var(--text);
+    background: var(--page);
+    background-color: var(--page);
+    border: 0;
+    border-radius: var(--r-md);
+    box-shadow: inset 0 0 0 1.5px var(--edge);
+    transition: box-shadow var(--dur) var(--ease);
+    width: 100%;
+  }
+  .field input:-webkit-autofill,
+  .field input:-webkit-autofill:hover {
+    -webkit-text-fill-color: var(--text) !important;
+    caret-color: var(--text);
+    -webkit-box-shadow: inset 0 0 0 1.5px var(--edge), inset 0 0 0 1000px var(--page) !important;
+  }
+  .field.ok input:-webkit-autofill,
+  .field.ok input:-webkit-autofill:hover {
+    -webkit-box-shadow: inset 0 0 0 2px rgba(5,150,105,0.45), inset 0 0 0 1000px var(--page) !important;
+  }
+  .field input:-webkit-autofill:focus {
+    -webkit-box-shadow: inset 0 0 0 2px var(--gold), inset 0 0 0 1000px var(--page) !important;
+  }
+  .field.has-error input:-webkit-autofill {
+    -webkit-box-shadow: inset 0 0 0 2px var(--red), inset 0 0 0 1000px var(--page) !important;
+  }
+  .field input:autofill {
+    color: var(--text) !important;
+    background: var(--page) !important;
+  }
+  .field input::placeholder { color: var(--faint); }
+  .field input:focus { outline: none; box-shadow: inset 0 0 0 2px var(--gold); }
+  .field.has-error input { box-shadow: inset 0 0 0 2px var(--red); }
+  .field-error {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--red);
+  }
+  .field-error svg { width: 14px; height: 14px; stroke-width: 2; flex: 0 0 auto; }
+  .field.has-error .field-error { display: flex; }
+
+  .addr-drop {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 20;
+    background: var(--card);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-lift), inset 0 0 0 1px var(--edge-soft);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 4px;
+  }
+  .addr-drop.open { display: block; }
+  .addr-opt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 48px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    text-align: left;
+    font-size: 15px;
+    color: var(--text);
+    transition: background var(--dur) var(--ease);
+  }
+  .addr-opt:hover, .addr-opt:active { background: var(--sunken); }
+  .addr-opt svg { width: 16px; height: 16px; stroke-width: 1.8; color: var(--faint); flex: 0 0 auto; }
+  .addr-opt .a1 { font-weight: 600; }
+  .addr-opt .a2 { color: var(--muted); font-size: 14px; }
+  .addr-opt .lines { display: flex; flex-direction: column; gap: 1px; }
+  /* the "not listed" escape reads as the secondary option, not a found address:
+     muted label, hairline divider above it, distinct from the real suggestions. */
+  .addr-opt.addr-escape { border-top: 1px solid var(--line, #e5e7eb); }
+  .addr-opt.addr-escape .a1 { font-weight: 600; color: var(--muted); }
+
+  /* ================= 5. part 2 ================= */
+  .part2 {
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 26px;
+    padding-top: 24px;
+    border-top: 1px solid var(--edge-soft);
+  }
+  .part2.revealed { display: flex; animation: rise 420ms var(--ease) both; }
+  @media (prefers-reduced-motion: reduce) { .part2.revealed { animation: none; } }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .part2 h2 {
+    font-family: var(--head);
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    color: var(--navy);
+    margin: 0;
+  }
+  .part2 .helper {
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--muted);
+    margin: 0 0 14px;
+  }
+  .outlet-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .outlet-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 12px 16px;
+    background: var(--page);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1.5px var(--edge);
+    color: var(--navy-mid);
+    transition: box-shadow var(--dur) var(--ease), background var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .outlet-card:active { transform: scale(0.98); }
+  .outlet-card .face { width: 96px; height: 96px; }
+  .outlet-card .face svg { width: 96px; height: 96px; }
+  /* The plug art is navy baked into the PNG (no CSS filter, no cache/iOS
+     dependency, so it can never ghost out white-on-white). The card stays
+     light in both states, selection is shown by the gold ring + tint below,
+     so the navy drawing reads the same whether picked or not. */
+  .outlet-card .ol {
+    font-family: var(--head);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+  .outlet-card .os { font-size: 14.5px; color: var(--text2, #475569); margin-top: -6px; }
+  .outlet-card[aria-pressed="true"] {
+    background: #fff8ec;
+    box-shadow: var(--shadow-md), inset 0 0 0 2.5px var(--gold);
+  }
+
+  .quiet-opts { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+  .quiet-opt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 48px;
+    padding: 10px 16px;
+    border-radius: var(--r-md);
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px var(--edge);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--muted);
+    text-align: left;
+    transition: box-shadow var(--dur) var(--ease), background var(--dur) var(--ease);
+  }
+  .quiet-opt .ring {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1.5px var(--edge);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .quiet-opt .ring svg { width: 9px; height: 9px; stroke-width: 3; }
+  .quiet-opt[aria-pressed="true"] {
+    background: var(--gold-tint);
+    box-shadow: inset 0 0 0 2px var(--gold);
+    color: var(--text);
+  }
+  .quiet-opt[aria-pressed="true"] .ring {
+    background: var(--gold);
+    box-shadow: none;
+    color: var(--navy);
+  }
+
+  /* ================= 6. submit row ================= */
+  .submit-row { display: flex; flex-direction: column; gap: 16px; margin-top: 26px; }
+  .consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    min-height: 44px;
+    padding: 2px;
+  }
+  .consent input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .consent .box {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 auto;
+    margin-top: 1px;
+    border-radius: 7px;
+    background: var(--page);
+    box-shadow: inset 0 0 0 1.5px var(--edge);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--navy);
+    transition: background var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  }
+  .consent .box svg { width: 13px; height: 13px; stroke-width: 3; opacity: 0; transition: opacity var(--dur) var(--ease); }
+  .consent input:checked + .box { background: var(--gold); box-shadow: inset 0 0 0 1.5px var(--gold); }
+  .consent input:checked + .box svg { opacity: 1; }
+  .consent input:focus-visible + .box { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .consent .txt { font-size: 16px; line-height: 1.5; color: var(--muted); }
+
+  .cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    width: 100%;
+    height: 58px;
+    font-family: var(--head);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.005em;
+    color: var(--navy);
+    background: var(--gold);
+    border-radius: var(--r-pill);
+    box-shadow: var(--shadow-gold);
+    transition: background var(--dur) var(--ease), box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .cta svg { width: 17px; height: 17px; stroke-width: 2.2; }
+  .cta:not(:disabled):hover { background: var(--gold-hover); }
+  .cta:not(:disabled):active { transform: scale(0.985); }
+  .cta:disabled { background: #e9ecf2; color: var(--faint); box-shadow: none; cursor: not-allowed; }
+  .consent-fine { font-size: 13px; line-height: 1.5; color: var(--faint); margin: 0; text-align: center; }
+
+  /* ================= trust column ================= */
+  .trust-card {
+    background: var(--card);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--edge-soft);
+    padding: 20px;
+  }
+  .trust-card .tk {
+    font-family: var(--head);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold-ink);
+    margin: 0 0 12px;
+  }
+  .trust-card ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .trust-card li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .trust-card li .tick {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    margin-top: 1px;
+    border-radius: 50%;
+    background: var(--green-tint);
+    color: var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .trust-card li .tick svg { width: 9px; height: 9px; stroke-width: 3; }
+
+  .trust-card.lock-promise {
+    background: var(--navy);
+    box-shadow: var(--shadow-md);
+    color: #fff;
+  }
+  .trust-card.lock-promise .tk { color: var(--gold); }
+  .trust-card.lock-promise .lp-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .trust-card.lock-promise .lp-ic {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 auto;
+    border-radius: 11px;
+    background: rgba(255,186,0,0.16);
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .trust-card.lock-promise .lp-ic svg { width: 18px; height: 18px; stroke-width: 2; }
+  .trust-card.lock-promise p {
+    font-size: 14px;
+    line-height: 1.58;
+    color: rgba(255,255,255,0.84);
+    margin: 0;
+  }
+  .trust-card.lock-promise p strong { color: #fff; }
+
+  /* ================= 7. footer ================= */
+  .foot {
+    margin-top: 26px;
+    padding: 20px 20px 28px;
+    border-top: 1px solid var(--edge-soft);
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--faint);
+    text-align: center;
+  }
+  .foot strong { font-family: var(--head); font-weight: 600; color: var(--muted); }
+
+  /* Fresh Air mobile (2026-07-13 design audit): drop the phone-frame gutters.
+     Comp staging used .stack padding + rounded .page; on a real phone that
+     wastes width and looks like a mock. Edge-to-edge under 760px; desktop card stays. */
+  @media (max-width: 759px) {
+    html, body { background: var(--page); }
+    .stack { padding: 0 0 calc(28px + env(safe-area-inset-bottom, 0px)); gap: 0; }
+    .page {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .state-label { display: none; }
+  }
+</style>
+<script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_qoA51lePZqXYtPJYkrIpdA4U8iMDJ79L1kje7r4pD4O',{api_host:'https://us.i.posthog.com',property_denylist:['$current_url','$initial_current_url','$referrer','$initial_referrer'],sanitize_properties:function(p){for(var k in p){var v=p[k];if(typeof v==='string'&&v.indexOf('http')===0&&v.indexOf('?')>-1){try{var u=new URL(v);p[k]=u.origin+u.pathname;}catch(e){p[k]=v.split('?')[0];}}}return p;},person_profiles:'identified_only',capture_pageview:true,capture_pageleave:true,enable_heatmaps:true,capture_dead_clicks:true})</script>
+<!-- Meta Pixel: walk is the lead form. Without init, fbq('track','Lead') on submit is a no-op
+     when ads land on /walk-v2/ (or get-quote /m stubs). CAPI Lead still fires server-side. -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','1389648775800936');
+fbq('track','PageView');
+fbq('track','ViewContent',{content_name:'walk-v2-landing',content_category:'generator-installation'});
+</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1389648775800936&ev=PageView&noscript=1" alt=""/></noscript>
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=20260815navy" />
+<link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body>
+<div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to continue this Quote Walk. Your saved answers remain on file. Turn it on and reload, or call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
+<div class="stack" id="stack">
+
+  <!-- ============ MAIN PAGE (mobile, interactive) ============ -->
+  <main class="page" id="mainPage" data-screen-label="Landing page (interactive, mobile)">
+
+    <!-- 1. site header + hero sit in intro-card so desktop navy paints. Mobile: display:contents. -->
+    <div class="intro-card">
+    <header class="site-head">
+      <a class="lockup" href="https://qa.backuppowerpro.com" aria-label="Backup Power Pro" style="text-decoration:none;">
+        <img src="/assets/images/logo-white-v2.png" alt="Backup Power Pro" style="height:28px;display:block;width:auto;" />
+      </a>
+    </header>
+
+    <!-- Claude Design checkpoint composition: promise and Key on navy, real
+         installed work, then one form action. -->
+    <section class="hero" data-hv="integrated-a" aria-labelledby="hero-h1">
+      <div class="textzone">
+        <h1 id="hero-h1" data-hero-h1=""><span class="hero-line">Portable generator hookup.</span><span class="hero-line">Priced without a home visit.</span></h1>
+        <p class="sub">One hookup. Power what matters. Selected circuits, not the whole house.</p>
+        <div class="identity">
+          <span class="portrait" role="img" aria-label="Key Goodson"></span>
+          <div>
+            <strong>Key Goodson</strong>
+            <span>Licensed Electrician</span>
+            <div class="identity-rating" role="img" aria-label="100 plus Google reviews, rated 4.9 out of 5">
+              <img src="/img/google-g-logo.webp" alt="" width="14" height="14" />
+              <em>100+</em><b aria-hidden="true">★★★★★</b><em>4.9</em>
+            </div>
+          </div>
+        </div>
+        <p class="process">I’ll guide you through a few quick questions and ask for photos of your panel. Then I’ll review your setup myself and text you a complete proposal, so you know exactly what’s included before any work begins.</p>
+      </div>
+    </section>
+    </div>
+    <section class="proof-carousel" aria-label="Installed work and customer reviews">
+      <div class="proof-track" role="group" aria-roledescription="carousel" tabindex="0" data-proof-track="" data-autoplay-ms="8000" data-autoplay-paused="false">
+        <article class="proof-slide proof-slide--image" role="group" aria-roledescription="slide" aria-label="Carousel item 1 of 10" data-proof-slide="">
+          <img class="proof-image" src="/img/connected-generator-current.jpg" alt="Portable generator connected by a yellow cord to an outdoor home inlet" />
+          <p class="proof-copy">One hookup. Power what matters.</p>
+        </article>
+        <article class="proof-slide proof-slide--review" role="group" aria-roledescription="slide" aria-label="Carousel item 2 of 10" data-proof-slide="">
+          <blockquote class="proof-review">
+            <div class="review-stars" role="img" aria-label="5 star Google review"><img src="/img/google-g-logo.webp" alt="" width="13" height="13" />★★★★★</div>
+            <p>Installed a 50-amp Generator inlet box along with a panel interlock system in our home. I was impressed by Key’s attention to detail, professionalism, and organization.</p>
+            <cite>Jim J. · Google review</cite>
+          </blockquote>
+        </article>
+        <article class="proof-slide proof-slide--image" role="group" aria-roledescription="slide" aria-label="Carousel item 3 of 10" data-proof-slide="">
+          <img class="proof-image" src="/img/essentials-powered-current.png" alt="A lit home, a cold refrigerator, and a phone charging at night" />
+          <p class="proof-copy">Keep your essentials on.</p>
+        </article>
+        <article class="proof-slide proof-slide--review" role="group" aria-roledescription="slide" aria-label="Carousel item 4 of 10" data-proof-slide="">
+          <blockquote class="proof-review">
+            <div class="review-stars" role="img" aria-label="5 star Google review"><img src="/img/google-g-logo.webp" alt="" width="13" height="13" />★★★★★</div>
+            <p>Oh my gosh these guys were absolutely fantastic. Everything went so smoothly and the finished work looks super professional.</p>
+            <cite>Hallie L. · Google review</cite>
+          </blockquote>
+        </article>
+        <article class="proof-slide proof-slide--image" role="group" aria-roledescription="slide" aria-label="Carousel item 5 of 10" data-proof-slide="">
+          <img class="proof-image" src="/img/outdoor-inlets-current.png" alt="Two BPP-installed metal outdoor generator connection boxes with weather-rated covers" />
+          <p class="proof-copy">A permanent outdoor connection.</p>
+        </article>
+        <article class="proof-slide proof-slide--review" role="group" aria-roledescription="slide" aria-label="Carousel item 6 of 10" data-proof-slide="">
+          <blockquote class="proof-review">
+            <div class="review-stars" role="img" aria-label="5 star Google review"><img src="/img/google-g-logo.webp" alt="" width="13" height="13" />★★★★★</div>
+            <p>punctual, professional, and truly set the bar high. Throughout permitting and scheduling, he kept me fully informed, and his performance and timing exceeded my expectations.</p>
+            <cite>Dino S. · Google review</cite>
+          </blockquote>
+        </article>
+        <article class="proof-slide proof-slide--image" role="group" aria-roledescription="slide" aria-label="Carousel item 7 of 10" data-proof-slide="">
+          <img class="proof-image" src="/img/transfer-systems-current.jpg" alt="Two installed breaker-panel interlock systems that prevent utility and generator power from being on at the same time" />
+          <p class="proof-copy">Safely switch to generator power.</p>
+        </article>
+        <article class="proof-slide proof-slide--review" role="group" aria-roledescription="slide" aria-label="Carousel item 8 of 10" data-proof-slide="">
+          <blockquote class="proof-review">
+            <div class="review-stars" role="img" aria-label="5 star Google review"><img src="/img/google-g-logo.webp" alt="" width="13" height="13" />★★★★★</div>
+            <p>Outstanding service, competent, on time, quick response, professional installation, clean, organized, safety a priority. Highly recommend! Will use again.</p>
+            <cite>Mark M. · Google review</cite>
+          </blockquote>
+        </article>
+        <article class="proof-slide proof-slide--image" role="group" aria-roledescription="slide" aria-label="Carousel item 9 of 10" data-proof-slide="">
+          <img class="proof-image" src="/img/cord-permit-current.jpg" alt="A compatible yellow generator cord and electrical permit paperwork posted for inspection" />
+          <p class="proof-copy">Cord included. Permit handled.</p>
+        </article>
+        <article class="proof-slide proof-slide--review" role="group" aria-roledescription="slide" aria-label="Carousel item 10 of 10" data-proof-slide="">
+          <blockquote class="proof-review">
+            <div class="review-stars" role="img" aria-label="5 star Google review"><img src="/img/google-g-logo.webp" alt="" width="13" height="13" />★★★★★</div>
+            <p>Best customer service ever, he went above and beyond to help us. Very knowledgeable and honest man!! Definitely I'll recommend Key to all my friends.</p>
+            <cite>Bogdi · Google review</cite>
+          </blockquote>
+        </article>
+      </div>
+    </section>
+    <script>
+    (function(){
+      // Dynamic hero by entry src (Key 2026-07-13). Default HTML = cold/direct copy.
+      // Entry mode is set pre-paint; this swaps eyebrow, headline, scope, and CTA.
+      var CITY_LABELS = Object.freeze({
+        city_boiling_springs: 'Boiling Springs',
+        'city_boiling-springs': 'Boiling Springs',
+        city_clemson: 'Clemson',
+        city_duncan: 'Duncan',
+        city_easley: 'Easley',
+        city_fountain_inn: 'Fountain Inn',
+        'city_fountain-inn': 'Fountain Inn',
+        city_greenville: 'Greenville',
+        city_greer: 'Greer',
+        city_inman: 'Inman',
+        city_mauldin: 'Mauldin',
+        city_pickens: 'Pickens',
+        city_simpsonville: 'Simpsonville',
+        city_spartanburg: 'Spartanburg',
+        city_taylors: 'Taylors'
+      });
+      function setHeroHeading(firstLine, secondLine) {
+        if (!h1) return;
+        var first = document.createElement('span');
+        var second = document.createElement('span');
+        first.className = 'hero-line';
+        second.className = 'hero-line';
+        first.textContent = firstLine;
+        second.textContent = secondLine;
+        h1.replaceChildren(first, second);
+      }
+      var mode = window.__WALK_ENTRY || 'direct';
+      var src = window.__WALK_SRC || '';
+      var h1 = document.querySelector('[data-hero-h1]');
+      if (mode === 'home') {
+        setHeroHeading('Portable generator hookup.', 'Priced without a home visit.');
+      } else if (mode === 'city') {
+        var city = CITY_LABELS[src] || '';
+        if (city) setHeroHeading('Generator hookup in ' + city + '.', 'Priced without a home visit.');
+        else setHeroHeading('Portable generator hookup.', 'Priced without a home visit.');
+      } else if (mode === 'paid') {
+        setHeroHeading('Portable generator hookup.', 'Priced without a home visit.');
+        var fcTitle = document.querySelector('.form-card .fc-title');
+        if (fcTitle) fcTitle.textContent = "Let's start with a few details.";
+      }
+      // cold/direct keeps the default HTML above
+
+      // Keep the hero variant explicit so entry-mode funnels remain comparable.
+      try { if (window.posthog) { posthog.register({ hero_variant: 'integrated-a', walk_entry: mode }); posthog.capture('walk_v2_hero_shown', { variant: 'integrated-a', walk_entry: mode, walk_src: src || 'none' }); } } catch(e){}
+      var proofTrack = document.querySelector('[data-proof-track]');
+      if (proofTrack) {
+        var originals = Array.prototype.slice.call(proofTrack.querySelectorAll('[data-proof-slide]'));
+        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var autoplayMs = 8000;
+        var textIdleMs = 2400;
+        var timer = 0;
+        var textEntryPaused = false;
+        var textIdleTimer = 0;
+        var settleTimer = 0;
+        var dragPointer = null;
+        var dragStartX = 0;
+        var dragStartScroll = 0;
+
+        function slides() {
+          return Array.prototype.slice.call(proofTrack.querySelectorAll('.proof-slide'));
+        }
+        function slideOffset(index) {
+          var slide = slides()[index];
+          if (!slide) return proofTrack.scrollLeft;
+          return slide.offsetLeft - (proofTrack.clientWidth - slide.offsetWidth) / 2;
+        }
+        function jumpTo(index, smooth) {
+          proofTrack.scrollTo({
+            left: slideOffset(index),
+            behavior: smooth && !reduced ? 'smooth' : 'auto'
+          });
+        }
+        function teleportTo(index) {
+          var priorSnap = proofTrack.style.scrollSnapType;
+          proofTrack.style.scrollSnapType = 'none';
+          proofTrack.scrollLeft = slideOffset(index);
+          window.requestAnimationFrame(function () {
+            proofTrack.style.scrollSnapType = priorSnap;
+          });
+        }
+        function currentIndex() {
+          var center = proofTrack.scrollLeft + proofTrack.clientWidth / 2;
+          var nearest = 0;
+          var distance = Infinity;
+          slides().forEach(function (slide, index) {
+            var slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
+            var nextDistance = Math.abs(slideCenter - center);
+            if (nextDistance < distance) {
+              nearest = index;
+              distance = nextDistance;
+            }
+          });
+          return nearest;
+        }
+        function clearAutoplay() {
+          if (timer) window.clearInterval(timer);
+          timer = 0;
+        }
+        function syncPauseState() {
+          proofTrack.setAttribute('data-autoplay-paused', textEntryPaused ? 'true' : 'false');
+        }
+        function startAutoplay() {
+          if (reduced || textEntryPaused || timer || document.visibilityState !== 'visible') return;
+          timer = window.setInterval(function () {
+            if (!textEntryPaused && document.visibilityState === 'visible') {
+              jumpTo(currentIndex() + 1, true);
+            }
+          }, autoplayMs);
+        }
+        function restartAutoplay() {
+          clearAutoplay();
+          startAutoplay();
+        }
+        function isTextEntry(target) {
+          if (!target || !target.matches) return false;
+          if (target.matches('textarea, [contenteditable="true"]')) return true;
+          if (!target.matches('input')) return false;
+          return !/^(button|checkbox|color|file|hidden|image|radio|range|reset|submit)$/i.test(target.type || 'text');
+        }
+        function releaseTextPause() {
+          textEntryPaused = false;
+          syncPauseState();
+          restartAutoplay();
+        }
+        function holdForTextActivity() {
+          textEntryPaused = true;
+          syncPauseState();
+          clearAutoplay();
+          if (textIdleTimer) window.clearTimeout(textIdleTimer);
+          textIdleTimer = window.setTimeout(releaseTextPause, textIdleMs);
+        }
+        function settle() {
+          if (settleTimer) window.clearTimeout(settleTimer);
+          settleTimer = window.setTimeout(function () {
+            var index = currentIndex();
+            if (index < originals.length) teleportTo(index + originals.length);
+            if (index >= originals.length * 2) teleportTo(index - originals.length);
+          }, reduced ? 0 : 260);
+        }
+        function beginDrag(event) {
+          if (event.button !== undefined && event.button !== 0) return;
+          if (event.cancelable) event.preventDefault();
+          dragPointer = event.pointerId;
+          dragStartX = event.clientX;
+          dragStartScroll = proofTrack.scrollLeft;
+          proofTrack.style.scrollSnapType = 'none';
+          proofTrack.classList.add('is-dragging');
+          if (proofTrack.setPointerCapture) proofTrack.setPointerCapture(event.pointerId);
+          restartAutoplay();
+        }
+        function moveDrag(event) {
+          if (dragPointer !== event.pointerId) return;
+          if (event.cancelable) event.preventDefault();
+          proofTrack.scrollLeft = dragStartScroll + dragStartX - event.clientX;
+        }
+        function endDrag(event) {
+          if (dragPointer !== event.pointerId) return;
+          var targetIndex = currentIndex();
+          dragPointer = null;
+          proofTrack.classList.remove('is-dragging');
+          if (proofTrack.hasPointerCapture && proofTrack.hasPointerCapture(event.pointerId)) {
+            proofTrack.releasePointerCapture(event.pointerId);
+          }
+          proofTrack.style.scrollSnapType = '';
+          jumpTo(targetIndex, true);
+          settle();
+          restartAutoplay();
+        }
+
+        if (originals.length > 1) {
+          function makeLoopClone(slide) {
+            var clone = slide.cloneNode(true);
+            clone.removeAttribute('data-proof-slide');
+            clone.setAttribute('aria-hidden', 'true');
+            return clone;
+          }
+          originals.forEach(function (slide) {
+            proofTrack.insertBefore(makeLoopClone(slide), originals[0]);
+          });
+          originals.forEach(function (slide) {
+            proofTrack.appendChild(makeLoopClone(slide));
+          });
+          function alignFirstSlide() {
+            window.requestAnimationFrame(function () {
+              window.requestAnimationFrame(function () { teleportTo(originals.length); });
+            });
+          }
+          alignFirstSlide();
+          if (document.readyState !== 'complete') window.addEventListener('load', alignFirstSlide, { once: true });
+
+          proofTrack.addEventListener('scroll', settle, { passive: true });
+          proofTrack.addEventListener('pointerdown', beginDrag);
+          proofTrack.addEventListener('pointermove', moveDrag);
+          proofTrack.addEventListener('pointerup', endDrag);
+          proofTrack.addEventListener('pointercancel', endDrag);
+          proofTrack.addEventListener('keydown', function (event) {
+            if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+            event.preventDefault();
+            jumpTo(currentIndex() + (event.key === 'ArrowRight' ? 1 : -1), true);
+            restartAutoplay();
+          });
+          document.addEventListener('focusin', function (event) {
+            if (isTextEntry(event.target)) holdForTextActivity();
+          });
+          document.addEventListener('input', function (event) {
+            if (isTextEntry(event.target)) holdForTextActivity();
+          });
+          document.addEventListener('focusout', function (event) {
+            if (!isTextEntry(event.target)) return;
+            if (textIdleTimer) window.clearTimeout(textIdleTimer);
+            window.setTimeout(function () {
+              if (!isTextEntry(document.activeElement)) releaseTextPause();
+            }, 0);
+          });
+          document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible') startAutoplay();
+            else clearAutoplay();
+          });
+          syncPauseState();
+          startAutoplay();
+        }
+      }
+    })();
+    </script>
+
+    <div class="body-grid">
+      <div class="col-main">
+
+        <!-- 4. form card -->
+        <section class="form-card" id="quote-form">
+          <h2 class="fc-title">Let's start with a few details.</h2>
+          <noscript>
+            <div style="background:#fff8e6;border:1px solid #ffba00;border-radius:12px;padding:16px;margin-bottom:18px;color:#1b2b4b;font-size:16px;line-height:1.55;text-align:center;">
+              Turn on JavaScript, then reload this page to start your quote.
+            </div>
+          </noscript>
+          <form autocomplete="off">
+            <div class="fields">
+              <div class="field">
+                <label for="fName">Name</label>
+                <input id="fName" name="name" type="text" inputmode="text" autocomplete="name" autocapitalize="words" placeholder="Sarah" data-f="name" />
+              </div>
+              <div class="field" data-phone-field="">
+                <label for="fPhone">Phone</label>
+                <input id="fPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(864) 000-0000" data-f="phone" />
+                <span class="field-error"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"></circle><path d="M8 5v3.5M8 11v.2"></path></svg><span>Enter a 10-digit phone number so I can text your quote</span></span>
+              </div>
+              <div class="field" data-addr-field="">
+                <label for="fAddr">Home address</label>
+                <input id="fAddr" name="address" type="text" inputmode="text" placeholder="Start typing your address" data-f="addr" />
+                <div class="addr-drop" data-addr-drop=""></div>
+              </div>
+              <div class="field" data-email-field="" hidden>
+                <label for="fEmail">Email</label>
+                <input id="fEmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" data-f="email" />
+              </div>
+            </div>
+
+            <!-- 5. submit row: consent is the tap on the gold button, never required -->
+            <div class="submit-row">
+              <p data-unconfirmed-address="" aria-live="polite" style="display:none; font-size:14px; line-height:1.5; color:var(--gold-ink, #8a5a00); text-align:center; margin:0 0 12px; font-weight:600;">Your address is saved exactly as entered. Continue with the setup questions. Your service area still needs to be verified before your project range or proposal can be prepared.</p>
+              <button class="cta" type="submit" data-cta="" disabled="">
+                <svg viewBox="0 0 16 16"><path d="M2.5 3.5h11a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H6.5l-3 2.4V11.5h-1a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1z"></path></svg>
+                <span data-cta-label="">Continue</span>
+              </button>
+              <p class="cta-hint" data-cta-hint="" aria-live="polite" style="display:none; font-size:14px; line-height:1.5; color:var(--gold-ink, #8a5a00); text-align:center; margin:10px 0 0; font-weight:600;"></p>
+              <p data-submit-error="" role="alert" style="display:none; font-size:15px; line-height:1.5; color:var(--red, #dc2626); text-align:center; margin:10px 0 0; font-weight:600;"></p>
+              <p class="consent-fine">By tapping the button you agree to get texts from Backup Power Pro about your quote and install. Msg and data rates may apply. Reply STOP anytime.</p>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+
+    <!-- 7. footer -->
+    <footer class="foot">
+      <strong>Key Goodson, Licensed Electrician, SC Lic #2942</strong>
+      <span>Serving Greenville, Spartanburg, and Pickens counties</span>
+      <span>Every project is reviewed and permitted by Key, completed with trusted local installation partners, and coordinated through final inspection.</span>
+    </footer>
+  </main>
+
+</div>
+
+<script src="/walk-v2/walk.js?v=20260816-save"></script>
+<script>
+
+(function () {
+  var main = document.getElementById('mainPage');
+  /* resume routing: a saved-walk link lands here with ?t= and skips the form.
+     Keep the page visible while view() is in flight so a slow or failed request
+     never produces a blank screen. The form is temporarily inert, which prevents
+     a second lead submission during the redirect window. */
+  var nameIn = main.querySelector('[data-f="name"]');
+  var phoneIn = main.querySelector('[data-f="phone"]');
+  var addrIn = main.querySelector('[data-f="addr"]');
+  function restoreDraft() {
+    try {
+      var draft = JSON.parse(sessionStorage.getItem('bpp:qwv2:draft') || 'null');
+      if (!draft || typeof draft !== 'object') return;
+      if (draft.name && nameIn && !nameIn.value) nameIn.value = draft.name;
+      if (draft.phone && phoneIn && !phoneIn.value) phoneIn.value = draft.phone;
+      if (draft.address && addrIn && !addrIn.value) addrIn.value = draft.address;
+    } catch (_) {}
+  }
+  function persistDraft() {
+    try {
+      sessionStorage.setItem('bpp:qwv2:draft', JSON.stringify({
+        name: nameIn && nameIn.value || '',
+        phone: phoneIn && phoneIn.value || '',
+        address: addrIn && addrIn.value || '',
+      }));
+    } catch (_) {}
+  }
+  [nameIn, phoneIn, addrIn].forEach(function (field) {
+    if (field) field.addEventListener('input', persistDraft);
+  });
+
+  var resumeT = WALK.token();
+  var landingParams = new URLSearchParams(window.location.search);
+  var areaBoundary = !!resumeT && landingParams.get('area') === 'out';
+  var editDetails = !!resumeT && landingParams.get('edit') === 'details';
+  if (resumeT && !areaBoundary && !editDetails) {
+    main.setAttribute('inert', '');
+    main.setAttribute('aria-busy', 'true');
+    var resumingMsg = document.createElement('p');
+    resumingMsg.textContent = 'One sec, picking up where you left off...';
+    resumingMsg.setAttribute('style', 'position:fixed;left:0;right:0;top:42%;margin:0;text-align:center;color:var(--faint,#9aa);font-size:15px;padding:0 24px');
+    document.body.appendChild(resumingMsg);
+    WALK.ph('walk_v2_screen_view', { screen: 'landing_resume' });
+    WALK.view(resumeT).then(function (v) { WALK.routeFromState(resumeT, v); })
+      .catch(function (cause) {
+        resumingMsg.remove();
+        main.removeAttribute('inert');
+        main.removeAttribute('aria-busy');
+        WALK.setToken('');
+        restoreDraft();
+        var recovery = main.querySelector('[data-submit-error]');
+        if (recovery) {
+          recovery.setAttribute('data-return-recovery', '');
+          var expired = cause && (
+            cause.status === 410
+            || cause.body && cause.body.error === 'expired'
+          );
+          recovery.textContent = expired
+            ? 'This saved link has expired. Start here to create a new Quote Walk.'
+            : 'Your saved walk could not be loaded.';
+          recovery.style.display = '';
+          if (!recovery.querySelector('[data-retry-saved-link]')) {
+            var actions = document.createElement('span');
+            actions.style.display = 'block';
+            actions.style.marginTop = '10px';
+            var retry = document.createElement('button');
+            retry.type = 'button';
+            retry.setAttribute('data-retry-saved-link', '');
+            retry.textContent = 'Try saved link again';
+            retry.addEventListener('click', function () { window.location.reload(); });
+            var startOver = document.createElement('button');
+            startOver.type = 'button';
+            startOver.textContent = 'Start a new Quote Walk';
+            startOver.addEventListener('click', function () {
+              WALK.setToken('');
+              window.location.replace('/walk-v2/');
+            });
+            actions.appendChild(retry);
+            actions.appendChild(document.createTextNode(' '));
+            actions.appendChild(startOver);
+            recovery.appendChild(actions);
+          }
+        }
+        WALK.ph('walk_v2_screen_view', { screen: 'landing_return_recovery' });
+      });
+  } else {
+    restoreDraft();
+    WALK.ph('walk_v2_screen_view', { screen: editDetails ? 'landing_edit' : 'landing' });
+  }
+  var emailIn = main.querySelector('[data-f="email"]');
+  var phoneField = main.querySelector('[data-phone-field]');
+  var nameField = nameIn ? nameIn.closest('.field') : null;
+  var addrField = main.querySelector('[data-addr-field]');
+  var emailField = main.querySelector('[data-email-field]');
+  var drop = main.querySelector('[data-addr-drop]');
+  var cta = main.querySelector('[data-cta]');
+  var ctaLabelEl = cta.querySelector('[data-cta-label]');
+  var ctaHint = main.querySelector('[data-cta-hint]');
+  var unconfirmedAddressNote = main.querySelector('[data-unconfirmed-address]');
+  var submitting = false;
+  if (areaBoundary) {
+    var areaTitle = main.querySelector('.fc-title');
+    var areaMessage = main.querySelector('[data-submit-error]');
+    if (areaTitle) areaTitle.textContent = 'Outside our current service area';
+    if (areaMessage) {
+      areaMessage.setAttribute('data-area-boundary', '');
+      areaMessage.textContent = 'I currently install in Greenville, Spartanburg, and Pickens counties. Leave your email and I will be in touch as service expands.';
+      areaMessage.style.display = '';
+      areaMessage.style.color = 'var(--ink, #0b2343)';
+    }
+    if (nameField) nameField.hidden = true;
+    if (phoneField) phoneField.hidden = true;
+    nameIn.disabled = true;
+    phoneIn.disabled = true;
+    addrIn.disabled = true;
+    if (emailField) emailField.hidden = false;
+    if (emailIn) emailIn.disabled = false;
+    cta.disabled = true;
+    ctaLabelEl.textContent = 'Keep me updated';
+    var consentCopy = main.querySelector('.consent-fine');
+    if (consentCopy) consentCopy.textContent = 'I will use this email only to contact you about future service availability.';
+    WALK.view(resumeT).then(function (v) {
+      if (v && v.address) addrIn.value = v.address;
+    }).catch(function () {
+      if (areaMessage) areaMessage.textContent = 'Your information is saved. Add your email and I will be in touch as service expands.';
+    });
+  }
+  if (editDetails) {
+    var editTitle = main.querySelector('.fc-title');
+    if (editTitle) editTitle.textContent = 'Review your details.';
+    WALK.view(resumeT).then(function (v) {
+      nameIn.value = v && v.first_name || '';
+      phoneIn.value = formatPhone(v && v.phone || '');
+      addrIn.value = v && v.address || '';
+      addrValidated = Boolean(addrIn.value.trim());
+      addrValidatedValue = addrIn.value.trim();
+      addrUnverified = Boolean(v && v.service_area_status === 'pending_verification');
+      refresh();
+    }).catch(function () {
+      var editError = main.querySelector('[data-submit-error]');
+      if (editError) {
+        editError.textContent = 'Your saved details could not be loaded. Use your newest saved link and try again.';
+        editError.style.display = '';
+      }
+    });
+  }
+  /* Quiet ok-mark: one small check when a field is valid. Reuse DS green, no busy chrome. */
+  var okSvg = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.5l2.6 2.6L10 3.5"></path></svg>';
+  function ensureOkMark(field) {
+    if (!field || field.querySelector('.ok-mark')) return;
+    var m = document.createElement('span');
+    m.className = 'ok-mark';
+    m.setAttribute('aria-hidden', 'true');
+    m.innerHTML = okSvg;
+    field.appendChild(m);
+  }
+  [nameField, phoneField, addrField].forEach(ensureOkMark);
+  function paintFieldOk() {
+    if (nameField) nameField.classList.toggle('ok', nameIn.value.trim().length > 0);
+    if (phoneField) phoneField.classList.toggle('ok', phoneValid(phoneIn.value));
+    if (addrField) addrField.classList.toggle('ok', addrOk());
+  }
+  /* funnel step events, each at most once per visit (drop-off tracking) */
+  var fired = {};
+  function once(event, props) { if (fired[event]) return; fired[event] = true; WALK.ph(event, props); }
+
+  /* Address auto-suggest via the server-side Places proxy. Debounced; a pick
+     fills the field. The field still works as a plain input if Google is down. */
+  var addrTimer = null, addrPicked = false, addrSel = { city: '', state: '', zip: '' }, lastAddrPreds = [];
+  /* Soft-block (Key 2026-07-21): the Next gate requires a VALIDATED address, a real
+     picked suggestion OR the explicit "not listed" escape, not just >=6 chars, so a
+     lazy fake free-text address can no longer pass. addrValidatedValue pins the exact
+     string that was validated; editing it re-invalidates. addrUnverified marks an
+     escape pick so the lead can be flagged for review. */
+  var addrValidated = false, addrValidatedValue = '', addrUnverified = false;
+  var addrSvg = '<svg viewBox="0 0 16 16"><path d="M8 14s4.5-4 4.5-7.5a4.5 4.5 0 0 0-9 0C3.5 10 8 14 8 14z"></path><circle cx="8" cy="6.5" r="1.6"></circle></svg>';
+  var addrEditSvg = '<svg viewBox="0 0 16 16"><path d="M11 2.5l2.5 2.5L6 12.5 3 13l.5-3z"></path></svg>';
+  function fitDropToViewport() {
+    if (!drop.classList.contains('open')) return;
+    var viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    var top = drop.getBoundingClientRect().top;
+    drop.style.maxHeight = Math.max(96, Math.floor(viewportHeight - top - 10)) + 'px';
+  }
+  function closeDrop() { drop.classList.remove('open'); drop.innerHTML = ''; drop.style.maxHeight = ''; }
+  function renderDrop(preds) {
+    lastAddrPreds = preds || [];
+    var q = addrIn.value.trim();
+    var html = (preds || []).map(function (p) {
+      var d = String(p.description || '');
+      return '<button type="button" class="addr-opt" data-addr-pick="' + encodeURIComponent(d) + '">' +
+        addrSvg + '<span class="lines"><span class="a1"></span><span class="a2"></span></span></button>';
+    }).join('');
+    /* Deliberate escape (soft-block): a real address Mapbox does not know still gets
+       through, but only by an explicit tap, and it rides as flagged. Shown once the
+       typed address looks complete, and it is the ONLY row when Mapbox returns nothing. */
+    if (q.length >= 6) {
+      html += '<button type="button" class="addr-opt addr-escape" data-addr-escape="1">' +
+        addrEditSvg + '<span class="lines"><span class="a1">My address isn\'t listed</span>' +
+        '<span class="a2">Use what I typed</span></span></button>';
+    }
+    if (!html) { closeDrop(); return; }
+    drop.innerHTML = html;
+    /* set suggestion text via textContent (never innerHTML on the address string) */
+    var opts = drop.querySelectorAll('.addr-opt[data-addr-pick]');
+    (preds || []).forEach(function (p, k) {
+      if (!opts[k]) return;
+      var d = String(p.description || ''); var i = d.indexOf(',');
+      opts[k].querySelector('.a1').textContent = i > -1 ? d.slice(0, i) : d;
+      opts[k].querySelector('.a2').textContent = i > -1 ? d.slice(i + 1).trim() : '';
+    });
+    drop.classList.add('open');
+    requestAnimationFrame(fitDropToViewport);
+  }
+  function suggest() {
+    if (addrPicked) { addrPicked = false; return; }
+    addrSel = { city: '', state: '', zip: '' }; // editing after a pick invalidates the structured parts
+    addrValidated = false; addrUnverified = false; // and re-locks Next until a fresh pick
+    var q = addrIn.value.trim();
+    if (addrTimer) clearTimeout(addrTimer);
+    if (q.length < 3) { closeDrop(); return; }
+    addrTimer = setTimeout(function () {
+      WALK.addrSuggest(q).then(renderDrop);
+    }, 220);
+  }
+  drop.addEventListener('click', function (e) {
+    /* explicit "my address isn't listed" escape: validate the typed text, but flag it */
+    var esc = e.target.closest('[data-addr-escape]');
+    if (esc) {
+      addrPicked = true; addrValidated = true; addrUnverified = true;
+      addrValidatedValue = addrIn.value.trim();
+      addrSel = { city: '', state: '', zip: '' };
+      closeDrop(); refresh();
+      return;
+    }
+    var b = e.target.closest('[data-addr-pick]'); if (!b) return;
+    addrPicked = true;
+    var picked = decodeURIComponent(b.getAttribute('data-addr-pick'));
+    addrIn.value = picked;
+    /* copy the picked prediction's structured parts so the lead carries city/state/zip */
+    var match = null;
+    for (var mi = 0; mi < lastAddrPreds.length; mi++) {
+      if (String(lastAddrPreds[mi].description) === picked) { match = lastAddrPreds[mi]; break; }
+    }
+    if (match) addrSel = { city: match.city || '', state: match.state || '', zip: match.zip || '' };
+    addrValidated = true; addrUnverified = false; addrValidatedValue = picked;
+    closeDrop(); refresh();
+  });
+  addrIn.addEventListener('blur', function () { setTimeout(closeDrop, 150); });
+  /* Re-open the list on focus when the address is typed but not yet validated, so
+     "Pick your address from the list" is never a dead end with no visible list. */
+  addrIn.addEventListener('focus', function () { if (!addrOk() && addrIn.value.trim().length >= 3) suggest(); });
+  window.addEventListener('resize', fitDropToViewport);
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', fitDropToViewport);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrop(); });
+
+  function digits(v) { return (v || '').replace(/\D/g, ''); }
+  /* the 10 national digits. A US number is 10 digits; a leading 1 is the country code
+     (no US area code starts with 1), so strip it BEFORE taking 10. Without this, autofill
+     or a paste of "+1 941 441 7996" kept the 1 and chopped the real last digit, recording
+     (194) 144-1799 instead of (941) 441-7996. */
+  function natDigits(v) { var d = digits(v); if (d.length === 11 && d[0] === '1') d = d.slice(1); return d.slice(0, 10); }
+  function phoneValid(v) { var d = digits(v); return d.length === 10 || (d.length === 11 && d[0] === '1'); }
+  function formatPhone(v) {
+    var d = natDigits(v);
+    if (d.length > 6) return '(' + d.slice(0, 3) + ') ' + d.slice(3, 6) + '-' + d.slice(6);
+    if (d.length > 3) return '(' + d.slice(0, 3) + ') ' + d.slice(3);
+    return d;
+  }
+  /* address is valid only when a suggestion (or the explicit escape) was picked AND
+     the field has not been edited since (Key 2026-07-21 soft-block). */
+  function addrOk() { return addrValidated && addrIn.value.trim() === addrValidatedValue; }
+  function addrLooksReady() {
+    return addrOk();
+  }
+  function part1Done() {
+    return nameIn.value.trim().length > 0 && phoneValid(phoneIn.value) && addrLooksReady();
+  }
+  function emailValid(v) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || '').trim());
+  }
+  function refreshAreaCapture() {
+    if (!areaBoundary || !emailIn) return;
+    ctaLabelEl.textContent = submitting ? 'Saving' : 'Keep me updated';
+    cta.disabled = submitting || !emailValid(emailIn.value);
+    if (ctaHint) {
+      if (emailIn.value.trim() && !emailValid(emailIn.value)) {
+        ctaHint.textContent = 'Enter a complete email address.';
+        ctaHint.style.display = '';
+      } else {
+        ctaHint.style.display = 'none';
+      }
+    }
+  }
+  /* names the one thing still missing so the disabled gold button is never a silent dead
+     end. A disabled button cannot be tapped for feedback, so the hint is always-visible once
+     they have begun. Ruth (78) fills her name, stumbles on the phone, and now sees why. */
+  function missingMsg() {
+    if (!nameIn.value.trim()) return 'Add your name to continue.';
+    if (!phoneValid(phoneIn.value)) return 'Add your phone number to continue.';
+    if (addrIn.value.trim().length < 3) return 'Add your address to continue.';
+    if (!addrLooksReady()) return 'Add your address to continue.';
+    return '';
+  }
+  function refresh() {
+    // Dismiss any stale "didn't go through" error once the user edits/retries.
+    if (!submitting) {
+      var _se = main.querySelector('[data-submit-error]');
+      if (
+        _se
+        && !_se.hasAttribute('data-return-recovery')
+        && !_se.hasAttribute('data-area-boundary')
+        && _se.style.display !== 'none'
+      ) _se.style.display = 'none';
+    }
+    paintFieldOk();
+    ctaLabelEl.textContent = 'Continue';
+    var ready = part1Done();
+    cta.disabled = submitting || !ready;
+    if (ready && !submitting) closeDrop();
+    if (unconfirmedAddressNote) {
+      unconfirmedAddressNote.style.display = addrUnverified && ready ? '' : 'none';
+    }
+    if (ctaHint) {
+      var begun = nameIn.value.trim() || phoneIn.value.trim() || addrIn.value.trim();
+      var hasSpecificError = phoneField.classList.contains('has-error');
+      if (!ready && !submitting && begun && !hasSpecificError) { ctaHint.textContent = missingMsg(); ctaHint.style.display = ''; }
+      else { ctaHint.style.display = 'none'; }
+    }
+  }
+
+  function capitalizeName(value) {
+    return String(value || '').replace(/(^|[\s'-])([a-z])/g, function (_, lead, letter) {
+      return lead + letter.toUpperCase();
+    });
+  }
+  nameIn.addEventListener('input', function () {
+    var cursor = nameIn.selectionStart;
+    var capitalized = capitalizeName(nameIn.value);
+    if (capitalized !== nameIn.value) {
+      nameIn.value = capitalized;
+      if (cursor !== null) nameIn.setSelectionRange(cursor, cursor);
+    }
+    once('walk_v2_form_started');
+    refresh();
+  });
+  phoneIn.addEventListener('input', function () {
+    once('walk_v2_form_started');
+    phoneIn.value = formatPhone(phoneIn.value);
+    if (phoneValid(phoneIn.value)) phoneField.classList.remove('has-error');
+    refresh();
+  });
+  phoneIn.addEventListener('blur', function () {
+    if (phoneIn.value.trim() && !phoneValid(phoneIn.value)) phoneField.classList.add('has-error');
+    refresh();
+  });
+  addrIn.addEventListener('input', function () { once('walk_v2_form_started'); suggest(); refresh(); });
+  if (emailIn) emailIn.addEventListener('input', refreshAreaCapture);
+
+  /* channel attribution for PostHog + payload.leadChannel.
+     Server deriveLeadChannel also reads ?src= / fbclid / gclid from pageUrl
+     (audit 2026-07-13). Keep client labels in the contacts whitelist where
+     possible: meta, google, organic, local, neighbor, get-quote, direct. */
+  function attribution() {
+    var p = new URLSearchParams(window.location.search);
+    var us = (p.get('utm_source') || '').toLowerCase();
+    var ref = (document.referrer || '').toLowerCase();
+    var src = (p.get('src') || '').toLowerCase();
+    var ch = 'direct';
+    if (p.get('fbclid') || us === 'meta' || us === 'facebook' || us === 'instagram' || src === 'meta' || src === 'lp') ch = 'meta';
+    else if (p.get('gclid') || p.get('gbraid') || p.get('wbraid') || (us === 'google' && /cpc|ppc|paid/.test((p.get('utm_medium') || '').toLowerCase())) || src === 'google') ch = 'google';
+    else if (us) ch = (/google|bing|yahoo|duckduckgo/.test(us) ? 'organic' : (/fb|facebook|insta|meta|tiktok|linkedin|youtube|snap/.test(us) ? 'social' : 'referral'));
+    /* src=city_<slug> -> local (matches /city/ path channel on the server).
+       NOTE: never write a glob path containing star-slash inside this comment; that exact
+       sequence closes the comment and killed this whole script block Jul 4-11 2026. */
+    else if (/^city_/.test(src) || src === 'city-hub' || src.indexOf('city') === 0) ch = 'local';
+    else if (src === 'quote') ch = 'get-quote';
+    else if (src === 'neighbor') ch = 'neighbor';
+    /* src=home|guide|learn|service: internal hop; contacts taxonomy = direct
+       (PostHog still gets walk_entry / walk_src super-props separately). */
+    else if (src) ch = 'direct';
+    else if (/google\.|bing\.|duckduckgo\.|yahoo\./.test(ref)) ch = 'organic';
+    else if (ref && ref.indexOf(location.hostname) === -1) ch = 'referral';
+    return { channel: ch, source: p.get('utm_source') || '', medium: p.get('utm_medium') || '', campaign: p.get('utm_campaign') || '' };
+  }
+
+  /* single submit path: tapping the button submits AND grants SMS consent via the
+     disclosure beneath it. The texts are about the customer's own requested quote;
+     the disclosure is explicit and STOP + the by-phone DNC gate are honored on every
+     send. (The prior separate no-consent "Continue without texts" link was removed
+     per Key 2026-06-29; consent posture is confirmed at activation, TCPA.) */
+  main.querySelector('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    closeDrop();
+    if (areaBoundary) {
+      doAreaCapture();
+      return;
+    }
+    doSubmit(true);
+  });
+
+  async function doAreaCapture() {
+    if (submitting || !resumeT || !emailIn || !emailValid(emailIn.value)) return;
+    submitting = true;
+    refreshAreaCapture();
+    var areaMessage = main.querySelector('[data-submit-error]');
+    try {
+      await WALK.emailCapture(resumeT, emailIn.value.trim());
+      emailIn.disabled = true;
+      cta.style.display = 'none';
+      if (ctaHint) ctaHint.style.display = 'none';
+      if (areaMessage) {
+        areaMessage.textContent = 'Thank you. Your information is saved, and I will be in touch as service expands.';
+        areaMessage.style.color = 'var(--green, #087443)';
+      }
+      WALK.ph('walk_v2_out_of_area_email_saved');
+    } catch (_) {
+      submitting = false;
+      refreshAreaCapture();
+      if (areaMessage) {
+        areaMessage.textContent = 'That email did not save. Check it and try again.';
+        areaMessage.style.color = 'var(--red, #dc2626)';
+      }
+    }
+  }
+
+  async function doSubmit(smsGiven) {
+    if (submitting || !part1Done()) return;
+    if (smsGiven) once('walk_v2_consent_checked');
+    submitting = true;
+    cta.disabled = true;
+    /* Honest network wait only (Fresh Air: no fake beat). Copy names the real work. */
+    ctaLabelEl.textContent = 'Sending';
+
+    var name = nameIn.value.trim();
+    var attr = attribution();
+    var eventId = 'wv2-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+
+    /* Structured city/state/zip come only from a picked Mapbox feature.
+       An unselected type-in or the explicit escape stores the typed string
+       and leaves state/ZIP empty. Never take the bbox-biased first hit. */
+    function normAddr(value) {
+      return String(value || '').replace(/\s+/g, ' ').trim().toLowerCase();
+    }
+    function featureMatchesTyped(feature, typed) {
+      var q = normAddr(typed);
+      var place = normAddr(feature && feature.description);
+      if (!q || !place) return false;
+      if (place === q) return true;
+      var qStreet = q.split(',')[0].trim();
+      var pStreet = place.split(',')[0].trim();
+      if (!qStreet || qStreet !== pStreet) return false;
+      var extra = q.indexOf(',') > -1 ? q.slice(q.indexOf(',') + 1).trim() : '';
+      if (!extra) return false;
+      return extra.split(',').every(function (part) {
+        part = part.trim();
+        return !part || place.indexOf(part) !== -1;
+      });
+    }
+    if (addrUnverified || !addrValidated) {
+      addrSel = { city: '', state: '', zip: '' };
+    } else if (!addrSel.state) {
+      try {
+        var bf = await WALK.addrSuggest(addrIn.value.trim());
+        var hit = null;
+        for (var bi = 0; bf && bi < bf.length; bi++) {
+          if (featureMatchesTyped(bf[bi], addrIn.value)) { hit = bf[bi]; break; }
+        }
+        if (hit) {
+          addrSel = {
+            city: hit.city || '',
+            state: hit.state || '',
+            zip: hit.zip || ''
+          };
+        } else {
+          addrSel = { city: '', state: '', zip: '' };
+        }
+      } catch (_) { /* leave state empty */ }
+    }
+
+    var payload = {
+      firstName: name, lastName: '', phone: natDigits(phoneIn.value), email: '',
+      existingToken: editDetails ? resumeT : '',
+      address: addrIn.value.trim(), addressStreet: '', addressCity: addrSel.city || '', addressCounty: '', addressState: addrSel.state || '', addressZip: addrSel.zip || '', addressCountry: 'US', addressUnverified: addrUnverified ? 'true' : '',
+      leadChannel: attr.channel, utmSource: attr.source, utmMedium: attr.medium, utmCampaign: attr.campaign,
+      hasCompatibleGenerator: 'Unanswered - connection check pending',
+      outletAmps: [],
+      outletUnsure: '',
+      needsOutlet: false,
+      connection_status: 'unanswered',
+      smsConsent: smsGiven ? 'true' : '',
+      submittedAt: new Date().toISOString(), eventTimestamp: Math.floor(Date.now() / 1000),
+      source: 'walkv2-landing',
+      actionSource: 'website', eventName: 'Lead', eventId: eventId,
+      clientUserAgent: navigator.userAgent || '',
+      fbp: (document.cookie.match(/(?:^|;\s*)_fbp=([^;]*)/) || [])[1] || '',
+      fbc: (document.cookie.match(/(?:^|;\s*)_fbc=([^;]*)/) || [])[1] || '',
+      fbclid: new URLSearchParams(window.location.search).get('fbclid') || '',
+      pageUrl: window.location.href, referrer: document.referrer || ''
+    };
+
+    /* resilient delivery: the keepalive fetch below already survives page unload
+       (the beacon's only job) AND returns the pre_read token + delivered status,
+       so a parallel sendBeacon was pure redundancy that double-POSTed the lead
+       (a second contact in the rare concurrent-lookup race). keepalive covers
+       unload; the sync-XHR fallback covers a fetch throw. */
+    var body = JSON.stringify(payload);
+    var url = 'https://hfatblrcwytxvijjhpal.supabase.co/functions/v1/quo-ai-new-lead';
+    var delivered = false, tokenOut = null, serviceAreaStatus = '', savedAddressRefresh = false, failureMessage = '';
+    try {
+      var resp = await fetch(url, { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: body });
+      delivered = resp.ok;
+      if (resp.ok) {
+        try {
+          var j = await resp.json();
+          tokenOut = j && j.preReadToken || null;
+          serviceAreaStatus = j && j.service_area_status || '';
+          savedAddressRefresh = j && j.saved_address_refresh === true;
+          if (j && j.skipped && !tokenOut) {
+            delivered = false;
+            if (j.reason === 'do_not_contact') {
+              failureMessage = 'This mobile number is marked as opted out of texts. Use a different mobile number, or contact Backup Power Pro to update your text preference.';
+            }
+          }
+        } catch (_) {}
+      } else if (resp.status === 429) {
+        failureMessage = 'Too many tries too quickly. Wait one minute, then tap the button again.';
+      }
+      if (!delivered) WALK.ph('lead_submit_failed', { status: resp.status, method: 'fetch', form: 'walkv2-landing' });
+    } catch (err) {
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', url, false);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(body);
+        delivered = xhr.status >= 200 && xhr.status < 300;
+        /* parse the pre_read token from the fallback response too. Without this a
+           lead that delivered via XHR (after the keepalive fetch threw) would
+           dead-end at the "did not go through" alert below, because advancing into
+           the walk needs tokenOut and only the fetch path was reading it. */
+        if (delivered) {
+          try {
+            var fallbackBody = JSON.parse(xhr.responseText) || {};
+            tokenOut = fallbackBody.preReadToken || null;
+            serviceAreaStatus = fallbackBody.service_area_status || '';
+            savedAddressRefresh = fallbackBody.saved_address_refresh === true;
+            if (fallbackBody.skipped && !tokenOut) {
+              delivered = false;
+              if (fallbackBody.reason === 'do_not_contact') {
+                failureMessage = 'This mobile number is marked as opted out of texts. Use a different mobile number, or contact Backup Power Pro to update your text preference.';
+              }
+            }
+          } catch (_) {}
+        } else if (xhr.status === 429) {
+          failureMessage = 'Too many tries too quickly. Wait one minute, then tap the button again.';
+        }
+      } catch (e2) {
+        WALK.ph('lead_submit_failed', { err: String(err).slice(0, 200), method: 'xhr-threw', form: 'walkv2-landing' });
+      }
+    }
+    if (delivered && tokenOut && !savedAddressRefresh && typeof fbq === 'function') { try { fbq('track', 'Lead', { content_name: 'walkv2-landing', content_category: 'generator-installation', value: 1200, currency: 'USD' }, { eventID: eventId }); } catch (_) {} }
+    WALK.ph('walk_v2_submitted', { connection_status: 'unanswered', delivered: delivered });
+    if (delivered && tokenOut && serviceAreaStatus === 'verified_out_of_area') {
+      persistDraft();
+      WALK.go('index.html', tokenOut, { area: 'out' });
+      return;
+    }
+    if (delivered && tokenOut && savedAddressRefresh) {
+      persistDraft();
+      WALK.go('incomplete.html', tokenOut, { resume: '1' });
+      return;
+    }
+    if (delivered && tokenOut) {
+      persistDraft();
+      WALK.go('connection.html', tokenOut, { sequence: '1' });
+      return;
+    }
+
+    /* Delivery failed: keep recovery inside the guided flow. The CTA is
+       re-enabled by refresh() so the customer can try again. */
+    submitting = false;
+    refresh();
+    var se = main.querySelector('[data-submit-error]');
+    if (se) {
+      se.textContent = failureMessage || (delivered
+        ? 'Your details saved, but the quote did not start. Tap the button to try again.'
+        : 'That did not go through. Tap the button to try again.');
+      se.style.display = '';
+      try { se.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (_) {}
+    } else {
+      alert('That did not go through. Please try again.');
+    }
+  }
+
+  /* scroll reveal (comp behavior, unchanged) */
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var rvEls = main.querySelectorAll('.rv');
+  if (reduce || !('IntersectionObserver' in window)) {
+    rvEls.forEach(function (el) { el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.12 });
+    rvEls.forEach(function (el) { io.observe(el); });
+  }
+})();
+
+</script>
+</body>
+</html>

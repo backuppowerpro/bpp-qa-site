@@ -1,0 +1,25 @@
+{
+  "name": "BPP CRM",
+  "short_name": "BPP CRM",
+  "description": "Backup Power Pro CRM",
+  "start_url": "/crm/v3/",
+  "scope": "/crm/v3/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b1f3b",
+  "theme_color": "#0b1f3b",
+  "icons": [
+    {
+      "src": "/assets/images/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/images/apple-touch-icon.jpg",
+      "type": "image/jpeg",
+      "sizes": "2048x2048",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta name="referrer" content="strict-origin-when-cross-origin">
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-wygnGpICbMppymZ/+XZT8Vgnv0wtsjTA4zJ1JolzPtc=' 'sha256-lFNV6Yu188q+pFIURGrh2u1NROLxdp4hNocmMtxYHdw='; script-src-attr 'none'; style-src 'self'; style-src-elem 'self' https://fonts.googleapis.com 'sha256-79EA0Z7tOgJx/57ELeHbp0LMplLGf3/Fv468aggOIt4='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
+<script src="/walk-v2/no-js-bootstrap.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>Backup Power Pro · Quote Walk · Step 2</title>
+<link rel="icon" href="/favicon.png" type="image/png" />
+<link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.jpg" />
+<meta name="theme-color" content="#0b1f3b" />
+<style>
+  :root {
+    --navy: #0b1f3b;
+    --navy-soft: #44587a;
+    --gold: #ffba00;
+    --gold-ink: #8a5a00;
+    --gold-tint: #fff6df;
+    --bg: #eef1f6;
+    --page: #fafbfc;
+    --card: #ffffff;
+    --sunken: #f3f6fb;
+    --edge: rgba(11, 31, 59, 0.10);
+    --edge-soft: rgba(11, 31, 59, 0.07);
+    --text: #16243a;
+    --muted: #4d5a6e;
+    --faint: #5d6b7e;
+
+    --shadow-sm: 0 2px 6px rgba(11,31,59,0.06), 0 1px 2px rgba(11,31,59,0.04);
+    --shadow-md: 0 10px 28px rgba(11,31,59,0.10), 0 2px 8px rgba(11,31,59,0.05);
+    --shadow-gold: 0 6px 24px rgba(255,186,0,0.30);
+
+    --r-md: 14px;
+    --r-lg: 20px;
+    --r-pill: 100px;
+
+    --head: 'Outfit', sans-serif;
+    --body: 'Inter', system-ui, -apple-system, sans-serif;
+
+    --dur: 200ms;
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body {
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  button {
+    font-family: inherit;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+  svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+
+  .stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 48px;
+    padding: 28px 14px 96px;
+  }
+
+  /* ================= page frame ================= */
+  .page {
+    width: 390px;
+    max-width: 100%;
+    background: var(--page);
+    border-radius: 24px;
+    box-shadow: var(--shadow-md), inset 0 0 0 1px var(--edge-soft);
+    overflow: hidden;
+    container-type: inline-size;
+    container-name: page;
+  }
+  @media (min-width: 1140px) {
+    .page { width: 1080px; }
+  }
+
+  .page * { text-wrap: pretty; }
+
+  /* ================= scroll reveal ================= */
+  .rv {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 560ms var(--ease), transform 560ms var(--ease);
+    transition-delay: var(--rvd, 0ms);
+  }
+  .rv.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .rv { opacity: 1; transform: none; transition: none; }
+  }
+
+  /* ================= 1. site header ================= */
+  .site-head {
+    height: 56px;
+    background: var(--navy);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+  }
+  .lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 8px 0;
+    box-sizing: border-box;
+  }
+
+  /* ================= 2. progress band ================= */
+  .prog {
+    background: var(--card);
+    border-bottom: 1px solid var(--edge-soft);
+    padding: 16px 20px 14px;
+  }
+  .prog .rail {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    position: relative;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+  .prog .rail::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: calc(100% / 6);
+    right: calc(100% / 6);
+    height: 2px;
+    background: var(--edge);
+  }
+  .prog .rail::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: calc(100% / 6);
+    width: calc(100% / 3);
+    height: 2px;
+    background: var(--gold);
+  }
+  .pstep {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+  }
+  .pstep .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--page);
+    box-shadow: inset 0 0 0 2px var(--edge);
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--navy);
+  }
+  .pstep .dot svg { width: 7px; height: 7px; stroke-width: 3.4; display: none; }
+  .pstep.done .dot {
+    width: 14px;
+    height: 14px;
+    margin: -1px 0;
+    background: var(--gold);
+    box-shadow: none;
+  }
+  .pstep.done .dot svg { display: block; }
+  .pstep.on .dot {
+    background: var(--gold);
+    box-shadow: 0 0 0 4px rgba(255,186,0,0.22);
+  }
+  .pstep .pl {
+    font-family: var(--head);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .pstep.on .pl, .pstep.done .pl { color: var(--gold-ink); }
+
+  /* back-a-step control */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 44px;
+    margin: 12px 0 0 14px;
+    padding: 6px 10px 6px 6px;
+    background: none;
+    font-family: var(--head);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .back-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .back-btn:active { color: var(--navy); }
+
+  /* ================= body ================= */
+  .body {
+    padding: 4px 22px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  @container page (min-width: 760px) {
+    .site-head { padding: 0 48px; }
+    .prog { padding: 18px 48px 16px; }
+    .body { padding: 8px 24px 28px; }
+  }
+
+  /* ================= 3. explainer + diagram ================= */
+  .explain { display: flex; flex-direction: column; gap: 14px; }
+  .explain .lead {
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--muted);
+    margin: 0;
+  }
+  .explain .lead b { color: var(--text); font-weight: 600; }
+
+  .diagram {
+    background: var(--sunken);
+    border-radius: var(--r-lg);
+    box-shadow: inset 0 0 0 1px var(--edge-soft);
+    padding: 20px 18px 16px;
+  }
+  .dia-track { display: flex; align-items: center; gap: 0; }
+  .dia-ico {
+    flex: 0 0 auto;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .dia-ico img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  /* solid gray line bridging the panel, distance, and connection box */
+  .dia-line { flex: 1 1 auto; height: 2px; border-radius: 2px; background: var(--navy-soft); opacity: 0.4; }
+  .dia-mid {
+    flex: 0 0 auto;
+    min-width: 58px;
+    min-height: 42px;
+    padding: 7px 9px;
+    border-radius: 11px;
+    background: var(--card);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--edge);
+    color: var(--navy);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--head);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.1;
+    text-align: center;
+  }
+  .dia-mid.is-pending { font-size: 20px; color: var(--faint); }
+  .dia-foot { display: flex; align-items: flex-start; justify-content: space-between; margin-top: 10px; gap: 8px; }
+  .dia-lbl {
+    font-family: var(--head);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.25;
+    max-width: 48%;
+  }
+  .dia-foot .dia-lbl:first-child { text-align: left; }
+  .dia-foot .dia-lbl:last-child { text-align: right; }
+  .dia-lbl span {
+    display: block;
+    font-family: var(--body);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--faint);
+    margin-top: 2px;
+  }
+  .dia-cue {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 14px;
+    background: var(--gold-tint);
+    border-radius: var(--r-pill);
+    font-family: var(--head);
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--gold-ink);
+  }
+  .dia-cue svg { width: 15px; height: 15px; stroke-width: 2.4; color: var(--gold-ink); }
+
+  /* ================= 4. ask ================= */
+  .ask h1 {
+    font-family: var(--head);
+    font-weight: 700;
+    font-size: 23px;
+    line-height: 1.18;
+    letter-spacing: -0.01em;
+    color: var(--navy);
+    margin: 0 0 7px;
+    text-wrap: balance;
+  }
+  .ask .helper { font-size: 16px; line-height: 1.5; color: var(--muted); margin: 0; }
+
+  /* ================= 5. distance options ================= */
+  .opts { display: flex; flex-direction: column; gap: 10px; }
+  .opt {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    min-height: 60px;
+    padding: 12px 16px;
+    background: var(--card);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1.5px var(--edge);
+    text-align: left;
+    transition: box-shadow var(--dur) var(--ease), background var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .opt:active { transform: scale(0.985); }
+  .cord { order: 2; flex: 0 0 auto; width: 84px; height: 16px; display: flex; align-items: center; }
+  .cord .plug {
+    width: 8px;
+    height: 13px;
+    border-radius: 2.5px;
+    background: var(--navy-soft);
+    flex: 0 0 auto;
+    transition: background var(--dur) var(--ease);
+  }
+  .cord .run {
+    height: 3px;
+    border-radius: 2px;
+    background: var(--navy-soft);
+    opacity: 0.5;
+    width: var(--w, 14px);
+    transition: background var(--dur) var(--ease), opacity var(--dur) var(--ease);
+  }
+  .cord .qm {
+    font-family: var(--head);
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--faint);
+    line-height: 1;
+    margin-left: 2px;
+    transition: color var(--dur) var(--ease);
+  }
+  .opt .lbl { order: 1; flex: 1 1 auto; font-family: var(--head); font-size: 16px; font-weight: 700; color: var(--navy); }
+  .opt .tick {
+    order: 3;
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 2px var(--edge);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    transition: background var(--dur) var(--ease), box-shadow var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .opt .tick svg { width: 12px; height: 12px; stroke-width: 3; }
+  .opt[aria-pressed="true"] { background: var(--navy); box-shadow: var(--shadow-md), inset 0 0 0 2.5px var(--gold); }
+  .opt[aria-pressed="true"] .lbl { color: #fff; }
+  .opt[aria-pressed="true"] .cord .plug { background: var(--gold); }
+  .opt[aria-pressed="true"] .cord .run { background: var(--gold); opacity: 0.95; }
+  .opt[aria-pressed="true"] .cord .qm { color: var(--gold); }
+  .opt[aria-pressed="true"] .tick { background: var(--gold); box-shadow: none; color: var(--navy); }
+
+  /* echo line */
+  .echo {
+    display: none;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--head);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gold-ink);
+  }
+  .echo.show { display: flex; animation: rise 320ms var(--ease) both; }
+  @media (prefers-reduced-motion: reduce) { .echo.show { animation: none; } }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+  }
+  .echo .ring {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-gold);
+  }
+  .echo .ring svg { width: 11px; height: 11px; stroke-width: 3; }
+  .opts.is-collapsed .opt[aria-pressed="false"] { display: none; }
+  .distance-confirm { display: none; margin-top: 2px; }
+  .distance-confirm.show { display: block; }
+  .distance-confirm .context {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 8px 0;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.35;
+    border-bottom: 1px solid rgba(11,31,59,.09);
+  }
+  .distance-confirm .context:last-of-type { border-bottom: 0; }
+  .distance-confirm .context::before { content: "✓"; color: var(--gold-ink); font-weight: 800; }
+  .distance-confirm .cord-benefit::before { content: none; }
+  .cord-benefit img {
+    width: 62px;
+    height: 42px;
+    flex: 0 0 auto;
+    object-fit: contain;
+    border-radius: 8px;
+    background: #fff;
+  }
+  .body.is-confirmed .ask, .body.is-confirmed .explain .lead, .body.is-confirmed .echo { display: none; }
+  .distance-confirm .confirm-actions { display: grid; gap: 2px; }
+  .distance-confirm button {
+    width: 100%; min-height: 48px; border-radius: 100px; font-weight: 800;
+  }
+  .distance-confirm .continue { color: var(--navy); background: var(--gold); box-shadow: var(--shadow-gold); }
+  .distance-confirm .change { color: var(--navy); background: transparent; box-shadow:none; }
+
+  /* ================= 6. reassurance note + cord photo ================= */
+  .note {
+    background: var(--card);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--edge-soft);
+    overflow: hidden;
+  }
+  .note .ph {
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--edge-soft);
+  }
+  .note .ph img { max-height: 116px; width: auto; max-width: 78%; object-fit: contain; display: block; }
+  .note .txt { display: flex; gap: 12px; padding: 16px 18px; align-items: flex-start; }
+  .note .txt .badge {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--gold-tint);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold-ink);
+  }
+  .note .txt .badge svg { width: 18px; height: 18px; stroke-width: 2; }
+  .note .txt p { font-size: 16px; line-height: 1.5; color: var(--muted); margin: 0; }
+  .note .txt p b { color: var(--text); font-weight: 600; }
+
+  /* ================= 7. footer ================= */
+  .foot {
+    margin-top: 26px;
+    padding: 20px 20px 28px;
+    border-top: 1px solid var(--edge-soft);
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--faint);
+    text-align: center;
+  }
+  .foot strong { font-family: var(--head); font-weight: 600; color: var(--muted); }
+
+  /* Fresh Air mobile (2026-07-13 design audit): drop the phone-frame gutters.
+     Comp staging used .stack padding + rounded .page; on a real phone that
+     wastes width and looks like a mock. Edge-to-edge under 760px; desktop card stays. */
+  @media (max-width: 759px) {
+    html, body { background: var(--page); }
+    .stack { padding: 0 0 calc(28px + env(safe-area-inset-bottom, 0px)); gap: 0; }
+    .page {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .state-label { display: none; }
+  }
+</style>
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=20260808d" />
+<link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body>
+<div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to continue this Quote Walk. Your saved answers remain on file. Turn it on and reload, or call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
+<div class="stack" id="stack">
+
+  <!-- ============ MAIN PAGE (mobile, interactive) ============ -->
+  <main class="page" id="mainPage" data-screen-label="Quote walk step 2 (interactive, mobile)">
+
+    <!-- 1. site header -->
+    <header class="site-head">
+      <a class="lockup" href="https://qa.backuppowerpro.com" aria-label="Backup Power Pro" style="text-decoration:none;">
+        <img src="/assets/images/logo-white-v2.png" alt="Backup Power Pro" style="height:28px;display:block;width:auto;" />
+      </a>
+    </header>
+
+    <!-- 2. progress band -->
+    <div class="prog qw-progress" data-qw-step="distance">
+      <div class="rail qw-progress-rail" role="img" aria-label="Step 3 of 4: Distance. Generator and Panel complete.">
+        <div class="pstep done"><span class="dot"></span><span class="pl">Generator</span></div>
+        <div class="pstep done"><span class="dot"></span><span class="pl">Panel</span></div>
+        <div class="pstep on"><span class="dot"></span><span class="pl">Distance</span></div>
+        <div class="pstep"><span class="dot"></span><span class="pl">Photos</span></div>
+      </div>
+    </div>
+
+    <button class="back-btn qw-back" type="button" data-back="" aria-label="Back">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3l-5 5 5 5"></path></svg>
+    </button>
+
+    <div class="body">
+
+      <!-- 3. compact diagram -->
+      <section class="explain">
+        <div class="diagram">
+          <div class="dia-track">
+            <div class="dia-ico">
+              <img src="/img/panel-example.jpg" alt="Main electrical panel" />
+            </div>
+            <div class="dia-line"></div>
+            <div class="dia-mid is-pending" data-distance-cue aria-live="polite">?</div>
+            <div class="dia-line"></div>
+            <div class="dia-ico">
+              <img src="/img/install-inlet-siding.jpg" alt="New outdoor connection" />
+            </div>
+          </div>
+          <div class="dia-foot">
+            <div class="dia-lbl">Main panel</div>
+            <div class="dia-lbl">New outdoor<br />connection</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. ask -->
+      <section class="ask">
+        <h1>How far is your panel from where you want the new outdoor connection?</h1>
+        <p class="helper">A rough estimate works.</p>
+      </section>
+
+      <!-- 5. distance options -->
+      <section class="opts" data-dists="">
+        <button class="opt" type="button" data-dist="About 5 ft" aria-pressed="false">
+          <span class="cord"><span class="plug"></span><span class="run" style="--w: 12px;"></span></span>
+          <span class="lbl">About 5 ft</span>
+          <span class="tick"><svg viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7"></path></svg></span>
+        </button>
+        <button class="opt" type="button" data-dist="5-10 ft" aria-pressed="false">
+          <span class="cord"><span class="plug"></span><span class="run" style="--w: 26px;"></span></span>
+          <span class="lbl">5-10 ft</span>
+          <span class="tick"><svg viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7"></path></svg></span>
+        </button>
+        <button class="opt" type="button" data-dist="10-20 ft" aria-pressed="false">
+          <span class="cord"><span class="plug"></span><span class="run" style="--w: 42px;"></span></span>
+          <span class="lbl">10-20 ft</span>
+          <span class="tick"><svg viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7"></path></svg></span>
+        </button>
+        <button class="opt" type="button" data-dist="20-40 ft" aria-pressed="false">
+          <span class="cord"><span class="plug"></span><span class="run" style="--w: 58px;"></span></span>
+          <span class="lbl">20-40 ft</span>
+          <span class="tick"><svg viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7"></path></svg></span>
+        </button>
+        <button class="opt" type="button" data-dist="Over 40 ft" aria-pressed="false">
+          <span class="cord"><span class="plug"></span><span class="run" style="--w: 70px;"></span></span>
+          <span class="lbl">Over 40 ft</span>
+          <span class="tick"><svg viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7"></path></svg></span>
+        </button>
+        <button class="opt" type="button" data-dist="Not sure" aria-pressed="false">
+          <span class="cord"><span class="qm">?</span></span>
+          <span class="lbl">Not sure</span>
+          <span class="tick"><svg viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7"></path></svg></span>
+        </button>
+      </section>
+
+      <!-- echo line -->
+      <div class="echo" data-echo="" aria-live="polite">
+        <span class="ring"><svg viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7"></path></svg></span>
+        <span data-echo-text="">Got it.</span>
+      </div>
+
+      <section class="distance-confirm" data-distance-confirm="" aria-live="polite">
+        <p class="context cord-benefit"><img data-cord-image src="/assets/product-images/cord-30amp.jpg" alt="Yellow manufactured generator connection cord" /><span>Your setup stays flexible: at least 20 ft of compatible cord is included, so the generator can run outdoors away from doors, windows, and vents. Longer lengths are available when needed.</span></p>
+        <div class="confirm-actions qw-action-stack">
+          <button class="continue qw-primary-action" type="button" data-continue="">Continue</button>
+          <button class="change qw-secondary-action" type="button" data-change="">Change distance</button>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- 7. footer -->
+    <footer class="foot">
+      <div class="foot-identity"><strong>Licensed and insured</strong><span>SC Lic #2942 by Key Electric</span></div>
+      <span class="foot-area">Currently serving Greenville, Spartanburg,<br>and Pickens counties</span>
+      <span class="foot-process">Every project is reviewed and permitted by Key, completed with trusted local installation partners, and coordinated through final inspection.</span>
+    </footer>
+  </main>
+
+</div>
+
+<script src="/walk-v2/walk.js?v=20260816-save"></script>
+<script>
+
+(function () {
+  var t = WALK.requireToken(); if (!t) return;
+  WALK.ph('walk_v2_screen_view', { screen: 'distance' });
+
+  var main = document.getElementById('mainPage');
+  var body = main.querySelector('.body');
+  var echo = main.querySelector('[data-echo]');
+  var echoText = main.querySelector('[data-echo-text]');
+  var options = main.querySelector('[data-dists]');
+  var confirmation = main.querySelector('[data-distance-confirm]');
+  var distanceCue = main.querySelector('[data-distance-cue]');
+  var cordImage = main.querySelector('[data-cord-image]');
+  var BAND_API = { 'About 5 ft': 'about_5', '5-10 ft': '5_10', '10-20 ft': '10_20', '20-40 ft': '20_40', 'Over 40 ft': 'over_40', 'Not sure': 'not_sure' };
+  var API_BAND = {}; Object.keys(BAND_API).forEach(function (k) { API_BAND[BAND_API[k]] = k; });
+  var DISTANCE_ORDER = { about_5: 1, '5_10': 2, '10_20': 3, '20_40': 4, over_40: 5 };
+  var selectedLabel = null, saving = false, navigated = false;
+  var priorDistanceBand = null, revisingCurrentRange = false;
+
+  function paint(label, echoLine) {
+    selectedLabel = label || null;
+    main.querySelectorAll('[data-dist]').forEach(function (c) {
+      c.setAttribute('aria-pressed', c.getAttribute('data-dist') === label ? 'true' : 'false');
+    });
+    if (echoLine) {
+      echoText.textContent = label === 'Not sure'
+        ? 'Got it. You can finish this later.'
+        : 'Got it, ' + label.toLowerCase() + '.';
+      echo.classList.remove('show'); void echo.offsetWidth; echo.classList.add('show');
+    }
+    var confirmable = !!label;
+    distanceCue.textContent = confirmable ? label : '?';
+    distanceCue.classList.toggle('is-pending', !confirmable);
+    body.classList.toggle('is-confirmed', confirmable);
+    options.classList.toggle('is-collapsed', confirmable);
+    confirmation.classList.toggle('show', confirmable);
+  }
+
+  WALK.view(t).then(function (v) {
+    var params = new URLSearchParams(window.location.search);
+    var sequentialEntry = params.get('sequence') === '1';
+    /* Self-correcting entry guard: only fires when a PRIOR step is unanswered
+       (panel location here). A forwarded / hand-edited deep link straight to this
+       page would otherwise let an incomplete walk finalize and skip Key's "ready
+       to price" ping. routeFromState bounces to the first unanswered step. It does
+       NOT bounce when location is already answered, so normal flow and Back-nav
+       are untouched (no self-redirect, the landing already runs this same guard). */
+    if (!sequentialEntry && !v.confirmed_panel_room) { WALK.routeFromState(t, v); return; }
+    cordImage.src = '/assets/product-images/cord-30amp.jpg';
+    var editMode = params.get('edit') === '1';
+    var recoveryMode = params.get('recovery') === '1';
+    var savedDistance = v.distance_band && API_BAND[v.distance_band];
+    var state = v.quote_walk_v2 || {};
+    priorDistanceBand = state.distance_band || v.distance_band || null;
+    revisingCurrentRange = editMode && Boolean(state.current_range_snapshot_id);
+    if (revisingCurrentRange && DISTANCE_ORDER[priorDistanceBand]) {
+      main.querySelectorAll('[data-dist]').forEach(function (card) {
+        var candidate = BAND_API[card.getAttribute('data-dist')];
+        card.hidden = !DISTANCE_ORDER[candidate]
+          || DISTANCE_ORDER[candidate] >= DISTANCE_ORDER[priorDistanceBand];
+      });
+    }
+    var pendingDistance = savedDistance === 'Not sure';
+    if (!editMode && !sequentialEntry && savedDistance && !(recoveryMode && pendingDistance)) paint(savedDistance, false);
+  }).catch(function () { /* the welcome-back preselect is best-effort; a transient read failure must NOT strip the token and bounce a mid-walk customer to a blank form. The step works without it. */ });
+
+  main.querySelectorAll('[data-dist]').forEach(function (card) {
+    card.addEventListener('click', function () {
+      if (navigated || saving) return;
+      var label = card.getAttribute('data-dist');
+      paint(label, true);
+      WALK.ph('walk_v2_confirm_tap', { field: 'distance_band', value: BAND_API[label] });
+    });
+  });
+
+  main.querySelector('[data-change]').addEventListener('click', function () {
+    paint(null, false);
+    echo.classList.remove('show');
+    main.querySelector('[data-dist]').focus();
+  });
+
+  main.querySelector('[data-continue]').addEventListener('click', function () {
+    if (!selectedLabel || saving) return;
+    saving = true;
+    var answers = { distance_band: BAND_API[selectedLabel] };
+    if (revisingCurrentRange && answers.distance_band !== priorDistanceBand) {
+      answers.revision_reason = 'shorter_distance';
+    }
+    WALK.confirm(t, answers)
+      .then(function () {
+        navigated = true;
+        var recovery = new URLSearchParams(window.location.search).get('recovery') === '1';
+        if (recovery) {
+          WALK.view(t).then(function (latest) {
+            WALK.routeRecoveryFromState(t, latest);
+          }).catch(function () {
+            WALK.go('incomplete.html', t);
+          });
+        } else {
+          WALK.go('photos.html', t, { sequence: '1' });
+        }
+      })
+      .catch(function () {
+        saving = false;
+        echoText.textContent = 'That distance did not save. Try again.';
+        echo.classList.add('show');
+      });
+  });
+
+  var backBtn = main.querySelector('[data-back]');
+  if (backBtn) backBtn.addEventListener('click', function () { WALK.ph('walk_v2_back_tap', { from: 'distance' }); WALK.back('location.html', t); });
+
+  /* scroll reveal (comp behavior, unchanged) */
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var rvEls = main.querySelectorAll('.rv');
+  if (reduce || !('IntersectionObserver' in window)) {
+    rvEls.forEach(function (el) { el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.12 });
+    rvEls.forEach(function (el) { io.observe(el); });
+  }
+
+})();
+</script>
+</body>
+</html>

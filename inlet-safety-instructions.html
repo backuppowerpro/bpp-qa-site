@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Generator Safety and Compatibility Guide | Backup Power Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0b1f3b;
+  --navy-soft: #1b3153;
+  --gold: #ffba00;
+  --gold-soft: #fff4cc;
+  --red: #c92b2b;
+  --red-soft: #fff1f1;
+  --green: #087f5b;
+  --green-soft: #eaf8f3;
+  --ink: #14243d;
+  --muted: #5e6b82;
+  --line: #dfe5ee;
+  --paper: #ffffff;
+  --canvas: #e9edf4;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: "Inter", Arial, sans-serif;
+  padding: 24px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.toolbar {
+  width: 8.5in;
+  margin: 0 auto 18px;
+  background: var(--navy);
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 10px 28px rgba(11, 31, 59, .18);
+}
+
+.toolbar-copy {
+  color: rgba(255, 255, 255, .72);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.toolbar button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 10px;
+  padding: 0 16px;
+  font-family: "Outfit", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.toolbar .print {
+  background: var(--gold);
+  color: var(--navy);
+}
+
+.toolbar .close {
+  background: rgba(255, 255, 255, .12);
+  border: 1px solid rgba(255, 255, 255, .24);
+  color: #fff;
+}
+
+.page {
+  width: 8.5in;
+  height: 11in;
+  margin: 0 auto 24px;
+  padding: .42in .5in .38in;
+  background: var(--paper);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 18px 46px rgba(11, 31, 59, .16);
+}
+
+.page::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 7px;
+  background: var(--navy);
+}
+
+.doc-header {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding-top: 5px;
+  padding-bottom: 11px;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  width: 188px;
+  height: auto;
+  display: block;
+}
+
+.edition {
+  text-align: right;
+  color: var(--muted);
+  font-size: 9.5px;
+  line-height: 1.5;
+  letter-spacing: .025em;
+  font-weight: 600;
+}
+
+.hero {
+  margin-top: 14px;
+  min-height: 112px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: var(--navy);
+  color: #fff;
+  display: grid;
+  grid-template-columns: 1fr 156px;
+}
+
+.hero-copy {
+  padding: 20px 22px 18px;
+}
+
+.eyebrow {
+  color: var(--gold);
+  font-family: "Outfit", Arial, sans-serif;
+  font-size: 10.5px;
+  line-height: 1.2;
+  letter-spacing: .015em;
+  font-weight: 700;
+}
+
+.hero h1 {
+  margin: 8px 0 4px;
+  font-family: "Outfit", Arial, sans-serif;
+  font-size: 28px;
+  line-height: 1.02;
+  letter-spacing: -.025em;
+}
+
+.hero p {
+  margin: 0;
+  max-width: 33em;
+  color: rgba(255, 255, 255, .76);
+  font-size: 11.5px;
+  line-height: 1.48;
+}
+
+.hero-image {
+  position: relative;
+  min-height: 112px;
+}
+
+.hero-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--navy) 0%, rgba(11, 31, 59, .18) 42%, rgba(11, 31, 59, 0) 70%);
+}
+
+.hero-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 52% 48%;
+  display: block;
+}
+
+.co-rule {
+  margin-top: 13px;
+  min-height: 86px;
+  border-top: 2px solid var(--red);
+  border-bottom: 1px solid #efb0b0;
+  padding: 10px 0 9px;
+  display: grid;
+  grid-template-columns: 1fr 210px;
+  gap: 14px;
+  align-items: center;
+  background: var(--paper);
+}
+
+.co-copy h2 {
+  margin: 0 0 4px;
+  color: var(--red);
+  font-family: "Outfit", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.co-copy p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 11px;
+  line-height: 1.48;
+}
+
+.distance-visual {
+  height: 62px;
+  position: relative;
+  display: grid;
+  grid-template-columns: 42px 1fr 52px;
+  align-items: center;
+  gap: 6px;
+}
+
+.distance-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  color: var(--red);
+}
+
+.distance-icon.house {
+  width: 52px;
+  height: 52px;
+  color: var(--ink);
+}
+
+.distance-arrow {
+  position: relative;
+  height: 2px;
+  background: var(--red);
+}
+
+.distance-arrow::before,
+.distance-arrow::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-top: 2px solid var(--red);
+  border-right: 2px solid var(--red);
+}
+
+.distance-arrow::before {
+  left: 0;
+  transform: translateY(-50%) rotate(-135deg);
+}
+
+.distance-arrow::after {
+  right: 0;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.distance-label {
+  position: absolute;
+  left: 50%;
+  top: -19px;
+  transform: translateX(-50%);
+  padding: 1px 7px;
+  background: var(--paper);
+  color: var(--red);
+  font-family: "Outfit", Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.sequence {
+  margin-top: 14px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 8px;
+}
+
+.section-heading h2 {
+  margin: 0;
+  color: var(--navy);
+  font-family: "Outfit", Arial, sans-serif;
+  font-size: 19px;
+  line-height: 1.1;
+  letter-spacing: -.015em;
+}
+
+.section-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+.step-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+
+.step {
+  min-height: 123px;
+  padding: 11px 12px 10px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  position: relative;
+}
+
+.step-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.step-num {
+  width: 18px;
+  color: var(--navy);
+  display: block;
+  flex-shrink: 0;
+  font-family: "Outfit", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+.step h3 {
+  margin: 0;
+  color: var(--navy);
+  font-family: "Outfit", Arial, sans-serif;
+  font-size: 12.5px;
+  line-height: 1.2;
+}
+
+.step p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11.1px;
+  line-height: 1.45;
+}
+
+.step strong {
+  color: var(--ink);
+}
+
+.energized-warning {
+  margin-top: 9px;
+  padding: 7px 0;
+  border-top: 1px solid #efb0b0;
+  border-bottom: 1px solid #efb0b0;
+  background: var(--paper);
+  color: #6b2929;
+  font-size: 10.5px;
+  line-height: 1.4;
+  font-weight: 600;
+  text-align: left;
+}
+
+.shutdown {
+  margin-top: 12px;
+  padding: 11px 0 10px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.shutdown-head {
+  color: var(--navy);
+  font-family: "Outfit", Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.shutdown-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.shutdown-step {
+  position: relative;
+  padding-left: 21px;
+  color: var(--muted);
+  font-size: 10.2px;
+  line-height: 1.4;
+}
+
+.shutdown-step::before {
+  content: attr(data-step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 16px;
+  height: 16px;
+  display: block;
+  color: var(--navy);
+  font-family: "Outfit", Arial, sans-serif;
+  font-size: 8.5px;
+  font-weight: 800;
+}
+
+.page-footer {
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  color: var(--muted);
+  font-size: 8.8px;
+  line-height: 1.35;
+}
+
+.page-footer strong {
+  color: var(--navy);
+  font-family: "Outfit", Arial, sans-serif;
+}
+
+.page-two-title {
+  margin: 16px 0 2px;
+  color: var(--navy);
+  font-family: "Outfit", Arial, sans-serif;
+  font-size: 25px;
+  line-height: 1.05;
+  letter-spacing: -.02em;
+}
+
+.page-two-subtitle {
+  margin: 0 0 13px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.confirm-panel {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: 16px;
+  padding: 13px 0;
+  border-top: 3px solid var(--gold);
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.confirm-image {
+  overflow: hidden;
+  border-radius: 4px;
+  height: 150px;
+  position: relative;
+}
+
+.confirm-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 52% 45%;
+}
+
+.confirm-copy h2 {
+  margin: 1px 0 7px;
+  color: var(--navy);
+  font-family: "Outfit", Arial, sans-serif;
+  font-size: 18px;
+  line-height: 1.15;
+}
+
+.check-row {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 8px;
+  align-items: start;
+  margin-top: 7px;
+}
+
+.check-icon {
+  width: 19px;
+  height: 19px;
+  color: #906600;
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.check-row p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.check-row strong {
+  color: var(--ink);
+}
+
+.capacity-panel {
+  margin-top: 13px;
+  display: grid;
+  grid-template-columns: 1.05fr .95fr;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.capacity-copy {
+  padding: 15px 16px;
+}
+
+.capacity-copy h2,
+.scope h2,
+.support h2 {
+  margin: 0 0 5px;
+  color: var(--navy);
+  font-family: "Outfit", Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.15;
+}
+
+.capacity-copy > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.load-list {
+  margin: 9px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 5px;
+}
+
+.load-list li {
+  position: relative;
+  padding-left: 17px;
+  color: var(--ink);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.load-list li::before {
+  content: "•";
+  position: absolute;
+  left: 3px;
+  top: -1px;
+  color: var(--green);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.capacity-visual {
+  padding: 15px 16px;
+  border-left: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.capacity-visual .eyebrow {
+  color: var(--navy);
+}
+
+.breaker-choice {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+
+.breaker {
+  height: 42px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 3px;
+  font-size: 9px;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+.capacity-note {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 10.2px;
+  line-height: 1.42;
+}
+
+.scope-support {
+  margin-top: 13px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.scope,
+.support {
+  padding: 14px 15px;
+  background: var(--paper);
+}
+
+.support {
+  border-left: 1px solid var(--line);
+}
+
+.scope-list,
+.support-list {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scope-list li,
+.support-list li {
+  position: relative;
+  padding: 7px 0;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11.2px;
+  line-height: 1.4;
+}
+
+.scope-list strong,
+.support-list strong {
+  color: var(--ink);
+}
+
+.scope-boundary {
+  margin-top: 11px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--muted);
+  font-size: 11.3px;
+  line-height: 1.48;
+}
+
+.scope-boundary strong {
+  color: var(--navy);
+}
+
+.never-strip {
+  margin-top: 13px;
+  border-top: 2px solid var(--red);
+  border-bottom: 1px solid #efb0b0;
+}
+
+.never-title {
+  padding: 8px 0 4px;
+  background: var(--paper);
+  color: var(--red);
+  font-family: "Outfit", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.never-list {
+  padding: 6px 0 9px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 9px;
+  background: var(--paper);
+}
+
+.never-item {
+  color: #623737;
+  font-size: 10px;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.never-x {
+  width: auto;
+  height: auto;
+  margin: 0 0 3px;
+  display: block;
+  color: var(--red);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.source-note {
+  margin-top: 9px;
+  color: var(--muted);
+  font-size: 9.1px;
+  line-height: 1.4;
+}
+
+@media screen and (max-width: 600px) {
+  body {
+    padding: 12px;
+  }
+
+  .toolbar,
+  .page {
+    width: 100%;
+  }
+
+  .toolbar {
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-copy {
+    flex: 1 1 100%;
+  }
+
+  .toolbar-actions {
+    width: 100%;
+  }
+
+  .toolbar button {
+    flex: 1 1 0;
+  }
+
+  .page {
+    height: auto;
+    min-height: 0;
+    margin-bottom: 14px;
+    padding: 24px 18px 20px;
+    overflow: visible;
+  }
+
+  .doc-header {
+    min-height: 44px;
+    gap: 10px;
+  }
+
+  .brand {
+    width: min(158px, 54vw);
+  }
+
+  .edition {
+    font-size: 8.5px;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-copy {
+    padding: 20px 18px 18px;
+  }
+
+  .hero h1 {
+    font-size: clamp(24px, 8vw, 30px);
+  }
+
+  .hero-image {
+    min-height: 148px;
+  }
+
+  .hero-image::after {
+    background: linear-gradient(180deg, var(--navy) 0%, rgba(11, 31, 59, .15) 35%, rgba(11, 31, 59, 0) 68%);
+  }
+
+  .co-rule,
+  .capacity-panel,
+  .scope-support,
+  .confirm-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .distance-visual {
+    width: min(230px, 100%);
+    margin: 10px auto 0;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .step-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .step {
+    min-height: 0;
+  }
+
+  .shutdown-steps {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .never-list {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .page-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .page-footer > :last-child {
+    text-align: left !important;
+  }
+
+  .page-two-title {
+    font-size: 23px;
+  }
+
+  .confirm-image {
+    height: 190px;
+  }
+
+  .capacity-visual,
+  .support {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .breaker-choice {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media print {
+  body {
+    padding: 0;
+    background: #fff;
+  }
+
+  .toolbar {
+    display: none !important;
+  }
+
+  .page {
+    margin: 0;
+    box-shadow: none;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .page + .page {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  @page {
+    size: letter portrait;
+    margin: 0;
+  }
+}
+</style>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body>
+
+<div class="toolbar" aria-label="Document controls">
+  <div class="toolbar-copy">Full owner guide, designed to print or keep on your phone.</div>
+  <div class="toolbar-actions">
+    <button class="close" type="button" onclick="window.close()">Close</button>
+    <button class="print" type="button" onclick="window.print()">Print or save PDF</button>
+  </div>
+</div>
+
+<main>
+  <section class="page" aria-label="Operating sequence">
+    <header class="doc-header">
+      <img class="brand" src="assets/images/logo-main.png" alt="Backup Power Pro">
+      <div class="edition">Owner safety and compatibility guide<br>Edition 2026.07</div>
+    </header>
+
+    <div class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">Generator connection operating guide</div>
+        <h1>Operating your generator connection</h1>
+        <p>Keep this guide near your electrical panel. Follow the order shown every time you connect or disconnect your portable generator.</p>
+      </div>
+      <div class="hero-image">
+        <img src="assets/images/work-inlet-lightbrick.jpg" alt="A professionally installed generator inlet">
+      </div>
+    </div>
+
+    <div class="co-rule">
+      <div class="co-copy">
+        <h2>Keep the generator outdoors, at least 20 feet from the home.</h2>
+        <p>Keep it away from windows, doors, and vents, with exhaust pointed away from the home. Use working carbon monoxide alarms on every level.</p>
+      </div>
+      <div class="distance-visual" aria-label="Generator at least 20 feet from the home">
+        <div class="distance-icon">
+          <svg viewBox="0 0 64 64" width="42" height="42" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round">
+            <rect x="7" y="18" width="47" height="30" rx="3"></rect>
+            <rect x="13" y="24" width="24" height="14" rx="2"></rect>
+            <circle cx="45" cy="31" r="6"></circle>
+            <path d="M17 48v7M46 48v7M6 55h49"></path>
+            <path d="M12 14h18"></path>
+          </svg>
+        </div>
+        <div class="distance-arrow">
+          <span class="distance-label">20 ft or more</span>
+        </div>
+        <div class="distance-icon house">
+          <svg viewBox="0 0 64 64" width="52" height="52" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round">
+            <path d="M8 30 32 10l24 20"></path>
+            <path d="M14 27v28h36V27"></path>
+            <path d="M27 55V39h11v16"></path>
+            <path d="M19 34h7M41 34h7"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="sequence">
+      <div class="section-heading">
+        <h2>Connecting during an outage</h2>
+        <p>Begin with the generator and output breaker off.</p>
+      </div>
+
+      <div class="step-grid">
+        <article class="step">
+          <div class="step-top">
+            <div class="step-num">1</div>
+            <h3>Place it outdoors</h3>
+          </div>
+          <p>Set the generator at least 20 feet from the home. Point exhaust away from every opening.</p>
+        </article>
+
+        <article class="step">
+          <div class="step-top">
+            <div class="step-num">2</div>
+            <h3>Lower the load</h3>
+          </div>
+          <p>Turn off high-draw breakers such as AC, range, dryer, and electric water heater.</p>
+        </article>
+
+        <article class="step">
+          <div class="step-top">
+            <div class="step-num">3</div>
+            <h3>Connect while off</h3>
+          </div>
+          <p>With the generator and its output breaker off, secure both ends of the supplied cord.</p>
+        </article>
+
+        <article class="step">
+          <div class="step-top">
+            <div class="step-num">4</div>
+            <h3>Start the generator</h3>
+          </div>
+          <p>Follow its owner manual and let it stabilize. Turn its output breaker on, if equipped.</p>
+        </article>
+
+        <article class="step">
+          <div class="step-top">
+            <div class="step-num">5</div>
+            <h3>Transfer at the panel</h3>
+          </div>
+          <p>Turn <strong>MAIN off</strong>, move the interlock, then turn the <strong>GENERATOR breaker on</strong>.</p>
+        </article>
+
+        <article class="step">
+          <div class="step-top">
+            <div class="step-num">6</div>
+            <h3>Add circuits slowly</h3>
+          </div>
+          <p>Turn on what you need, one breaker at a time, while staying within generator capacity.</p>
+        </article>
+      </div>
+
+      <div class="energized-warning"><strong>Important:</strong> Never connect or disconnect an energized cord. Do not force, alter, or bypass the interlock.</div>
+    </div>
+
+    <div class="shutdown">
+      <div class="shutdown-head">When utility power returns</div>
+      <div class="shutdown-steps">
+        <div class="shutdown-step" data-step="1">Turn off the house circuits powered by the generator.</div>
+        <div class="shutdown-step" data-step="2">Generator breaker off, move interlock, then main breaker on.</div>
+        <div class="shutdown-step" data-step="3">Turn generator output off and stop it using its manual.</div>
+        <div class="shutdown-step" data-step="4">After it stops and cools, disconnect the cord. Refuel only when cool.</div>
+      </div>
+    </div>
+
+    <section class="never-strip">
+      <div class="never-title">Do not</div>
+      <div class="never-list">
+        <div class="never-item"><div class="never-x">×</div>Run a generator indoors, in a garage, shed, or covered space.</div>
+        <div class="never-item"><div class="never-x">×</div>Feed power through a wall outlet or any unapproved connection.</div>
+        <div class="never-item"><div class="never-x">×</div>Alter, remove, or bypass the installed interlock.</div>
+        <div class="never-item"><div class="never-x">×</div>Connect or disconnect the cord while it is energized.</div>
+        <div class="never-item"><div class="never-x">×</div>Refuel a running or hot generator.</div>
+      </div>
+    </section>
+
+    <footer class="page-footer">
+      <div><strong>Backup Power Pro by Key Electric</strong><br>SC Electrical Contractor #2942</div>
+      <div>Questions about the inlet, interlock, or house-side wiring?<br><strong>backuppowerpro.com</strong></div>
+      <div>Page 1 of 2<br>Keep near your panel</div>
+    </footer>
+  </section>
+
+  <section class="page" aria-label="Compatibility and ownership">
+    <header class="doc-header">
+      <img class="brand" src="assets/images/logo-main.png" alt="Backup Power Pro">
+      <div class="edition">Owner safety and compatibility guide<br>Edition 2026.07</div>
+    </header>
+
+    <h1 class="page-two-title">Generator compatibility and service scope</h1>
+    <p class="page-two-subtitle">BPP installs and supports the house-side inlet, interlock, and wiring. Your portable generator is separate equipment.</p>
+
+    <section class="confirm-panel">
+      <div class="confirm-image">
+        <img src="assets/images/work-panel-interlock.jpg" alt="Installed inlet and panel interlock equipment">
+      </div>
+      <div class="confirm-copy">
+        <div class="eyebrow">Before first use</div>
+        <h2>Confirm the generator is compatible with the installed system.</h2>
+
+        <div class="check-row">
+          <div class="check-icon">1</div>
+          <p><strong>Use the supplied 4-wire cord.</strong> The generator outlet and house inlet may use different connector types. Do not improvise adapters.</p>
+        </div>
+
+        <div class="check-row">
+          <div class="check-icon">2</div>
+          <p><strong>A floating-neutral, or nonbonded, generator is required</strong> for this BPP inlet and interlock system unless your project documents state otherwise.</p>
+        </div>
+
+        <div class="check-row">
+          <div class="check-icon">3</div>
+          <p>Many generators are ready to use. If yours is not, follow its manufacturer instructions or use an authorized generator service provider.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="capacity-panel">
+      <div class="capacity-copy">
+        <h2>Using circuits within generator capacity</h2>
+        <p>Your interlock powers the panel, not a fixed shortlist of circuits. Turn on only what the generator can support at the same time.</p>
+        <ul class="load-list">
+          <li>Start large motor loads one at a time.</li>
+          <li>If the generator breaker trips, reduce the load before resetting it.</li>
+          <li>Follow the generator manual for rated output and operating limits.</li>
+        </ul>
+      </div>
+      <div class="capacity-visual">
+        <div class="eyebrow">Examples of circuits you can choose</div>
+        <div class="breaker-choice" aria-label="Example circuits">
+          <div class="breaker">Fridge</div>
+          <div class="breaker">Lights</div>
+          <div class="breaker">Well</div>
+          <div class="breaker">Outlets</div>
+          <div class="breaker">Freezer</div>
+          <div class="breaker">Internet</div>
+          <div class="breaker">Furnace</div>
+          <div class="breaker">Other</div>
+        </div>
+        <div class="capacity-note">The interlock does not restrict you to these circuits. Generator output limits how many can run at once.</div>
+      </div>
+    </section>
+
+    <div class="scope-support">
+      <section class="scope">
+        <h2>BPP installs and supports</h2>
+        <ul class="scope-list">
+          <li><strong>House-side equipment:</strong> the installed inlet, interlock, and project wiring.</li>
+          <li><strong>Project delivery:</strong> permit, required inspection, system test, and walkthrough.</li>
+          <li><strong>Installed-system support:</strong> heat, damage, odor, sparks, or an interlock that will not move freely.</li>
+        </ul>
+      </section>
+
+      <section class="support">
+        <h2>Generator owner responsibilities</h2>
+        <ul class="support-list">
+          <li><strong>Compatibility:</strong> the generator outlet, neutral setup, and model-specific requirements.</li>
+          <li><strong>Operation and upkeep:</strong> placement, starting, fuel, load management, storage, and maintenance.</li>
+          <li><strong>Generator service:</strong> the manufacturer or an authorized generator service provider handles generator inspection, configuration, repair, or modification.</li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="scope-boundary"><strong>Work covered by BPP:</strong> BPP's work is limited to the house-side equipment and services listed in the approved proposal. Generator selection, compatibility, operation, maintenance, inspection, repair, and modification are not included in BPP's work. If the generator setup is uncertain, do not connect it until the manufacturer or an authorized generator service provider confirms it.</div>
+
+    <p class="source-note">Safety basis: generator manufacturer instructions, installed equipment instructions, and current CPSC guidance. This guide does not replace the owner manual for your exact generator.</p>
+
+    <footer class="page-footer">
+      <div><strong>Backup Power Pro by Key Electric</strong><br>SC Electrical Contractor #2942</div>
+      <div>House-side support: <strong>backuppowerpro.com</strong></div>
+      <div>Page 2 of 2<br>Edition 2026.07</div>
+    </footer>
+  </section>
+</main>
+
+</body>
+</html>

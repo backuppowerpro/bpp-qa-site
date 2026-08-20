@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<!-- viewport-fit=cover: extend layout into safe areas (notch + chin).
+     interactive-widget=resizes-content (iOS 16+): when the keyboard opens,
+     SHRINK the layout viewport instead of scrolling the document up. With
+     this, html height: 100% becomes "viewport-minus-keyboard" automatically
+     so the page doesn't shift. Without it, iOS scrolls the entire document
+     up to keep focused inputs visible. -->
+<!-- maximum-scale=1, user-scalable=no: prevent iOS zoom-on-focus when
+     tapping inputs. iOS auto-zooms if input font-size < 16px or if user
+     pinches; we want neither in this app. -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
+<!-- v10.1.16: Cache-control headers from GitHub Pages set max-age=600 on
+     this HTML, which means iOS Safari won't even ask for a fresh copy for
+     10 minutes after a deploy, pull-to-refresh is a no-op. These meta
+     equivs override that on the page level so subsequent loads always
+     check for a new version. Doesn't help the FIRST load after this
+     deploys (already cached at the edge), but prevents the problem
+     compounding on every future deploy. -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<title>BPP CRM</title>
+<!-- Defensive cleanup: v2 had a service worker that aggressively cached
+     its shell. If a user ever loaded /crm/v2/ they may still have a
+     v2 SW registered which can ghost the v3 page on subsequent visits.
+     Unregister any registrations we own + clear caches on every v3
+     load. Cheap (no-op if there's nothing to clean), and idempotent. -->
+<script>
+  (function(){
+    if (!('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.getRegistrations().then(function(regs){
+      regs.forEach(function(r){ try { r.unregister(); } catch(e) {} });
+    }).catch(function(){});
+    if ('caches' in self) {
+      caches.keys().then(function(ns){
+        ns.forEach(function(n){ try { caches.delete(n); } catch(e) {} });
+      }).catch(function(){});
+    }
+  })();
+</script>
+<!-- Tab favicon (browser bookmark, history, dock when minimized). -->
+<link rel="icon" href="/favicon.png" type="image/png" />
+<!-- iOS "Add to Home Screen" + macOS Safari Dock icon. -->
+<link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.jpg" />
+<!-- High-DPI hint so Android / Chrome desktop pick the 192px asset. -->
+<link rel="icon" href="/assets/images/icon-192.png" sizes="192x192" type="image/png" />
+<!-- PWA manifest, CRM-scoped so "Add to Dock" / "Add to Home Screen"
+     opens /crm/v3/ on launch, not the public landing page. -->
+<link rel="manifest" href="/crm/v3/site.webmanifest" />
+<meta name="theme-color" content="#0b1f3b" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="BPP CRM" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+<script>
+  // Post-Vite: BPP_VERSION reflects the content-hash suffix of the built
+  // entry bundle (e.g. `assets/main-Ab12cd3.js`). The hash IS the cache
+  // version now, no more manual ?v= bumps, and it survives even if the
+  // deploy dir is renamed. Falls back to 'vite' if the tag isn't found
+  // (e.g. dev server before the entry has been injected). Kept as a lazy
+  // getter so it resolves at first React render, after Vite has injected
+  // the module tag.
+  Object.defineProperty(window, 'BPP_VERSION', {
+    configurable: true,
+    get() {
+      const tag = document.querySelector('script[type="module"][src*="/assets/"]');
+      const m = tag && tag.getAttribute('src').match(/-([A-Za-z0-9_-]+)\.js/);
+      return m ? m[1].slice(0, 7) : 'vite';
+    },
+  });
+  // v10.1.28: gold-standard pattern + iOS programmatic-scroll defense.
+  //
+  // Real iPhone test on v=109 showed iOS still scrolls window on input
+  // focus despite touch-action:none on body. Adding a hard scrollTo(0,0)
+  // pin via scroll listener, iOS scrolls, we snap back. Also pin via
+  // requestAnimationFrame loop while an input is focused, since iOS
+  // sometimes scrolls between scroll events.
+  (function(){
+    if (typeof window === 'undefined') return;
+    var vv = window.visualViewport;
+    // Track the TALLEST visible-viewport height seen = the no-keyboard height.
+    // We derive keyboard height from (maxVvH - vv.height) instead of
+    // (window.innerHeight - vv.height) because the viewport meta's
+    // interactive-widget=resizes-content makes window.innerHeight ALSO shrink
+    // with the keyboard on iOS 26, so innerHeight - vv.height collapsed toward 0
+    // intermittently and the compose bar floated ~34px above the keyboard at
+    // random (Key 2026-06-23, real iPhone 17 / iOS 26.5: "sometimes the message
+    // bar floats up and sometimes it doesnt"). maxVvH - vv.height is the stable
+    // delta and self-corrects (it grows back to full once the keyboard closes).
+    var maxVvH = vv ? vv.height : window.innerHeight;
+    function setVVH() {
+      var h = vv ? vv.height : window.innerHeight;
+      if (h > maxVvH) maxVvH = h;
+      // Keyboard height = how much the visible viewport shrank from its tallest
+      // (no-keyboard) size. Clamps to 0 when no keyboard is open. Used by
+      // toasts, FABs, and the compose bar so they ride above the keyboard.
+      var kbH = Math.max(0, maxVvH - h);
+      // Native Capacitor (data-bpp-kb=1): Keyboard willShow/willHide owns
+      // --kb-h, --vvs, and kb-open. setVVH must NOT overwrite --kb-h with a
+      // still-zero visualViewport delta (that zeroed the pad until vv caught
+      // up ~1s later, Key 2026-07-13 late message-bar snap). Still refresh
+      // --vvh/--vvw for the rest of the shell when the keyboard is closed.
+      var nativeKb = document.documentElement.getAttribute('data-bpp-kb') === '1';
+      if (nativeKb) return;
+      document.documentElement.style.setProperty('--vvh', h + 'px');
+      document.documentElement.style.setProperty('--kb-h', kbH + 'px');
+      // --vvs = the home-indicator inset that bottom-anchored chrome (toast,
+      // compose bar, numbar) must clear. When the keyboard is OPEN the home
+      // indicator is hidden, so bottom chrome should sit flush above the
+      // keyboard with no inset. In a standalone PWA, env(safe-area-inset-bottom)
+      // does NOT reliably collapse to 0 on keyboard-open (it stays 34px), which
+      // floated the compose bar ~48px above the keyboard (Key 2026-06-20 "the
+      // text box floats really high"). Zero it when a real keyboard is up,
+      // detected by kbH (the layout-vs-visual delta) > 100px, NOT by the old
+      // `h < 600` proxy that wrongly zeroed a real chin on short-but-notched
+      // states (split-screen, Dynamic Island). kbH only crosses 100 for an
+      // actual keyboard, so the chin is preserved everywhere else.
+      document.documentElement.style.setProperty('--vvs', kbH > 100 ? '0px' : 'env(safe-area-inset-bottom)');
+      // Body class flag so CSS can target keyboard-open state directly
+      // (e.g. hide non-essential chrome when typing on a tiny phone).
+      document.documentElement.classList.toggle('kb-open', kbH > 100);
+    }
+    setVVH();
+    if (vv) vv.addEventListener('resize', setVVH);
+    window.addEventListener('resize', setVVH);
+    // Robustness (Key 2026-07-10 "tab bar floating high"): on a fresh load / HMR
+    // reload the visualViewport can momentarily report a SHORT height, which
+    // locks --vvh short and floats the bottom pill ~34px too high until a resize
+    // fires (Key caught it stuck). Re-run setVVH after paint + a couple of delays
+    // so maxVvH always reaches the settled full height. Only GROWS the baseline;
+    // the keyboard math (kbH = maxVvH - h) is untouched.
+    window.addEventListener('load', setVVH);
+    requestAnimationFrame(setVVH);
+    setTimeout(setVVH, 250);
+    setTimeout(setVVH, 700);
+    // Rotation changes the no-keyboard height, so reset the tracked baseline,
+    // but ONLY when the keyboard is NOT up. Rotating mid-typing would otherwise
+    // adopt the shrunken keyboard-open height as the new no-keyboard baseline,
+    // collapsing kbH to ~0 so --vvs stays at the 34px inset and the compose bar
+    // floats above the keyboard for the rest of that session, the exact float
+    // bug this math fixes, reachable via rotate-while-typing (audit 2026-06-23).
+    // When the keyboard is up we keep the existing baseline (kbH stays > 100, so
+    // the bar rides above the keyboard); it self-corrects the moment the keyboard
+    // closes and the next resize re-baselines to the new orientation's height.
+    window.addEventListener('orientationchange', function(){
+      if (!document.documentElement.classList.contains('kb-open')) maxVvH = 0;
+      setVVH();
+    });
+
+    // Hard pin window scroll to (0,0). Fires on every iOS auto-scroll attempt.
+    var snap = function(){
+      if (window.scrollY !== 0 || window.scrollX !== 0) window.scrollTo(0, 0);
+      // Also pin documentElement.scrollTop, iOS sometimes scrolls that
+      // instead of the window in standalone PWA.
+      if (document.documentElement.scrollTop) document.documentElement.scrollTop = 0;
+      if (document.body.scrollTop) document.body.scrollTop = 0;
+    };
+    window.addEventListener('scroll', snap, { passive: true, capture: true });
+    document.addEventListener('scroll', snap, { passive: true, capture: true });
+
+    // While any input is focused, run a snap loop via rAF, iOS scrolls
+    // between events, so we need to be aggressive.
+    var rafId = null;
+    var loop = function(){ snap(); rafId = requestAnimationFrame(loop); };
+    // Bring focused input into the visible area AFTER the keyboard opens.
+    // We disable iOS auto-scroll by pinning window scroll above, so we have
+    // to do this ourselves on the input's own scroll-container. Without
+    // this, any input that lives in the lower half of the screen gets
+    // covered by the keyboard the moment it pops up.
+    var bringFocusedIntoView = function(el) {
+      try {
+        if (!el || typeof el.scrollIntoView !== 'function') return;
+        // 2026-05-28: 'center' not 'nearest'. 'nearest' only nudged the field
+        // barely into view, so it landed right at the keyboard edge and any
+        // button directly under it (Send/Save) stayed covered, the recurring
+        // "keyboard blocks things" bug Key hits in the field. 'center' parks
+        // the focused field in the middle of the visible area, well clear of
+        // the keyboard. 'instant' so it doesn't fight the iOS keyboard anim.
+        el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' });
+      } catch (_) {}
+    };
+    window.addEventListener('focusin', function(e){
+      var t = e.target;
+      if (!t || (t.tagName !== 'INPUT' && t.tagName !== 'TEXTAREA' && !(t.isContentEditable))) return;
+      snap();
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(loop);
+      // 100ms = let iOS open the keyboard + visualViewport resize fire +
+      // --vvh propagate to flex containers. Then nudge the input visible.
+      // 350ms covers slower devices / first focus after page load.
+      setTimeout(function(){ bringFocusedIntoView(t); }, 100);
+      setTimeout(function(){ bringFocusedIntoView(t); }, 350);
+    });
+    window.addEventListener('focusout', function(){
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+      // One last snap on blur in case iOS scrolled during the close anim.
+      setTimeout(snap, 50);
+      setTimeout(snap, 250);
+    });
+  })();
+</script>
+<!-- The single ES module entry. Vite:
+       1. rewrites this to the content-hashed /crm/v3/assets/main-[hash].js at
+          build time, so cache-busting is automatic (kills the manual ?v=NNN
+          bumps that used to drift the visible BPP_VERSION label);
+       2. inlines react / react-dom / @supabase/supabase-js from npm (production
+          builds), and pins them onto window.React / window.ReactDOM /
+          window.supabase so the existing bare-identifier references across the
+          11 source files keep resolving with zero source edits;
+       3. side-effect-imports the 11 source files in the exact same order the
+          original <script type="text/babel"> tags did.
+     The four unpkg <script src="..."> tags (react, react-dom, supabase,
+     @babel/standalone) that used to sit here are all gone: bundled deps live
+     in the module graph now, and browser-side Babel is retired. -->
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  /* CM-14: global keyboard focus ring (WCAG 2.4.7). Uses box-shadow, not just
+     outline, so it survives the inline outline:none on the comms inputs +
+     buttons (inline styles beat the stylesheet outline, but nothing sets an
+     inline box-shadow on these controls). :focus-visible means mouse clicks
+     don't show it, only keyboard focus. box-shadow follows each element's own
+     border-radius, so round buttons stay round. */
+  :where(button, a[href], input, textarea, select, [role="textbox"], [contenteditable]):focus-visible {
+    outline: 2px solid #ffba00;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #ffba00;
+  }
+  /* v10.1.18: transparent chin via fixed pseudo-element. Earlier attempt
+     (v10.1.16) clipped #root height which broke iOS keyboard handling.
+     This keeps #root at full viewport height (no layout regression) and
+     uses a fixed::before behind the React tree to paint #f4f6f9 only
+     ABOVE the home indicator. Below that, body bg is transparent so iOS
+     chrome shows through. Compose bar + bottom buttons already pad with
+     env(safe-area-inset-bottom) so content never lives on the chin. */
+  /* height: 100dvh = dynamic viewport height, adapts to keyboard open
+     on iOS 15.4+. Combined with interactive-widget=resizes-content above,
+     the layout viewport shrinks WITH the keyboard so the page never has
+     to scroll its document. Fallback to 100% for old browsers. */
+  /* v10.1.22: chin transparency REVERTED, too many regressions for too
+     little visual upside. In standalone PWA mode there's no Safari chrome
+     to show through anyway; iOS just paints default white below the page.
+     Painting bg #f4f6f9 edge-to-edge looks identical to the rest of the
+     page and avoids the empty-space + clip-shifts problems.
+     --app-height (set by JS when keyboard opens) shrinks the layout so
+     the compose bar lands above the keyboard. When keyboard is closed
+     the var is unset and 100dvh fills the screen normally. */
+  /* v10.1.23: position:fixed on body+#root to definitively fill the entire
+     viewport including the home-indicator zone. 100dvh in iOS standalone
+     PWA can return shorter than the screen, leaving a visible "chin" that
+     iOS paints white below the page. position:fixed doesn't suffer this. */
+  /* v10.1.27 gold-standard pattern.
+     - Page sizes to --vvh (visualViewport.height); when keyboard opens
+       it shrinks naturally, compose bar at panel bottom stays above the
+       keyboard with no gymnastics.
+     - body touch-action: none stops iOS from scrolling the document.
+     - Each inner scroll container re-enables touch via touch-action: pan-y
+       and gets -webkit-overflow-scrolling: touch for momentum + iOS PWA.
+     - overscroll-behavior: contain on those keeps rubber-band from
+       chaining out and triggering iOS auto-scroll-to-input. */
+  /* Bottom clearance so scrollable detail content can scroll clear of the
+     floating pill tab bar (66px tall, sits at inset-bottom + 14px). On desktop
+     there is no floating pill, so it collapses to a normal 16px gap. */
+  :root { --tabbar-clear: calc(env(safe-area-inset-bottom, 0px) + 92px); }
+  @media (min-width: 900px) { :root { --tabbar-clear: 16px; } }
+  /* Corner-radius scale (Key 2026-07-10 polish pass). ONE ladder so radii read as
+     a system, not scattered magic numbers. Nested elements step DOWN the ladder so
+     an inner corner nests concentrically inside its container (inner = outer minus
+     the padding between them). Pills use --r-pill (or exactly half a fixed height);
+     circles use 50%. Off-ladder values (7,9,11,13,14,22) are the thing this pass
+     removes, snap each to the nearest rung unless it is a real concentric child. */
+  :root {
+    --r-xs: 6px;    /* tiny chips, small badges, doc-status tiles */
+    --r-sm: 8px;    /* default: inputs, small buttons, county chips */
+    --r-md: 10px;   /* medium buttons, inner cards */
+    --r-lg: 12px;   /* cards, list-row cards, primary buttons */
+    --r-xl: 16px;   /* large cards, hero cards */
+    --r-2xl: 20px;  /* sheets, top-level containers */
+    --r-pill: 100px;/* fully-rounded pills + tab bar */
+  }
+  /* overscroll-behavior:none on html+body kills the whole-document rubber-band
+     so the entire CRM screen can't be dragged up/down (Key 2026-06-20). */
+  html { height: var(--vvh, 100dvh); overflow: hidden; overscroll-behavior: none; }
+  body {
+    height: var(--vvh, 100dvh);
+    overflow: hidden;
+    touch-action: none;
+    overscroll-behavior: none;
+    font-family: 'DM Sans', sans-serif;
+    background: #f4f6f9;
+    /* Crisp text like every real Apple UI (was rendering heavy on desktop). */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  #root { height: 100%; overflow: hidden; }
+  /* All inline-styled scroll containers (message thread, contact list,
+     forms) get the iOS-native scroll setup. overscroll-behavior:contain
+     (Key 2026-06-21: "I want it to bounce a little like Apple does it"):
+     each pane keeps its OWN native rubber-band at the top/bottom boundary,
+     but 'contain' (not 'auto') blocks the overscroll from CHAINING out to
+     the document, so the bounce never drags the whole app shell (the
+     2026-06-20 fix the html/body 'none' below still enforces). Net: the
+     thread/list bounce like iOS; the screen behind never moves. */
+  [style*="overflowY"], [style*="overflow-y"], [style*="overflow:auto"], [style*="overflow:scroll"] {
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    overscroll-behavior: contain;
+  }
+  /* Background-scroll lock for open modals (Key 2026-06-20: the Templates popup
+     let the thread scroll behind it). crm-modal-open is toggled on <html> by the
+     ref-counted lock in crm-right.jsx while ANY modal is open. Freeze every inner
+     scroll pane INSIDE #root so the thread/list can't move; modals portal OUTSIDE
+     #root (to document.body), so their own scroll content is untouched. */
+  html.crm-modal-open #root [style*="overflowY"],
+  html.crm-modal-open #root [style*="overflow-y"],
+  html.crm-modal-open #root [style*="overflow:auto"],
+  html.crm-modal-open #root [style*="overflow:scroll"] {
+    overflow: hidden !important;
+    touch-action: none !important;
+    overscroll-behavior: none !important;
+  }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  /* One calm "there is more" affordance for every horizontal scroller.
+     The right-edge fade shows only when JS sets data-fade-r (overflow + not at end). */
+  .bpp-hscroll { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+  .bpp-hscroll::-webkit-scrollbar { display: none; }
+  .bpp-hscroll[data-fade-r] {
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+            mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+  }
+  .chip-row {
+    padding-inline: 16px !important;
+    scroll-padding-inline-start: 16px;
+    -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 24px), transparent 100%);
+    mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 24px), transparent 100%);
+  }
+  /* LEFT-02: the contacts lens bar must align to the 12px contacts-zone
+     inset, not the 16px the shared .chip-row forces. Higher-specificity
+     (two-class) override changes ONLY the inset; the mask-fade is inherited
+     from .chip-row unchanged (fade-affordance unification is a separate,
+     Claude-Design item). The Messages/Calls FilterChips keep plain
+     .chip-row at 16px. */
+  .chip-row.chip-row--lens {
+    padding-inline: 12px !important;
+    scroll-padding-inline-start: 12px;
+  }
+  .mobile-panel *::-webkit-scrollbar { display: none; }
+  .mobile-panel * { scrollbar-width: none; }
+  button, textarea, input { font-family: 'DM Sans', sans-serif; }
+  /* Every CRM search input ships its own clear-X button; hide the browser's
+     native type="search" clear control so a filtered box never shows two X's
+     (Key 2026-06-20). */
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+
+  /* iOS keyboard reservation: when an input gets focused and scrollIntoView
+     fires (from the focusin handler in <head>), this margin keeps the
+     focused element ~24px above whatever clipping edge the scroll container
+     uses, instead of pinning it flush against the keyboard's top edge.
+     Combined with the JS focusin handler, eliminates "I tapped my Notes
+     field and now it's hidden behind the keyboard" on mobile. */
+  input, textarea, select, [contenteditable] {
+    scroll-margin-top: 80px;
+    scroll-margin-bottom: 24px;
+  }
+  /* When the keyboard is open we know there's a big chunk of screen below
+     covered. Push more margin so scrollIntoView lands the input near the
+     middle of the visible area rather than its bottom edge. */
+  html.kb-open input,
+  html.kb-open textarea,
+  html.kb-open select,
+  html.kb-open [contenteditable] {
+    scroll-margin-bottom: 120px;
+  }
+  /* Crisp icon rendering, geometricPrecision over speed (default).
+     Eliminates the "lighter at intersection" artifact when stroke paths
+     cross each other in icons like the calendar. */
+  svg { shape-rendering: geometricPrecision; }
+
+  /* ── Animations ─────────────────────────────────────────────────────
+     Quiet motion only, never decorative. Three principles:
+       1. Buttons confirm a press with a 60ms scale-down so taps feel real.
+       2. Cards fade-up 200ms when they first mount so a freshly opened
+          contact pane doesn't pop in.
+       3. Toasts slide from the bottom, they're news, not noise.
+     Honor `prefers-reduced-motion: reduce` for the user's accessibility
+     settings: all transforms collapse to instant, all transitions to none.
+  */
+  @keyframes bpp-fade-up {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes bpp-slide-up {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes bpp-pulse-soft {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.55; }
+  }
+  /* Spinner for in-flight async actions (e.g. the Send button while a message
+     uploads + dispatches). reduced-motion collapses the duration via the
+     global rule below, so it reads as a static indicator. */
+  @keyframes bpp-spin { to { transform: rotate(360deg); } }
+  /* Card mount, every direct child of the right pane fades up. */
+  .mobile-panel > * > [data-card],
+  [data-card] {
+    animation: bpp-fade-up 220ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  }
+  /* Press feedback on every button, NOT links (they have native feedback). */
+  button:not(:disabled):active {
+    transform: scale(0.97);
+    transition: transform 70ms ease-out;
+  }
+  button { transition: background 120ms ease, color 120ms ease, border-color 120ms ease, opacity 120ms ease; }
+  /* Kill the iOS gray tap-flash app-wide (was set only on chrome classes, so
+     every inline-styled control still flashed). One global rule covers them all. */
+  button, a, [role="button"], [role="tab"], input, textarea, select, label { -webkit-tap-highlight-color: transparent; }
+  /* Press feedback for div-based rows/cards (role=button): real <button>s get the
+     scale above, but tappable DIVs got nothing. A brief content dim reads as an
+     iOS list-press without needing to know each row's inline background. */
+  [role="button"]:not([aria-disabled="true"]):active { opacity: 0.6; transition: opacity 60ms ease-out; }
+  /* Hover on rows + buttons (desktop only, :hover is no-op on touch). */
+  @media (hover: hover) {
+    button:hover:not(:disabled) { filter: brightness(1.04); }
+  }
+  /* Toasts, when a host wraps its toast container with [data-toast-host]. */
+  [data-toast-item] { animation: bpp-slide-up 200ms cubic-bezier(0.2, 0.8, 0.3, 1) both; }
+
+  /* Soft pulse for "today" / live indicators, subtle, not nagging. */
+  @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.45 } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* ── iOS glass chrome (Key 2026-07-10: FROSTED WHITE, "feel more Apple") ──
+     The floating chrome (tab pill, detached bubble, search dock pieces) is a
+     light frosted material, not navy, matching iOS 26 regular glass adapting
+     to the light content beneath it. Glyphs/text on it are dark navy for
+     contrast. Content still stays solid (never glass on the content layer).
+     Gold stays reserved for the money primary (Norman-door rule). */
+  .bpp-glass {
+    background: rgba(255, 255, 255, 0.66);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.75);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.9),
+      0 8px 28px -8px rgba(27,43,75,0.22),
+      0 1px 3px rgba(27,43,75,0.08);
+  }
+  /* Legibility floor: reduced-transparency or no backdrop-blur support falls
+     back to solid white. Contrast wins over the effect. */
+  @media (prefers-reduced-transparency: reduce) {
+    .bpp-glass {
+      background: #ffffff;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+  }
+  @supports not (backdrop-filter: blur(1px)) {
+    .bpp-glass { background: #ffffff; }
+  }
+
+  /* Bottom floating pill tab bar. Sits above the home-indicator safe
+     area (env inset + 14px extra float). Pointer-events on children
+     only so a tap between tabs falls through to the content behind. */
+  .bpp-tabbar {
+    position: absolute;
+    z-index: 40;
+    left: 16px; right: 16px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+    height: 66px;
+    border-radius: 100px;
+    display: flex; align-items: stretch;
+    padding: 0 6px;
+    pointer-events: auto;
+    /* Search "pull-out" (Key 2026-07-10): opening search no longer teleports the
+       pill away, it tucks down + fades as the search dock rises, so the bottom
+       zone moves continuously. Same spring the rest of the shell uses. */
+    transition: transform 320ms cubic-bezier(0.16,1,0.3,1), opacity 200ms ease;
+  }
+  .bpp-tabbar.is-hidden { transform: translateY(96px); opacity: 0; pointer-events: none; }
+  .bpp-tab {
+    position: relative;
+    flex: 1 1 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 4px;
+    min-height: 44px;
+    color: rgba(27,43,75,0.5);
+    background: none; border: 0; padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
+    transition: color 160ms cubic-bezier(0.16,1,0.3,1),
+                transform 90ms ease-out;
+    touch-action: manipulation;
+    user-select: none; -webkit-user-select: none;
+  }
+  .bpp-tab:active { transform: scale(0.94); }
+  .bpp-tab .bpp-tab-glyph { width: 24px; height: 24px; display: block; }
+  .bpp-tab .bpp-tab-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.01em;
+    color: inherit; line-height: 1; white-space: nowrap;
+  }
+  /* Active tab = navy on the white glass (readable; gold on white fails
+     contrast, and gold stays reserved for the money primary per the
+     gold-discipline rule). Filled glyph + bold label carry the state too. */
+  .bpp-tab.is-active { color: #1B2B4B; }
+  .bpp-tab.is-active .bpp-tab-label { font-weight: 700; }
+  /* Filled-glyph active state matches HIG "prefer filled symbols" +
+     the comp's active treatment. Each icon file toggles fill in JSX. */
+  .bpp-tab-dot {
+    position: absolute; top: 8px; left: calc(50% + 8px);
+    width: 9px; height: 9px; border-radius: 50%;
+    background: #ff5a52;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.95);
+  }
+  .bpp-tab-badge {
+    position: absolute; top: 5px; left: calc(50% + 5px);
+    min-width: 18px; height: 18px; padding: 0 5px;
+    border-radius: 100px;
+    background: #ff5a52; color: #fff;
+    font-size: 11px; font-weight: 700; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.95);
+    font-variant-numeric: tabular-nums;
+  }
+  /* When the tab bar overlays the content, the bottom of scrollable
+     content needs enough breathing room so nothing important hides
+     under the pill. Consumers add this class to their scroll body. */
+  .bpp-tabbar-content-pad {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
+  }
+
+  /* Detached context bubble (iOS 26 App Store pattern): a glass circle to the
+     right of the pill, same float height + material. Search on a list,
+     Finance on a record. When present the pill narrows to leave its lane. */
+  .bpp-tabbar.has-bubble { right: 90px; }
+  .bpp-searchbubble {
+    position: absolute; z-index: 40;
+    right: 16px; bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+    width: 66px; height: 66px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(27,43,75,0.85); padding: 0;
+    -webkit-tap-highlight-color: transparent; cursor: pointer;
+    touch-action: manipulation;
+    transition: transform 120ms cubic-bezier(0.16,1,0.3,1), opacity 180ms ease;
+    animation: bpp-bubble-in 260ms cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  .bpp-searchbubble:active { transform: scale(0.92); }
+  /* animation:none is REQUIRED, not cosmetic: the bubble-in keyframe uses `both`
+     fill, so it holds opacity:1 forever and a held animation value outranks a
+     normal `opacity:0` in the cascade (the bubble could never fade). Cancelling
+     the animation lets the opacity + its transition take over. On unhide the base
+     bubble-in re-applies, giving a nice spring back in. */
+  .bpp-searchbubble.is-hidden { opacity: 0; pointer-events: none; animation: none; }
+  @keyframes bpp-bubble-in {
+    from { opacity: 0; transform: scale(0.6); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  /* Desktop dual-pill wrapper (Key 2026-07-10): on desktop each column renders
+     its floating pill inside a .bpp-tabdock so the pill (and its detached
+     bubble) center within that column and cap their width instead of stretching
+     a wide right column edge-to-edge. The wrapper is a positioned containing
+     block, so the pill/bubble's absolute left/right/bottom resolve against it;
+     pointer-events pass through the empty wrapper to the content behind. Mobile
+     never wraps (the pill positions against the mobile-panel root as before). */
+  .bpp-tabdock {
+    position: absolute; z-index: 40; bottom: 0;
+    left: 50%; transform: translateX(-50%);
+    width: min(460px, calc(100% - 40px));
+    pointer-events: none;
+    transition: transform 320ms cubic-bezier(0.16,1,0.3,1), opacity 200ms ease;
+  }
+  .bpp-tabdock.is-hidden { transform: translateX(-50%) translateY(96px); opacity: 0; pointer-events: none; }
+  .bpp-tabdock > * { pointer-events: auto; }
+
+  /* Bottom search dock (Key 2026-07-10): NOT a box. It's a transparent flex
+     row that floats three DETACHED glass pieces above the keyboard, App Store
+     style, a filter bubble + the query pill + the x-close bubble, each its own
+     .bpp-glass. Flex child of the --vvh column (like the composer), so no
+     position:fixed re-root inside the translateX swap panel. */
+  .bpp-search-dock {
+    position: relative;
+    flex: 0 0 auto; z-index: 45;
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px calc(10px + var(--vvs, env(safe-area-inset-bottom, 0px)));
+    animation: bpp-dock-in 240ms cubic-bezier(0.16,1,0.3,1) both;
+  }
+  /* Filter picker (Key 2026-07-10): a vertical stack of DETACHED frosted-white
+     pills that grows UPWARD from just above the search bar (column-reverse, so
+     the first/most-used pill sits at the bottom). Scrolls if long, with a top
+     gradient so pills dissolve into the background. Positioned relative to the
+     dock (a positioned ancestor), so no transform re-root. */
+  .bpp-filter-stack {
+    position: absolute; left: 12px; right: 12px; bottom: calc(100% + 6px);
+    max-height: 46vh; overflow-y: auto; overscroll-behavior: contain;
+    display: flex; flex-direction: column-reverse; align-items: flex-start;
+    gap: 8px; padding-top: 48px;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 48px);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 48px);
+    animation: bpp-dock-in 220ms cubic-bezier(0.16,1,0.3,1) both;
+  }
+  .bpp-filter-stack::-webkit-scrollbar { display: none; }
+  .bpp-filter-pill {
+    flex: 0 0 auto; align-self: flex-start;
+    display: inline-flex; align-items: center; gap: 9px;
+    min-height: 44px; padding: 0 17px; border-radius: 22px;
+    color: #1B2B4B; font-family: inherit; font-size: 15px; font-weight: 600;
+    cursor: pointer; -webkit-tap-highlight-color: transparent; white-space: nowrap;
+    transition: transform 100ms ease-out;
+  }
+  .bpp-filter-pill:active { transform: scale(0.95); }
+  .bpp-filter-pill.is-active { background: #1B2B4B; color: #fff; border-color: rgba(27,43,75,0.9); }
+  .bpp-filter-count {
+    font-family: 'JetBrains Mono','DM Mono',monospace; font-size: 12px; font-weight: 700;
+    color: rgba(27,43,75,0.5);
+  }
+  .bpp-filter-pill.is-active .bpp-filter-count { color: rgba(255,255,255,0.7); }
+  @keyframes bpp-dock-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  /* Slide-down exit on close, so the dock leaves the way it arrived (symmetry
+     with the tab bar sliding back up). forwards-holds the end frame during the
+     brief keep-mounted window before it unmounts. */
+  .bpp-search-dock.is-exiting {
+    animation: bpp-dock-out 260ms cubic-bezier(0.3,0,0.8,0.15) both;
+    pointer-events: none;
+  }
+  @keyframes bpp-dock-out {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(26px); }
+  }
+  /* Detached frosted-white glass circles (filter + close). .bpp-glass gives the
+     material; dark navy glyphs for contrast. */
+  .bpp-dock-bubble {
+    flex: 0 0 auto; width: 52px; height: 52px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(27,43,75,0.85);
+    -webkit-tap-highlight-color: transparent; cursor: pointer; padding: 0;
+    position: relative; transition: transform 100ms ease-out;
+  }
+  .bpp-dock-bubble:active { transform: scale(0.9); }
+  .bpp-dock-dot {
+    position: absolute; top: 12px; right: 12px; width: 8px; height: 8px;
+    border-radius: 50%; background: #ffba00; border: 1.5px solid #ffffff;
+  }
+  /* Detached frosted-white glass query pill, dark navy text. */
+  .bpp-dock-pill {
+    flex: 1 1 auto; min-width: 0; height: 52px; border-radius: 26px;
+    display: flex; align-items: center; gap: 9px; padding: 0 8px 0 16px;
+    position: relative;
+  }
+  .bpp-dock-pill-icon {
+    flex: 0 0 auto; width: 18px; height: 18px; display: flex;
+    color: rgba(27,43,75,0.5);
+  }
+  .bpp-dock-input {
+    flex: 1 1 auto; min-width: 0; height: 100%;
+    border: none; background: transparent; outline: none;
+    font-size: 16px; color: #1B2B4B; font-family: inherit; padding: 0;
+  }
+  .bpp-dock-input::placeholder { color: rgba(27,43,75,0.42); }
+  .bpp-dock-clear {
+    flex: 0 0 auto; width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(27,43,75,0.55); background: rgba(27,43,75,0.08);
+    border: 0; cursor: pointer; padding: 0;
+  }
+
+  /* iOS large-title header (34/700 collapsing to 17/600 inline centered).
+     Consumers use these tokens; the collapse math lives in JS. */
+  .bpp-lg-header {
+    padding: 10px 22px 16px;
+    background: #f4f5f8;
+  }
+  .bpp-lg-title {
+    font-weight: 800; font-size: 34px;
+    letter-spacing: -0.02em;
+    color: #1B2B4B;
+    margin: 4px 0 18px;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    transform-origin: left center;
+  }
+  .bpp-lg-collapsed {
+    position: absolute; z-index: 3;
+    left: 0; right: 0; top: 0; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 17px; color: #1B2B4B;
+    opacity: 0; transform: translateY(-4px);
+    transition: opacity 160ms cubic-bezier(0.16,1,0.3,1),
+                transform 160ms cubic-bezier(0.16,1,0.3,1);
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(244,245,248,0.98), rgba(244,245,248,0));
+  }
+  .bpp-search {
+    display: flex; align-items: center; gap: 10px;
+    height: 50px; padding: 0 16px;
+    border-radius: 16px;
+    background: #eaecf1;
+    color: #8a93a6;
+  }
+  .bpp-search input {
+    flex: 1; min-width: 0;
+    /* 17px = HIG "Body" default, well above the 16px anti-zoom floor. */
+    font-size: 17px; font-weight: 500;
+    color: #1B2B4B;
+    background: none; border: 0; outline: 0;
+    font-family: inherit;
+  }
+  .bpp-search input::placeholder { color: #8a93a6; }
+
+  /* iOS segmented control (Comms tab). Reuses BPP navy for the
+     selected fill so it reads as brand, not as system chrome. */
+  .bpp-segmented {
+    display: flex;
+    background: #eaecf1;
+    border-radius: 12px;
+    padding: 3px;
+    gap: 3px;
+    height: 40px;
+    align-items: stretch;
+  }
+  .bpp-segmented button {
+    flex: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 6px;
+    border: 0; padding: 0 12px;
+    border-radius: 9px;
+    background: none;
+    color: #5a6478;
+    font-family: inherit;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 140ms cubic-bezier(0.16,1,0.3,1);
+    min-height: 34px;
+  }
+  .bpp-segmented button.is-active {
+    background: #ffffff;
+    color: #1B2B4B;
+    font-weight: 700;
+    box-shadow: 0 1px 2px rgba(11,31,59,0.06),
+                0 3px 8px rgba(11,31,59,0.08);
+  }
+  .bpp-segmented button:focus-visible {
+    outline: 2px solid #ffba00; outline-offset: 2px;
+  }
+
+  /* iOS-style top nav bar (used by the contact detail push view).
+     Back chevron + centered title + right slot. Hairline bottom
+     divider only, no chrome shadow. */
+  .bpp-ios-navbar {
+    box-sizing: border-box;
+    /* Clear the status bar + Dynamic Island: the 52px control row sits BELOW
+       the safe-area inset. Height grows by the inset so nothing overlaps. */
+    height: calc(52px + env(safe-area-inset-top, 0px));
+    padding: env(safe-area-inset-top, 0px) 10px 0;
+    display: flex; align-items: center; justify-content: space-between;
+    background: #f4f5f8;
+    border-bottom: 1px solid rgba(27,43,75,0.085);
+    flex-shrink: 0;
+  }
+  .bpp-ios-navbar-btn {
+    width: 44px; height: 44px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 12px;
+    color: #1B2B4B;
+    background: none; border: 0; padding: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 140ms cubic-bezier(0.16,1,0.3,1);
+  }
+  .bpp-ios-navbar-btn:active { background: rgba(27,43,75,0.07); }
+  .bpp-ios-navbar-title {
+    font-size: 17px; font-weight: 700; letter-spacing: -0.01em;
+    color: #1B2B4B;
+    max-width: 60vw;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* Contact list, iOS-native row shape: 76px min-height, hairline
+     divider only, no per-row card/shadow. Content structure preserved
+     inside; this is just the row chrome. */
+  .bpp-ios-row {
+    display: flex; align-items: center; gap: 15px;
+    min-height: 76px;
+    padding: 16px 22px;
+    border-bottom: 1px solid rgba(27,43,75,0.085);
+    background: transparent;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 120ms ease;
+  }
+  .bpp-ios-row:active { background: rgba(27,43,75,0.04); }
+  .bpp-ios-row:last-child { border-bottom: 0; }
+
+  /* Contact-detail card, iOS light/flat shape. White surface, 1px INSET
+     hairline instead of a bordered box (so nothing pokes outside the
+     shape on selection/hover), 16px radius, no drop shadow. Comp source:
+     docs/redesign-comps/ios-nav-shell.html .ncard. This is the shared
+     token every restyled detail card reaches for; existing inline card
+     divs on the Contact tab were retokenized to match this recipe. */
+  .bpp-ios-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: inset 0 0 0 1px rgba(27,43,75,0.085);
+    padding: 20px;
+  }
+</style>
+  <script type="module" crossorigin src="/crm/v3/assets/index-BBb9DqU-.js"></script>
+<script data-bpp-ionic-preload>
+(function(){try{
+  var params = new URLSearchParams(location.search);
+  var localShell = location.protocol === 'capacitor:' || document.documentElement.getAttribute('data-bpp-shell') === 'tauri' || !!(window.__TAURI_INTERNALS__ || window.__TAURI__ || window.__TAURI_METADATA__);
+  var wantsIonic = params.get('ionic') === '1' || localShell;
+  if (!wantsIonic) return;
+  var base = localShell ? './' : '/crm/v3/';
+  var preload = document.createElement('link');
+  preload.rel = 'modulepreload'; preload.crossOrigin = ''; preload.href = base + "assets/ionic-app-CmSzTAQ3.js";
+  document.head.appendChild(preload);
+}catch(_){}})();
+</script>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body>
+<div id="root"></div>
+</body>
+</html>

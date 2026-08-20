@@ -1,0 +1,226 @@
+/* ============================================================================
+   BPP DESIGN SYSTEM, single source of truth for all customer-facing surfaces.
+   Edit THIS file to change the look of every product that links it (proposal,
+   landing pages, invoice, emails sourced from these values). Change once,
+   propagate everywhere.
+
+   Consume it from any surface with, in <head>:
+     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+     <link rel="stylesheet" href="assets/css/bpp-ds.css">
+     <script>document.documentElement.className += ' js'</script>   <!-- enables motion, progressive enhancement -->
+
+   DNA + voice + copy rules (the non-CSS half): wiki/BPP/BPP Design DNA.md.
+   Reference implementation: proposal-comp.html.
+   HARD RULES: gold is FLAT (#ffba00), never metallic. No em-dashes in any copy.
+   ============================================================================ */
+
+/* ---- TOKENS ----------------------------------------------------------------
+   TWO TIERS:
+   * BRAND CORE  = the fixed identity. Keep consistent on every surface. Changing
+     one here is a brand-wide change (intended to flow everywhere).
+   * SURFACE THEME = a few tokens a surface MAY override in its own CSS (loaded after
+     this file) to be different but still on-brand, e.g. a landing page with its own
+     page background. Override theme tokens; never fork the core.
+---------------------------------------------------------------------------- */
+:root{
+  /* === BRAND CORE (do not vary per surface) === */
+  /* brand + ink */
+  --navy:#0b1f3b;            /* brand, ink, dark surfaces (hero, header) */
+  --gold:#ffba00;            /* THE accent: CTAs, recommendation marks, stars. flat, never metallic */
+  --green:#059669;           /* "included" ticks / success only */
+  --red:#dc2626;             /* the competitor anchor number only */
+  --blue:#1d4ed8;            /* links, disclosure, focus ring */
+  --amber:#8a5a00;           /* gold-toned accent body text */
+  /* text (core) */
+  --text:#1a2a42;            /* primary ink (softened navy) */
+  --text2:#4a5568;           /* secondary body */
+  --text3:#6b7280;           /* tertiary / labels / fineprint */
+  --border:#e4e8f0;          /* stronger borders (inputs, segmented buttons, consent box) */
+  --line:#eef1f6;            /* every hairline divider (ONE token, never reintroduce scattered greys) */
+  /* neutral control ramp: reach for these for ANY quiet UI grey (control fills, tracks,
+     edges, disabled marks) instead of inventing a new hex. Lighter -> darker. */
+  --fill:#f4f6fa;            /* subtle filled surface: input field, table header */
+  --track:#e2e8f0;           /* empty track / inactive progress bar */
+  --control:#cbd5e1;         /* control edge: checkbox border, toggle-off, faint mark */
+  --muted:#aab2c0;           /* disabled text, faintest marks */
+  /* semantic status tints: paired bg + ink for badges/callouts. success=paid/included,
+     warning=due/attention, danger=overdue/error. Use the pair, never invent a status color. */
+  --ok-bg:#f0fdf6;     --ok-ink:#067a52;
+  --warn-bg:#fffbeb;   --warn-ink:#92400e;
+  --danger-bg:#fef2f2; --danger-ink:#991b1b;
+
+  /* === SURFACE THEME (a surface may override these to be on-brand-different) === */
+  /* page background. On-brand options: #eef1f7 cool grey (proposal default),
+     #f6f8fb soft blue-white, #f7f6f3 warm off-white, #f4f6f9 neutral, or navy
+     #0b1f3b for a dark surface. Override in the surface's own CSS. */
+  --bg:#eef1f7;
+
+  /* radius scale (chips/inputs/thumbs -> panels -> cards/hero -> modals) */
+  --r-sm:10px; --r-md:12px; --r-lg:16px; --r-xl:20px;
+
+  /* spacing scale (use these instead of arbitrary px) */
+  --sp-1:4px; --sp-2:7px; --sp-3:10px; --sp-4:14px; --sp-5:16px; --sp-6:20px; --sp-7:28px;
+  --card-gap:16px;           /* vertical gap between stacked cards */
+  --pad-y:28px; --pad-x:20px;/* card content padding */
+  --page-max:560px;          /* one centered column, mobile + desktop */
+
+  /* surfaces / depth (shadows are navy-tinted, never flat grey) */
+  --card-grad:linear-gradient(160deg,#fff 0%,#f9fbff 100%);   /* card surface, 160deg always */
+  --shadow:0 4px 24px rgba(11,31,59,.08),0 1px 4px rgba(11,31,59,.04);   /* card */
+  --shadow-pop:0 2px 8px rgba(11,31,59,.18);                  /* small raised (avatar, seal, thumb) */
+  --shadow-modal:0 20px 60px rgba(11,31,59,.3);
+  --shadow-gold:0 6px 22px rgba(255,186,0,.4);                /* gold CTA glow */
+  --shadow-sticky:0 6px 26px rgba(11,31,59,.18);
+
+  /* type */
+  --font-display:'Outfit',sans-serif;   /* headings, labels, numbers */
+  --font-body:'Inter',system-ui,sans-serif;
+  --font-script:'Dancing Script',cursive;/* signature flourish only */
+
+  /* motion (calm, never bouncy) */
+  --ease:cubic-bezier(.22,.61,.36,1);        /* the calm ease for accents */
+  --ease-reveal:cubic-bezier(.16,.84,.44,1); /* card fade-up */
+  --z-sticky:50; --z-modal:100; --z-confetti:9999; --z-toast:10000;
+}
+
+/* ---- RESET + BASE --------------------------------------------------------- */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:var(--font-body);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100%}
+img{max-width:100%;display:block}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+/* Skip link: first focusable control for keyboard / screen-reader users */
+.skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+.skip-link:focus{position:fixed;left:12px;top:12px;z-index:10001;width:auto;height:auto;padding:12px 16px;background:var(--navy);color:#fff;font-family:var(--font-display);font-weight:700;font-size:14px;border-radius:10px;outline:2px solid var(--gold);outline-offset:2px}
+
+/* ---- LAYOUT PRIMITIVES ---------------------------------------------------- */
+.page{max-width:var(--page-max);margin:0 auto;padding:18px 16px calc(120px + env(safe-area-inset-bottom))}
+.card{background:var(--card-grad);border-radius:var(--r-lg);margin-bottom:var(--card-gap);box-shadow:var(--shadow);overflow:hidden}
+.pad{padding:var(--pad-y) var(--pad-x)}
+/* navy brand bar (header). Surfaces arrange logo + optional CTA inside it. */
+.brand-bar{background:var(--navy);padding:13px 20px;display:flex;align-items:center;justify-content:space-between}
+.brand-bar img{height:28px;width:auto}
+
+/* ---- TYPOGRAPHIC PRIMITIVES ----------------------------------------------- */
+/* tiny uppercase section label */
+.eyebrow{font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+/* section heading */
+h2.sec,.sec{font-family:var(--font-display);font-size:19px;font-weight:800;color:var(--navy);margin-bottom:14px;line-height:1.2}
+/* gold kicker that sits above an outcome-led H1 (product name demoted) */
+.kicker{font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);opacity:.9;margin-bottom:8px}
+/* handwritten sign-off (Key signing a note or a CTA). Personal, warm. Navy on light
+   surfaces; override color:var(--gold) on dark surfaces. */
+.signature{font-family:var(--font-script);font-size:26px;line-height:1.1;color:var(--navy)}
+/* Handwriting reveal: opt in with .sig-pen and the cursive name draws on left-to-right,
+   like a hand signing it. JS adds .writing when it scrolls into view; without JS or with
+   reduced-motion the name just shows. Negative bottom/right insets keep the descenders and
+   the final flourish from being clipped. Reusable on any surface that signs off. */
+@keyframes sigWrite{to{clip-path:inset(0 -.1em -.22em 0)}}
+.signature.sig-pen{display:inline-block}
+.js .signature.sig-pen{clip-path:inset(0 100% -.22em 0)}
+.js .signature.sig-pen.writing{animation:sigWrite 1.5s var(--ease-reveal) forwards}
+@media (prefers-reduced-motion:reduce){.js .signature.sig-pen,.js .signature.sig-pen.writing{clip-path:none;animation:none}}
+
+/* ---- BADGE / CHIP --------------------------------------------------------- */
+.badge{font-size:10.5px;font-weight:700;color:var(--navy);background:#eef3fb;border-radius:20px;padding:6px 10px;font-family:var(--font-display);white-space:nowrap;flex:0 0 auto}
+.badge-row{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.badge-row::-webkit-scrollbar{display:none}
+/* status pill (state-colored badge). Pair with a tint modifier: .ok / .warn / .danger. */
+.status{display:inline-flex;align-items:center;gap:5px;font-family:var(--font-display);font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;border-radius:20px;padding:4px 11px;white-space:nowrap}
+.status.ok{background:var(--ok-bg);color:var(--ok-ink)}
+.status.warn{background:var(--warn-bg);color:var(--warn-ink)}
+.status.danger{background:var(--danger-bg);color:var(--danger-ink)}
+
+/* ---- CHECKLIST (green-ticked list of included / to-expect items) ---------- */
+.checklist{display:flex;flex-direction:column;gap:10px}
+.check{display:flex;gap:11px;align-items:flex-start;font-size:14px;color:var(--text);line-height:1.45}
+.check .ck{color:var(--green);font-weight:800;font-size:15px;line-height:1.4;flex-shrink:0}
+
+/* ---- BUTTONS -------------------------------------------------------------- */
+/* MONEY RULE (Fresh Air / Norman doors): on money surfaces (proposal, invoice,
+   receipt, deposit), gold is ONLY for controls that move money or commit a pay/
+   sign. Everywhere else, prefer .btn-navy (navigate / save prefs / print PDF)
+   or .btn-ghost (secondary). Never paint a scroll/share/save control gold. */
+.btn-gold{width:100%;height:54px;border:none;border-radius:28px;background:var(--gold);color:var(--navy);font-family:var(--font-display);font-weight:800;font-size:16px;letter-spacing:-.01em;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:var(--shadow-gold);transition:transform .07s,background .2s,color .2s,box-shadow .2s}
+.btn-gold:active{transform:scale(.98)}
+.btn-gold:disabled{background:var(--line);color:var(--muted);box-shadow:none;cursor:not-allowed}
+/* filled navy primary for navigate + non-money commits (sticky "Get quote",
+   prefs Save, certificate PDF). Same pill geometry as .btn-gold so weight matches. */
+.btn-navy{width:100%;height:54px;border:none;border-radius:28px;background:var(--navy);color:#fff;font-family:var(--font-display);font-weight:800;font-size:16px;letter-spacing:-.01em;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(11,31,59,.22);transition:transform .07s,background .2s,box-shadow .2s}
+.btn-navy:active{transform:scale(.98)}
+.btn-navy:hover{background:#0d2547}
+.btn-navy:disabled{background:var(--line);color:var(--muted);box-shadow:none;cursor:not-allowed}
+/* secondary button (calm, sits next to the gold/navy primary): white, navy text, soft border.
+   For lower-stakes actions, add to calendar, reschedule, view details, neighbor share. */
+.btn-ghost{width:100%;height:50px;border:1.5px solid var(--border);border-radius:26px;background:#fff;color:var(--navy);font-family:var(--font-display);font-weight:800;font-size:15px;letter-spacing:-.01em;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .07s,background .2s,border-color .2s}
+.btn-ghost:active{transform:scale(.98)}
+.btn-ghost:hover{background:var(--fill);border-color:var(--control)}
+
+/* ---- MODAL SYSTEM (role=dialog; Esc + focus handled in JS) ---------------- */
+/* modal-overlay padding is safe-area-aware so a centered modal clears the notch / home indicator in landscape (Operational DNA 6a) */
+.modal-overlay{position:fixed;inset:0;background:rgba(11,17,28,.55);display:none;align-items:center;justify-content:center;z-index:var(--z-modal);padding:max(20px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))}
+.modal-overlay.open{display:flex}
+/* max-height in dvh (dynamic viewport) so the modal caps to the VISIBLE height under mobile browser chrome / keyboard, not the large vh; vh kept as the fallback for old engines */
+.modal{background:#fff;border-radius:var(--r-xl);max-width:420px;width:100%;max-height:85vh;max-height:85dvh;overflow:auto;box-shadow:var(--shadow-modal);padding:20px}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.modal-title{font-family:var(--font-display);font-weight:800;font-size:18px;color:var(--navy)}
+.modal-x{width:44px;height:44px;border:none;background:#f1f4f8;border-radius:50%;font-size:14px;color:var(--text2);cursor:pointer;flex-shrink:0}
+.mb-item{padding:12px 0;border-bottom:1px solid var(--line)}
+.mb-item:last-of-type{border-bottom:none}
+.mb-t{font-family:var(--font-display);font-weight:800;font-size:14px;color:var(--navy);margin-bottom:4px}
+.mb-d{font-size:13px;color:var(--text2);line-height:1.55}
+.modal-add{width:100%;height:48px;border:none;border-radius:24px;background:var(--gold);color:var(--navy);font-family:var(--font-display);font-weight:800;font-size:15px;cursor:pointer;margin-top:16px}
+/* kill tap delay / double-tap-zoom on shared tappable primitives so taps register instantly on mobile (Operational DNA 6a) */
+.btn-gold,.btn-navy,.btn-ghost,.modal-x,.modal-add{touch-action:manipulation}
+
+/* ---- MOTION SYSTEM (only under .js; honors reduced-motion) ---------------- */
+/* base: cards, hero, and any .reveal element fade up gently as they enter */
+.js .hero,.js .card,.js .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s var(--ease-reveal),transform .6s var(--ease-reveal)}
+.js .hero.in,.js .card.in,.js .reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  .js .hero,.js .card,.js .reveal{opacity:1!important;transform:none!important;transition:none!important}
+}
+
+/* ---- CELEBRATION (confetti + screen flash) -------------------------------- */
+@keyframes confettiFall{0%{transform:translateY(0) rotate(0deg) scale(1);opacity:1}80%{opacity:1}100%{transform:translateY(115vh) rotate(900deg) scale(.3);opacity:0}}
+@keyframes confettiSway{0%,100%{margin-left:0}25%{margin-left:18px}75%{margin-left:-18px}}
+@keyframes flashBurst{0%{opacity:.55}100%{opacity:0}}
+/* toast (success confirmation, non-blocking) */
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;font-family:var(--font-body);font-size:13px;font-weight:600;line-height:1.45;padding:13px 18px;border-radius:14px;box-shadow:0 10px 30px rgba(11,31,59,.35);z-index:var(--z-toast);max-width:340px;width:calc(100% - 40px);text-align:center;opacity:0;transition:opacity .3s ease,transform .3s ease;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ---- B&W PRINT THEME ------------------------------------------------------- */
+/* The guides' black-and-white print discipline as a reusable DS theme (folded
+   from free-guide/pom-guide, 2026-06-10). Add class "bw" to <body>, or offer
+   ?bw=1 with this activation snippet on the surface:
+     if (new URLSearchParams(location.search).get('bw') === '1')
+       document.body.classList.add('bw');
+   Principles: pure black on white; NO color carries meaning in B&W (danger =
+   a heavier border + a text label like "(Avoid)", recommended = a
+   "(Recommended)" label, never a fill); photos go grayscale; white-on-navy
+   logos opt into .bw-invert so they read black on white; shadows + gradients
+   flatten. Built for a home laser printer. Surface-specific selectors stay in
+   the surface's own CSS; this block only collapses the shared tokens. */
+body.bw{
+  --navy:#000; --gold:#000; --green:#000; --red:#000; --blue:#000; --amber:#000;
+  --text:#000; --text2:#1a1a1a; --text3:#555;
+  --border:#000; --line:#bbb;
+  --fill:#fff; --track:#eee; --control:#000; --muted:#555;
+  --ok-bg:#fff; --ok-ink:#000; --warn-bg:#fff; --warn-ink:#000; --danger-bg:#fff; --danger-ink:#000;
+  --bg:#fff;
+  --card-grad:#fff;
+  --shadow:none; --shadow-pop:none; --shadow-modal:none; --shadow-gold:none; --shadow-sticky:none;
+}
+body.bw img{filter:grayscale(1) contrast(1.06)}
+body.bw .bw-invert{filter:invert(1)}            /* opt-in for white-on-navy logos */
+body.bw .card,body.bw .status,body.bw .badge{border:1px solid #000}
+body.bw .status.danger{border-width:2px}        /* danger keeps meaning via weight, not hue */
+@media print{
+  body.bw{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+/* ---- DEV-ONLY ------------------------------------------------------------- */
+/* comp banner ("this is a design comp, not live"). Shared by every *-comp.html so
+   the warning never drifts. Remove the element (not this rule) when a comp ships. */
+.comp-flag{background:var(--danger-bg);color:var(--danger-ink);font-size:11px;font-weight:700;text-align:center;padding:6px;font-family:var(--font-display);letter-spacing:.04em}

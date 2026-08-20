@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex,nofollow" />
+<title>Email preferences · Backup Power Pro</title>
+<link rel="icon" type="image/png" href="/assets/images/apple-touch-icon.jpg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root { --navy: #0b1f3b; --gold: #ffba00; --ink: #14172a; --muted: #6b7280; --bg: #f4f6fa; --card: #ffffff; --ring: rgba(11,31,59,0.07); }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 600px; margin: 0 auto; padding: 32px 20px 60px; }
+  .top { background: var(--navy); padding: 18px 28px; border-bottom: 3px solid var(--gold); border-radius: 12px 12px 0 0; color: #fff; font-family: 'Outfit', 'Inter', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
+  .top .pro { color: var(--gold); }
+  .card { background: var(--card); border-radius: 0 0 12px 12px; box-shadow: 0 8px 28px rgba(11,31,59,0.08); padding: 36px 32px; }
+  h1 { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 28px; line-height: 1.15; letter-spacing: -0.02em; color: var(--navy); margin: 0 0 8px 0; }
+  .subtitle { font-size: 15px; color: var(--muted); margin: 0 0 24px 0; }
+  .ident { background: var(--bg); border: 1px solid var(--ring); border-radius: 10px; padding: 14px 16px; margin: 0 0 24px 0; font-size: 14px; color: var(--ink); }
+  .ident strong { color: var(--navy); font-weight: 600; }
+  .group { margin: 0 0 28px 0; padding: 0; border: none; }
+  .group h3 { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.16em; text-transform: uppercase; color: #8a5a00; margin: 0 0 14px 0; }
+  .row { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--ring); }
+  .row:last-child { border-bottom: none; }
+  .row label { flex: 1; cursor: pointer; }
+  .row .name { font-weight: 600; color: var(--ink); display: block; margin-bottom: 4px; }
+  .row .desc { font-size: 14px; color: var(--muted); line-height: 1.5; }
+  .switch { position: relative; width: 44px; height: 26px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch .slider { position: absolute; inset: 0; background: #d4d8e0; border-radius: 100px; transition: 0.18s; cursor: pointer; }
+  .switch .slider::before { content: ""; position: absolute; height: 20px; width: 20px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: 0.18s; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+  .switch input:checked + .slider { background: var(--gold); }
+  .switch input:checked + .slider::before { transform: translateX(18px); }
+  .switch input:focus + .slider { outline: 2px solid var(--gold); outline-offset: 2px; }
+  /* Save prefs is commit, not money: navy primary (gold stays on switches). Pill radius matches DS .btn-gold. */
+  .submit { display: block; width: 100%; min-height: 48px; padding: 14px 22px; background: var(--navy); color: #fff; border: none; border-radius: 28px; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 4px 14px rgba(11,31,59,0.22); transition: transform 0.12s, box-shadow 0.12s; }
+  .submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(11,31,59,0.28); }
+  .submit:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+  /* Pill radius matches .submit (visual sweep 2026-07-18): the two buttons on
+     this screen wore two shapes (28px pill vs 8px rect); one shape language. */
+  .ghost { display: block; width: 100%; padding: 14px 22px; background: transparent; color: var(--navy); border: 2px solid rgba(220,38,38,0.15); border-radius: 28px; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 12px; transition: all 0.12s; }
+  .ghost:hover { border-color: #dc2626; color: #dc2626; }
+  .danger { background: #fff5f5; border: 1px solid #f0c8c8; border-radius: 8px; padding: 14px 16px; font-size: 13px; color: #991b1b; line-height: 1.5; margin-top: 14px; }
+  .foot { padding: 18px 28px; background: #fafbfc; border-top: 1px solid var(--ring); border-radius: 0 0 12px 12px; font-size: 11px; color: var(--muted); text-align: center; }
+  .saved { display: none; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; padding: 12px 16px; border-radius: 8px; margin-bottom: 18px; font-size: 14px; font-weight: 600; }
+  .saved.visible { display: block; }
+</style>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="top">Backup Power <span class="pro">Pro</span></div>
+  <div class="card">
+
+    <h1>Email preferences</h1>
+    <p class="subtitle">Control which BPP emails land in your inbox.</p>
+
+    <div id="saved" class="saved" role="status">Saved. Your preferences are updated.</div>
+
+    <div id="cold-gate" class="ident" hidden style="background:#fff8e0;border-color:rgba(255,186,0,0.45);">
+      <strong>Open this page from the link in your BPP email.</strong><br />
+      <span style="color:var(--muted);">That link knows which inbox to update. Or text STOP to (864) 863-7800 to pause texts.</span>
+    </div>
+
+    <div id="ident" class="ident" hidden>
+      <strong id="ident-name">Loading…</strong><br />
+      <span id="ident-email" style="color:var(--muted);"></span>
+    </div>
+
+    <div id="prefs-body">
+    <fieldset class="group">
+      <h3>Transactional</h3>
+      <p style="font-size:13px;color:var(--muted);margin:-8px 0 14px;">Required for service. Includes proposals, invoices, install confirmations, permit signatures, and warranty notices. We can't turn these off, but you can pause them by texting STOP to (864) 863-7800.</p>
+    </fieldset>
+
+    <form id="prefs" novalidate>
+      <fieldset class="group">
+        <h3>Lifecycle check-ins</h3>
+        <div class="row">
+          <label for="seasonal">
+            <span class="name">Storm-season reminders</span>
+            <span class="desc">Twice-yearly (June + November). 10-minute generator test cycle, prep checklist, peace of mind before the storm hits.</span>
+          </label>
+          <span class="switch"><input type="checkbox" id="seasonal" name="seasonal" checked /><span class="slider"></span></span>
+        </div>
+        <div class="row">
+          <label for="anniversary">
+            <span class="name">Install anniversary</span>
+            <span class="desc">One email per year. Quick maintenance check-in, reminder of warranty status. Tagged with your install photo.</span>
+          </label>
+          <span class="switch"><input type="checkbox" id="anniversary" name="anniversary" checked /><span class="slider"></span></span>
+        </div>
+      </fieldset>
+
+      <fieldset class="group">
+        <h3>Updates</h3>
+        <div class="row">
+          <label for="referrals">
+            <span class="name">Neighbor note</span>
+            <span class="desc">One-time. 30 days post-install. A short note if a neighbor ever asks who did the work.</span>
+          </label>
+          <span class="switch"><input type="checkbox" id="referrals" name="referrals" checked /><span class="slider"></span></span>
+        </div>
+        <div class="row">
+          <label for="guides">
+            <span class="name">Free how-to guides</span>
+            <span class="desc">Buyer's Guide, Storm Prep Checklist, Sizing Cheat Sheet. Sent only when you specifically request a download.</span>
+          </label>
+          <span class="switch"><input type="checkbox" id="guides" name="guides" checked /><span class="slider"></span></span>
+        </div>
+      </fieldset>
+
+      <button class="submit" id="save" type="submit">Save preferences</button>
+      <button class="ghost" id="optout" type="button">Unsubscribe from all marketing</button>
+
+      <div class="danger">
+        Note · We'll always send you transactional emails (your install info, permit doc, invoice, warranty). Unsubscribing only stops the lifecycle + marketing messages above.
+      </div>
+    </form>
+    </div>
+  </div>
+
+  <div class="foot">
+    Backup Power Pro · SC Licensed Electrician · Greenville, SC<br />
+    Questions? Text Key at (864) 863-7800 or reply to any email.
+  </div>
+</div>
+
+<script>
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const cid = params.get('cid');
+  const ident = document.getElementById('ident');
+  const identName = document.getElementById('ident-name');
+  const identEmail = document.getElementById('ident-email');
+  const saved = document.getElementById('saved');
+  const form = document.getElementById('prefs');
+  const optout = document.getElementById('optout');
+  const save = document.getElementById('save');
+  const coldGate = document.getElementById('cold-gate');
+  const prefsBody = document.getElementById('prefs-body');
+
+  const ENDPOINT = 'https://hfatblrcwytxvijjhpal.supabase.co/functions/v1/email-preferences';
+
+  if (!cid) {
+    if (coldGate) coldGate.removeAttribute('hidden');
+    if (prefsBody) prefsBody.setAttribute('hidden', '');
+  }
+
+  // Hydrate identity if cid present
+  if (cid) {
+    fetch(ENDPOINT + '?cid=' + encodeURIComponent(cid))
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) {
+        if (!d) return;
+        ident.removeAttribute('hidden');
+        identName.textContent = d.name || 'Manage preferences';
+        identEmail.textContent = d.email || '';
+        // Apply saved prefs to checkboxes
+        if (d.preferences) {
+          ['seasonal', 'anniversary', 'referrals', 'guides'].forEach(function(k) {
+            const el = document.getElementById(k);
+            if (el && k in d.preferences) el.checked = !!d.preferences[k];
+          });
+        }
+      })
+      .catch(function() {});
+  }
+
+  function showSaved() {
+    saved.classList.add('visible');
+    setTimeout(function() { saved.classList.remove('visible'); }, 4000);
+  }
+
+  function collect() {
+    return {
+      seasonal: document.getElementById('seasonal').checked,
+      anniversary: document.getElementById('anniversary').checked,
+      referrals: document.getElementById('referrals').checked,
+      guides: document.getElementById('guides').checked,
+    };
+  }
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (!cid) { saved.textContent = 'Open this page from the link in your BPP email, or text STOP to (864) 863-7800.'; saved.classList.add('visible'); return; }
+    save.disabled = true;
+    save.textContent = 'Saving…';
+    fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cid: cid, preferences: collect() })
+    }).then(function(r) {
+      save.disabled = false;
+      save.textContent = 'Save preferences';
+      if (r.ok) showSaved();
+      else { saved.textContent = 'Hmm, something went wrong. Try again or text Key at (864) 863-7800.'; saved.classList.add('visible'); }
+    });
+  });
+
+  optout.addEventListener('click', function() {
+    if (!cid) {
+      saved.textContent = 'Open this page from the link in your BPP email, or text STOP to (864) 863-7800.';
+      saved.classList.add('visible');
+      return;
+    }
+    if (!confirm('Stop all marketing + lifecycle emails? You\'ll still get transactional emails for any active install or quote.')) return;
+    optout.disabled = true;
+    optout.textContent = 'Unsubscribing…';
+    fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cid: cid, optout_all_marketing: true })
+    }).then(function(r) {
+      if (r.ok) {
+        document.querySelectorAll('input[type="checkbox"]').forEach(function(c) { c.checked = false; });
+        saved.textContent = 'Unsubscribed. We won\'t send marketing or lifecycle emails anymore.';
+        saved.classList.add('visible');
+        optout.textContent = 'Unsubscribed';
+      } else {
+        optout.disabled = false;
+        optout.textContent = 'Unsubscribe from all marketing';
+      }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

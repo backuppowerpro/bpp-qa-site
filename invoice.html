@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://js.stripe.com 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://api.stripe.com https://maps.googleapis.com; frame-src https://js.stripe.com;">
+<title>Invoice | Backup Power Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous" defer></script>
+<!--
+  The invoices schema lives in supabase/migrations/ (single source of truth).
+  A historical CREATE TABLE copy that used to sit here was removed 2026-07-01:
+  it carried a stale `create policy "anon all" ... using (true)` line that is
+  NOT the live RLS (live = auth_all_invoices) and could have been re-applied
+  by a future reader. Do not paste RLS policies from page comments.
+-->
+<style>
+:root {
+  --navy:#0b1f3b; --navy2:#1a3a5c; --gold:#ffba00;
+  --green:#059669; --red:#dc2626; --border:#e4e8f0;
+  --bg:#f4f6fa; --text:#1a2a42; --text2:#4a5568; --text3:#6b7280;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100%}
+body.checkout-open{overflow:hidden}
+
+/* HEADER */
+.site-header{background:var(--navy);padding:18px 24px;text-align:center}
+.site-header .brand{font-family:'Outfit',sans-serif;font-weight:800;font-size:20px;color:#fff;letter-spacing:-.01em}
+.site-header .brand span{color:var(--gold)}
+.site-header .tagline{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px}
+
+/* PAGE */
+.page{max-width:680px;margin:0 auto;padding:28px 20px 60px}
+
+/* HERO */
+.hero-card{background:var(--navy);border-radius:16px;padding:28px 28px 24px;color:#fff;margin-bottom:20px;position:relative;overflow:hidden}
+.hero-card::before{content:'';position:absolute;top:-30px;right:-30px;width:160px;height:160px;background:var(--gold);opacity:.06;border-radius:50%}
+.hero-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.hero-title{font-family:'Outfit',sans-serif;font-size:26px;font-weight:800;line-height:1.15;margin-bottom:6px}
+.hero-sub{font-size:14px;color:rgba(255,255,255,.6);margin-bottom:20px}
+.hero-meta{display:flex;gap:20px;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.12);padding-top:16px}
+.hero-meta-item{min-width:0}
+.hero-meta-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:3px;font-family:'Outfit',sans-serif}
+.hero-meta-value{font-size:13px;font-weight:600;color:#fff;word-break:break-word}
+
+/* CARD */
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;margin-bottom:16px;overflow:hidden}
+.card-head{padding:16px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.card-icon{width:32px;height:32px;border-radius:8px;background:#f4f6fa;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-head h2{font-family:'Outfit',sans-serif;font-size:16px;font-weight:800;color:var(--navy)}
+.card-body{padding:18px 20px}
+
+/* PRICING TABLE */
+.price-table{width:100%;border-collapse:collapse;font-size:14px}
+.price-table td{padding:11px 0;border-bottom:1px solid var(--border);vertical-align:top}
+.price-table tr:last-child td{border-bottom:none}
+.price-table td:last-child{text-align:right;font-weight:600;color:var(--text);white-space:nowrap}
+.price-item-name{font-weight:500;color:var(--text)}
+.price-total-row td{padding-top:14px;font-family:'Outfit',sans-serif;font-size:17px;font-weight:800;color:var(--navy)}
+.total-badge{background:var(--navy);color:var(--gold);font-family:'Outfit',sans-serif;font-weight:800;font-size:17px;padding:5px 14px;border-radius:8px;display:inline-block}
+
+/* STATUS BADGES = the design system's .status pill (bpp-ds.css:127-130), wired from invoice-comp.html:
+   unpaid -> .status.warn (calm "balance due" amber, not an alarming red , abundance not desperation),
+   paid -> .status.ok. Values are the DS tone tokens (--warn-bg/-ink, --ok-bg/-ink) inlined. */
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;font-family:'Outfit',sans-serif;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.status-unpaid{background:#fffbeb;color:#92400e}
+.status-paid{background:#f0fdf6;color:#067a52}
+
+/* PAID BANNER */
+.paid-banner{background:var(--green);border-radius:14px;padding:32px 24px;text-align:center;color:#fff;margin-bottom:16px}
+.paid-icon{width:64px;height:64px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.paid-banner h2{font-family:'Outfit',sans-serif;font-size:26px;font-weight:800;margin-bottom:6px}
+.paid-banner p{font-size:14px;opacity:.85}
+
+/* BUTTONS */
+/* Money-committing CTA = the design system's gold money-pill (bpp-ds .btn-gold radius 28 + --shadow-gold). Already gold; DS-alignment = pill radius + gold glow, matching proposal.html + invoice-comp. */
+.btn-pay{width:100%;padding:16px;background:var(--gold);color:var(--navy);border:none;border-radius:28px;font-family:'Outfit',sans-serif;font-size:17px;font-weight:800;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .15s;box-shadow:0 6px 22px rgba(255,186,0,.4)}
+.btn-pay:hover{filter:brightness(1.05);transform:translateY(-1px);box-shadow:0 8px 26px rgba(255,186,0,.5)}
+.btn-pay-card{width:100%;padding:13px;background:#fff;color:#6b7280;border:1.5px solid #d1d5db;border-radius:10px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s}
+.btn-pay-card:hover{border-color:var(--navy);color:var(--navy)}
+.ach-badge{display:inline-block;background:#dcfce7;color:#15803d;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;margin-left:6px;letter-spacing:.3px;vertical-align:middle}
+.dl-btn{width:100%;padding:14px;background:#fff;color:var(--navy);border:2px solid var(--navy);border-radius:10px;font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .15s}
+.dl-btn:hover{background:var(--navy);color:#fff}
+.dl-btn:disabled{opacity:.6;pointer-events:none}
+
+/* NOTES */
+.notes-text{font-size:14px;color:var(--text2);line-height:1.6}
+
+/* LOADING / ERROR */
+.state-wrap{text-align:center;padding:60px 24px}
+.state-wrap h2{font-family:'Outfit',sans-serif;font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px}
+.state-wrap p{font-size:14px;color:var(--text3)}
+.spinner-large{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* PROPERTY PHOTO BANNER */
+.property-banner{position:relative;width:100%;height:260px;background:var(--navy);overflow:hidden;flex-shrink:0}
+.property-banner img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.property-banner-grad{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.05) 0%,rgba(0,0,0,0.65) 100%);pointer-events:none}
+.property-banner-label{position:absolute;bottom:0;left:0;right:0;padding:16px 20px 18px;pointer-events:none}
+.property-banner-eyebrow{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.65);margin-bottom:4px}
+.property-banner-addr{font-family:'Outfit',sans-serif;font-size:17px;font-weight:800;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.5);line-height:1.25}
+.property-banner-initials{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:80px;font-weight:800;color:rgba(255,255,255,.18);letter-spacing:-4px;pointer-events:none}
+@media(max-width:480px){.property-banner{height:210px}.property-banner-addr{font-size:15px}}
+
+/* FOOTER */
+.site-footer{text-align:center;padding:28px 24px 24px;font-size:12px;color:var(--text3);border-top:1px solid var(--border);margin-top:20px}
+.site-footer a{color:var(--text3);text-decoration:none}
+.site-footer a:hover{color:var(--navy)}
+.site-footer .cred-company{font-family:'Outfit',sans-serif;font-weight:700;font-size:14px;color:var(--navy);margin-bottom:4px}
+.site-footer .cred-address{margin-bottom:2px}
+.site-footer .cred-license{font-weight:600;color:var(--text2);margin-top:6px}
+.site-footer .cred-dba{font-size:11px;margin-top:2px}
+
+/* RECEIPT INFO */
+.receipt-row{display:flex;justify-content:space-between;padding:10px 0;font-size:13px}
+.receipt-row:not(:last-child){border-bottom:1px solid var(--border)}
+.receipt-label{color:var(--text3)}
+.receipt-value{font-weight:600;color:var(--text)}
+
+/* LEGAL / AGREEMENT */
+.legal-section{background:#f8f9fb;border:1.5px solid var(--border);border-radius:10px;padding:16px 18px;margin-top:12px}
+.legal-section-title{font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.legal-row{display:flex;justify-content:space-between;padding:7px 0;font-size:12px;border-bottom:1px solid var(--border)}
+.legal-row:last-child{border-bottom:none}
+.legal-label{color:var(--text3)}
+.legal-value{font-weight:600;color:var(--text);text-align:right;max-width:60%;word-break:break-word}
+.legal-terms{font-size:12px;color:var(--text2);line-height:1.6;background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:10px;max-height:200px;overflow-y:auto}
+.legal-footer{font-size:11px;color:var(--text3);text-align:center;margin-top:14px;line-height:1.5;font-style:italic}
+
+@media(max-width:480px){
+  .hero-title{font-size:22px}
+  .hero-card{padding:24px 20px 20px}
+  .hero-meta{gap:14px}
+  .page{padding:16px 14px 48px}
+}
+@media print{
+  .site-header{background:#fff;border-bottom:2px solid #0b1f3b}
+  .site-header img{filter:invert(0)}
+  .paid-banner{background:#fff;color:#059669;border:2px solid #059669;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .paid-icon{background:#059669 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  /* Print swaps the hero to a light bg to save ink, so its white text must go
+     dark or the title + Bill-To name/address print white-on-white (audit S7,
+     2026-07-17: near-invisible hero on a saved/printed invoice). */
+  .hero-card{background:#f8f9fb;border:1px solid #e4e8f0;color:#0b1f3b}
+  .hero-title,.hero-meta-value{color:#0b1f3b !important}
+  .hero-sub{color:#5a6b8c !important}
+  .hero-eyebrow{color:#8a6d00 !important}
+  .hero-meta-label{color:#5a6b8c !important}
+  .hero-meta{border-top-color:#e4e8f0}
+  .property-banner{display:none}
+  .btn-pay,.btn-pay-card,.ach-badge{display:none !important}
+  .checkout-overlay{display:none !important}
+  .page{padding:12px}
+  body{background:#fff;padding:0}
+  a{color:#0b1f3b !important;text-decoration:none}
+}
+
+/* EMBEDDED CHECKOUT MODAL */
+.checkout-overlay{position:fixed;inset:0;background:rgba(11,31,59,.75);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s}
+.checkout-overlay[hidden]{display:none}
+.checkout-overlay.active{opacity:1;pointer-events:auto}
+.checkout-modal{background:#fff;border-radius:16px;width:100%;max-width:500px;max-height:90vh;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.3);display:flex;flex-direction:column}
+.checkout-modal-header{display:flex;align-items:center;justify-content:space-between;padding:24px 24px 20px;flex-shrink:0}
+.checkout-modal-title{font-family:'Outfit',sans-serif;font-size:18px;font-weight:800;color:var(--navy)}
+.checkout-close{background:none;border:none;cursor:pointer;color:var(--text2);font-size:22px;line-height:1;padding:0;border-radius:8px;width:44px;height:44px;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+.checkout-close:hover{background:#f0f0f0;color:var(--navy)}
+.checkout-close:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.checkout-modal-scroll{overflow-y:auto;flex:1;padding:0 24px 28px}
+#checkout-container{min-height:120px}
+:where(button, a[href], input, textarea, select):focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.btn-pay,.btn-pay-card,.dl-btn{min-height:44px}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* TOAST */
+.inv-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--navy);color:#fff;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;padding:12px 22px;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.25);opacity:0;transition:opacity .2s,transform .2s;z-index:2000;white-space:nowrap;pointer-events:none}
+.inv-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.preview-bar{position:fixed;top:0;left:0;right:0;z-index:99999;background:#f59e0b;color:#1c1003;font-family:'Outfit',sans-serif;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-align:center;padding:8px 16px;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+.preview-bar[hidden],.preview-watermark[hidden]{display:none}
+.preview-watermark{position:fixed;inset:0;pointer-events:none;z-index:99998;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.preview-watermark span{font-family:'Outfit',sans-serif;font-size:clamp(60px,14vw,120px);font-weight:900;color:rgba(11,31,59,.06);letter-spacing:.1em;text-transform:uppercase;transform:rotate(-35deg);white-space:nowrap;user-select:none}
+body.preview-mode{padding-top:34px}
+body.preview-mode .btn-pay,body.preview-mode .btn-pay-card,body.preview-mode .checkout-overlay{display:none!important}
+</style>
+<!-- PostHog, customer-facing invoice / deposit checkout tracking. Closes
+     the bottom of the ad→lead→quote→deposit funnel. Pairs with
+     stripe-webhook's deposit_paid capture so we can see abandon rate at
+     the checkout modal (did they open it and bail? did they pay?). -->
+<script>window.__BPP_MONEY_PREVIEW__=new URLSearchParams(window.location.search).get('preview')==='1';if(!window.__BPP_MONEY_PREVIEW__){!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_qoA51lePZqXYtPJYkrIpdA4U8iMDJ79L1kje7r4pD4O',{api_host:'https://us.i.posthog.com',person_profiles:'identified_only',session_recording:{recordCrossOriginIframes:false,maskAllInputs:true},capture_pageview:true,capture_pageleave:true,enable_heatmaps:true,capture_dead_clicks:true});}</script>
+<script>
+  // Tag pageview with invoice context so PostHog groups all events from
+  // this checkout session together.
+  (function() {
+    if (window.__BPP_MONEY_PREVIEW__ || typeof posthog === 'undefined') return;
+    var token = new URLSearchParams(window.location.search).get('token') || '';
+    posthog.register({ page_type: 'invoice', invoice_token: token.slice(0, 8) });
+    // Time-on-page milestones, if customer sits on invoice > 60s without
+    // clicking Pay, they're likely hesitating on price or payment method.
+    var timeMilestones = [10, 30, 60, 120, 300];
+    timeMilestones.forEach(function(t) {
+      setTimeout(function() {
+        posthog.capture('invoice_time_on_page', { seconds: t });
+      }, t * 1000);
+    });
+    // Scroll-to-bottom, means they read the full invoice incl. terms.
+    var bottomSeen = false;
+    window.addEventListener('scroll', function() {
+      if (bottomSeen) return;
+      var h = document.documentElement;
+      if ((h.scrollTop + h.clientHeight) / h.scrollHeight > 0.9) {
+        bottomSeen = true;
+        posthog.capture('invoice_scrolled_to_bottom');
+      }
+    }, { passive: true });
+    // Delegated click tracking, capture Pay buttons regardless of which
+    // payment method they pick (ACH vs card). The data-amount attribute
+    // on the ACH button gives us amount context when available.
+    document.addEventListener('click', function(ev) {
+      var el = ev.target.closest('button, a');
+      if (!el) return;
+      var text = (el.textContent || '').trim().toLowerCase();
+      if (/pay \$|pay by bank|pay by card|pay by (credit|debit)|checkout|continue to stripe/.test(text)) {
+        var amount = el.getAttribute('data-amount') || '';
+        var method = /bank/.test(text) ? 'ach' : /card|credit|debit/.test(text) ? 'card' : 'unknown';
+        posthog.capture('invoice_checkout_clicked', { label: text.slice(0, 50), amount: amount, method: method });
+      }
+    }, { capture: true });
+    // Watch the checkout overlay, when it opens and when it closes. If
+    // the customer opens checkout but closes without paying, that's a
+    // high-intent abandon event we need to know about.
+    var checkoutOpenAt = 0;
+    var obs = new MutationObserver(function() {
+      var ov = document.getElementById('checkout-overlay');
+      if (!ov) return;
+      var active = ov.classList.contains('active');
+      if (active && !checkoutOpenAt) {
+        checkoutOpenAt = Date.now();
+        posthog.capture('invoice_checkout_opened');
+      } else if (!active && checkoutOpenAt) {
+        var duration = Math.round((Date.now() - checkoutOpenAt) / 1000);
+        posthog.capture('invoice_checkout_closed', { seconds_open: duration });
+        checkoutOpenAt = 0;
+      }
+    });
+    // Wait for DOM to be ready before observing.
+    if (document.getElementById('checkout-overlay')) {
+      obs.observe(document.getElementById('checkout-overlay'), { attributes: true, attributeFilter: ['class'] });
+    } else {
+      document.addEventListener('DOMContentLoaded', function() {
+        var ov = document.getElementById('checkout-overlay');
+        if (ov) obs.observe(ov, { attributes: true, attributeFilter: ['class'] });
+      });
+    }
+  })();
+</script>
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.jpg">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body>
+<div class="preview-bar" id="preview-bar" data-preview-banner="true" hidden>Preview mode, not sent to client, read only</div>
+<div class="preview-watermark" id="preview-watermark" data-preview-watermark="true" aria-hidden="true" hidden><span>Preview</span></div>
+<noscript><div class="preview-bar" data-preview-banner="true">Preview unavailable, JavaScript is off, no customer action can occur</div><div class="preview-watermark" data-preview-watermark="true" aria-hidden="true"><span>Preview unavailable</span></div><div style="max-width:620px;margin:70px auto 24px;padding:18px;border:1px solid #ffba00;border-radius:14px;background:#fff8e6;color:#0b1f3b;text-align:center;font:600 16px/1.55 system-ui,sans-serif;">This invoice did not load. Turn on JavaScript and reload, or call (864) 863-7800.</div></noscript>
+
+<header class="site-header">
+  <img src="/assets/images/logo-white-v2.png" alt="Backup Power Pro" style="height:32px;">
+  <div class="tagline">Licensed Electrical Contractor &middot; SC LIC #2942 &middot; Upstate SC</div>
+</header>
+
+<div id="property-banner-wrap"></div>
+
+<main class="page" id="main">
+  <div class="state-wrap">
+    <div class="spinner-large"></div>
+    <p>Loading your invoice...</p>
+  </div>
+</main>
+
+<!-- Embedded Checkout Modal -->
+<div class="checkout-overlay" id="checkout-overlay" hidden inert aria-hidden="true" onclick="if(event.target===this)closeCheckout()">
+  <div class="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-modal-title" tabindex="-1">
+    <div class="checkout-modal-header">
+      <div class="checkout-modal-title" id="checkout-modal-title">Secure Payment</div>
+      <button class="checkout-close" onclick="closeCheckout()" aria-label="Close payment modal">&#x2715;</button>
+    </div>
+    <div class="checkout-modal-scroll">
+      <div id="checkout-container"></div>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="cred-company">Backup Power Pro <span style="font-weight:400;font-size:13px;color:var(--text3)">by Key Electric LLC</span></div>
+  <div class="cred-address">22 Kimbell CT, Greenville SC 29617</div>
+  <div class="cred-address"><a href="tel:8648637800">(864) 863-7800</a> &nbsp;&middot;&nbsp; <a href="https://qa.backuppowerpro.com">backuppowerpro.com</a></div>
+  <div class="cred-license">SC Electrical Contractor License #2942 &nbsp;&middot;&nbsp; Fully Licensed &amp; Insured</div>
+</footer>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+
+const SUPABASE_URL = 'https://hfatblrcwytxvijjhpal.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_kBXthY-Han29JLqcT514RQ_RtwxXLZ-';
+let _toastTimer = null;
+function showToast(msg) {
+  let t = document.getElementById('inv-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'inv-toast';
+    t.className = 'inv-toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  clearTimeout(_toastTimer);
+  requestAnimationFrame(() => {
+    t.classList.add('show');
+    _toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
+  });
+}
+
+let INV = null; // invoice data
+let PAYMENTS = []; // payment rows from invoice-view (amount, refunded_amount) for refund honesty
+let LINKED_PROPOSAL = null; // linked proposal data (if any)
+const IS_PREVIEW = new URLSearchParams(window.location.search).get('preview') === '1';
+
+// ── INIT ────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  if (IS_PREVIEW) {
+    document.body.classList.add('preview-mode');
+    document.getElementById('preview-bar').hidden = false;
+    document.getElementById('preview-watermark').hidden = false;
+  }
+  const token = new URLSearchParams(window.location.search).get('token');
+  if (!token) { showError('Invoice link not found.', 'This isn\'t the personal link Key texted you. Text or call Key at (864) 863-7800 and he will send a fresh one.'); return; }
+
+  // Reads go through the invoice-view edge function (service role
+  // internally) so anon no longer needs direct SELECT on invoices /
+  // proposals. View-tracking is also handled server-side in the same
+  // call. Token is validated before any data returns.
+  // Apr 27 audit: hard 10s timeout so a hung edge fn / network blip can't
+  // leave the customer staring at "Loading..." forever.
+  let data = null;
+  let errorReason = null;
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 10000);
+    // preview=1 passthrough: invoice-view skips the viewed_at/view_count bump
+    // for Key's own CRM preview, so "Viewed" always means the customer.
+    const previewParam = new URLSearchParams(window.location.search).get('preview') === '1' ? '&preview=1' : '';
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/invoice-view?token=${encodeURIComponent(token)}${previewParam}`, {
+      headers: { 'Authorization': `Bearer ${SUPABASE_KEY}` },
+      signal: ctrl.signal,
+    });
+    clearTimeout(timer);
+    if (res.ok) {
+      const j = await res.json();
+      data = j?.invoice || null;
+      if (j?.proposal) LINKED_PROPOSAL = j.proposal;
+      if (Array.isArray(j?.payments)) PAYMENTS = j.payments;
+    } else if (res.status === 410) {
+      errorReason = 'This invoice was replaced by a newer one. Please use the latest link or contact (864) 863-7800.';
+    } else if (res.status === 404 || res.status === 400) {
+      errorReason = 'This link may be invalid or expired. Please contact (864) 863-7800 if you need help.';
+    } else {
+      errorReason = `Couldn\'t load this invoice right now (server returned ${res.status}). Please try again or contact (864) 863-7800.`;
+    }
+  } catch(e) {
+    if (e?.name === 'AbortError') {
+      errorReason = 'This is taking longer than expected. Please refresh, or contact (864) 863-7800 if it keeps failing.';
+    } else {
+      errorReason = 'Network issue loading this invoice. Please refresh, or contact (864) 863-7800.';
+    }
+  }
+  if (!data) { showError('Invoice not available.', errorReason || 'This link may be invalid or has been removed. Please contact (864) 863-7800.'); return; }
+
+  INV = data;
+
+  // FORWARD CUTOVER (2026-06-09): invoices created by the v3 CRM
+  // (creator_version === 'v3') render on the new design-system invoice page.
+  // Legacy v2 invoices (the 19 existing rows, default creator_version 'v2')
+  // stay on this proven page, which also keeps the jsPDF receipt download
+  // that invoice-comp.html does not yet have. creator_version is the single
+  // source of truth for routing; redirect fires before render so there is no
+  // content flash. Preview links are never redirected so Key can still preview
+  // the legacy layout. Mirrors the proposal.html deposit_rate cutover.
+  {
+    const _isV4 = INV.creator_version === 'v4';
+    const _isV3 = INV.creator_version === 'v3';
+    if (_isV4) {
+      window.location.replace('/invoice-v4.html' + window.location.search);
+      return;
+    }
+    if (_isV3) {
+      window.location.replace('/invoice-comp.html' + window.location.search);
+      return;
+    }
+  }
+
+  // View-tracking is now handled inside invoice-view (fire-and-forget
+  // on the server). No client-side update needed here.
+  const isPreview = new URLSearchParams(window.location.search).get('preview') === '1';
+
+  const invoiceStatus = String(INV.status || '').toLowerCase();
+  const payableStatuses = ['sent','unpaid','viewed','overdue','open','partial'];
+  if (invoiceStatus === 'refunded') {
+    showClosedInvoice('Invoice Refunded', 'Payments on this invoice were refunded. No payment is due. Please contact Backup Power Pro at (864) 863-7800 if you have questions.');
+  } else if (invoiceStatus === 'voided' || invoiceStatus === 'void') {
+    showClosedInvoice('Invoice Voided', 'This invoice was voided. No payment is due on it. Please contact Backup Power Pro at (864) 863-7800 if you have questions.');
+  } else if (invoiceStatus === 'cancelled' || invoiceStatus === 'declined') {
+    showClosedInvoice('Invoice Cancelled', 'This invoice has been cancelled and is no longer available for payment. Please contact Backup Power Pro at (864) 863-7800 if you have questions.');
+  } else if (invoiceStatus === 'paid') {
+    renderPaidInvoice();
+  } else if (payableStatuses.includes(invoiceStatus) || isPreview) {
+    const remaining = Number(INV.amount_remaining);
+    const paid = Number(INV.amount_paid);
+    if (!Number.isFinite(remaining) || remaining <= 0 || !Number.isFinite(paid) || paid < 0) {
+      showError('Invoice not available.', 'The current balance could not be verified. Please refresh, or contact (864) 863-7800.');
+      return;
+    }
+    renderInvoice();
+  } else {
+    showError('Invoice not available.', 'This invoice has not been issued for payment. Please use the latest link from Key, or contact (864) 863-7800.');
+  }
+});
+
+// ── HELPERS ─────────────────────────────────────────────────
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function fmt(n) { return '$' + Number(n || 0).toLocaleString('en-US'); }
+
+function showError(title, msg) {
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+  const wrap = document.createElement('div'); wrap.className = 'state-wrap';
+  wrap.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#8a9ab5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+  const h2 = document.createElement('h2'); h2.textContent = String(title || '');
+  const p  = document.createElement('p');  p.textContent  = String(msg || '');
+  wrap.appendChild(h2); wrap.appendChild(p);
+  main.appendChild(wrap);
+}
+
+function showClosedInvoice(title, message) {
+  const main = document.getElementById('main');
+  main.innerHTML = '<div style="text-align:center;padding:60px 20px"><div style="font-size:48px;margin-bottom:16px">🚫</div><div style="font-family:Outfit,sans-serif;font-size:22px;font-weight:800;color:#0b1f3b;margin-bottom:8px">'+esc(title)+'</div><div style="font-size:14px;color:#4a5568;max-width:360px;margin:0 auto">'+esc(message)+'</div></div>';
+}
+
+// ── BUILD AGREEMENT HTML (from linked proposal) ────────────
+function buildAgreementHtml() {
+  if (!LINKED_PROPOSAL || LINKED_PROPOSAL.status !== 'Approved') return '';
+
+  const LP = LINKED_PROPOSAL;
+  const signedTime = LP.signed_at
+    ? new Date(LP.signed_at).toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
+    : '';
+
+  let termsDisplay = '';
+  if (LP.approved_terms_snapshot) {
+    try {
+      const terms = typeof LP.approved_terms_snapshot === 'string' ? JSON.parse(LP.approved_terms_snapshot) : LP.approved_terms_snapshot;
+      termsDisplay = `
+        <div class="legal-terms">
+          <strong>Scope & Pricing Acknowledged:</strong> ${esc(terms.contact_name)} approved a ${terms.selected_amp || '30'} Amp Connection System
+          ${terms.selected_surge ? 'with whole-home surge protection' : 'without surge protection'} for a total of ${fmt(terms.total)}.
+          <br><br><strong>Acknowledgments:</strong><br>
+          ${terms.scope_acknowledged ? '&#10003; Reviewed and agreed to the scope of work and pricing.' : ''}<br>
+          ${terms.safety_acknowledged ? '&#10003; Read and understood the Generator Safety Instructions.' : ''}
+        </div>`;
+    } catch(e) {
+      termsDisplay = `<div class="legal-terms">${esc(LP.approved_terms_snapshot)}</div>`;
+    }
+  }
+
+  return `
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon" style="background:#f0fdf4"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h2>Original Agreement</h2>
+      </div>
+      <div class="card-body">
+        ${termsDisplay}
+
+        <div class="legal-section" style="margin-top:14px">
+          <div class="legal-section-title">Electronic Signature</div>
+          <div class="legal-row">
+            <span class="legal-label">Signed By</span>
+            <span class="legal-value" style="font-size:16px;color:var(--navy)">${esc(LP.signer_name)}</span>
+          </div>
+          <div class="legal-row">
+            <span class="legal-label">Date & Time</span>
+            <span class="legal-value">${signedTime}</span>
+          </div>
+          <div class="legal-row">
+            <span class="legal-label">IP Address</span>
+            <span class="legal-value">${esc(LP.approved_ip || 'N/A')}</span>
+          </div>
+          <div class="legal-row">
+            <span class="legal-label">Safety Instructions</span>
+            <span class="legal-value">${LP.safety_ack ? '&#10003; Acknowledged' : 'Not acknowledged'}</span>
+          </div>
+        </div>
+
+        <div class="legal-footer">
+          This agreement was electronically signed under the ESIGN Act and constitutes a binding agreement between the parties.
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── PROPERTY PHOTO BANNER ────────────────────────────────────
+async function renderPropertyBanner() {
+  const wrap = document.getElementById('property-banner-wrap');
+  if (!wrap) return;
+  const addr = INV.contact_address;
+  const name = INV.contact_name || '';
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const initials = parts.length >= 2 ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase()
+                 : parts.length === 1 ? parts[0][0].toUpperCase() : '?';
+
+  const gradHtml = `<div class="property-banner-grad"></div>`;
+  const labelHtml = addr ? `
+    <div class="property-banner-label">
+      <div class="property-banner-eyebrow">📍 Your Installation Address</div>
+      <div class="property-banner-addr">${esc(addr)}</div>
+    </div>` : '';
+
+  // Always render initials fallback first
+  wrap.innerHTML = `
+    <div class="property-banner">
+      <div class="property-banner-initials">${initials}</div>
+      ${gradHtml}
+      ${addr ? labelHtml : `<div class="property-banner-label"><div class="property-banner-addr">${esc(name)}</div></div>`}
+    </div>`;
+
+  const token = new URLSearchParams(window.location.search).get('token');
+  if (!token) return;
+  const img = document.createElement('img');
+  img.alt = 'Property at the installation address';
+  img.onload = function() {
+    const bannerEl = wrap.querySelector('.property-banner');
+    if (!bannerEl) return;
+    img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover';
+    bannerEl.insertBefore(img, bannerEl.querySelector('.property-banner-grad'));
+  };
+  img.onerror = function() { img.remove(); };
+  img.src = `${SUPABASE_URL}/functions/v1/streetview-hero?i=${encodeURIComponent(token)}`;
+}
+
+// ── RENDER UNPAID INVOICE ───────────────────────────────────
+function renderInvoice() {
+  const lineItems = INV.line_items || [];
+  const total = INV.total || lineItems.reduce((s, li) => s + (li.amount || 0), 0);
+  const remaining = Number(INV.amount_remaining);
+  const paid = Number(INV.amount_paid);
+  const hasPriorPayment = paid > 0.005 || remaining < Number(total) - 0.005;
+  const createdDate = new Date(INV.created_at).toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+  });
+
+  let lineItemRows = '';
+  lineItems.forEach(li => {
+    lineItemRows += `<tr><td class="price-item-name">${esc(li.name)}</td><td>${fmt(li.amount)}</td></tr>`;
+  });
+
+  const notesHtml = INV.notes ? `
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <h2>Notes</h2>
+      </div>
+      <div class="card-body notes-text">${esc(INV.notes)}</div>
+    </div>` : '';
+
+  renderPropertyBanner();
+
+  document.getElementById('main').innerHTML = `
+    <!-- Hero -->
+    <div class="hero-card">
+      <div class="hero-eyebrow">Your System is Ready to Schedule</div>
+      <div class="hero-title">The Outage-Ready<br>Connection System</div>
+      <div class="hero-sub">One cord. The fridge, the well pump, the heat. Done in a day.</div>
+      <div class="hero-meta">
+        <div class="hero-meta-item">
+          <div class="hero-meta-label">Bill To</div>
+          <div class="hero-meta-value">${esc(INV.contact_name)}</div>
+        </div>
+        ${INV.contact_address ? `<div class="hero-meta-item">
+          <div class="hero-meta-label">Address</div>
+          <div class="hero-meta-value">${esc(INV.contact_address)}</div>
+        </div>` : ''}
+        <div class="hero-meta-item">
+          <div class="hero-meta-label">Date</div>
+          <div class="hero-meta-value">${createdDate}</div>
+        </div>
+        <div class="hero-meta-item">
+          <div class="hero-meta-label">Amount Due</div>
+          <div class="hero-meta-value" style="color:var(--gold);font-size:18px;font-weight:800">${fmt(remaining)}</div>
+        </div>
+        <div class="hero-meta-item">
+          <div class="hero-meta-label">Status</div>
+          <div class="hero-meta-value"><span class="status-badge status-unpaid">${hasPriorPayment ? 'Balance Due' : 'Unpaid'}</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Info -->
+    ${(INV.contact_phone || INV.contact_email) ? `
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0b1f3b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <h2>Customer Details</h2>
+      </div>
+      <div class="card-body">
+        <div style="font-size:14px;line-height:1.8;color:var(--text2)">
+          ${INV.contact_phone ? `<div>${esc(INV.contact_phone)}</div>` : ''}
+          ${INV.contact_email ? `<div>${esc(INV.contact_email)}</div>` : ''}
+        </div>
+      </div>
+    </div>` : ''}
+
+    <!-- Line Items -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <h2>Invoice Details</h2>
+      </div>
+      <div class="card-body">
+        <div style="font-size:13px;color:var(--green);font-weight:600;text-align:center;margin-bottom:14px;line-height:1.5">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          This is your final price, everything is included: materials, permit, inspection, and cleanup.
+        </div>
+        <table class="price-table">
+          ${lineItemRows}
+          <tr class="price-total-row"><td>Invoice Total</td><td>${fmt(total)}</td></tr>
+          ${hasPriorPayment ? `<tr><td>Payments Received</td><td>-${fmt(paid)}</td></tr>` : ''}
+          <tr class="price-total-row"><td>Balance Due</td><td><span class="total-badge">${fmt(remaining)}</span></td></tr>
+        </table>
+      </div>
+    </div>
+
+    ${notesHtml}
+
+    ${buildAgreementHtml()}
+
+    <!-- What You're Getting -->
+    <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:12px">
+      <div style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;text-align:center">Here's What's Included in Your Install</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:7px">
+        ${[
+          ['⚡','Generator inlet box','Exterior, weather-rated'],
+          ['🔒','Interlock kit','UL-listed, code-compliant'],
+          ['📋','Permit & inspection','We file everything'],
+          ['🧹','Site cleanup','We leave it spotless'],
+          ['🔌','Power transfer cord','Connects gen to panel'],
+          ['📖','Walkthrough','Step-by-step before we leave'],
+        ].map(([icon,name,desc]) => `
+          <div style="display:flex;align-items:flex-start;gap:8px">
+            <span style="font-size:15px;flex-shrink:0">${icon}</span>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--text)">${name}</div>
+              <div style="font-size:11px;color:var(--text3)">${desc}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Pay by Bank (ACH), primary, saves $34 vs card -->
+    <button class="btn-pay" onclick="payOnline(true)" data-amount="${fmt(remaining)}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      Pay ${fmt(remaining)} by Bank Transfer
+      <span class="ach-badge">NO FEE</span>
+    </button>
+    <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:-8px;margin-bottom:8px">ACH bank transfers take 3 to 5 business days to clear.</div>
+
+    <!-- Pay by Card, secondary, smaller -->
+    <button class="btn-pay-card" onclick="payOnline(false)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Pay by credit or debit card instead
+    </button>
+
+    <div style="text-align:center;font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.6">
+      🔒 Payment is due on completion day, after your system is installed and working.<br>
+      Need to split it up? Text Key at <a href="sms:8648637800?body=Hi, I'd like to ask about payment plans for my invoice" style="color:var(--navy);font-weight:600;text-decoration:none">(864) 863-7800</a> about payment plans.
+    </div>
+
+    <div style="font-size:12px;color:var(--text3);text-align:center;line-height:1.6">
+      Questions? Call or text <strong style="color:var(--navy)">(864) 863-7800</strong>
+      <div style="margin-top:12px"><a href="/assets/docs/the-portable-generator-power-guide.pdf" target="_blank" style="color:#1d4ed8;font-weight:600;text-decoration:none" rel="noopener noreferrer">📘 Generator Safety Guide (PDF)</a></div>
+    </div>
+
+    <!-- Download Invoice -->
+    <button class="dl-btn" onclick="downloadInvoicePDF()" style="margin-top:16px">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download invoice PDF
+    </button>
+  `;
+}
+
+// Refund math (quality arc 2026-07-21, finding 1; mirrors receipt.html + S6).
+// Stripe's charge.refunded records payments.refunded_amount while the invoice
+// row stays status=paid, so the payments array is the source of truth. A
+// refunded legacy invoice used to render the celebratory "paid in full, thank
+// you" receipt, an honesty-floor violation. This computes the refund so the
+// paid renderer can branch to an honest refunded receipt instead.
+function invRefundTotals() {
+  const pays = Array.isArray(PAYMENTS) ? PAYMENTS : [];
+  const refunded = pays.reduce((s, p) => s + (Number(p.refunded_amount) || 0), 0);
+  const paidSum = pays.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+  const base = paidSum > 0 ? paidSum : (INV.total || 0);
+  return {
+    refunded: Math.round(refunded * 100) / 100,
+    paidSum: Math.round(base * 100) / 100,
+    full: refunded > 0 && refunded >= base - 0.005,
+    partial: refunded > 0 && refunded < base - 0.005,
+  };
+}
+function fmtUsd(n) { return '$' + (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+// Honest refunded receipt for a legacy invoice, same voice as receipt.html's
+// S6 copy. Self-contained inline styles, matching the cancelled-state block's
+// pattern, so it never borrows the celebratory paid layout.
+function renderRefundedInvoice(rf) {
+  const heading = rf.full ? 'Refund issued' : 'Partial refund issued';
+  const sub = rf.full
+    ? `Your payment of ${fmtUsd(rf.refunded)} was refunded. Depending on your bank, it can take 5 to 10 business days to appear back on your statement. If it has not shown up by then, text Key at (864) 863-7800.`
+    : `${fmtUsd(rf.refunded)} of your ${fmtUsd(rf.paidSum)} payment was refunded, so your net paid is ${fmtUsd(Math.max(0, rf.paidSum - rf.refunded))}. Refunds take 5 to 10 business days to appear, depending on your bank.`;
+  document.getElementById('main').innerHTML =
+    '<div style="max-width:520px;margin:0 auto;padding:56px 20px;text-align:center;font-family:Inter,system-ui,sans-serif">' +
+      '<div style="font-family:Outfit,sans-serif;font-size:24px;font-weight:800;color:#0b1f3b;margin-bottom:12px">' + heading + '</div>' +
+      '<div style="font-size:15px;line-height:1.6;color:#4a5568;margin-bottom:20px">' + esc(sub) + '</div>' +
+      '<div style="font-size:13px;color:#4a5568">Keep this for your records. Questions? Text Key at <a href="tel:8648637800" style="color:#1d4ed8;font-weight:600">(864) 863-7800</a>.</div>' +
+    '</div>';
+}
+
+// ── RENDER PAID INVOICE ─────────────────────────────────────
+function renderPaidInvoice() {
+  // A refunded payment must never render the celebratory paid receipt (S6 /
+  // quality arc finding 1). Branch to the honest refunded view first.
+  const _rf = invRefundTotals();
+  if (_rf.full || _rf.partial) { renderRefundedInvoice(_rf); return; }
+  const lineItems = INV.line_items || [];
+  const total = INV.total || lineItems.reduce((s, li) => s + (li.amount || 0), 0);
+  const createdDate = new Date(INV.created_at).toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+  });
+  const paidDate = INV.paid_at
+    ? new Date(INV.paid_at).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+    : 'N/A';
+
+  let lineItemRows = '';
+  lineItems.forEach(li => {
+    lineItemRows += `<tr><td class="price-item-name">${esc(li.name)}</td><td>${fmt(li.amount)}</td></tr>`;
+  });
+
+  renderPropertyBanner();
+
+  document.getElementById('main').innerHTML = `
+    <!-- Paid Banner -->
+    <div class="paid-banner">
+      <div class="paid-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h2>Thank You for Choosing Backup Power Pro!</h2>
+      <p>${INV.notes === 'deposit' ? 'Your deposit has been received. Key will text you within 24 hours to confirm your installation date.' : 'Your Outage-Ready Connection System has been professionally installed, permitted, and inspected.'}</p>
+      <p style="margin-top:10px;font-size:13px;opacity:.8">Keep this receipt for your records${INV.notes !== 'deposit' ? ' and your insurance company' : ''}.</p>
+      <p style="margin-top:8px;font-size:13px">If you ever need anything: <a href="tel:8648637800" style="color:#fff;font-weight:700;text-decoration:underline">(864) 863-7800</a></p>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero-card">
+      <div class="hero-eyebrow">Invoice &middot; Paid</div>
+      <div class="hero-title">Backup Power Pro</div>
+      <div class="hero-sub">Key Electric LLC &middot; 22 Kimbell CT, Greenville SC 29617</div>
+      <div class="hero-meta">
+        <div class="hero-meta-item">
+          <div class="hero-meta-label">Bill To</div>
+          <div class="hero-meta-value">${esc(INV.contact_name)}</div>
+        </div>
+        ${INV.contact_address ? `<div class="hero-meta-item">
+          <div class="hero-meta-label">Address</div>
+          <div class="hero-meta-value">${esc(INV.contact_address)}</div>
+        </div>` : ''}
+        <div class="hero-meta-item">
+          <div class="hero-meta-label">Invoice Date</div>
+          <div class="hero-meta-value">${createdDate}</div>
+        </div>
+        <div class="hero-meta-item">
+          <div class="hero-meta-label">Status</div>
+          <div class="hero-meta-value"><span class="status-badge status-paid">Paid</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Receipt -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon" style="background:#f0fdf4"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <h2>Payment Details</h2>
+      </div>
+      <div class="card-body">
+        <div class="receipt-row">
+          <span class="receipt-label">Amount Paid</span>
+          <span class="receipt-value">${fmt(total)}</span>
+        </div>
+        <div class="receipt-row">
+          <span class="receipt-label">Date Paid</span>
+          <span class="receipt-value">${paidDate}</span>
+        </div>
+        ${INV.payment_method ? `<div class="receipt-row">
+          <span class="receipt-label">Payment Method</span>
+          <span class="receipt-value">${esc(INV.payment_method)}</span>
+        </div>` : ''}
+      </div>
+    </div>
+
+    <!-- Line Items -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <h2>Invoice Details</h2>
+      </div>
+      <div class="card-body">
+        <table class="price-table">
+          ${lineItemRows}
+          <tr class="price-total-row">
+            <td>Total</td>
+            <td><span class="total-badge">${fmt(total)}</span></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    ${buildAgreementHtml()}
+
+    <!-- Download Receipt -->
+    <button class="dl-btn" onclick="downloadReceiptPDF()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download Receipt PDF
+    </button>
+
+    <!-- Referral Card -->
+    <div style="background:linear-gradient(135deg,#fffbe6,#fff8d0);border:2px solid var(--gold);border-radius:14px;padding:18px 20px;margin-bottom:14px">
+      <div style="font-family:'Outfit',sans-serif;font-size:14px;font-weight:800;color:var(--navy);margin-bottom:6px">🏡 Know a Neighbor With a Generator?</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:12px">If a neighbor ever asks who did your generator hookup, send them our way. Zero effort, just share the link or my number.</div>
+      <a href="sms:?body=Hey! I just had Backup Power Pro connect my generator to my panel, licensed, permitted, everything. Super easy. Call or text Key at (864) 863-7800 or check out backuppowerpro.com" style="display:block;background:transparent;color:var(--navy);font-family:'Outfit',sans-serif;font-size:14px;font-weight:800;padding:12px;border-radius:28px;border:1.5px solid rgba(11,31,59,.22);text-decoration:none;text-align:center">Share With a Neighbor &rarr;</a>
+    </div>
+
+    <!-- Review Ask -->
+    <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:14px;text-align:center">
+      <div style="font-size:22px;margin-bottom:8px">⭐⭐⭐⭐⭐</div>
+      <div style="font-family:'Outfit',sans-serif;font-size:14px;font-weight:800;color:var(--navy);margin-bottom:6px">Enjoying Your New System?</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:12px">A quick Google review helps other Upstate SC homeowners find us, and means the world to a small business.</div>
+      <a href="https://g.page/r/CdMLoIpnmrneEAE/review" target="_blank" style="display:block;background:var(--navy);color:#fff;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;padding:12px;border-radius:8px;text-decoration:none" rel="noopener noreferrer">Leave a Google Review &rarr;</a>
+    </div>
+
+    <div style="font-size:12px;color:var(--text3);text-align:center;line-height:1.6;margin-top:8px">
+      Questions? Call or text <strong style="color:var(--navy)">(864) 863-7800</strong>
+      <div style="margin-top:12px"><a href="/assets/docs/the-portable-generator-power-guide.pdf" target="_blank" style="color:#1d4ed8;font-weight:600;text-decoration:none" rel="noopener noreferrer">📘 Generator Safety Guide (PDF)</a></div>
+    </div>
+  `;
+}
+
+// ── PAY ONLINE (EMBEDDED CHECKOUT) ──────────────────────────
+const SUPABASE_FUNCTIONS_URL = 'https://hfatblrcwytxvijjhpal.supabase.co/functions/v1';
+const SUPABASE_ANON_KEY = 'sb_publishable_kBXthY-Han29JLqcT514RQ_RtwxXLZ-';
+const STRIPE_PK = 'pk_test_51U5C3NGvY0NQQF2UUR67S5QYvs7NxBZaaaRlxNWVsqqNJgavyf1R05CmxYxKq4J59RODEIZ1z2Eg2Txhw0nenSGI00w3zYKhx9';
+
+let _stripe = null;
+let _embeddedCheckout = null;
+let _checkoutReturnFocus = null;
+let _checkoutKeyHandler = null;
+let _checkoutHideTimer = null;
+let _checkoutBackground = [];
+let _checkoutGeneration = 0;
+
+function checkoutFocusableElements(overlay) {
+  return Array.from(overlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]'))
+    .filter((element) => !element.disabled && element.getAttribute('tabindex') !== '-1' && !element.hidden);
+}
+
+function openCheckout(returnFocus) {
+  const overlay = document.getElementById('checkout-overlay');
+  if (!overlay) return;
+
+  if (_checkoutHideTimer) {
+    window.clearTimeout(_checkoutHideTimer);
+    _checkoutHideTimer = null;
+  }
+  if (_checkoutKeyHandler) document.removeEventListener('keydown', _checkoutKeyHandler);
+
+  _checkoutReturnFocus = returnFocus instanceof HTMLElement ? returnFocus : document.activeElement;
+  _checkoutBackground = Array.from(document.body.children).filter((element) => {
+    if (element === overlay || element.tagName === 'SCRIPT' || element.tagName === 'NOSCRIPT') return false;
+    return !element.hasAttribute('inert');
+  });
+  _checkoutBackground.forEach((element) => element.setAttribute('inert', ''));
+
+  overlay.hidden = false;
+  overlay.removeAttribute('inert');
+  overlay.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('checkout-open');
+
+  _checkoutKeyHandler = (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeCheckout();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+
+    const focusable = checkoutFocusableElements(overlay);
+    if (!focusable.length) {
+      event.preventDefault();
+      overlay.querySelector('.checkout-modal')?.focus();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && (document.activeElement === first || !overlay.contains(document.activeElement))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (document.activeElement === last || !overlay.contains(document.activeElement))) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+  document.addEventListener('keydown', _checkoutKeyHandler);
+
+  window.requestAnimationFrame(() => {
+    overlay.classList.add('active');
+    const focusable = checkoutFocusableElements(overlay);
+    (focusable[0] || overlay.querySelector('.checkout-modal'))?.focus();
+  });
+}
+
+// prefer_ach: true = show bank transfer first (default), false = card only (tap-to-pay mode)
+async function payOnline(prefer_ach = true) {
+  if (IS_PREVIEW || new URLSearchParams(window.location.search).get('preview') === '1') { showToast('Preview mode, payment is disabled.'); return; }
+
+  const invoiceStatus = String(INV?.status || '').toLowerCase();
+  const payableStatuses = ['sent','unpaid','viewed','overdue','open','partial'];
+  const remaining = Number(INV?.amount_remaining);
+  if (!payableStatuses.includes(invoiceStatus) || !Number.isFinite(remaining) || remaining <= 0) {
+    showToast('This invoice is not available for payment. Call or text (864) 863-7800.');
+    return;
+  }
+
+  const btn = prefer_ach ? document.querySelector('.btn-pay') : document.querySelector('.btn-pay-card');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span style="opacity:.7">Opening checkout…</span>'; }
+  const checkoutGeneration = ++_checkoutGeneration;
+
+  try {
+    const token = new URLSearchParams(window.location.search).get('token');
+    if (!_stripe) _stripe = Stripe(STRIPE_PK);
+
+    openCheckout(btn);
+    document.getElementById('checkout-container').innerHTML = '<div style="text-align:center;padding:40px 0"><div class="spinner-large" style="margin:0 auto 12px"></div><div style="font-size:13px;color:var(--text3)">Loading secure checkout…</div></div>';
+
+    const checkout = await _stripe.initEmbeddedCheckout({
+      fetchClientSecret: async () => {
+        const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/create-checkout-session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+          body: JSON.stringify({ token, embedded: true, prefer_ach }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.clientSecret) throw new Error(data.error || 'Failed to create checkout session');
+        return data.clientSecret;
+      },
+    });
+
+    if (checkoutGeneration !== _checkoutGeneration) {
+      checkout.destroy();
+      return;
+    }
+
+    _embeddedCheckout = checkout;
+    document.getElementById('checkout-container').innerHTML = '';
+    checkout.mount('#checkout-container');
+
+    if (btn) {
+      btn.disabled = false;
+      if (prefer_ach) {
+        btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg> Pay by Bank Transfer <span class="ach-badge">NO FEE</span>`;
+      } else {
+        btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Pay by credit or debit card instead`;
+      }
+    }
+  } catch (err) {
+    if (checkoutGeneration !== _checkoutGeneration) return;
+    closeCheckout();
+    if (btn) { btn.disabled = false; }
+    showToast('Payment unavailable right now, call or text (864) 863-7800.');
+    console.error(err);
+  }
+}
+
+function closeCheckout() {
+  const overlay = document.getElementById('checkout-overlay');
+  if (!overlay) return;
+
+  _checkoutGeneration += 1;
+
+  overlay.classList.remove('active');
+  overlay.setAttribute('inert', '');
+  overlay.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('checkout-open');
+  _checkoutBackground.forEach((element) => element.removeAttribute('inert'));
+  _checkoutBackground = [];
+  if (_checkoutKeyHandler) {
+    document.removeEventListener('keydown', _checkoutKeyHandler);
+    _checkoutKeyHandler = null;
+  }
+  if (_checkoutReturnFocus instanceof HTMLElement && document.contains(_checkoutReturnFocus)) {
+    _checkoutReturnFocus.focus();
+  }
+  _checkoutReturnFocus = null;
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  _checkoutHideTimer = window.setTimeout(() => {
+    overlay.hidden = true;
+    _checkoutHideTimer = null;
+  }, reducedMotion ? 0 : 220);
+  if (_embeddedCheckout) {
+    _embeddedCheckout.destroy();
+    _embeddedCheckout = null;
+  }
+  document.querySelectorAll('.btn-pay, .btn-pay-card').forEach(b => { b.disabled = false; });
+}
+
+// ── DOWNLOAD INVOICE PDF ────────────────────────────────────
+function downloadInvoicePDF() {
+  buildPDF('INVOICE', false);
+}
+
+// ── DOWNLOAD RECEIPT PDF ────────────────────────────────────
+function downloadReceiptPDF() {
+  buildPDF('RECEIPT', true);
+}
+
+// ── BUILD PDF ───────────────────────────────────────────────
+function buildPDF(docTitle, isPaid) {
+  const jsPDF = window.jspdf.jsPDF;
+  const doc = new jsPDF();
+  const navy = [11, 31, 59];
+  const gold = [255, 186, 0];
+  const green = [5, 150, 105];
+  const lineItems = INV.line_items || [];
+  const total = INV.total || lineItems.reduce((s, li) => s + (li.amount || 0), 0);
+
+  // Determine title
+  let headerTitle = docTitle;
+  if (isPaid) headerTitle = 'RECEIPT, PAID IN FULL';
+
+  // Navy header bar
+  doc.setFillColor(navy[0], navy[1], navy[2]);
+  doc.rect(0, 0, 210, 40, 'F');
+
+  // Title
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(isPaid ? 18 : 22);
+  doc.setFont('helvetica', 'bold');
+  doc.text(headerTitle, 20, 22);
+
+  // Company info
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Key Electric LLC , DBA: Backup Power Pro', 20, 30);
+  doc.text('22 Kimbell CT, Greenville SC 29617', 20, 35);
+  doc.setTextColor(gold[0], gold[1], gold[2]);
+  doc.text('(864) 863-7800', 150, 30);
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(8);
+  doc.text('SC Electrical Contractor License #2942, Fully Licensed & Insured', 150, 35);
+
+  // PAID watermark (for receipts)
+  if (isPaid) {
+    doc.setTextColor(5, 150, 105);
+    doc.setFontSize(60);
+    doc.setFont('helvetica', 'bold');
+    doc.setGState(new doc.GState({ opacity: 0.08 }));
+    doc.text('PAID', 105, 160, { align: 'center', angle: 35 });
+    doc.setGState(new doc.GState({ opacity: 1 }));
+  }
+
+  // Bill To section
+  doc.setTextColor(navy[0], navy[1], navy[2]);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Bill To:', 20, 52);
+  doc.setFont('helvetica', 'normal');
+  let billY = 58;
+  if (INV.contact_name) { doc.text(INV.contact_name, 20, billY); billY += 6; }
+  if (INV.contact_address) { doc.text(INV.contact_address, 20, billY); billY += 6; }
+  if (INV.contact_phone) { doc.text(INV.contact_phone, 20, billY); billY += 6; }
+  if (INV.contact_email) { doc.text(INV.contact_email, 20, billY); billY += 6; }
+
+  // Date section (right side)
+  doc.setFont('helvetica', 'bold');
+  doc.text('Date:', 150, 52);
+  doc.setFont('helvetica', 'normal');
+  doc.text(new Date(INV.created_at).toLocaleDateString(), 150, 58);
+
+  if (isPaid && INV.paid_at) {
+    doc.setFont('helvetica', 'bold');
+    doc.text('Paid:', 150, 64);
+    doc.setFont('helvetica', 'normal');
+    doc.text(new Date(INV.paid_at).toLocaleDateString(), 150, 70);
+    if (INV.payment_method) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Method:', 150, 76);
+      doc.setFont('helvetica', 'normal');
+      doc.text(INV.payment_method, 150, 82);
+    }
+  }
+
+  // Status badge
+  if (isPaid) {
+    const badgeY = INV.payment_method ? 88 : 74;
+    doc.setFillColor(green[0], green[1], green[2]);
+    doc.roundedRect(150, badgeY, 30, 10, 2, 2, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('PAID', 165, badgeY + 7, { align: 'center' });
+  }
+
+  // Line items table header
+  let y = 95;
+  doc.setFillColor(240, 244, 250);
+  doc.rect(20, y - 6, 170, 10, 'F');
+  doc.setTextColor(navy[0], navy[1], navy[2]);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('Description', 22, y);
+  doc.text('Amount', 170, y, { align: 'right' });
+  y += 10;
+
+  // Line items
+  doc.setFont('helvetica', 'normal');
+  lineItems.forEach(li => {
+    if (li.name && li.amount) {
+      doc.text(li.name, 22, y);
+      doc.text('$' + Number(li.amount).toLocaleString(), 170, y, { align: 'right' });
+      y += 8;
+    }
+  });
+
+  // Total line
+  y += 4;
+  doc.setDrawColor(navy[0], navy[1], navy[2]);
+  doc.line(20, y, 190, y);
+  y += 8;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.text('Total: $' + Number(total).toLocaleString(), 170, y, { align: 'right' });
+
+  // Footer note
+  y += 16;
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 100, 100);
+  if (isPaid) {
+    doc.text('This receipt confirms payment has been received for the services described above.', 20, y);
+  } else {
+    doc.text('Payment due upon completion. Price includes all materials, permit, and inspection.', 20, y);
+  }
+
+  // Notes
+  if (INV.notes) {
+    y += 12;
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(navy[0], navy[1], navy[2]);
+    doc.setFontSize(10);
+    doc.text('Notes:', 20, y);
+    y += 6;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    const noteLines = doc.splitTextToSize(INV.notes, 170);
+    doc.text(noteLines, 20, y);
+    y += noteLines.length * 5;
+  }
+
+  // ── ORIGINAL AGREEMENT (from linked proposal) ──────────────
+  if (LINKED_PROPOSAL && LINKED_PROPOSAL.status === 'Approved') {
+    const LP = LINKED_PROPOSAL;
+
+    // Check if we have room on current page, otherwise add new page
+    if (y > 200) {
+      // Add footer to current page
+      addFooterBar(doc, navy, gold);
+      doc.addPage();
+      y = 20;
+    }
+
+    y += 10;
+    doc.setFillColor(240, 244, 250);
+    doc.rect(20, y - 6, 170, 10, 'F');
+    doc.setTextColor(navy[0], navy[1], navy[2]);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('ORIGINAL AGREEMENT', 22, y);
+    y += 12;
+
+    // Terms summary
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(80, 80, 80);
+
+    let termsText = '';
+    if (LP.approved_terms_snapshot) {
+      try {
+        const terms = typeof LP.approved_terms_snapshot === 'string' ? JSON.parse(LP.approved_terms_snapshot) : LP.approved_terms_snapshot;
+        termsText = (terms.contact_name || LP.contact_name || '') + ' approved a ' + (terms.selected_amp || '30') + ' Amp Connection System ' +
+          (terms.selected_surge ? 'with whole-home surge protection' : 'without surge protection') +
+          ' for a total of $' + Number(terms.total || LP.total || 0).toLocaleString() + '. ' +
+          'Scope of work and pricing were reviewed and agreed to. Generator Safety Instructions were acknowledged.';
+      } catch(e) {
+        termsText = String(LP.approved_terms_snapshot).substring(0, 300);
+      }
+    }
+
+    if (termsText) {
+      const tLines = doc.splitTextToSize(termsText, 170);
+      doc.text(tLines, 22, y);
+      y += tLines.length * 4.5 + 6;
+    }
+
+    // Signature details
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(navy[0], navy[1], navy[2]);
+    doc.setFontSize(9);
+    doc.text('Electronically signed by:', 22, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(LP.signer_name || 'N/A', 80, y);
+    y += 6;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Date:', 22, y);
+    doc.setFont('helvetica', 'normal');
+    const sigDate = LP.signed_at ? new Date(LP.signed_at).toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) : 'N/A';
+    doc.text(sigDate, 80, y);
+    y += 6;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('IP Address:', 22, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(LP.approved_ip || 'N/A', 80, y);
+    y += 6;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Browser:', 22, y);
+    doc.setFont('helvetica', 'normal');
+    const uaText = LP.approved_user_agent ? LP.approved_user_agent.substring(0, 80) : 'N/A';
+    const uaLines = doc.splitTextToSize(uaText, 110);
+    doc.setFontSize(7);
+    doc.text(uaLines, 80, y);
+    doc.setFontSize(9);
+    y += uaLines.length * 4 + 6;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Safety Instructions:', 22, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(LP.safety_ack ? 'Acknowledged' : 'Not acknowledged', 80, y);
+    y += 10;
+
+    // Legal note
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.setFont('helvetica', 'italic');
+    const legalText = 'This document constitutes a binding agreement between the parties under the Electronic Signatures in Global and National Commerce Act (ESIGN Act).';
+    const legalLines = doc.splitTextToSize(legalText, 170);
+    doc.text(legalLines, 22, y);
+  }
+
+  // Navy footer bar
+  addFooterBar(doc, navy, gold);
+
+  const prefix = isPaid ? 'Receipt' : 'Invoice';
+  doc.save(prefix + '-' + (INV.contact_name || 'Customer').replace(/\s+/g, '-') + '.pdf');
+}
+
+function addFooterBar(doc, navy, gold) {
+  doc.setFillColor(navy[0], navy[1], navy[2]);
+  doc.rect(0, 277, 210, 20, 'F');
+  doc.setTextColor(gold[0], gold[1], gold[2]);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Key Electric LLC , backuppowerpro.com , (864) 863-7800', 105, 286, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(255, 255, 255);
+  doc.text('22 Kimbell CT, Greenville SC 29617  |  SC Electrical Contractor License #2942  |  Fully Licensed & Insured  |  DBA: Backup Power Pro', 105, 292, { align: 'center' });
+}
+
+</script>
+</body>
+</html>

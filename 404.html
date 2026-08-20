@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<!-- Custom 404 (Key 2026-07-17, S1): the MVP freeze hard-404'd old ad/lead
+     entry paths (/lsa /n /m /g /city/*). Key is future-focused but wants those
+     clicks to still land somewhere useful, temporarily, without unfreezing
+     marketing. GitHub Pages serves this file for ANY unknown path, so every
+     dead link (old ads, postcards, typos) redirects to the quote walk with its
+     query params carried for attribution. Remove or revisit when marketing
+     unfreezes. -->
+<meta name="robots" content="noindex">
+<meta http-equiv="refresh" content="0; url=/walk-v2/?src=legacy">
+<title>Backup Power Pro</title>
+<style>
+  html,body{height:100%;margin:0}
+  body{display:flex;align-items:center;justify-content:center;background:#0f1b2d;color:#eaf1fb;
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  a{color:#7db4ff}
+</style>
+<script>
+  // Send the visitor to the quote walk. Preserve any query string (fbclid/utm)
+  // so ad attribution survives; tag src=legacy when the link carried no src of
+  // its own so PostHog can count how many dead-path clicks still arrive.
+  (function () {
+    var q = window.location.search.replace(/^\?/, '');
+    var dest;
+    if (/(^|&)src=/.test(q)) dest = '/walk-v2/?' + q;
+    else if (q) dest = '/walk-v2/?' + q + '&src=legacy';
+    else dest = '/walk-v2/?src=legacy';
+    window.location.replace(dest);
+  })();
+</script>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body>
+<p>Taking you to your quote. <a href="/walk-v2/?src=legacy">Continue</a></p>
+</body>
+</html>

@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="en" class="no-js qw-template-document-root">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-6mwsRyANfr8IftJzvi0gP+lKuUDOsVssfUNkn7goJSU='; script-src-attr 'none'; style-src 'self'; style-src-elem 'self' 'sha256-oy8BBmKR81N7mZJF/Mlkt18/mt1YBTZQMPYdlXc+IIY='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
+<script src="/walk-v2/no-js-bootstrap.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Your project range | Backup Power Pro</title>
+<style>
+  :root {
+    --navy: #0b1f3b;
+    --navy-mid: #17365d;
+    --gold: #ffba00;
+    --gold-hover: #ffc519;
+    --gold-tint: #fff7e0;
+    --ink: #152033;
+    --muted: #526074;
+    --faint: #718096;
+    --edge: rgba(11,31,59,.14);
+    --surface: #f5f7fa;
+    --card: #fff;
+    --red: #b42318;
+    --green: #137a53;
+    --head: "Outfit", system-ui, sans-serif;
+    --body: "Inter", system-ui, sans-serif;
+    --shadow-sm: 0 2px 10px rgba(11,31,59,.08);
+    --shadow-md: 0 12px 34px rgba(11,31,59,.14);
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--surface); }
+  body { margin: 0; color: var(--ink); background: var(--surface); font-family: var(--body); }
+  button, a { font: inherit; }
+  button { border: 0; cursor: pointer; }
+  button:focus-visible, a:focus-visible { outline: 3px solid #1464c0; outline-offset: 3px; }
+  .page { width: min(100%, 720px); min-height: 100vh; margin: 0 auto; background: #fff; }
+  .head {
+    display: flex; align-items: center; justify-content: space-between;
+    min-height: 72px; gap: 10px; padding: 14px 20px; color: #fff; background: var(--navy);
+  }
+  .head img { display: block; width: auto; max-width: calc(100% - 84px); height: 27px; object-fit: contain; }
+  .step {
+    flex: 0 0 74px; color: rgba(255,255,255,.75);
+    font-size: 11px; font-weight: 700; line-height: 1.25; text-align: right;
+  }
+  main { display: grid; min-width: 0; gap: 16px; padding: 24px 18px 40px; }
+  h1, h2 { margin: 0; color: var(--navy); font-family: var(--head); }
+  h1 { font-size: 31px; line-height: 1.08; letter-spacing: -.02em; }
+  h2 { font-size: 20px; line-height: 1.2; }
+  .intro p, .card p { color: var(--muted); line-height: 1.55; }
+  .intro p { margin: 8px 0 0; font-size: 16px; }
+  .card, .range, .notice {
+    border-radius: 16px; background: var(--card);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1.5px var(--edge);
+    padding: 18px;
+  }
+  .range { color: #fff; background: var(--navy); box-shadow: var(--shadow-md); }
+  .range .eyebrow, .eyebrow {
+    margin: 0 0 8px; color: var(--gold); font-family: var(--head);
+    font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
+  }
+  .amount {
+    color: #fff; font-family: var(--head); font-size: clamp(30px, 10vw, 39px);
+    font-weight: 800; line-height: 1.05; overflow-wrap: anywhere;
+  }
+  .range p { margin: 12px 0 0; color: rgba(255,255,255,.82); font-size: 15px; line-height: 1.5; }
+  .choice {
+    width: 100%; min-height: 54px; margin-top: 10px; padding: 12px 14px;
+    border-radius: 12px; color: var(--navy); background: #fff;
+    box-shadow: inset 0 0 0 1.5px var(--edge); text-align: left;
+  }
+  .choice strong, .choice small { display: block; }
+  .choice strong { font-family: var(--head); font-size: 16px; }
+  .choice small { margin-top: 4px; color: var(--muted); font-size: 13px; line-height: 1.35; }
+  .choice[aria-pressed="true"] { color: #fff; background: var(--navy); }
+  .choice[aria-pressed="true"] small { color: rgba(255,255,255,.78); }
+  .actions { display: grid; gap: 10px; }
+  .btn {
+    display: flex; align-items: center; justify-content: center; width: 100%; min-height: 54px;
+    padding: 12px 18px; border-radius: 999px; color: var(--navy); background: var(--gold);
+    font-family: var(--head); font-size: 17px; font-weight: 800; text-align: center; text-decoration: none;
+  }
+  .btn:hover { background: var(--gold-hover); }
+  .btn.secondary { background: #fff; box-shadow: inset 0 0 0 1.5px var(--edge); }
+  .btn:disabled { color: var(--faint); background: #e9edf3; cursor: not-allowed; }
+  .link-btn {
+    min-height: 44px; color: var(--navy); background: transparent;
+    font-weight: 700; text-decoration: underline; text-underline-offset: 4px;
+  }
+  .notice { color: var(--muted); font-size: 14px; line-height: 1.5; }
+  .notice .btn { margin-top: 12px; }
+  .notice.error { color: var(--red); background: #fff4f2; }
+  .notice.success { color: #075b3d; background: #ecfdf3; }
+  .street-view {
+    position: relative; min-height: 132px; overflow: hidden; border-radius: 18px;
+    background: #dfe4eb; box-shadow: inset 0 0 0 1px var(--edge);
+  }
+  .street-view img { display: block; width: 100%; height: 148px; object-fit: cover; }
+  .street-view .street-copy {
+    display: flex; align-items: center; justify-content: center; min-height: 132px;
+    padding: 18px; color: var(--muted); font-size: 13px; font-weight: 700; text-align: center;
+  }
+  .range .range-basis { margin-top: 12px; font-size: 13px; line-height: 1.45; }
+  .range .range-basis:empty { display: none; }
+  .scope-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .included {
+    flex: 0 0 auto; padding: 5px 9px; border-radius: 100px; color: #8a5a00;
+    background: var(--gold-tint); font-size: 10px; font-weight: 800; letter-spacing: .07em;
+    text-transform: uppercase; box-shadow: inset 0 0 0 1px rgba(255,186,0,.4);
+  }
+  .scope-list { display: grid; margin-top: 10px; }
+  .scope-row { display: grid; grid-template-columns: 64px 1fr; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid rgba(11,31,59,.08); }
+  button.scope-row { width: 100%; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+  button.scope-row:hover strong { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+  button.scope-row:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; border-radius: 10px; }
+  .scope-row img { display: block; width: 64px; height: 58px; border-radius: 10px; object-fit: cover; background: var(--surface); }
+  .scope-copy { display: grid; gap: 3px; min-width: 0; }
+  .scope-copy strong { color: var(--navy); font-size: 14px; }
+  .scope-copy span { color: var(--muted); font-size: 12px; line-height: 1.4; }
+  .hidden { display: none !important; }
+  .distance-options { display: grid; gap: 8px; margin-top: 12px; }
+  .distance-options + .btn { margin-top: 14px; }
+  .distance-options + .btn + .link-btn { display: flex; align-items: center; justify-content: center; width: 100%; margin-top: 6px; }
+  .guide { border: 2px solid rgba(255,186,0,.55); background: var(--gold-tint); }
+  .guide a { margin-top: 12px; }
+  .history { margin: 10px 0 0; padding-left: 20px; color: var(--muted); line-height: 1.5; }
+  .foot {
+    padding: 20px; color: rgba(255,255,255,.7); background: var(--navy);
+    font-size: 12px; line-height: 1.6; text-align: center;
+  }
+  @media (max-width: 340px) {
+    .head { padding-left: 14px; padding-right: 14px; }
+    .head img { height: 26px; }
+    .step { max-width: 74px; font-size: 11px; line-height: 1.25; text-align: right; }
+  }
+  @media (min-width: 760px) {
+    .page { margin: 24px auto; min-height: auto; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-md); }
+    main { padding: 34px 40px 48px; }
+  }
+</style>
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=20260808d" />
+<link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body class="qw-template-document">
+<div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to review your current range. Your saved answers remain on file. Turn it on and reload, or call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
+<div class="page qw-template-page qw-range-page" data-screen-label="Quote walk range acceptance">
+  <header class="site-head">
+    <a class="lockup" href="https://qa.backuppowerpro.com" aria-label="Backup Power Pro" style="text-decoration:none;">
+      <img src="/assets/images/logo-white-v2.png" alt="Backup Power Pro" style="height:28px;display:block;width:auto;" />
+    </a>
+  </header>
+  <section class="qw-template-hero qw-range-hero">
+    <div class="qw-range-payoff hidden" data-range-card="">
+      <h1 data-range-heading="">Get your home outage ready: <span data-amount=""></span></h1>
+      <h1 class="hidden" data-accepted-heading=""></h1>
+      <p class="range-basis" data-basis=""></p>
+      <p class="range-next-step">I’ll review your photos and prepare your complete proposal around the setup you shared.</p>
+      <section class="accepted-delivery hidden" data-accepted-delivery="" aria-labelledby="acceptedDeliveryTitle">
+        <h2 id="acceptedDeliveryTitle">Watch for my proposal text.</h2>
+        <p data-delivery-copy=""></p>
+        <button class="link-btn qw-secondary-action" type="button" data-edit-phone=""></button>
+        <form class="accepted-phone-form hidden" data-phone-form="" novalidate>
+          <label for="acceptedPhone">Mobile number</label>
+          <input id="acceptedPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" aria-describedby="acceptedPhoneConsent acceptedPhoneError" />
+          <p class="consent-fine" id="acceptedPhoneConsent">By saving, you agree to texts from Backup Power Pro about your project at this mobile number. Msg and data rates may apply. Reply STOP anytime.</p>
+          <p class="accepted-phone-error hidden" id="acceptedPhoneError" data-phone-error="" role="alert"></p>
+          <button class="btn" type="submit" data-save-phone="">Save mobile number</button>
+          <button class="link-btn qw-secondary-action" type="button" data-cancel-phone="">Cancel</button>
+        </form>
+        <p class="accepted-phone-status hidden" data-phone-status="" role="status"></p>
+      </section>
+      <button class="btn range-primary-action" type="button" data-accept="">Yes, prepare my proposal</button>
+    </div>
+  </section>
+  <section class="proof-carousel qw-range-proof-carousel hidden" aria-label="What your project can include" data-range-proof-carousel="">
+    <div class="proof-track" role="group" aria-roledescription="carousel" aria-label="Installed work and customer reviews" tabindex="0" data-proof-track="" data-autoplay-ms="8000">
+      <article class="proof-slide proof-slide--image" role="group" aria-roledescription="slide" aria-label="Carousel item 1 of 10" data-proof-slide="">
+        <img class="proof-image" src="/img/connected-generator-current.jpg" alt="Portable generator connected by a yellow cord to an outdoor home inlet" />
+        <p class="proof-copy">One hookup. Power what matters.</p>
+      </article>
+      <article class="proof-slide proof-slide--review" role="group" aria-roledescription="slide" aria-label="Carousel item 2 of 10" data-proof-slide="">
+        <blockquote class="proof-review"><div class="review-stars" role="img" aria-label="5 star Google review"><img src="/img/google-g-logo.webp" alt="" />★★★★★</div><p>Installed a 50-amp Generator inlet box along with a panel interlock system in our home. I was impressed by Key’s attention to detail, professionalism, and organization.</p><cite>Jim J. · Google review</cite></blockquote>
+      </article>
+      <article class="proof-slide proof-slide--image" role="group" aria-roledescription="slide" aria-label="Carousel item 3 of 10" data-proof-slide="">
+        <img class="proof-image" src="/img/essentials-powered-current.png" alt="A lit home, a cold refrigerator, and a phone charging at night" />
+        <p class="proof-copy">Keep your essentials on.</p>
+      </article>
+      <article class="proof-slide proof-slide--review" role="group" aria-roledescription="slide" aria-label="Carousel item 4 of 10" data-proof-slide="">
+        <blockquote class="proof-review"><div class="review-stars" role="img" aria-label="5 star Google review"><img src="/img/google-g-logo.webp" alt="" />★★★★★</div><p>Oh my gosh these guys were absolutely fantastic. Everything went so smoothly and the finished work looks super professional.</p><cite>Hallie L. · Google review</cite></blockquote>
+      </article>
+      <article class="proof-slide proof-slide--image" role="group" aria-roledescription="slide" aria-label="Carousel item 5 of 10" data-proof-slide="">
+        <img class="proof-image" src="/img/outdoor-inlets-current.png" alt="Two BPP-installed metal outdoor generator connections with weather-rated covers" />
+        <p class="proof-copy">A permanent outdoor connection.</p>
+      </article>
+      <article class="proof-slide proof-slide--review" role="group" aria-roledescription="slide" aria-label="Carousel item 6 of 10" data-proof-slide="">
+        <blockquote class="proof-review"><div class="review-stars" role="img" aria-label="5 star Google review"><img src="/img/google-g-logo.webp" alt="" />★★★★★</div><p>punctual, professional, and truly set the bar high. Throughout permitting and scheduling, he kept me fully informed, and his performance and timing exceeded my expectations.</p><cite>Dino S. · Google review</cite></blockquote>
+      </article>
+      <article class="proof-slide proof-slide--image" role="group" aria-roledescription="slide" aria-label="Carousel item 7 of 10" data-proof-slide="">
+        <img class="proof-image" src="/img/transfer-systems-current.jpg" alt="Two installed breaker-panel interlock systems that prevent utility and generator power from being on at the same time" />
+        <p class="proof-copy">Safely switch to generator power.</p>
+      </article>
+      <article class="proof-slide proof-slide--review" role="group" aria-roledescription="slide" aria-label="Carousel item 8 of 10" data-proof-slide="">
+        <blockquote class="proof-review"><div class="review-stars" role="img" aria-label="5 star Google review"><img src="/img/google-g-logo.webp" alt="" />★★★★★</div><p>Outstanding service, competent, on time, quick response, professional installation, clean, organized, safety a priority. Highly recommend! Will use again.</p><cite>Mark M. · Google review</cite></blockquote>
+      </article>
+      <article class="proof-slide proof-slide--image" role="group" aria-roledescription="slide" aria-label="Carousel item 9 of 10" data-proof-slide="">
+        <img class="proof-image" src="/img/cord-permit-current.jpg" alt="A compatible yellow generator cord and electrical permit paperwork posted for inspection" />
+        <p class="proof-copy">Cord included. Permit handled.</p>
+      </article>
+      <article class="proof-slide proof-slide--review" role="group" aria-roledescription="slide" aria-label="Carousel item 10 of 10" data-proof-slide="">
+        <blockquote class="proof-review"><div class="review-stars" role="img" aria-label="5 star Google review"><img src="/img/google-g-logo.webp" alt="" />★★★★★</div><p>Best customer service ever, he went above and beyond to help us. Very knowledgeable and honest man!! Definitely I'll recommend Key to all my friends.</p><cite>Bogdi · Google review</cite></blockquote>
+      </article>
+    </div>
+  </section>
+  <main id="rangePage">
+    <div class="notice" data-loading="" role="status">Checking your saved setup...</div>
+    <div class="notice error hidden" data-error="" role="alert" tabindex="-1"></div>
+
+    <section class="notice hidden" data-revision-context="" role="status">
+      <span data-revision-copy=""></span>
+      <button class="btn secondary hidden" type="button" data-restore-cord="">Add the compatible cord back</button>
+    </section>
+
+    <section class="card hidden" data-fit-card="">
+      <div class="actions">
+        <div class="scope-expansion" id="includedScope" data-scope="">
+          <div class="scope-head">
+            <h2 tabindex="-1">Included in your project range</h2>
+          </div>
+          <p class="scope-summary-copy" data-scope-summary-copy=""></p>
+          <div class="scope-list" data-scope-list=""></div>
+          <button class="btn" type="button" data-accept-bottom="">Yes, prepare my proposal</button>
+          <button class="btn hidden" type="button" data-retry-handoff="">Continue with this saved setup</button>
+        </div>
+        <button class="link-btn qw-secondary-action" type="button" data-no="">No, show me my options</button>
+      </div>
+    </section>
+
+    <section class="card hidden" data-options="">
+      <h2>Would a different setup work better?</h2>
+      <p>These choices change the saved setup. Required installation work, permit, and required inspection stay included.</p>
+      <button class="choice hidden" type="button" data-alt-30="">
+        <strong>Choose a 30 Amp installation</strong>
+        <small>Both observed connections stay saved. The revised range will use the selected 30 Amp installation.</small>
+      </button>
+      <button class="choice hidden" type="button" data-alt-50="">
+        <strong>Return to a 50 Amp installation</strong>
+        <small>Both observed connections stay saved. The revised range will return to the higher 50 Amp connection.</small>
+      </button>
+      <button class="choice" type="button" data-alt-distance="">
+        <strong>Reconsider the outdoor connection location</strong>
+        <small>Choose a real shorter path if another safe location works.</small>
+      </button>
+      <button class="choice" type="button" data-alt-cord="">
+        <strong>I will provide my own approved compatible cord</strong>
+        <small data-cord-removal-copy="">Remove the included cord and lower this range by $150.</small>
+      </button>
+      <button class="choice" type="button" data-no-alternative="">
+        <strong>None of these options work for me</strong>
+        <small>Finish here without requesting a proposal.</small>
+      </button>
+      <button class="link-btn qw-secondary-action options-return" type="button" data-close-options="">Back to the current range</button>
+    </section>
+
+    <section class="notice hidden" data-not-fit-terminal="" role="status">
+      <strong>Your Quote Walk is saved.</strong><br />
+      No proposal has been requested or prepared.
+    </section>
+
+    <section class="card hidden" data-distance-revision="">
+      <h2>Choose the real shorter connection path.</h2>
+      <p>A revised range is created only after a different shorter path is selected and saved.</p>
+      <div class="distance-options" data-distance-options=""></div>
+      <button class="btn" type="button" data-save-distance="" disabled>Save this changed setup</button>
+      <button class="link-btn qw-secondary-action" type="button" data-cancel-distance="">Back without changing</button>
+    </section>
+
+  </main>
+  <footer class="foot">
+    <div class="foot-identity"><strong>Licensed and insured</strong><span>SC Lic #2942 by Key Electric</span></div>
+    <span class="foot-area">Currently serving Greenville, Spartanburg,<br>and Pickens counties</span>
+    <span class="foot-process">Every project is reviewed and permitted by Key, completed with trusted local installation partners, and coordinated through final inspection.</span>
+  </footer>
+</div>
+<script src="/walk-v2/walk.js?v=20260816-save"></script>
+<script src="/walk-v2/range-proof-carousel.js"></script>
+<script>
+(function () {
+  var t = WALK.requireToken(); if (!t) return;
+  var main = document.getElementById('rangePage');
+  var loading = main.querySelector('[data-loading]');
+  var error = main.querySelector('[data-error]');
+  var rangeCard = document.querySelector('[data-range-card]');
+  var acceptedDelivery = document.querySelector('[data-accepted-delivery]');
+  var deliveryCopy = acceptedDelivery.querySelector('[data-delivery-copy]');
+  var editPhone = acceptedDelivery.querySelector('[data-edit-phone]');
+  var phoneForm = acceptedDelivery.querySelector('[data-phone-form]');
+  var phoneInput = acceptedDelivery.querySelector('[name="phone"]');
+  var phoneError = acceptedDelivery.querySelector('[data-phone-error]');
+  var phoneStatus = acceptedDelivery.querySelector('[data-phone-status]');
+  var proofCarousel = document.querySelector('[data-range-proof-carousel]');
+  var revisionContext = main.querySelector('[data-revision-context]');
+  var revisionCopy = main.querySelector('[data-revision-copy]');
+  var restoreCord = main.querySelector('[data-restore-cord]');
+  var retryHandoff = main.querySelector('[data-retry-handoff]');
+  var scopeSummaryCopy = main.querySelector('[data-scope-summary-copy]');
+  var cordRemovalCopy = main.querySelector('[data-cord-removal-copy]');
+  var scope = main.querySelector('[data-scope]');
+  var fitCard = main.querySelector('[data-fit-card]');
+  var options = main.querySelector('[data-options]');
+  var revision = main.querySelector('[data-distance-revision]');
+  var view = null;
+  var selectedDistance = null;
+  var finalizing = false;
+  var reviewingAlternatives = true;
+  var handoffReviewRequired = false;
+  var DISTANCES = [
+    ['about_5', 'About 5 ft or less'],
+    ['5_10', 'About 6 to 10 ft'],
+    ['10_20', 'About 11 to 20 ft'],
+    ['20_40', 'About 21 to 40 ft'],
+    ['over_40', 'More than 40 ft']
+  ];
+  var DISTANCE_ORDER = { about_5: 1, '5_10': 2, '10_20': 3, '20_40': 4, over_40: 5 };
+  var DISTANCE_LABELS = { about_5: 'About 5 ft or less', '5_10': 'About 6 to 10 ft', '10_20': 'About 11 to 20 ft', '20_40': 'About 21 to 40 ft', over_40: 'More than 40 ft' };
+  var SCOPE_CATALOG = {
+    installation: function (basis) { return [basis + 'A generator connection installation', 'Panel-matched installation, breaker wiring, testing, and cleanup.', '/assets/images/work-full-install.jpg']; },
+    metal_outdoor_connection_box: function (basis) { return [basis + 'A metal outdoor connection box', 'Durable metal housing and a weather-rated cover provide a permanent outdoor place to connect your portable generator.', '/assets/product-images/inlet-' + basis + 'amp.jpg']; },
+    heavy_duty_compatible_cord: function (basis) { return ['Heavy-duty compatible cord', 'A complete factory-manufactured cord assembly, matched to your portable generator and connection box.', '/assets/product-images/cord-' + basis + 'amp.jpg']; },
+    system_walkthrough: function () { return ['System walkthrough', 'You see the finished system work and learn how to connect your portable generator and select circuits safely.', '/assets/product-images/system-walkthrough.jpg']; },
+    panel_guide: function () { return ['Step-by-step panel guide', 'A durable instruction label stays inside your panel for quick reference during an outage.', '/assets/product-images/panel-operating-guide.jpg']; },
+    permit_and_required_inspection: function () { return ['Permit and required inspection', 'Required for local code compliance. We handle the application, permit fee, inspection scheduling, and follow-through.', '/assets/product-images/permit-inspection-photo.jpg']; },
+    one_year_workmanship_support: function () { return ['One-year workmanship support', 'If an issue comes from our installation work during the first year, we return and correct it at no charge.', '/assets/product-images/workmanship-support.jpg']; }
+  };
+
+  function show(el, yes) { el.classList.toggle('hidden', !yes); }
+  function fail(message) {
+    loading.classList.add('hidden');
+    error.textContent = message;
+    error.classList.remove('hidden');
+  }
+  function money(cents) { return '$' + Math.round(Number(cents) / 100).toLocaleString('en-US'); }
+  function cordCredit(snapshot) { return String(snapshot && snapshot.pricing_basis) === '30' ? 10000 : 15000; }
+  function v2() { return view && view.quote_walk_v2 || {}; }
+  function phoneDigits(value) { return String(value || '').replace(/\D/g, '').slice(-10); }
+  function formatPhone(value) {
+    var digits = phoneDigits(value);
+    return digits.length === 10 ? '(' + digits.slice(0, 3) + ') ' + digits.slice(3, 6) + '-' + digits.slice(6) : digits;
+  }
+  function phoneIsValid(value) { return /^[2-9][0-9]{2}[2-9][0-9]{6}$/.test(phoneDigits(value)); }
+  function renderDelivery() {
+    var confirmation = v2().confirmation_event || {};
+    var sent = ['sent', 'delivered', 'provider_accepted'].indexOf(confirmation.status) !== -1;
+    var last4 = phoneDigits(view.phone).slice(-4);
+    var sentLast4 = String(confirmation.last_sent_destination_last4 || confirmation.destination_last4 || last4);
+    deliveryCopy.textContent = sent && confirmation.manual_resend_required
+      ? 'Your proposal link was sent to the previous mobile number ending in ' + sentLast4 + '. Your saved number now ends in ' + last4 + '.'
+      : sent
+        ? 'Your proposal link was sent to the mobile number ending in ' + sentLast4 + '.'
+        : 'Your proposal link will be sent to the mobile number ending in ' + last4 + '.';
+    editPhone.textContent = sent ? "Didn't receive it? Check or change the number" : 'Wrong number? Change it';
+    phoneInput.value = formatPhone(view.phone);
+    show(phoneForm, false);
+    show(phoneError, false);
+    show(acceptedDelivery, true);
+  }
+  function renderScope(snapshot) {
+    var rows = Array.isArray(snapshot.scope_rows) ? snapshot.scope_rows : [];
+    var keys = rows.map(function (row) { return String(row && row.key || ''); });
+    var expectedKeys = [
+      'installation',
+      'metal_outdoor_connection_box',
+      'system_walkthrough',
+      'panel_guide',
+      'permit_and_required_inspection',
+      'one_year_workmanship_support'
+    ];
+    if (snapshot.cord_included === true) expectedKeys.push('heavy_duty_compatible_cord');
+    var valid = rows.length === expectedKeys.length
+      && new Set(keys).size === expectedKeys.length
+      && expectedKeys.every(function (key) { return keys.indexOf(key) !== -1; })
+      && rows.every(function (row) {
+      if (!row || !SCOPE_CATALOG[row.key]) return false;
+      return row.key === 'heavy_duty_compatible_cord'
+        ? row.included === snapshot.cord_included
+        : row.included === true;
+      });
+    if (!valid) {
+      fail('The included scope does not match the saved range. No scope details or proposal readiness have been assumed.');
+      show(scope, false);
+      show(fitCard, false);
+      return false;
+    }
+    var scopeList = main.querySelector('[data-scope-list]');
+    scopeList.replaceChildren();
+    rows.forEach(function (row) {
+      if (row.key === 'heavy_duty_compatible_cord' && row.included === false) return;
+      var copy = SCOPE_CATALOG[row.key](String(snapshot.pricing_basis));
+      var item = document.createElement('div');
+      item.className = 'scope-row';
+      var image = document.createElement('img');
+      image.src = copy[2];
+      image.alt = copy[0];
+      var body = document.createElement('div');
+      body.className = 'scope-copy';
+      var title = document.createElement('strong');
+      title.textContent = copy[0];
+      var description = document.createElement('span');
+      description.textContent = copy[1];
+      body.append(title, description);
+      item.append(image, body);
+      scopeList.appendChild(item);
+    });
+    return true;
+  }
+  function render() {
+    loading.classList.add('hidden');
+    error.classList.add('hidden');
+    var snapshot = v2().current_range_snapshot;
+    if (!snapshot || snapshot.status !== 'available') {
+      fail('A current range could not be loaded from the saved setup.');
+      return;
+    }
+    var acceptedCurrent = Boolean(v2().accepted_range_snapshot_id)
+      && v2().accepted_range_snapshot_id === snapshot.snapshot_id;
+    if (acceptedCurrent && v2().handoff_recorded === true) {
+      if (!renderScope(snapshot)) return;
+      scopeSummaryCopy.textContent = 'A complete, permitted setup, coordinated from installation through final inspection.';
+      var firstName = String(view.first_name || '').trim();
+      var displayName = firstName.split(/\s+/)[0].replace(/(^|[\s'-])([a-z])/g, function (_, lead, letter) {
+        return lead + letter.toUpperCase();
+      });
+      rangeCard.querySelector('[data-accepted-heading]').textContent = displayName
+        ? "I've got your setup, " + displayName + ". I'll take it from here."
+        : "I've got your setup. I'll take it from here.";
+      show(rangeCard.querySelector('[data-range-heading]'), false);
+      show(rangeCard.querySelector('[data-accepted-heading]'), true);
+      rangeCard.querySelector('[data-basis]').textContent = '';
+      rangeCard.querySelector('.range-next-step').textContent = "Thanks for sharing the details of your setup. I’ll review your photos, prepare your complete proposal, and text you the link.";
+      document.querySelector('.qw-range-hero').classList.add('is-accepted');
+      renderDelivery();
+      show(rangeCard, true);
+      show(proofCarousel, true);
+      show(revisionContext, false);
+      show(scope, true);
+      show(fitCard, true);
+      show(options, false);
+      show(revision, false);
+      show(main.querySelector('[data-not-fit-terminal]'), false);
+      document.querySelectorAll('[data-accept], [data-accept-bottom], [data-no]').forEach(function (button) {
+        button.classList.add('hidden');
+        button.hidden = true;
+      });
+      if (window.BPPRangeProofCarousel) {
+        window.requestAnimationFrame(function () { window.BPPRangeProofCarousel.init(proofCarousel); });
+      }
+      WALK.ph('walk_v2_range_accepted_view', {
+        snapshot_id: snapshot.snapshot_id,
+        journey_version: snapshot.journey_version
+      });
+      return;
+    }
+    var standardActionsAvailable = !v2().accepted_range_snapshot_id;
+    document.querySelectorAll('[data-accept], [data-accept-bottom], [data-no]').forEach(function (button) {
+      button.classList.toggle('hidden', !standardActionsAvailable);
+      button.hidden = !standardActionsAvailable;
+    });
+    show(rangeCard.querySelector('[data-range-heading]'), true);
+    show(rangeCard.querySelector('[data-accepted-heading]'), false);
+    show(acceptedDelivery, false);
+    document.querySelector('.qw-range-hero').classList.remove('is-accepted');
+    rangeCard.querySelector('[data-amount]').textContent = money(snapshot.low_cents) + ' to ' + money(snapshot.high_cents);
+    cordRemovalCopy.textContent = 'Remove the included cord and lower this range by ' + money(cordCredit(snapshot)) + '.';
+    var observed = Array.isArray(v2().observed_connections) ? v2().observed_connections : [];
+    if (!renderScope(snapshot)) return;
+    var distanceCopy = (DISTANCE_LABELS[v2().distance_band] || 'the confirmed path').toLowerCase();
+    var pricingBasis = snapshot.pricing_basis || v2().pricing_basis || '';
+    if (pricingBasis === '50A') pricingBasis = '50';
+    if (pricingBasis === '30A') pricingBasis = '30';
+    if (pricingBasis !== '30' && pricingBasis !== '50') pricingBasis = '';
+    var basisCopy = observed.length === 2 && pricingBasis === '50'
+      ? 'the higher 50 Amp connection'
+      : observed.length === 2 && pricingBasis === '30'
+        ? 'the 30 Amp setup you selected'
+        : pricingBasis
+          ? 'a ' + pricingBasis + ' Amp connection'
+          : 'the confirmed generator connection';
+    var isRevisedRange = Boolean(snapshot.revision_reason && snapshot.revision_reason !== 'initial');
+    var qualifier = 'Based on ' + basisCopy + ' and a connection path of ' + distanceCopy + ', this is the ' + (isRevisedRange ? 'revised ' : '') + 'range I expect for your permanent, permitted backup power connection.';
+    if (observed.length === 2) {
+      qualifier += pricingBasis === '30'
+        ? ' Both connections remain saved.'
+        : ' Your 30 Amp connection remains saved.';
+    }
+    rangeCard.querySelector('[data-basis]').textContent = qualifier;
+    scopeSummaryCopy.textContent = 'A complete, permitted setup, coordinated from installation through final inspection.';
+    var revisionMessage = '';
+    if (snapshot.revision_reason === 'shorter_distance') {
+      revisionMessage = 'Revised setup: The connection path changed to ' + (DISTANCE_LABELS[snapshot.distance_band] || 'the newly selected shorter path') + '. This saved path produced the revised range.';
+    } else if (snapshot.revision_reason === 'cord_removed') {
+      revisionMessage = 'Revised setup: You will provide the approved compatible cord. This range is ' + money(cordCredit(snapshot)) + ' lower.';
+    } else if (snapshot.revision_reason === 'cord_restored') {
+      revisionMessage = 'Revised setup: The approved compatible cord is included again, and the original range has been restored.';
+    }
+    revisionCopy.textContent = revisionMessage;
+    restoreCord.disabled = false;
+    show(restoreCord, snapshot.revision_reason === 'cord_removed' && snapshot.cord_included === false);
+    show(revisionContext, Boolean(revisionMessage) || !restoreCord.classList.contains('hidden'));
+    var notFitClosed = v2().not_fit_status === 'closed';
+    var editingOptions = reviewingAlternatives && !notFitClosed && v2().range_fit_answer === 'no' && !v2().accepted_range_snapshot_id;
+    var awaitingHandoffReview = handoffReviewRequired && acceptedCurrent && v2().handoff_recorded !== true;
+    document.querySelector('.qw-range-hero').classList.toggle('is-recovery', notFitClosed);
+    show(rangeCard, !notFitClosed);
+    show(scope, !editingOptions && !notFitClosed && (!v2().accepted_range_snapshot_id || awaitingHandoffReview));
+    var showAcceptance = !notFitClosed && !v2().accepted_range_snapshot_id && !editingOptions;
+    show(proofCarousel, showAcceptance);
+    show(fitCard, showAcceptance || awaitingHandoffReview);
+    show(retryHandoff, awaitingHandoffReview);
+    if (showAcceptance && window.BPPRangeProofCarousel) {
+      window.requestAnimationFrame(function () { window.BPPRangeProofCarousel.init(proofCarousel); });
+    }
+    show(options, editingOptions);
+    show(main.querySelector('[data-not-fit-terminal]'), notFitClosed);
+    show(main.querySelector('[data-alt-30]'), observed.indexOf('30') !== -1 && observed.indexOf('50') !== -1 && pricingBasis === '50');
+    show(main.querySelector('[data-alt-50]'), observed.indexOf('30') !== -1 && observed.indexOf('50') !== -1 && pricingBasis === '30');
+    show(main.querySelector('[data-alt-distance]'), DISTANCE_ORDER[v2().distance_band] > 1);
+    if (v2().accepted_range_snapshot_id) {
+      finalizeHandoff(false);
+    }
+  }
+  function refresh() {
+    return WALK.view(t).then(function (value) { view = value; render(); return value; });
+  }
+  function stateAction(action, payload, localErrorOnly) {
+    loading.textContent = 'Saving your current setup...';
+    loading.classList.remove('hidden');
+    return WALK.stateAction(t, action, payload || {}).then(refresh).catch(function (cause) {
+      loading.classList.add('hidden');
+      var code = cause && (cause.code || cause.body && cause.body.error);
+      if (code === 'stale_customer_authorization') {
+        if (cause.currentState) view = cause.currentState;
+        if (action === 'handoff') handoffReviewRequired = true;
+        render();
+        fail('Your saved setup changed. Review the current range, then tap the action again.');
+        throw cause;
+      }
+      if (!localErrorOnly) {
+        fail(code === 'readiness_incomplete'
+          ? 'Your range is still locked because a required answer or photo is missing.'
+          : 'That change did not save. Your prior range remains current. Try again.');
+      }
+      throw cause;
+    });
+  }
+  function ensureRange() {
+    return refresh().then(function () {
+      var readiness = v2().readiness || {};
+      if (!readiness.inputs_ready) {
+        var blockers = Array.isArray(readiness.input_blockers) ? readiness.input_blockers : [];
+        WALK.go('incomplete.html', t);
+        throw new Error('readiness_incomplete');
+      }
+      if (!v2().current_range_snapshot || v2().current_range_snapshot.status !== 'available') return stateAction('create_range', {});
+      return view;
+    });
+  }
+
+  function finalizeHandoff(explicitRetry) {
+    if (finalizing) return;
+    if (handoffReviewRequired && explicitRetry !== true) return;
+    if (v2().handoff_recorded === true) {
+      render();
+      return;
+    }
+    handoffReviewRequired = false;
+    show(retryHandoff, false);
+    finalizing = true;
+    stateAction('handoff', {}).then(function () {
+      finalizing = false;
+    }).catch(function () {
+      finalizing = false;
+    });
+  }
+
+  function acceptCurrentRange() {
+    if (finalizing) return;
+    finalizing = true;
+    document.querySelectorAll('[data-accept], [data-accept-bottom]').forEach(function (button) { button.disabled = true; });
+    stateAction('accept_range', {}).then(function () {
+      finalizing = false;
+      finalizeHandoff();
+    }).catch(function () {
+      finalizing = false;
+      document.querySelectorAll('[data-accept], [data-accept-bottom]').forEach(function (button) { button.disabled = false; });
+      error.focus();
+      error.scrollIntoView({ block: 'center' });
+    });
+  }
+  document.querySelectorAll('[data-accept], [data-accept-bottom]').forEach(function (button) {
+    button.addEventListener('click', acceptCurrentRange);
+  });
+  retryHandoff.addEventListener('click', function () { finalizeHandoff(true); });
+  editPhone.addEventListener('click', function () {
+    error.classList.add('hidden');
+    phoneStatus.textContent = '';
+    show(phoneStatus, false);
+    show(phoneError, false);
+    show(phoneForm, true);
+    phoneInput.value = formatPhone(view.phone);
+    phoneInput.focus();
+  });
+  acceptedDelivery.querySelector('[data-cancel-phone]').addEventListener('click', function () {
+    show(phoneForm, false);
+    show(phoneError, false);
+  });
+  phoneInput.addEventListener('input', function () {
+    var digits = phoneDigits(phoneInput.value);
+    phoneInput.value = digits.length > 6
+      ? '(' + digits.slice(0, 3) + ') ' + digits.slice(3, 6) + '-' + digits.slice(6)
+      : digits.length > 3 ? '(' + digits.slice(0, 3) + ') ' + digits.slice(3) : digits;
+    show(phoneError, false);
+  });
+  phoneForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+    var nextPhone = phoneDigits(phoneInput.value);
+    if (!phoneIsValid(nextPhone)) {
+      phoneError.textContent = 'Enter a valid 10-digit mobile number.';
+      show(phoneError, true);
+      phoneInput.focus();
+      return;
+    }
+    var save = acceptedDelivery.querySelector('[data-save-phone]');
+    save.disabled = true;
+    stateAction('update_phone', { phone: nextPhone }, true).then(function () {
+      var confirmation = v2().confirmation_event || {};
+      phoneStatus.textContent = confirmation.manual_resend_required
+        ? 'Your number is updated. Key will use the new number when he resends the proposal link.'
+        : 'Got it. I’ll use the number ending in ' + nextPhone.slice(-4) + ' for your proposal.';
+      show(phoneStatus, true);
+      show(phoneForm, false);
+    }).catch(function (cause) {
+      var code = cause && cause.body && cause.body.error;
+      phoneError.textContent = code === 'phone_suppressed'
+        ? 'That number is opted out of texts. Use a different mobile number.'
+        : 'That number did not save. Your previous number is still on file. Try again.';
+      show(phoneError, true);
+    }).finally(function () { save.disabled = false; });
+  });
+  main.querySelector('[data-no]').addEventListener('click', function () {
+    reviewingAlternatives = true;
+    WALK.confirm(t, { range_fit_answer: 'no' }).then(refresh).catch(function () { fail('That answer did not save. Try again.'); });
+  });
+  main.querySelector('[data-close-options]').addEventListener('click', function () {
+    reviewingAlternatives = false;
+    render();
+    var accept = main.querySelector('[data-accept-bottom]');
+    if (accept) accept.focus();
+  });
+  main.querySelector('[data-alt-30]').addEventListener('click', function () {
+    WALK.confirm(t, { pricing_basis: '30', revision_reason: 'both_to_30' })
+      .then(function () { return stateAction('create_range', { revision_reason: 'both_to_30' }); })
+      .catch(function () { fail('That revised setup did not save. Your current range remains available. Try again.'); });
+  });
+  main.querySelector('[data-alt-50]').addEventListener('click', function () {
+    WALK.confirm(t, { pricing_basis: '50', revision_reason: 'return_to_50' })
+      .then(function () { return stateAction('create_range', { revision_reason: 'return_to_50' }); })
+      .catch(function () { fail('That revised setup did not save. Your current range remains available. Try again.'); });
+  });
+  main.querySelector('[data-alt-distance]').addEventListener('click', function () {
+    options.classList.add('hidden');
+    revision.classList.remove('hidden');
+    selectedDistance = null;
+    main.querySelector('[data-save-distance]').disabled = true;
+    var current = v2().distance_band;
+    main.querySelector('[data-distance-options]').innerHTML = DISTANCES.filter(function (item) {
+      return DISTANCE_ORDER[item[0]] < DISTANCE_ORDER[current];
+    }).map(function (item) {
+      return '<button class="choice" type="button" data-distance="' + item[0] + '"><strong>' + item[1] + '</strong><small>Choose only if this real path works</small></button>';
+    }).join('');
+  });
+  main.querySelector('[data-alt-cord]').addEventListener('click', function () {
+    WALK.confirm(t, { cord_included: false, revision_reason: 'cord_removed' })
+      .then(function () { return stateAction('create_range', { revision_reason: 'cord_removed' }); })
+      .catch(function () { fail('That cord choice did not save. Your current range remains available. Try again.'); });
+  });
+  restoreCord.addEventListener('click', function () {
+    restoreCord.disabled = true;
+    WALK.confirm(t, { cord_included: true, revision_reason: 'cord_restored' })
+      .then(function () { return stateAction('create_range', { revision_reason: 'cord_restored' }); })
+      .catch(function () { restoreCord.disabled = false; });
+  });
+  main.querySelector('[data-no-alternative]').addEventListener('click', function () {
+    WALK.confirm(t, { not_fit_status: 'closed' })
+      .then(refresh)
+      .catch(function () { fail('That choice did not save. Your current range remains available. Try again.'); });
+  });
+  main.querySelector('[data-distance-options]').addEventListener('click', function (event) {
+    var button = event.target.closest('[data-distance]');
+    if (!button || button.disabled) return;
+    selectedDistance = button.getAttribute('data-distance');
+    main.querySelectorAll('[data-distance]').forEach(function (item) {
+      item.setAttribute('aria-pressed', item === button ? 'true' : 'false');
+    });
+    main.querySelector('[data-save-distance]').disabled = false;
+  });
+  main.querySelector('[data-save-distance]').addEventListener('click', function () {
+    if (!selectedDistance) return;
+    WALK.confirm(t, { distance_band: selectedDistance, revision_reason: 'shorter_distance' })
+      .then(function () { return stateAction('create_range', { revision_reason: 'shorter_distance' }); })
+      .then(function () { revision.classList.add('hidden'); selectedDistance = null; })
+      .catch(function () { fail('That shorter path did not save. Your current range remains available. Try again.'); });
+  });
+  main.querySelector('[data-cancel-distance]').addEventListener('click', function () {
+    revision.classList.add('hidden');
+    options.classList.remove('hidden');
+    selectedDistance = null;
+  });
+  WALK.ph('walk_v2_screen_view', { screen: 'range' });
+  ensureRange().catch(function (cause) {
+    if (String(cause && cause.message) !== 'readiness_incomplete') fail('Your current range could not be loaded. Try again.');
+  });
+})();
+</script>
+</body>
+</html>

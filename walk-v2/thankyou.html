@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta name="referrer" content="strict-origin-when-cross-origin">
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-5V0i3duCeK56PWKnEGRixbV+nARhJewv2lZ3TGm4piw='; script-src-attr 'none'; style-src 'self'; style-src-elem 'self' 'sha256-vJTGL1d96TSIuABuUIQ8TUdUz5v/h9tVLGK35mlVJQ0='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
+<script src="/walk-v2/no-js-bootstrap.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>Backup Power Pro · Thank You</title>
+<link rel="icon" href="/favicon.png" type="image/png" />
+<link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.jpg" />
+<meta name="theme-color" content="#0b1f3b" />
+<link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
+<style>
+  :root {
+    --navy: #0b1f3b;
+    --navy-mid: #1a3a5c;
+    --gold: #ffba00;
+    --gold-hover: #ffc519;
+    --gold-ink: #8a5a00;
+    --gold-tint: #fff7e0;
+    --bg: #eef1f6;
+    --page: #fafbfc;
+    --card: #ffffff;
+    --sunken: #f4f6fa;
+    --edge: rgba(11, 31, 59, 0.10);
+    --edge-soft: rgba(11, 31, 59, 0.07);
+    --text: #16243a;
+    --muted: #4d5a6e;
+    --faint: #5d6b7e;
+
+    --shadow-sm: 0 2px 6px rgba(11,31,59,0.06), 0 1px 2px rgba(11,31,59,0.04);
+    --shadow-md: 0 10px 28px rgba(11,31,59,0.10), 0 2px 8px rgba(11,31,59,0.05);
+    --shadow-lift: 0 18px 44px rgba(11,31,59,0.14), 0 4px 12px rgba(11,31,59,0.06);
+    --shadow-gold: 0 6px 24px rgba(255,186,0,0.30);
+
+    --r-md: 14px;
+    --r-lg: 20px;
+    --r-pill: 100px;
+
+    --head: 'Outfit', sans-serif;
+    --body: 'Inter', system-ui, -apple-system, sans-serif;
+    --script: 'Dancing Script', cursive;
+
+    --dur: 220ms;
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body {
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  button {
+    font-family: inherit;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  input { font-family: inherit; -webkit-appearance: none; appearance: none; }
+  button:focus-visible, input:focus-visible, a:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+  svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+
+  .stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 48px;
+    padding: 28px 14px 96px;
+  }
+  .state-label {
+    width: 390px;
+    max-width: 100%;
+    font-family: var(--head);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: -34px;
+    padding-left: 4px;
+  }
+  .state-label.wide { width: 1080px; }
+  .snapshot { pointer-events: none; }
+
+  /* ================= page frame ================= */
+  .page {
+    width: 390px;
+    max-width: 100%;
+    background: var(--page);
+    border-radius: 24px;
+    box-shadow: var(--shadow-md), inset 0 0 0 1px var(--edge-soft);
+    overflow: hidden;
+    container-type: inline-size;
+    container-name: page;
+  }
+  .page.w-desktop { width: 1080px; }
+  /* staging: the comp's own desktop composition activates responsively
+     (the comps showed it via a snapshot clone with .w-desktop) */
+  @media (min-width: 1140px) {
+    .page { width: 1080px; }
+  }
+
+  .page * { text-wrap: pretty; }
+
+  /* ================= scroll reveal ================= */
+  .rv {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 560ms var(--ease), transform 560ms var(--ease);
+    transition-delay: var(--rvd, 0ms);
+  }
+  .rv.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .rv { opacity: 1; transform: none; transition: none; }
+  }
+
+  /* ================= 1. site header ================= */
+  .site-head {
+    height: 56px;
+    background: var(--navy);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+  }
+  .lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 8px 0;
+    box-sizing: border-box;
+  }
+  .lockup .bolt {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--gold);
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+  .lockup .bolt svg { width: 14px; height: 14px; fill: var(--navy); stroke: none; }
+  .lockup .wm {
+    font-family: var(--head);
+    font-weight: 800;
+    font-size: 13.5px;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .lockup .wm small {
+    display: block;
+    font-size: 7px;
+    font-weight: 600;
+    letter-spacing: 0.34em;
+    color: var(--gold);
+    margin-top: 3px;
+    white-space: nowrap;
+  }
+
+  /* ================= body grid ================= */
+  .body-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 32px 20px 8px;
+  }
+  .col-main { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+  .col-side { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+
+  @container page (min-width: 760px) {
+    .site-head { padding: 0 48px; }
+    .body-grid {
+      grid-template-columns: 1fr;
+      max-width: 620px;
+      margin: 0 auto;
+      gap: 22px;
+      padding: 48px 24px 12px;
+    }
+    .celebrate h1 { font-size: 44px; }
+    .price .pn { font-size: 64px; }
+    /* .page prefix (visual sweep 2026-07-18): dead-rule fix, see outlet.html */
+    .page .foot { padding-left: 48px; padding-right: 48px; }
+  }
+
+  /* ================= 2. calm ownership (not celebration theater) ================= */
+  .celebrate {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+  .celebrate .big-check {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+    margin-bottom: 16px;
+  }
+  .celebrate .big-check svg { width: 20px; height: 20px; stroke-width: 2.6; }
+  .celebrate h1 {
+    font-family: var(--head);
+    font-weight: 800;
+    font-size: 32px;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    color: var(--navy);
+    margin: 0 0 10px;
+  }
+  .celebrate .sub {
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--muted);
+    margin: 0;
+    max-width: 34em;
+  }
+
+  /* ================= 2b. reviewing beat (calm inevitability) ================= */
+  .reviewing {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--card);
+    border-radius: var(--r-lg);
+    box-shadow: inset 0 0 0 1px var(--edge-soft);
+  }
+  .reviewing .ravatar {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1.5px rgba(11,31,59,0.08);
+  }
+  .reviewing .pulse {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 0 2px #fff;
+  }
+  .reviewing .pulse::after { content: none; }
+  .reviewing .rcopy { min-width: 0; flex: 1; }
+  .reviewing .rline {
+    font-family: var(--head);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--navy);
+    margin: 0 0 3px;
+  }
+  .reviewing .rsub {
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  /* ================= 3. recap card ================= */
+  .recap {
+    background: var(--card);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--edge-soft);
+    padding: 20px 22px;
+  }
+  .recap .tk {
+    font-family: var(--head);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold-ink);
+    margin: 0 0 12px;
+  }
+  .recap ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .recap li {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .recap li .ric {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 auto;
+    border-radius: 8px;
+    background: var(--sunken);
+    color: var(--navy-mid);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .recap li .ric svg { width: 15px; height: 15px; stroke-width: 1.8; }
+
+  /* ================= 4. price card (hero) ================= */
+  .price {
+    position: relative;
+    background: var(--navy);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-lift);
+    padding: 26px 24px 24px;
+    color: #fff;
+    overflow: hidden;
+  }
+  .price::before {
+    content: "";
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,186,0,0.14), transparent 70%);
+    pointer-events: none;
+  }
+  .price .pk {
+    font-family: var(--head);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 12px;
+  }
+  .price .pl {
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.78);
+    margin: 0 0 6px;
+  }
+  .price .pn {
+    font-family: var(--head);
+    font-weight: 800;
+    font-size: 31px;
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin: 0 0 20px;
+    white-space: nowrap;
+  }
+  .price .pn .d { color: var(--gold); }
+  .price .pn .and {
+    font-size: 0.46em;
+    font-weight: 700;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.04em;
+    padding: 0 0.55em;
+  }
+  .price .pf {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: rgba(255,255,255,0.78);
+    margin: -8px 0 18px;
+  }
+  .price ul {
+    list-style: none;
+    margin: 0;
+    padding: 18px 0 0;
+    border-top: 1px solid rgba(255,255,255,0.14);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .price li {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.88);
+  }
+  .price li .tick {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    margin-top: 1px;
+    border-radius: 50%;
+    background: rgba(255,186,0,0.16);
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .price li .tick svg { width: 9px; height: 9px; stroke-width: 3; }
+
+  /* ================= 5. gift card ================= */
+  .gift {
+    background: var(--gold-tint);
+    border-radius: var(--r-lg);
+    box-shadow: inset 0 0 0 1.5px rgba(255,186,0,0.4);
+    padding: 22px;
+  }
+  .gift .gh {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .gift .gi {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-gold);
+  }
+  .gift .gi svg { width: 19px; height: 19px; stroke-width: 1.8; }
+  .gift h2 {
+    font-family: var(--head);
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    color: var(--navy);
+    margin: 0;
+  }
+  .gift .gs {
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--muted);
+    margin: 0 0 16px;
+  }
+  .gift input {
+    width: 100%;
+    height: 52px;
+    padding: 0 16px;
+    font-size: 16px;
+    color: var(--text);
+    background: var(--card);
+    border: 0;
+    border-radius: var(--r-md);
+    box-shadow: inset 0 0 0 1.5px var(--edge);
+    transition: box-shadow var(--dur) var(--ease);
+    margin-bottom: 10px;
+  }
+  .gift input::placeholder { color: var(--faint); }
+  .gift input:focus { outline: none; box-shadow: inset 0 0 0 2px var(--gold); }
+  .gift .gift-error {
+    display: none;
+    margin: 0 0 10px;
+    color: #8f2f26;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .gift .gift-error.show { display: block; }
+  .gift .gift-direct-link {
+    display: none;
+    min-height: 44px;
+    align-items: center;
+    color: var(--navy);
+    font-family: var(--head);
+    font-size: 15px;
+    font-weight: 700;
+    margin: -4px 0 10px;
+  }
+  .gift .gift-direct-link.show { display: inline-flex; }
+  .gift .send {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 52px;
+    font-family: var(--head);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--navy);
+    background: var(--gold);
+    border-radius: var(--r-pill);
+    box-shadow: var(--shadow-gold);
+    transition: background var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .gift .send svg { width: 17px; height: 17px; stroke-width: 2; }
+  .gift .send:not(:disabled):hover { background: var(--gold-hover); }
+  .gift .send:not(:disabled):active { transform: scale(0.98); }
+  .gift .send:disabled {
+    background: #eddfae;
+    color: rgba(11,31,59,0.45);
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  /* ================= 6. closing line ================= */
+  .closing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+    padding: 4px 8px 0;
+  }
+  .closing .cl {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--faint);
+    margin: 0;
+    max-width: 30ch;
+  }
+  .closing .cavatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    margin: 12px 0 3px;
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.92), 0 4px 12px rgba(11,31,59,0.14);
+  }
+  .closing .csig {
+    font-family: var(--script);
+    font-size: 27px;
+    font-weight: 600;
+    color: var(--navy);
+    transform: rotate(-1.5deg);
+    line-height: 1;
+  }
+  .closing .csub {
+    font-family: var(--head);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold-ink);
+  }
+
+  /* ================= 7. footer ================= */
+  .foot {
+    margin-top: 26px;
+    padding: 20px 20px 28px;
+    border-top: 1px solid var(--edge-soft);
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--faint);
+    text-align: center;
+  }
+  .foot strong { font-family: var(--head); font-weight: 600; color: var(--muted); }
+
+  /* Fresh Air mobile (2026-07-13 design audit): drop the phone-frame gutters.
+     Comp staging used .stack padding + rounded .page; on a real phone that
+     wastes width and looks like a mock. Edge-to-edge under 760px; desktop card stays. */
+  @media (max-width: 759px) {
+    html, body { background: var(--page); }
+    .stack { padding: 0 0 calc(28px + env(safe-area-inset-bottom, 0px)); gap: 0; }
+    .page {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .state-label { display: none; }
+  }
+</style>
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=20260808d" />
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body>
+<div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to load the current Quote Walk result. Your saved answers remain on file. Turn it on and reload, or call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
+<div class="stack" id="stack">
+
+  <!-- ============ MAIN PAGE (mobile, interactive) ============ -->
+  <main class="page qw-template-page qw-final-page" id="mainPage" data-screen-label="Quote walk thank you (interactive, mobile)">
+
+    <!-- 1. site header -->
+    <header class="site-head">
+      <a class="lockup" href="https://qa.backuppowerpro.com" aria-label="Backup Power Pro" style="text-decoration:none;">
+        <img src="/assets/images/logo-white-v2.png" alt="Backup Power Pro" style="height:28px;display:block;width:auto;" />
+      </a>
+    </header>
+
+    <section class="qw-template-hero qw-final-hero">
+        <section class="celebrate rv" style="--rvd: 0ms;">
+          <div class="big-check"><svg viewBox="0 0 30 30"><path d="M7 16l5.5 5.5L23 9.5"></path></svg></div>
+          <h1 data-thanks-head="">I've got your setup.</h1>
+        </section>
+
+        <section class="reviewing rv" style="--rvd: 40ms;" data-reviewing="" aria-live="polite">
+          <span class="ravatar" style="background: url('/assets/images/key-headshot.jpg') center 20% / cover no-repeat;" role="img" aria-label="Key Goodson">
+            <span class="pulse" aria-hidden="true"></span>
+          </span>
+          <div class="rcopy">
+            <p class="rline">Key Goodson</p>
+            <p class="rsub">Licensed Electrician</p>
+            <span hidden data-review-line=""></span>
+            <span hidden data-review-sub=""></span>
+          </div>
+        </section>
+
+        <section class="recap next-step rv" style="--rvd: 80ms;">
+          <p class="tk">What happens next</p>
+          <p>I'll review your setup and text your proposal link to the mobile number you provided. No payment is due now.</p>
+        </section>
+
+    </section>
+
+    <div class="body-grid">
+      <div class="col-main">
+
+        <section class="price rv" style="--rvd: 90ms;">
+          <p class="pk">Accepted project range</p>
+          <p class="pl" data-price-line="">Your accepted current range</p>
+          <p class="pn" data-price-num="" style="display:none;"></p>
+          <p class="pf" data-price-follow="">This is the range for the setup you accepted.</p>
+        </section>
+
+        <section class="recap compact-recap rv" style="--rvd: 140ms;" hidden>
+          <p class="tk">Accepted setup</p>
+          <ul>
+            <li><span class="ric"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"></circle><path d="M5.5 6.2l1.6 1.2M10.5 6.2L8.9 7.4M8 11.5V9.8"></path></svg></span><span data-recap="outlet">Generator connection not confirmed</span></li>
+            <li><span class="ric"><svg viewBox="0 0 16 16"><path d="M2 13V6.5L8 2.5l6 4V13"></path><path d="M4.5 13V8h7v5M4.5 10h7"></path></svg></span><span data-recap="room">Panel location noted</span></li>
+            <li><span class="ric"><svg viewBox="0 0 16 16"><path d="M2.5 8h11M2.5 8l2-2M2.5 8l2 2M13.5 8l-2-2M13.5 8l-2 2"></path></svg></span><span data-recap="distance">Distance noted</span></li>
+            <li hidden><span data-recap="address">Your address</span></li>
+          </ul>
+        </section>
+
+      </div>
+    </div>
+
+    <footer class="foot">
+      <div class="foot-identity"><strong>Licensed and insured</strong><span>SC Lic #2942 by Key Electric</span></div>
+      <span class="foot-area">Currently serving Greenville, Spartanburg,<br>and Pickens counties</span>
+      <span class="foot-process">Every project is reviewed and permitted by Key, completed with trusted local installation partners, and coordinated through final inspection.</span>
+    </footer>
+  </main>
+
+</div>
+
+<script src="/walk-v2/walk.js?v=20260816-save"></script>
+<script>
+
+(function () {
+  var t = WALK.requireToken(); if (!t) return;
+  WALK.ph('walk_v2_screen_view', { screen: 'thankyou' });
+
+  var main = document.getElementById('mainPage');
+
+  var ROOM_LABEL = { garage: 'Panel in the garage', basement: 'Panel in the basement', outside: 'Panel outside with the meter', closet: 'Panel in a closet', laundry: 'Panel in the laundry room', other: 'Panel location noted', not_sure: 'Panel location not confirmed' };
+  var BAND_LABEL = { about_5: 'About 5 ft run', '5_10': 'About 5-10 ft run', '10_20': 'About 10-20 ft run', '20_40': 'About 20-40 ft run', over_40: 'Over 40 ft run', not_sure: 'Run distance not confirmed' };
+
+  function dollars(cents) { return '$' + Math.round(cents / 100).toLocaleString('en-US'); }
+
+  /* declared in the outer scope so the .catch can reach them too (a read failure must
+     still be able to set the honest no-number line, not throw a ReferenceError). */
+  var num = main.querySelector('[data-price-num]');
+  var line = main.querySelector('[data-price-line]');
+  var follow = main.querySelector('[data-price-follow]');
+  var kick = main.querySelector('.price .pk');
+  var celebrateSub = main.querySelector('[data-thanks-sub]');
+  var reviewLine = main.querySelector('[data-review-line]');
+  var reviewSub = main.querySelector('[data-review-sub]');
+
+  function hideFollow() { if (follow) follow.style.display = 'none'; }
+
+  /* Fresh Air (2026-07-13): no timed copy swap. Static desk line stays honest. */
+
+  WALK.view(t).then(function (v) {
+    var v2State = v.quote_walk_v2 || null;
+    var readiness = v2State && v2State.readiness || {};
+    if (!v2State || !readiness.ready_for_handoff || v2State.handoff_recorded !== true) {
+      WALK.go('range.html', t);
+      return;
+    }
+    if (v.first_name) {
+      var displayName = String(v.first_name).replace(/(^|[\s'-])([a-z])/g, function (_, lead, letter) {
+        return lead + letter.toUpperCase();
+      });
+      main.querySelector('[data-thanks-head]').textContent = "I've got your setup, " + displayName + '.';
+    }
+    var acceptedSnapshot = v2State.current_range_snapshot;
+    var acceptedCurrent = acceptedSnapshot
+      && acceptedSnapshot.status === 'available'
+      && acceptedSnapshot.snapshot_id === v2State.accepted_range_snapshot_id;
+    if (!acceptedCurrent) {
+      WALK.go('range.html', t);
+      return;
+    }
+    kick.textContent = 'Accepted project range';
+    line.textContent = 'Your accepted current range';
+    num.textContent = dollars(acceptedSnapshot.low_cents) + ' to ' + dollars(acceptedSnapshot.high_cents);
+    num.style.display = '';
+    follow.style.display = '';
+    reviewLine.textContent = 'Your range and setup are accepted';
+    reviewSub.textContent = '';
+    reviewSub.style.display = 'none';
+    var connectionTruth = WALK.readConnectionTruth(t, v);
+    var observedConnections = connectionTruth.connection_answers || [];
+    if (observedConnections.length === 2) {
+      main.querySelector('[data-recap="outlet"]').textContent = acceptedSnapshot.pricing_basis === '30'
+        ? '30 Amp and 50 Amp observed. The selected 30 Amp installation drives this accepted revised range.'
+        : '30 Amp and 50 Amp observed. The higher 50 Amp connection drives this accepted range.';
+    } else if (observedConnections.length === 1) {
+      main.querySelector('[data-recap="outlet"]').textContent = observedConnections[0] + ' generator connection';
+    } else if (v.amperage) {
+      main.querySelector('[data-recap="outlet"]').textContent = v.amperage + ' Amp generator connection';
+    }
+    if (v.confirmed_panel_room) main.querySelector('[data-recap="room"]').textContent = ROOM_LABEL[v.confirmed_panel_room] || 'Panel location noted';
+    if (v.distance_band) main.querySelector('[data-recap="distance"]').textContent = BAND_LABEL[v.distance_band] || 'Distance noted';
+    if (v.address) main.querySelector('[data-recap="address"]').textContent = String(v.address).split(',')[0];
+
+    WALK.ph('walk_v2_range_accepted_view', {
+      snapshot_id: acceptedSnapshot.snapshot_id,
+      journey_version: acceptedSnapshot.journey_version,
+    });
+    return;
+
+    /* Deferred the panel photo? Acknowledge it's still outstanding so the recap
+       tells the whole truth (and sets expectation for the photo reminder). */
+    if (!v.photo_count && !v.photo_received) {
+      var _ul = main.querySelector('[data-recap="address"]').closest('ul');
+      if (_ul) {
+        var _li = document.createElement('li');
+        _li.innerHTML = '<span class="ric"><svg viewBox="0 0 16 16"><rect x="2.5" y="5" width="11" height="8" rx="1.5"></rect><path d="M5.5 5l1-1.5h3l1 1.5"></path><circle cx="8" cy="9" r="2"></circle></svg></span><span>Panel photo still needed before this setup can be reviewed</span>';
+        _ul.appendChild(_li);
+      }
+      if (reviewLine) reviewLine.textContent = 'Your saved setup is incomplete';
+      if (reviewSub) reviewSub.textContent = 'Return to add the required panel photo.';
+    }
+
+    /* Honesty gate (Key): if they answered "not sure" to any pricing question, we do NOT
+       show a range, because we genuinely can't price it yet. We name the reason and promise
+       a text. (A "not sure" distance is bucketed server-side as "far", so it would otherwise
+       still produce a range; this client check is what actually suppresses it.) */
+    var unsure = [];
+    if (!v.amperage) unsure.push('your outlet type');
+    if (v.confirmed_panel_room === 'not_sure') unsure.push('your panel location');
+    if (v.distance_band === 'not_sure') unsure.push('the cord run distance');
+
+    if (unsure.length) {
+      var reason = unsure.length === 1
+        ? unsure[0]
+        : unsure.slice(0, -1).join(', ') + ' and ' + unsure[unsure.length - 1];
+      if (kick) kick.textContent = 'Your quote';
+      num.style.display = 'none';
+      hideFollow();
+      line.textContent = "I can't give you an honest estimate yet because we still need to confirm " + reason + '. Return to update that answer before future review.';
+      /* the single biggest drop signal: did they land on a number or the honest
+         no-number state, and which unanswered question caused it. */
+      WALK.ph('walk_v2_price_shown', { state: 'unsure', has_range: false, unsure_count: unsure.length });
+    } else if (v.walk_range) {
+      /* Computed range from amp + distance (walk_price_ranges, Key-approved rows only).
+         Show the range AND say clearly it is not the locked final price. Opener SMS
+         fires on walk complete (Key 2026-07-13); firm quote still comes from Key. */
+      if (kick) kick.textContent = 'Your ballpark';
+      line.textContent = 'Installs like yours usually land between';
+      num.innerHTML = '<span class="d">$</span>' + Math.round(v.walk_range.low_cents / 100).toLocaleString('en-US') +
+        '<span class="and">and</span><span class="d">$</span>' + Math.round(v.walk_range.high_cents / 100).toLocaleString('en-US');
+      num.style.display = '';
+      if (follow) {
+        follow.textContent = "That's a ballpark from what you told me, not your final number.";
+        follow.style.display = '';
+      }
+      WALK.ph('walk_v2_price_shown', {
+        state: 'range',
+        has_range: true,
+        low_cents: v.walk_range.low_cents,
+        high_cents: v.walk_range.high_cents,
+        amperage: v.amperage || null,
+        distance_band: v.distance_band || null,
+      });
+    } else {
+      /* graceful no-price state: the promise, not a number. Re-label the kicker too so
+         "Your ballpark" never sits above a no-number message (looks designed, not broken). */
+      if (kick) kick.textContent = 'Your quote';
+      num.style.display = 'none';
+      hideFollow();
+      line.textContent = 'Your setup is saved. A range is not available from the current answers.';
+      WALK.ph('walk_v2_price_shown', { state: 'working', has_range: false });
+    }
+
+  }).catch(function () { /* a read failure must NOT bounce them off the thank-you page; keep the honest no-number state */ if (kick) kick.textContent = 'Your quote'; num.style.display = 'none'; hideFollow(); line.textContent = 'Your setup is saved. The current range could not be loaded.'; });
+
+  /* scroll reveal (comp behavior, unchanged) */
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var rvEls = main.querySelectorAll('.rv');
+  if (reduce || !('IntersectionObserver' in window)) {
+    rvEls.forEach(function (el) { el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.12 });
+    rvEls.forEach(function (el) { io.observe(el); });
+  }
+})();
+
+</script>
+</body>
+</html>

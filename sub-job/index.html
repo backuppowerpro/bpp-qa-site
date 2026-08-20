@@ -1,0 +1,1557 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>Your Job</title>
+<meta name="robots" content="noindex" />
+<!-- Only the origin is ever sent as Referer cross-origin, so the ?t= in the
+     URL never reaches Google Fonts via a Referer header. -->
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co; form-action 'self';" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================
+     BACKUP POWER PRO , Sub per-job page (/sub-job/?t=TOKEN)
+     ONE page, renders the right stage by the live offer status
+     (control principle: the CRM writes sub_job_offers, this page
+     is a live read of it). Three stages, wired from three comps:
+       offered                       -> Accept / Decline
+       accepted | permit_submitted   -> Full job (client PII behind
+                                        the I-understand ack)
+       install_submitted..pass_submitted -> Getting paid
+       terminal                      -> gracious dead-end
+     The work installs an exterior inlet so a homeowner can plug in
+     their own PORTABLE generator. Never "generator install". No dashes.
+     ============================================================ */
+  :root {
+    --navy: #0b1f3b;
+    --navy-2: #12294a;
+    --navy-soft: #1B2B4B;
+    --gold: #ffba00;
+
+    --page: #eef1f6;
+    --card: #ffffff;
+    --line: #d9dfe9;
+    --line-soft: #e8ecf2;
+    --ink: #0b1f3b;
+    --muted: #4f5b6e;
+    --faint: #6d7889;
+
+    --green: #067a4e;
+    --green-bg: #e9f7f0;
+    --green-line: #b6e2ce;
+    --amber: #8a6a00;
+    --amber-bg: #fff5d6;
+    --amber-line: #f2df9e;
+    --red: #c0271f;
+    --red-bg: #fdeeee;
+    --red-line: #f2c4c1;
+
+    --radius: 14px;
+    --radius-sm: 10px;
+    --shadow: 0 1px 2px rgba(11,31,59,.05), 0 8px 24px rgba(11,31,59,.07);
+    --display: 'Outfit', system-ui, sans-serif;
+    --body: 'Inter', system-ui, -apple-system, sans-serif;
+    --ui: 'DM Sans', system-ui, -apple-system, sans-serif;
+  }
+  * , *::before, *::after { box-sizing:border-box; }
+  [hidden] { display:none !important; }
+  html, body { margin:0; padding:0; background:var(--page); font-family:var(--body); color:var(--ink); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+  body { overflow-x:hidden; }
+  .app { max-width:520px; margin:0 auto; min-height:100vh; }
+
+  /* top bar */
+  .topbar { background:var(--navy); color:#fff; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  /* orientation strip: names the human + the work + a tappable number so a forwarded link vouches for itself. Reuses page tokens (muted text, navy link, line border). */
+  .orient { padding:9px 20px; font-size:12.5px; line-height:1.45; color:var(--muted); background:#eef1f6; border-bottom:1px solid var(--line); text-align:center; }
+  .orient a { color:var(--navy); font-weight:700; text-decoration:none; white-space:nowrap; }
+  .brand { font-family:var(--display); font-weight:700; font-size:15px; letter-spacing:-0.01em; }
+  .expires { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:#cdd7e6; }
+  .expires svg { width:14px; height:14px; fill:none; stroke:#aebbd0; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+
+  .screen { padding:24px 20px 148px; }
+
+  /* fresh / offline chip under the topbar */
+  .freshline { font-size:11px; color:var(--faint); padding:6px 20px 0; min-height:14px; }
+  .freshline.offline { color:var(--amber); font-weight:700; }
+
+  .intro { font-size:16px; line-height:1.5; color:var(--muted); margin:0 0 20px; }
+  .intro b { color:var(--ink); font-weight:600; }
+
+  /* payout hero (accept/decline) */
+  .payout { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:24px 20px 22px; text-align:center; margin-bottom:16px; }
+  .payout .num { font-family:var(--display); font-weight:800; font-size:64px; line-height:1; letter-spacing:-0.03em; color:var(--navy); display:inline-block; }
+  .payout .under { height:6px; width:78px; background:var(--gold); border-radius:4px; margin:12px auto 12px; }
+  .payout .lbl { font-size:15px; font-weight:600; color:var(--muted); margin:0; }
+
+  .seclabel { font-family:var(--body); font-size:12px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--faint); margin:22px 2px 10px; }
+
+  /* facts card */
+  .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:4px 16px; }
+  .card.pad { padding:16px 18px; }
+  .frow { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:14px 0; border-top:1px solid var(--line-soft); }
+  .frow:first-child { border-top:0; }
+  .frow .k { display:flex; align-items:center; gap:11px; font-size:15px; font-weight:500; color:var(--muted); flex:0 0 auto; }
+  .frow .k .ic { width:30px; height:30px; border-radius:8px; background:#eef1f6; color:var(--navy); display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+  .frow .k .ic svg { width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+  .frow .v { font-size:16px; font-weight:700; color:var(--navy); text-align:right; line-height:1.35; }
+
+  /* description */
+  .desc { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px 18px; }
+  .desc p { font-size:16px; line-height:1.6; color:var(--ink); margin:0 0 12px; }
+  .desc p:last-child { margin-bottom:0; }
+
+  /* materials checklist (read-only) */
+  .materials { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:4px 16px; }
+  .mrow { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:13px 0; border-top:1px solid var(--line-soft); }
+  .mrow:first-child { border-top:0; }
+  .mrow .item { font-size:16px; font-weight:600; color:var(--navy); }
+  .mtag { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; letter-spacing:0.01em; border-radius:100px; padding:5px 11px; white-space:nowrap; flex:0 0 auto; }
+  .mtag svg { width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+  .mtag.ship { color:var(--green); background:var(--green-bg); border:1px solid var(--green-line); }
+  .mtag.supply { color:var(--muted); background:#f2f4f8; border:1px solid var(--line); }
+
+  /* honesty line */
+  .honesty { display:flex; align-items:flex-start; gap:10px; font-size:15px; line-height:1.5; color:var(--muted); margin:20px 2px 0; }
+  .honesty svg { flex:0 0 auto; width:17px; height:17px; margin-top:1px; fill:none; stroke:var(--navy); stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+  .honesty b { color:var(--ink); font-weight:600; }
+
+  /* sticky actions */
+  .navbar { position:fixed; left:0; right:0; bottom:0; z-index:30; background:linear-gradient(to top, var(--page) 78%, rgba(238,241,246,0)); padding:14px 20px calc(16px + env(safe-area-inset-bottom)); }
+  .navbar .inner { max-width:520px; margin:0 auto; display:flex; flex-direction:column; gap:4px; }
+  .primary { display:inline-flex; align-items:center; justify-content:center; gap:10px; width:100%; min-height:56px; padding:0 24px; background:var(--gold); color:var(--navy); border:0; border-radius:100px; font-family:var(--display); font-weight:700; font-size:19px; letter-spacing:-0.01em; cursor:pointer; box-shadow:0 10px 26px rgba(255,186,0,.30); }
+  .primary svg { width:19px; height:19px; fill:none; stroke:var(--navy); stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
+  .primary:disabled { cursor:default; }
+  .primary.locked { background:#e7d9ad; color:#9a8a5f; box-shadow:none; }
+  .primary .spin { width:18px; height:18px; border:2.5px solid rgba(11,31,59,.30); border-top-color:var(--navy); border-radius:50%; animation:spin .7s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .decline { display:inline-flex; align-items:center; justify-content:center; width:100%; min-height:48px; background:transparent; border:0; font-family:var(--body); font-size:15px; font-weight:700; color:var(--muted); cursor:pointer; }
+  .navhint { text-align:center; font-size:13px; color:var(--faint); margin:8px 0 0; }
+
+  /* confirmed strip replaces actions after accept */
+  .confirmed { display:flex; align-items:center; justify-content:center; gap:9px; width:100%; min-height:56px; border-radius:100px; background:var(--green-bg); border:1px solid var(--green-line); color:var(--green); font-family:var(--display); font-weight:700; font-size:17px; }
+  .confirmed svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* loading skeleton */
+  .sk { background:linear-gradient(90deg,#e7ebf1 25%,#eef1f6 37%,#e7ebf1 63%); background-size:400% 100%; animation:shimmer 1.3s ease infinite; border-radius:10px; }
+  @keyframes shimmer { 0% { background-position:100% 0; } 100% { background-position:0 0; } }
+  .sk-payout { height:150px; border-radius:var(--radius); margin-bottom:16px; }
+  .sk-line { height:16px; margin:12px 0; }
+  .sk-card { height:180px; border-radius:var(--radius); margin-top:16px; }
+  .dadd .spin { width:16px; height:16px; border:2.5px solid rgba(27,43,75,.25); border-top-color:var(--navy); border-radius:50%; animation:spin .7s linear infinite; }
+  @media (prefers-reduced-motion:reduce) { .sk, .primary .spin, .dadd .spin { animation:none; } }
+
+  /* full-screen message states */
+  .fullscreen { min-height:70vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 26px; }
+  .fullscreen .badge { width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:20px; }
+  .fullscreen .badge svg { width:36px; height:36px; fill:none; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .badge.warn { background:var(--amber-bg); border:1px solid var(--amber-line); }
+  .badge.warn svg { stroke:var(--amber); }
+  .badge.info { background:#eef3fb; border:1px solid #dce6f6; }
+  .badge.info svg { stroke:#2647a8; }
+  .badge.bad { background:#fff; border:1px solid var(--red-line); }
+  .badge.bad svg { stroke:var(--red); }
+  .badge.good { background:var(--green-bg); border:1px solid var(--green-line); }
+  .badge.good svg { stroke:var(--green); }
+  .fullscreen h1 { font-family:var(--display); font-weight:700; font-size:25px; line-height:1.18; letter-spacing:-0.02em; color:var(--navy); margin:0 0 12px; max-width:22ch; }
+  .fullscreen p { font-size:16.5px; line-height:1.6; color:var(--muted); margin:0; max-width:38ch; }
+  .fullscreen .phone { font-family:var(--display); font-weight:700; font-size:22px; color:var(--navy); margin-top:16px; }
+  .fullscreen .phone a { color:var(--navy); text-decoration:none; }
+
+  /* ===== FULL JOB stage ===== */
+  .summary { display:flex; align-items:stretch; background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; margin-bottom:18px; }
+  .summary .cell { flex:1 1 0; padding:13px 14px; border-left:1px solid var(--line-soft); }
+  .summary .cell:first-child { border-left:0; }
+  .summary .cell .k { font-size:11px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:var(--faint); }
+  .summary .cell .v { font-family:var(--display); font-weight:700; font-size:19px; color:var(--navy); margin-top:3px; line-height:1.15; }
+  .summary .cell .v.sm { font-size:14.5px; font-weight:600; }
+
+  .banner { background:var(--navy); color:#fff; border-radius:var(--radius); padding:18px 18px 16px; box-shadow:var(--shadow); }
+  .banner.compact { display:flex; gap:11px; align-items:flex-start; padding:15px 16px; margin-bottom:8px; }
+  .banner .head { display:flex; align-items:center; gap:11px; margin-bottom:10px; }
+  .banner .head .ic, .banner.compact .ic { width:36px; height:36px; border-radius:9px; background:rgba(255,186,0,.14); color:var(--gold); display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+  .banner.compact .ic { width:30px; height:30px; border-radius:8px; }
+  .banner .head .ic svg, .banner.compact .ic svg { width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .banner.compact .ic svg { width:17px; height:17px; }
+  .banner .head .t { font-family:var(--display); font-weight:700; font-size:16px; letter-spacing:-0.01em; }
+  .banner p { font-size:15px; line-height:1.55; color:#d7e0ee; margin:0; }
+  .banner.compact p { font-size:14px; line-height:1.5; }
+  .banner p b { color:#fff; font-weight:700; }
+  .banner .ack { margin-top:16px; }
+  .ackbtn { display:inline-flex; align-items:center; justify-content:center; gap:9px; width:100%; min-height:48px; padding:0 18px; background:transparent; border:1.5px solid rgba(255,255,255,.4); border-radius:100px; color:#fff; font-family:var(--body); font-size:15px; font-weight:700; cursor:pointer; }
+  .ackbtn svg { width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+  .ackdone { display:flex; align-items:center; justify-content:center; gap:9px; width:100%; min-height:48px; border-radius:100px; background:rgba(255,255,255,.10); color:#9ee6c1; font-family:var(--body); font-size:15px; font-weight:700; }
+  .ackdone svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+
+  .clabel { display:inline-flex; align-items:center; gap:7px; font-size:12px; font-weight:700; letter-spacing:0.03em; color:var(--muted); background:#f2f4f8; border:1px solid var(--line); border-radius:100px; padding:5px 11px; margin:14px 0 2px 2px; }
+  .clabel svg { width:13px; height:13px; fill:none; stroke:var(--muted); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .crow { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:14px 0; border-top:1px solid var(--line-soft); }
+  .crow:first-child { border-top:0; }
+  .crow .k { font-size:14px; font-weight:600; color:var(--faint); flex:0 0 auto; }
+  .crow .v { font-size:16px; font-weight:600; color:var(--navy); text-align:right; line-height:1.4; }
+  .crow .v a { color:var(--navy); text-decoration:none; }
+
+  .permit p { font-size:16px; line-height:1.6; color:var(--ink); margin:0; }
+  .note { font-size:15px; line-height:1.55; color:var(--muted); margin:14px 2px 0; }
+  .note b { color:var(--ink); font-weight:600; }
+  .reminder { display:flex; align-items:center; gap:10px; font-size:15px; font-weight:600; color:var(--ink); background:#fff5d6; border:1px solid #f2df9e; border-radius:var(--radius-sm); padding:12px 14px; margin:18px 0 0; }
+  .reminder svg { flex:0 0 auto; width:17px; height:17px; fill:none; stroke:#8a6a00; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+
+  .doneStrip { display:flex; align-items:center; gap:10px; width:100%; min-height:58px; padding:0 18px; border-radius:16px; background:var(--green-bg); border:1px solid var(--green-line); color:var(--green); }
+  .doneStrip svg { flex:0 0 auto; width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .doneStrip .tx { font-size:14.5px; line-height:1.35; font-weight:600; }
+  .doneStrip .tx b { font-family:var(--display); font-weight:700; display:block; font-size:15.5px; }
+  .errStrip { display:flex; align-items:flex-start; gap:9px; font-size:13.5px; font-weight:600; color:var(--red); background:var(--red-bg); border:1px solid var(--red-line); border-radius:12px; padding:11px 13px; margin-bottom:10px; }
+  .errStrip svg { flex:0 0 auto; width:16px; height:16px; margin-top:1px; fill:none; stroke:currentColor; stroke-width:2.1; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* optional pre-existing damage documenter (lower weight, never gold) */
+  .damage-card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; margin-top:16px; }
+  .damage-card .dh { display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
+  .damage-card .dh .t { font-family:var(--display); font-weight:700; font-size:16px; color:var(--navy); letter-spacing:-0.01em; }
+  .damage-card .dh .opt { font-size:11px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:var(--muted); background:#eef1f6; border:1px solid var(--line); border-radius:100px; padding:3px 9px; }
+  .damage-card .dsub { font-size:14.5px; line-height:1.5; color:var(--muted); margin:9px 0 0; }
+  .damage-grid { display:flex; flex-direction:column; gap:10px; margin-top:14px; }
+  .dphoto { display:flex; gap:11px; align-items:flex-start; background:#fbfcfe; border:1px solid var(--line-soft); border-radius:var(--radius-sm); padding:10px; }
+  .dphoto .thumb { flex:0 0 auto; width:60px; height:60px; border-radius:9px; background:linear-gradient(135deg,#c7bfb0,#ded7c9); border:1px solid var(--line); position:relative; overflow:hidden; }
+  .dphoto .thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+  .dphoto .thumb .ok { position:absolute; top:4px; right:4px; width:18px; height:18px; border-radius:50%; background:var(--green); border:1.5px solid #fff; display:flex; align-items:center; justify-content:center; }
+  .dphoto .thumb .ok svg { width:10px; height:10px; fill:none; stroke:#fff; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+  .dphoto .dcap { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:6px; }
+  .dphoto .dcap .fn { font-family:var(--body); font-size:12px; font-weight:600; color:var(--faint); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .dphoto .dcap .st { font-size:11.5px; font-weight:700; }
+  .dphoto .dcap .st.saving { color:var(--muted); }
+  .dphoto .dcap .st.saved { color:var(--green); }
+  .dphoto .dcap .st.failed { color:var(--red); }
+  .dphoto .dcap input { width:100%; min-height:44px; font-family:var(--body); font-size:16px; font-weight:500; color:var(--navy); background:#fff; border:1.5px solid var(--line); border-radius:8px; padding:10px 11px; outline:none; }
+  .dphoto .dcap input:focus { border-color:var(--navy); box-shadow:0 0 0 3px rgba(27,43,75,.10); }
+  .dphoto .drm { flex:0 0 auto; width:44px; height:44px; border:1px solid var(--line); background:#fff; color:var(--muted); border-radius:9px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .dphoto .drm svg { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+  .dadd { display:inline-flex; align-items:center; justify-content:center; gap:9px; width:100%; min-height:48px; margin-top:12px; border:1.5px solid var(--navy); background:#fff; color:var(--navy); border-radius:100px; font-family:var(--body); font-size:15px; font-weight:700; cursor:pointer; }
+  .dadd svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+  .dprotect { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--muted); margin:12px 2px 0; }
+  .dprotect svg { flex:0 0 auto; width:15px; height:15px; fill:none; stroke:var(--faint); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* ===== GETTING PAID stage ===== */
+  .paidwrap { }
+  .stepper { background:var(--navy-soft); padding:4px 12px 18px; display:flex; }
+  .step { flex:1 1 0; display:flex; flex-direction:column; align-items:center; position:relative; }
+  .step .node { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:2; background:#2c3f63; border:2px solid #3c4f73; }
+  .step.done .node { background:var(--gold); border-color:var(--gold); }
+  .step.done .node svg { width:14px; height:14px; fill:none; stroke:var(--navy-soft); stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+  .step.current .node { background:#fff; border-color:#fff; }
+  .step.current .node .d { width:8px; height:8px; border-radius:50%; background:var(--navy-soft); }
+  .step .node .d { width:7px; height:7px; border-radius:50%; background:#5a6b8a; }
+  .step .lbl { margin-top:7px; font-size:11.5px; font-weight:600; color:#9fb0cc; letter-spacing:0.01em; text-align:center; }
+  .step.done .lbl, .step.current .lbl { color:#fff; }
+  .step::before { content:""; position:absolute; top:13px; left:-50%; width:100%; height:2px; background:#3c4f73; z-index:1; }
+  .step:first-child::before { display:none; }
+  .step.done::before { background:var(--gold); }
+
+  .lede { font-family:var(--ui); font-size:16px; line-height:1.5; color:var(--muted); margin:0 0 20px; }
+  .lede b { color:var(--ink); font-weight:600; }
+  .paidwrap .seclabel, .paidwrap .frow, .paidwrap .banner, .paidwrap .attest, .paidwrap .qc { font-family:var(--ui); }
+
+  .payoutcard { padding:18px 18px; display:flex; align-items:center; gap:14px; margin-bottom:12px; }
+  .payoutcard .amt { font-family:var(--ui); font-weight:800; font-size:34px; letter-spacing:-0.02em; color:var(--navy-soft); line-height:1; }
+  .payoutcard .pend { font-family:var(--ui); font-size:13.5px; font-weight:600; color:var(--faint); }
+  .payoutcard .pend .dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--gold); margin-right:6px; vertical-align:middle; }
+  .factlist { padding:4px 16px; margin-bottom:12px; }
+  .factlist .frow .k { font-size:14px; font-weight:600; color:var(--faint); }
+  .factlist .frow .v { font-size:15.5px; font-weight:600; color:var(--navy-soft); }
+  .factlist .frow .v a { color:var(--navy-soft); text-decoration:underline; text-decoration-color:var(--gold); text-decoration-thickness:2px; text-underline-offset:2px; }
+
+  .attest { display:flex; align-items:flex-start; gap:13px; width:100%; text-align:left; background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:15px 16px; margin-bottom:10px; cursor:pointer; font-family:var(--ui); }
+  .attest .box { flex:0 0 auto; width:28px; height:28px; border-radius:8px; border:2px solid var(--line); background:#fff; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+  .attest .box svg { width:17px; height:17px; fill:none; stroke:#fff; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; opacity:0; }
+  .attest.on .box { background:var(--green); border-color:var(--green); }
+  .attest.on .box svg { opacity:1; }
+  .attest.busy { opacity:.65; cursor:default; }
+  .attest .t { font-size:15.5px; line-height:1.45; font-weight:600; color:var(--ink); }
+
+  .qc { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:2px 16px; }
+  .qrow { display:flex; align-items:center; gap:13px; padding:13px 0; border-top:1px solid var(--line-soft); }
+  .qrow:first-child { border-top:0; }
+  .qrow .thumb { flex:0 0 auto; width:46px; height:46px; border-radius:10px; background:#eef1f6; border:1px solid var(--line-soft); display:flex; align-items:center; justify-content:center; color:var(--faint); overflow:hidden; position:relative; }
+  .qrow .thumb svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+  .qrow.done .thumb { background:linear-gradient(135deg,#c9d4e2,#e6ebf2); border-color:var(--green-line); }
+  .qrow.done .thumb .ok { position:absolute; right:-5px; bottom:-5px; width:22px; height:22px; border-radius:50%; background:var(--green); border:2px solid #fff; display:flex; align-items:center; justify-content:center; }
+  .qrow.done .thumb .ok svg { width:12px; height:12px; stroke:#fff; stroke-width:3; opacity:1; }
+  .qrow .thumb .ok { opacity:0; }
+  .qrow .qt { flex:1 1 auto; min-width:0; }
+  /* label + status each on their own line: an inline status would abut the label
+     with no space (the wire-map cosmetic fix). block-level keeps them separated. */
+  .qrow .qt .n { display:block; font-size:15px; font-weight:600; color:var(--navy-soft); line-height:1.3; }
+  .qrow .qt .s { display:block; font-size:12.5px; font-weight:600; margin-top:2px; color:var(--faint); }
+  .qrow.done .qt .s { color:var(--green); }
+  .qrow .qt .opt { color:var(--faint); font-weight:600; }
+  .addbtn { flex:0 0 auto; min-height:44px; padding:0 16px; border:1.5px solid var(--navy-soft); background:#fff; color:var(--navy-soft); border-radius:100px; font-family:var(--ui); font-size:14px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+  .addbtn svg { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+  .addbtn:disabled { opacity:.6; cursor:default; }
+  .qrow.done .addbtn { border-color:var(--line); color:var(--muted); }
+
+  .perr { display:flex; align-items:flex-start; gap:7px; font-size:13px; font-weight:600; color:var(--red); background:var(--red-bg); border:1px solid var(--red-line); border-radius:9px; padding:10px 12px; margin:10px 0 0; }
+  .perr svg { flex:0 0 auto; width:15px; height:15px; margin-top:1px; fill:none; stroke:currentColor; stroke-width:2.1; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* Getting-paid sticky is a SIGNPOST, not the money submit. Gold is reserved for
+     Accept and real commit controls. Disabled gray pills still looked tappable and
+     never fired click (HTML disabled), so this is a navy status bar that explains
+     the blocker and points at the inspection-pass Add below. */
+  .paid-signpost {
+    display:inline-flex; align-items:center; justify-content:center; gap:10px;
+    width:100%; min-height:52px; padding:10px 18px;
+    background:#e8ecf2; color:var(--navy-soft);
+    border:1.5px solid var(--line); border-radius:14px;
+    font-family:var(--ui); font-size:15.5px; font-weight:700; letter-spacing:-0.01em;
+    cursor:pointer; box-shadow:none; text-align:center; line-height:1.25;
+  }
+  .paid-signpost:focus-visible { outline:2px solid var(--gold); outline-offset:2px; }
+  .paid-signpost .spin { width:16px; height:16px; border:2.5px solid rgba(27,43,75,.25); border-top-color:var(--navy-soft); border-radius:50%; animation:spin .7s linear infinite; }
+  .paid-signpost.busy { opacity:.85; cursor:default; }
+  .paidDoneStrip { display:flex; align-items:center; gap:11px; width:100%; min-height:58px; padding:0 18px; border-radius:16px; background:var(--green-bg); border:1px solid var(--green-line); color:var(--green); }
+  .paidDoneStrip svg { flex:0 0 auto; width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .paidDoneStrip .tx { font-family:var(--ui); font-size:15px; font-weight:700; }
+  .submitted-note { display:flex; gap:11px; align-items:flex-start; background:var(--green-bg); border:1px solid var(--green-line); border-radius:var(--radius); padding:16px; margin-bottom:12px; }
+  .submitted-note .ic { flex:0 0 auto; width:34px; height:34px; border-radius:50%; background:#fff; border:1px solid var(--green-line); display:flex; align-items:center; justify-content:center; color:var(--green); }
+  .submitted-note .ic svg { width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+  .submitted-note .t { font-family:var(--ui); font-size:15.5px; font-weight:700; color:#065c3b; line-height:1.35; }
+  .submitted-note .t small { display:block; font-size:13.5px; font-weight:500; color:#3f7a60; margin-top:3px; }
+
+  /* toast */
+  .ok-toast { position:fixed; bottom:calc(96px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); background:var(--green); color:#fff; padding:10px 18px; border-radius:8px; font-size:14px; font-weight:600; box-shadow:0 4px 12px rgba(0,0,0,0.2); z-index:1000; max-width:88%; text-align:center; }
+  .ok-toast.err { background:var(--red); }
+</style>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <span class="brand">Your job</span>
+      <span class="expires" id="expiresChip" hidden><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg> <span id="expiresText">Expires soon</span></span>
+    </div>
+    <div class="orient">Portable-generator inlet job, sent by Key. Questions? <a href="tel:+18648637800">(864) 863-7800</a></div>
+    <div class="freshline" id="freshline"></div>
+
+    <!-- LOADING -->
+    <section class="screen" id="s-loading">
+      <div class="sk sk-payout"></div>
+      <div class="sk sk-line" style="width:40%"></div>
+      <div class="sk sk-card"></div>
+      <div class="sk sk-card"></div>
+    </section>
+
+    <!-- =========================================================
+         STAGE 1: ACCEPT / DECLINE (status 'offered')
+         ========================================================= -->
+    <section class="screen" id="s-offer" hidden>
+      <p class="intro">Key has a new job for you near you. Review it, then <b>accept or decline</b>. The shop owner should accept; your crew handles the install after. No client details show until you accept.</p>
+
+      <div class="payout">
+        <span class="num" id="offerPayout">$0</span>
+        <div class="under"></div>
+        <p class="lbl">your payout for this job</p>
+      </div>
+
+      <p class="seclabel">The job</p>
+      <div class="card" id="offerFacts">
+        <div class="frow" id="offerAreaRow">
+          <span class="k"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span> Area</span>
+          <span class="v" id="offerArea">Near you</span>
+        </div>
+        <div class="frow" id="offerAmpRow">
+          <span class="k"><span class="ic"><svg viewBox="0 0 24 24"><path d="M13 3L5 13h6l-1 8 8-10h-6l1-8z"/></svg></span> Amperage</span>
+          <span class="v" id="offerAmp">-</span>
+        </div>
+        <div class="frow" id="offerTimeframeRow">
+          <span class="k"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span> Timeframe</span>
+          <span class="v" id="offerTimeframe">-</span>
+        </div>
+        <div class="frow" id="offerLaborRow">
+          <span class="k"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v9l5 3"/><circle cx="12" cy="12" r="9"/></svg></span> Estimated labor</span>
+          <span class="v" id="offerLabor">-</span>
+        </div>
+      </div>
+
+      <p class="seclabel">What the job is</p>
+      <div class="desc" id="offerDesc">
+        <p>Install an exterior weatherproof inlet and a panel interlock so the homeowner can plug in their own portable generator during an outage.</p>
+      </div>
+
+      <p class="seclabel" id="offerMaterialsLabel" hidden>Materials</p>
+      <div class="materials" id="offerMaterials" hidden></div>
+
+      <p class="honesty">
+        <svg viewBox="0 0 24 24"><rect x="4.5" y="11" width="15" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        <span id="offerHonestyText"><b>This payout is locked.</b> Do the work as agreed and this is what you are paid, no cutting it down after you accept.</span>
+      </p>
+    </section>
+
+    <!-- =========================================================
+         STAGE 2: FULL JOB (status 'accepted' or legacy 'permit_submitted')
+         ========================================================= -->
+    <section class="screen" id="s-full" hidden>
+      <div class="summary">
+        <div class="cell"><div class="k">Payout</div><div class="v" id="fullPayout">$0</div></div>
+        <div class="cell"><div class="k">Area</div><div class="v sm" id="fullArea">Near you</div></div>
+        <div class="cell"><div class="k">Amps</div><div class="v" id="fullAmp">-</div></div>
+      </div>
+
+      <!-- All customer contact stays with Key. Subs receive only job-site details. -->
+      <div class="banner">
+        <div class="head">
+          <span class="ic"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-4 4z"/><path d="M9 9l6 6M15 9l-6 6"/></svg></span>
+          <span class="t">Do not call, text, or email the customer</span>
+        </div>
+        <p><b>Key handles every customer conversation.</b> The name and address below are for completing the installation only. Do not call, text, or email the homeowner. Do not schedule with them.</p>
+        <p style="margin-top:9px;">If anything on site does not match the offer, or you hit a problem, text Key at <a href="tel:+18648637800" style="color:var(--gold); font-weight:700; text-decoration:none; white-space:nowrap;">(864) 863-7800</a>, not the customer.</p>
+        <div class="ack">
+          <button class="ackbtn" id="ackBtn">
+            <svg viewBox="0 0 24 24"><path d="M5 12.5l4 4 10-10"/></svg>
+            I understand
+          </button>
+          <div class="ackdone" id="ackDone" hidden>
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg>
+            Got it. Job details unlocked below.
+          </div>
+        </div>
+      </div>
+
+      <!-- JOB DETAILS (hidden until acknowledged) -->
+      <div id="afterAck" hidden>
+        <span class="clabel"><svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 13h5M10 17h5"/></svg> Job details, not for contact</span>
+        <div class="card">
+          <div class="crow" id="fullNameRow"><span class="k">Name</span><span class="v" id="fullName">-</span></div>
+          <div class="crow" id="fullAddrRow"><span class="k">Address</span><span class="v" id="fullAddr">-</span></div>
+        </div>
+
+        <!-- YOUR PARTS (build #3, sub side): only shown when Key ships the specialty
+             box on this job (materials_ship_status to_ship / shipped / received).
+             One tap records the arrival; the readiness parts gate reads it. Reused
+             primitives only (card+permit text, doneStrip, dadd pill), no new design. -->
+        <div id="partsWrap" hidden>
+          <p class="seclabel">Your parts</p>
+          <div class="card pad permit" id="partsCard">
+            <p id="partsText">Key ships the specialty parts for this job: the inlet box, the interlock kit, and the power cord.</p>
+            <p class="note" id="partsTracking" style="margin:10px 2px 0;" hidden></p>
+            <button type="button" class="dadd" id="partsBtn">
+              <svg viewBox="0 0 24 24"><path d="M3.5 8.5L12 4l8.5 4.5v7L12 20l-8.5-4.5z"/><path d="M3.5 8.5L12 13l8.5-4.5M12 13v7"/></svg>
+              The parts arrived
+            </button>
+          </div>
+          <div class="doneStrip" id="partsDone" style="margin-top:12px;" hidden>
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg>
+            <span class="tx"><b>Parts received.</b> Key knows they made it to you.</span>
+          </div>
+        </div>
+
+        <!-- OPTIONAL: document pre-existing damage. Never required, never blocks. Lower weight, not gold. -->
+        <div class="damage-card">
+          <div class="dh">
+            <span class="t">Before you start: document any existing damage</span>
+            <span class="opt">Optional</span>
+          </div>
+          <p class="dsub">Snap anything already broken or scratched so it can never be blamed on you. Add a caption and it saves right away.</p>
+
+          <div class="damage-grid" id="damageGrid"><!-- photo rows added here --></div>
+
+          <button type="button" class="dadd" id="dAdd">
+            <svg viewBox="0 0 24 24"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            Add photo
+          </button>
+
+          <p class="dprotect">
+            <svg viewBox="0 0 24 24"><rect x="4.5" y="11" width="15" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+            This is just for your protection.
+          </p>
+        </div>
+
+        <!-- INSTALL PHOTOS: available after the sub acknowledges the job details.
+             The first install photo advances the job to install_submitted and the
+             getting-paid stage where the rest of the shots + inspection pass live.
+             Reuses the getting-paid .qc slot styling. -->
+        <div id="fullInstall" hidden>
+          <p class="seclabel">Install photos</p>
+          <p class="note" id="fullInstallLede">The work is done? Add your install photos here. Your first photo starts the getting-paid step, where you finish the rest and submit for payout.</p>
+          <div class="qc" id="fullQc"><!-- install_qc slot rows rendered here --></div>
+          <div class="perr" id="fullQcErr" hidden><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg> <span id="fullQcErrText">That photo did not upload, tap Add to try again. Nothing else was lost.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         STAGE 3: GETTING PAID (status 'install_submitted' .. 'pass_submitted')
+         ========================================================= -->
+    <div class="paidwrap" id="s-paid" hidden>
+      <div class="stepper" id="stepper">
+        <div class="step done"><span class="node"><svg viewBox="0 0 24 24"><path d="M5 12.5l4 4 10-10"/></svg></span><span class="lbl">Accepted</span></div>
+        <div class="step current" id="stepInstall"><span class="node"><span class="d"></span></span><span class="lbl">Install and inspection</span></div>
+        <div class="step" id="stepPaid"><span class="node"><span class="d"></span></span><span class="lbl">Paid</span></div>
+      </div>
+
+      <section class="screen" style="padding-top:20px">
+        <p class="lede" id="paidLede">You are almost done. Confirm the work, add your photos, then submit for payout.</p>
+
+        <div class="submitted-note" id="submittedNote" hidden>
+          <span class="ic"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5 11-12"/></svg></span>
+          <span class="t">Submitted. Key pays you within 48 hours after QC and permit pass.<small>Nothing else to do. Key runs quality control; once that and the permit pass, he pays you personally within 48 hours.</small></span>
+        </div>
+
+        <div class="card payoutcard">
+          <span class="amt" id="paidPayout">$0</span>
+          <span class="pend"><span class="dot"></span>Key pays you within 48 hours after QC and permit pass</span>
+        </div>
+        <p class="honesty" style="margin-top:0;" id="paidHonesty">
+          <svg viewBox="0 0 24 24"><rect x="4.5" y="11" width="15" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+          <span id="paidHonestyText"><b>This is the payout you accepted.</b> Do the work as agreed and this is exactly what you are paid. Key pays you personally within 48 hours after all quality control and permit pass.</span>
+        </p>
+
+        <div class="card factlist">
+          <div class="frow"><span class="k">Install date</span><span class="v" id="paidDate">Key will confirm</span></div>
+          <div class="frow"><span class="k">Customer</span><span class="v" id="paidCustomer">-</span></div>
+          <div class="frow" id="paidAddrRow"><span class="k">Address</span><span class="v" id="paidAddr">-</span></div>
+          <div class="frow" id="paidScopeRow"><span class="k">Scope</span><span class="v" id="paidScope">-</span></div>
+        </div>
+
+        <div class="banner compact">
+          <span class="ic"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-4 4z"/><path d="M9 9l6 6M15 9l-6 6"/></svg></span>
+          <p><b>Do not call, text, or email the customer.</b> Key handles all customer contact. Site details are for completing the job only.</p>
+        </div>
+
+        <p class="seclabel">Confirm the work</p>
+        <p class="note" style="margin:0 0 12px;">Check these once the work is truly done. They lock in when you check them, and they release your payout. Key handles customer sign-off; you do not need to call or text the homeowner.</p>
+        <button type="button" class="attest" data-attest="confirm_client_approval">
+          <span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4 4 10-10"/></svg></span>
+          <span class="t">The install is finished on site and ready for Key's quality check.</span>
+        </button>
+        <button type="button" class="attest" data-attest="confirm_work_done">
+          <span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4 4 10-10"/></svg></span>
+          <span class="t">The install is done and I tested it to the best of my ability.</span>
+        </button>
+
+        <p class="seclabel">Job photos</p>
+        <div class="qc" id="qc"><!-- slot rows rendered from photo_slots --></div>
+        <div class="perr" id="perr" hidden><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg> <span id="perrText">That photo did not upload, tap Add to try again.</span></div>
+      </section>
+    </div>
+
+    <!-- =========================================================
+         TERMINAL / MESSAGE STATES
+         ========================================================= -->
+    <section id="s-expired" hidden>
+      <div class="fullscreen">
+        <span class="badge warn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg></span>
+        <h1>This offer has expired.</h1>
+        <p>Text Key and he will let you know what is still open.</p>
+        <p class="phone"><a href="tel:+18648637800">(864) 863-7800</a></p>
+      </div>
+    </section>
+
+    <section id="s-declined" hidden>
+      <div class="fullscreen">
+        <span class="badge info"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5 11-12"/></svg></span>
+        <h1>You declined this job.</h1>
+        <p>No problem. Key will send the next one that fits.</p>
+        <p class="phone"><a href="tel:+18648637800">(864) 863-7800</a></p>
+      </div>
+    </section>
+
+    <section id="s-closed" hidden>
+      <div class="fullscreen">
+        <span class="badge info"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5 11-12"/></svg></span>
+        <h1 id="closedHead">This job is closed.</h1>
+        <p id="closedBody">Text Key if anything looks off.</p>
+        <p class="phone"><a href="tel:+18648637800">(864) 863-7800</a></p>
+      </div>
+    </section>
+
+    <section id="s-paidout" hidden>
+      <div class="fullscreen">
+        <span class="badge good"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg></span>
+        <h1>This job is done and approved for payout.</h1>
+        <p>Key has approved your payout. Nothing else to do here. Text Key with any questions.</p>
+        <p class="phone"><a href="tel:+18648637800">(864) 863-7800</a></p>
+      </div>
+    </section>
+
+    <section id="s-invalid" hidden>
+      <div class="fullscreen">
+        <span class="badge bad"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg></span>
+        <h1 id="invalidHead">This link is not valid.</h1>
+        <p id="invalidBody">Text Key and he will send you a fresh one.</p>
+        <p class="phone"><a href="tel:+18648637800">(864) 863-7800</a></p>
+      </div>
+    </section>
+  </div>
+
+  <!-- =========================================================
+       STICKY ACTION BARS (one per interactive stage)
+       ========================================================= -->
+
+  <!-- OFFER: accept / decline -->
+  <div class="navbar" id="nav-offer" hidden>
+    <div class="inner">
+      <button class="primary" id="acceptBtn">
+        <span id="acceptLabel">Accept this job</span>
+        <svg viewBox="0 0 24 24" id="acceptArrow" aria-hidden="true"><path d="M5 12h13"/><path d="M13 6l6 6-6 6"/></svg>
+      </button>
+      <button class="decline" id="declineBtn">Decline</button>
+    </div>
+  </div>
+
+  <!-- FULL JOB: install-photo signpost -->
+  <div class="navbar" id="nav-full" hidden>
+    <div class="inner">
+      <button type="button" class="paid-signpost" aria-label="Install photos are added in the job checklist above.">
+        <span>Add install photos above</span>
+      </button>
+      <p class="navhint">BPP handles the permit. Your checklist starts with the install.</p>
+    </div>
+  </div>
+
+  <!-- GETTING PAID: sticky is a signpost only; real submit = inspection-pass Add -->
+  <div class="navbar" id="nav-paid" hidden>
+    <div class="inner">
+      <button type="button" class="paid-signpost" id="submitBtn" aria-label="Checklist status. Submitting happens when you add the inspection-pass photo below.">
+        <span id="submitLabel">Finish the list below</span>
+      </button>
+      <div class="paidDoneStrip" id="paidDoneStrip" hidden>
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg>
+        <span class="tx">Submitted. Key pays you within 48 hours after QC and permit pass.</span>
+      </div>
+      <p class="navhint" id="paidNavhint">This bar names what is left. The real submit is the inspection-pass Add below. Key pays you personally within 48 hours after QC and permit pass.</p>
+    </div>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+  var BASE = 'https://hfatblrcwytxvijjhpal.supabase.co/functions/v1';
+  var VIEW = BASE + '/sub-offer-view';
+  var ACTION = BASE + '/sub-offer-action';
+  var UPLOAD = BASE + '/sub-job-upload';
+
+  var qs = new URLSearchParams(location.search);
+  var token = qs.get('t') || qs.get('token') || '';
+
+  var els = {
+    loading: document.getElementById('s-loading'),
+    offer: document.getElementById('s-offer'),
+    full: document.getElementById('s-full'),
+    paid: document.getElementById('s-paid'),
+    expired: document.getElementById('s-expired'),
+    declined: document.getElementById('s-declined'),
+    closed: document.getElementById('s-closed'),
+    paidout: document.getElementById('s-paidout'),
+    invalid: document.getElementById('s-invalid'),
+    freshline: document.getElementById('freshline'),
+    chip: document.getElementById('expiresChip'),
+    chipText: document.getElementById('expiresText'),
+    navOffer: document.getElementById('nav-offer'),
+    navFull: document.getElementById('nav-full'),
+    navPaid: document.getElementById('nav-paid')
+  };
+
+  var data = null;      // last good sub-offer-view payload
+  var hasData = false;
+  var offerSettled = false;    // accept/decline in flight or done, do not re-render over it
+  var lastLoadedTs = null;
+
+  // ------- helpers -------
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
+  function money(n) {
+    if (n == null || isNaN(Number(n))) return null;
+    return '$' + Number(n).toLocaleString();
+  }
+  // What the sub is owed: frozen accepted amount wins over a later edited figure.
+  // Server approve records payout_agreed_amount, never a silent swap to payout_amount.
+  function owedPayout(o) {
+    if (!o) return null;
+    if (o.payout_agreed_amount != null && !isNaN(Number(o.payout_agreed_amount))) return o.payout_agreed_amount;
+    return o.payout_amount;
+  }
+  function payoutHonestyHtml(o) {
+    var agreed = o && o.payout_agreed_amount;
+    var current = o && o.payout_amount;
+    var changed = !!(o && o.payout_changed_after_accept);
+    var reason = o && o.payout_revised_reason ? String(o.payout_revised_reason).trim() : '';
+    if (changed && agreed != null && current != null && Number(agreed) !== Number(current)) {
+      var line = '<b>Your accepted payout is ' + esc(money(agreed) || '$0') + '.</b> Key revised the working figure to '
+        + esc(money(current) || '$0') + ' after you accepted.';
+      if (reason) line += ' Reason: ' + esc(reason) + '.';
+      line += ' Key pays you the accepted amount personally within 48 hours after all quality control and permit pass.';
+      return line;
+    }
+    return '<b>This is the payout you accepted.</b> Do the work as agreed and this is exactly what you are paid. Key pays you personally within 48 hours after all quality control and permit pass.';
+  }
+  function digits(s) { return String(s || '').replace(/\D/g, ''); }
+  function toast(msg, isErr) {
+    var el = document.createElement('div');
+    el.className = 'ok-toast' + (isErr ? ' err' : '');
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(function () { el.remove(); }, 3200);
+  }
+  function setFresh(text, offline) {
+    els.freshline.textContent = text || '';
+    els.freshline.classList.toggle('offline', !!offline);
+  }
+  function staleLabel() {
+    if (!lastLoadedTs) return 'a while ago';
+    var mins = Math.round((Date.now() - lastLoadedTs) / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return '~' + mins + 'm ago';
+    var hrs = Math.round(mins / 60);
+    if (hrs < 24) return '~' + hrs + 'h ago';
+    return 'on ' + new Date(lastLoadedTs).toLocaleDateString([], { month: 'short', day: 'numeric' });
+  }
+
+  function hideAll() {
+    [els.loading, els.offer, els.full, els.paid, els.expired, els.declined,
+     els.closed, els.paidout, els.invalid, els.navOffer, els.navFull, els.navPaid, els.chip]
+      .forEach(function (e) { if (e) e.hidden = true; });
+  }
+
+  function fileToBase64(file) {
+    return new Promise(function (resolve, reject) {
+      var r = new FileReader();
+      r.onload = function () {
+        var s = String(r.result || '');
+        var i = s.indexOf(',');
+        resolve(i >= 0 ? s.slice(i + 1) : s);
+      };
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+  }
+  function pickImage(accept) {
+    return new Promise(function (resolve) {
+      var input = document.createElement('input');
+      input.type = 'file';
+      input.accept = accept || 'image/*';
+      if (accept === 'image/*') input.capture = 'environment';
+      input.style.display = 'none';
+      document.body.appendChild(input);
+      input.onchange = function () {
+        var f = input.files && input.files[0];
+        input.remove();
+        resolve(f || null);
+      };
+      input.click();
+    });
+  }
+  // Content type the upload endpoint accepts (pdf, jpeg, png). Everything else
+  // is normalized to jpeg so an odd mobile mime (heic etc.) still declares a
+  // supported type; the endpoint's magic-byte check is the real guard.
+  function normType(file) {
+    if (file.type === 'application/pdf') return 'application/pdf';
+    if (file.type === 'image/png') return 'image/png';
+    return 'image/jpeg';
+  }
+
+  // ------- network -------
+  function getView() {
+    // Mirrors sub/index.html: plain fetch, no apikey header (the fn is pinned
+    // verify_jwt=false so the publishable-key gateway lets it through; the token
+    // in ?t= is the whole auth). Never send the token in a header.
+    return fetch(VIEW + '?t=' + encodeURIComponent(token));
+  }
+  function postAction(action) {
+    return fetch(ACTION, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: token, action: action })
+    });
+  }
+  function postUpload(payload) {
+    payload.token = token;
+    return fetch(UPLOAD, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  }
+
+  // ------- refresh + route -------
+  function refresh() {
+    if (!token || !/^[A-Za-z0-9_-]{20,64}$/.test(token)) {
+      hideAll(); els.invalid.hidden = false;
+      return Promise.resolve();
+    }
+    return getView().then(function (res) {
+      if (res.status === 400 || res.status === 404) {
+        hideAll(); els.invalid.hidden = false;
+        return;
+      }
+      if (res.status === 401) {
+        hideAll();
+        document.getElementById('invalidHead').textContent = 'This link is no longer active.';
+        document.getElementById('invalidBody').textContent = 'Text Key and he will send you a fresh one.';
+        els.invalid.hidden = false;
+        return;
+      }
+      if (!res.ok) {
+        if (hasData) setFresh('Could not refresh, last updated ' + staleLabel(), true);
+        else { hideAll(); els.invalid.hidden = false; }
+        return;
+      }
+      return res.json().then(function (j) {
+        data = j;
+        hasData = true;
+        lastLoadedTs = Date.now();
+        setFresh('Updated ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }), false);
+        route();
+      });
+    }).catch(function () {
+      if (hasData) setFresh('Offline, last updated ' + staleLabel(), true);
+      else { hideAll(); els.invalid.hidden = false; }
+    });
+  }
+
+  function route() {
+    if (!data) return;
+    var status = data.status;
+    // While an accept/decline is in flight or just done, do not repaint the offer
+    // stage over the settled action (a background refresh could otherwise reset a
+    // button mid-commit). Terminal/next-stage repaints are still allowed.
+    if (status === 'offered') {
+      if (offerSettled) return;
+      renderOffer();
+      return;
+    }
+    if (status === 'accepted' || status === 'permit_submitted') {
+      renderFull();
+      return;
+    }
+    if (status === 'install_submitted' || status === 'pass_submitted') {
+      renderPaid();
+      return;
+    }
+    // terminal
+    if (status === 'expired') { hideAll(); els.expired.hidden = false; return; }
+    if (status === 'declined') { hideAll(); els.declined.hidden = false; return; }
+    if (status === 'approved_paid') { hideAll(); els.paidout.hidden = false; return; }
+    if (status === 'withdrawn' || status === 'cancelled') {
+      hideAll();
+      document.getElementById('closedHead').textContent = 'This job is no longer active.';
+      document.getElementById('closedBody').textContent = 'Key pulled this offer back. Text him and he will sort out the next step.';
+      els.closed.hidden = false;
+      return;
+    }
+    // any unknown status: safest is the gracious closed dead-end
+    hideAll(); els.closed.hidden = false;
+  }
+
+  // ================= STAGE 1: OFFER =================
+  var MAT_SHIP_SVG = '<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5 11-12"/></svg>';
+  function renderOffer() {
+    hideAll();
+    els.offer.hidden = false;
+    els.navOffer.hidden = false;
+
+    var o = data.offer || {};
+    var scope = data.scope || {};
+
+    document.getElementById('offerPayout').textContent = money(owedPayout(o)) || '$0';
+    var offerHonesty = document.getElementById('offerHonestyText');
+    if (offerHonesty) {
+      offerHonesty.innerHTML = '<b>This payout is locked for the install work only.</b> BPP handles the permit and inspection. Do the work as agreed and this is what you are paid, no cutting it down after you accept.';
+    }
+
+    // Area (general only pre-accept)
+    var areaEl = document.getElementById('offerArea');
+    if (scope.area) { areaEl.textContent = scope.area; document.getElementById('offerAreaRow').hidden = false; }
+    else { document.getElementById('offerArea').textContent = 'Near you'; }
+
+    // Amperage
+    if (scope.amp != null) { document.getElementById('offerAmp').textContent = scope.amp + 'A'; document.getElementById('offerAmpRow').hidden = false; }
+    else { document.getElementById('offerAmpRow').hidden = true; }
+
+    // Timeframe (hide row if null)
+    if (o.timeframe_estimate) { document.getElementById('offerTimeframe').textContent = o.timeframe_estimate; document.getElementById('offerTimeframeRow').hidden = false; }
+    else { document.getElementById('offerTimeframeRow').hidden = true; }
+
+    // Estimated labor (hide row if null)
+    if (o.est_labor_hours != null) {
+      var h = Number(o.est_labor_hours);
+      document.getElementById('offerLabor').textContent = h + (h === 1 ? ' hour' : ' hours');
+      document.getElementById('offerLaborRow').hidden = false;
+    } else { document.getElementById('offerLaborRow').hidden = true; }
+
+    // Description from scope_json narrative if present, else brand default
+    renderDescription(document.getElementById('offerDesc'));
+
+    // Materials (read-only: We ship / You supply)
+    renderMaterials();
+
+    // Expiry chip
+    renderExpiry(o.expires_at);
+  }
+
+  function renderDescription(container) {
+    // Per-job scope prose the CRM authored (scope_json.description), surfaced by
+    // sub-offer-view as scope.description. Prefer it; fall back to the brand default
+    // only when it is empty. Each paragraph of the narrative is escaped and rendered
+    // as its own <p> (split on blank lines), so no HTML is injected from the offer.
+    var narrative = (data.scope && typeof data.scope.description === 'string')
+      ? data.scope.description.trim() : '';
+    var html;
+    if (narrative) {
+      html = narrative.split(/\n\s*\n/).map(function (para) {
+        return '<p>' + esc(para.trim()).replace(/\n/g, '<br>') + '</p>';
+      }).join('');
+    } else {
+      html =
+        '<p>Install an exterior weatherproof inlet and a panel interlock so the homeowner can plug in their own portable generator during an outage.</p>' +
+        '<p>Mount the inlet on an exterior wall near the panel, run the whip to a new breaker, and fit the interlock kit to the existing panel. Finish with a labeled cover, a walk-through, and a live equipment test before you leave. No generator is installed.</p>';
+    }
+    html += '<p>BPP handles the permit and inspection. Your responsibility starts with the installation.</p>';
+    container.innerHTML = html;
+  }
+
+  function renderMaterials() {
+    var mats = Array.isArray(data.materials) ? data.materials : [];
+    var label = document.getElementById('offerMaterialsLabel');
+    var box = document.getElementById('offerMaterials');
+    if (!mats.length) { label.hidden = true; box.hidden = true; box.innerHTML = ''; return; }
+    label.hidden = false; box.hidden = false;
+    box.innerHTML = mats.map(function (m) {
+      var name = m.label || m.kind || 'Item';
+      var bpp = m.supplied_by === 'bpp';
+      var tag = bpp
+        ? '<span class="mtag ship">' + MAT_SHIP_SVG + ' We ship this</span>'
+        : '<span class="mtag supply">You supply</span>';
+      return '<div class="mrow"><span class="item">' + esc(name) + '</span>' + tag + '</div>';
+    }).join('');
+  }
+
+  function renderExpiry(expiresAt) {
+    if (!expiresAt) { els.chip.hidden = true; return; }
+    var ms = new Date(expiresAt).getTime() - Date.now();
+    if (isNaN(ms) || ms <= 0) { els.chip.hidden = true; return; }
+    var hrs = Math.floor(ms / 3600000);
+    var txt;
+    if (hrs >= 48) txt = 'Expires in ' + Math.round(hrs / 24) + ' days';
+    else if (hrs >= 1) txt = 'Expires in ' + hrs + (hrs === 1 ? ' hour' : ' hours');
+    else txt = 'Expires in under an hour';
+    els.chipText.textContent = txt;
+    els.chip.hidden = false;
+  }
+
+  // accept / decline wiring
+  var acceptBtn = document.getElementById('acceptBtn');
+  var acceptLabel = document.getElementById('acceptLabel');
+  var acceptArrow = document.getElementById('acceptArrow');
+  var declineBtn = document.getElementById('declineBtn');
+
+  acceptBtn.addEventListener('click', function () {
+    if (offerSettled) return;
+    offerSettled = true;
+    acceptBtn.disabled = true; declineBtn.disabled = true;
+    acceptLabel.textContent = 'Accepting...';
+    if (acceptArrow) acceptArrow.outerHTML = '<span class="spin" id="acceptArrow" aria-hidden="true"></span>';
+    postAction('accept').then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j, status: r.status }; });
+    }).then(function (out) {
+      if (out.ok && out.j && out.j.ok) {
+        // Settled confirmed strip, then load the next stage (full-job).
+        els.navOffer.querySelector('.inner').innerHTML =
+          '<div class="confirmed"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg> Job accepted</div>';
+        offerSettled = false; // allow the next-stage route to render
+        setTimeout(function () { refresh(); }, 900);
+      } else {
+        // 409 already-taken / already-changed: reflect the true state.
+        offerSettled = false;
+        toast(out.j && out.j.error ? out.j.error : 'Could not accept. Refreshing.', true);
+        refresh();
+      }
+    }).catch(function () {
+      offerSettled = false;
+      acceptBtn.disabled = false; declineBtn.disabled = false;
+      acceptLabel.textContent = 'Accept this job';
+      var span = document.getElementById('acceptArrow');
+      if (span) span.outerHTML = '<svg viewBox="0 0 24 24" id="acceptArrow" aria-hidden="true"><path d="M5 12h13"/><path d="M13 6l6 6-6 6"/></svg>';
+      toast('Network error. Check your connection and try again.', true);
+    });
+  });
+
+  declineBtn.addEventListener('click', function () {
+    if (offerSettled) return;
+    if (!window.confirm('Decline this job? Key will offer it to the next sub. It will not affect the jobs he sends you next.')) return;
+    offerSettled = true;
+    acceptBtn.disabled = true; declineBtn.disabled = true;
+    declineBtn.textContent = 'Declining...';
+    postAction('decline').then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j }; });
+    }).then(function (out) {
+      offerSettled = false;
+      if (out.ok && out.j && out.j.ok) {
+        refresh();
+      } else {
+        toast(out.j && out.j.error ? out.j.error : 'Could not decline. Refreshing.', true);
+        refresh();
+      }
+    }).catch(function () {
+      offerSettled = false;
+      acceptBtn.disabled = false; declineBtn.disabled = false;
+      declineBtn.textContent = 'Decline';
+      toast('Network error. Try again.', true);
+    });
+  });
+
+  // ================= STAGE 2: FULL JOB =================
+  var ackBtn = document.getElementById('ackBtn');
+  var ackDone = document.getElementById('ackDone');
+  var afterAck = document.getElementById('afterAck');
+
+  function renderFull() {
+    hideAll();
+    els.full.hidden = false;
+    els.navFull.hidden = false;
+
+    var o = data.offer || {};
+    var scope = data.scope || {};
+    var c = data.customer || {};
+
+    document.getElementById('fullPayout').textContent = money(owedPayout(o)) || '$0';
+    document.getElementById('fullArea').textContent = scope.area || 'Near you';
+    document.getElementById('fullAmp').textContent = (scope.amp != null) ? (scope.amp + 'A') : '-';
+
+    // Job-site details remain absent until the server records the explicit
+    // do-not-contact acknowledgment.
+    setCrow('fullName', 'fullNameRow', c.name);
+    var addr = c.address || null;
+    var addrEl = document.getElementById('fullAddr');
+    if (addr) {
+      addrEl.innerHTML = '<a href="https://maps.google.com/?q=' + encodeURIComponent(addr) + '" target="_blank" rel="noopener">' + esc(addr) + '</a>';
+      document.getElementById('fullAddrRow').hidden = false;
+    } else { document.getElementById('fullAddrRow').hidden = true; }
+    if (o.client_info_ack_at) {
+      revealAck();
+    } else {
+      // resting state: unacked
+      ackBtn.hidden = false; ackDone.hidden = true; afterAck.hidden = true;
+    }
+  }
+
+  function setCrow(valId, rowId, val) {
+    var row = document.getElementById(rowId);
+    var el = document.getElementById(valId);
+    if (val) { el.textContent = val; row.hidden = false; }
+    else { row.hidden = true; }
+  }
+
+  function revealAck() {
+    ackBtn.hidden = true; ackDone.hidden = false;
+    afterAck.hidden = false;
+
+    // Install photos are available immediately after the job-details acknowledgement.
+    renderFullInstall();
+    renderParts();
+  }
+
+  // ---- YOUR PARTS (build #3, sub side) ----
+  // Ship states: to_ship/shipped -> live "the parts arrived" tap; received ->
+  // confirmed strip; null/'na' (nothing shipped on this job) -> section hidden.
+  var partsWrap = document.getElementById('partsWrap');
+  var partsCard = document.getElementById('partsCard');
+  var partsBtn = document.getElementById('partsBtn');
+  var partsDone = document.getElementById('partsDone');
+  var partsText = document.getElementById('partsText');
+  var partsTracking = document.getElementById('partsTracking');
+  var PARTS_BTN_HTML = partsBtn ? partsBtn.innerHTML : '';
+
+  function renderParts() {
+    if (!partsWrap) return;
+    var o = data.offer || {};
+    var s = o.materials_ship_status || null;
+    if (s !== 'to_ship' && s !== 'shipped' && s !== 'received') { partsWrap.hidden = true; return; }
+    partsWrap.hidden = false;
+    if (s === 'received') { partsCard.hidden = true; partsDone.hidden = false; return; }
+    partsCard.hidden = false; partsDone.hidden = true;
+    if (s === 'shipped') {
+      partsText.textContent = 'Key has shipped the specialty parts: the inlet box, the interlock kit, and the power cord. Tap below when the box arrives.';
+      if (o.materials_tracking) { partsTracking.textContent = 'Tracking: ' + o.materials_tracking; partsTracking.hidden = false; }
+      else { partsTracking.textContent = 'Shipped. Tracking note not added yet; text Key if you need the carrier number.'; partsTracking.hidden = false; }
+    } else {
+      partsText.textContent = 'Key has not shipped the specialty parts yet (inlet box, interlock kit, power cord). This card updates when he marks them shipped. Tap below only after the box arrives.';
+      partsTracking.hidden = true;
+    }
+  }
+
+  if (partsBtn) partsBtn.addEventListener('click', function () {
+    if (partsBtn.disabled) return;
+    partsBtn.disabled = true;
+    partsBtn.innerHTML = '<span class="spin"></span><span>Saving...</span>';
+    postAction('confirm_parts_received').then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j }; });
+    }).then(function (out) {
+      if (out.ok && out.j && out.j.ok) {
+        if (data.offer) data.offer.materials_ship_status = 'received';
+        renderParts();
+        toast('Got it. Key knows the parts arrived.');
+      } else {
+        resetPartsBtn();
+        // Pre-deploy or state mismatch: never surface the raw validation list.
+        var msg = (out.j && out.j.error && out.j.error.indexOf('action must be') === -1)
+          ? out.j.error
+          : 'Could not save that. Text Key that the parts arrived.';
+        toast(msg, true);
+      }
+    }).catch(function () {
+      resetPartsBtn();
+      toast('Network error. Try again.', true);
+    });
+  });
+  function resetPartsBtn() {
+    partsBtn.disabled = false;
+    partsBtn.innerHTML = PARTS_BTN_HTML;
+  }
+
+  // Render the install_qc slots on the FULL-JOB stage. The first install photo advances the job to
+  // install_submitted, and refresh() then routes to the getting-paid stage where the
+  // rest of the shots + inspection pass + attestations live. Reuses onSlotAdd.
+  function renderFullInstall() {
+    var wrap = document.getElementById('fullInstall');
+    var box = document.getElementById('fullQc');
+    if (!wrap || !box) return;
+    var lede = document.getElementById('fullInstallLede');
+    var slots = (Array.isArray(data.photo_slots) ? data.photo_slots : []).filter(function (s) { return s.kind === 'install_qc'; });
+    // Name the count up front so the tech plans the shots in one walk of the job
+    // instead of discovering "3 more needed" after climbing back up a ladder.
+    var reqCount = slots.filter(function (s) { return s.is_required; }).length;
+    var countPhrase = reqCount ? (reqCount + ' install photo' + (reqCount === 1 ? '' : 's') + ' here, plus an inspection pass on the next step') : 'your install photos here, plus an inspection pass on the next step';
+    if (lede) lede.textContent = 'The work is done? Add ' + countPhrase + '. Your first photo starts the getting-paid step, where you finish and submit for payout.';
+    wrap.hidden = false;
+    box.innerHTML = slots.map(function (s) {
+      var done = !!s.filled;
+      var status = done ? 'Uploaded' : (s.is_required ? 'Pending' : 'Optional');
+      var statusCls = done ? 's' : (s.is_required ? 's' : 's opt');
+      return '' +
+        '<div class="qrow ' + (done ? 'done' : '') + '" data-slot="' + esc(s.code) + '" data-kind="' + esc(s.kind) + '" data-req="' + (s.is_required ? '1' : '0') + '">' +
+          '<span class="thumb">' + SLOT_ICON + SLOT_OK + '</span>' +
+          '<span class="qt"><span class="n">' + esc(s.label) + '</span><span class="' + statusCls + '">' + status + '</span></span>' +
+          '<button class="addbtn" type="button"><svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg>' + (done ? 'Replace' : 'Add') + '</button>' +
+        '</div>';
+    }).join('');
+    box.querySelectorAll('.qrow').forEach(function (row) {
+      row.querySelector('.addbtn').addEventListener('click', function () { onSlotAdd(row); });
+    });
+  }
+
+  ackBtn.addEventListener('click', function () {
+    if (ackBtn.disabled) return;
+    ackBtn.disabled = true;
+    postAction('ack_client_info').then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j }; });
+    }).then(function (out) {
+      if (!out.ok || !out.j || !out.j.ok) {
+        ackBtn.disabled = false;
+        toast(out.j && out.j.error ? out.j.error : 'Could not unlock job details.', true);
+        return;
+      }
+      refresh();
+    }).catch(function () {
+      ackBtn.disabled = false;
+      toast('Network error. Try again.', true);
+    });
+  });
+
+  // Optional pre-existing damage documenter (multi-photo, never a gate). Each
+  // photo uploads immediately (kind=pre_existing_damage). The caption saves as a
+  // separate lightweight upload is not supported, so the caption is sent WITH the
+  // photo: we upload once the caption blurs or the row is added, whichever the sub
+  // does. To keep it simple and never lose a photo, upload on selection with the
+  // current (possibly empty) caption, and if the sub edits the caption after, they
+  // can re-add. The caption rides in `note`.
+  var dAdd = document.getElementById('dAdd');
+  var dGrid = document.getElementById('damageGrid');
+  if (dAdd) dAdd.addEventListener('click', function () {
+    pickImage('image/*').then(function (file) {
+      if (!file) return;
+      addDamageRow(file);
+    });
+  });
+
+  function addDamageRow(file) {
+    var row = document.createElement('div');
+    row.className = 'dphoto';
+    row.innerHTML =
+      '<span class="thumb"><span class="ok" hidden><svg viewBox="0 0 24 24"><path d="M5 12.5l4 4 10-10"/></svg></span></span>' +
+      '<span class="dcap"><span class="fn">' + esc(file.name) + '</span>' +
+      '<span class="st saving">Saving...</span>' +
+      '<input type="text" placeholder="Add a caption, optional" aria-label="Caption for this photo" /></span>' +
+      '<button type="button" class="drm" aria-label="Remove from this list"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>';
+    dGrid.appendChild(row);
+
+    var thumb = row.querySelector('.thumb');
+    var okBadge = row.querySelector('.ok');
+    var stEl = row.querySelector('.st');
+    var capInput = row.querySelector('input');
+    var rmBtn = row.querySelector('.drm');
+
+    // preview
+    var reader = new FileReader();
+    reader.onload = function () {
+      var img = document.createElement('img');
+      img.src = String(reader.result || '');
+      img.alt = '';
+      thumb.insertBefore(img, okBadge);
+    };
+    reader.readAsDataURL(file);
+
+    // remove from the on-screen list (the uploaded copy stays on the server as
+    // the CYA record; this only tidies the sub's view). Confirm to avoid an
+    // accidental tap reading as "deleted my proof".
+    rmBtn.addEventListener('click', function () {
+      row.remove();
+    });
+
+    // If the caption changes after the first save, re-save with the new note.
+    var savedOnce = false;
+    function doUpload(finalCaption) {
+      stEl.className = 'st saving'; stEl.textContent = savedOnce ? 'Updating...' : 'Saving...';
+      fileToBase64(file).then(function (b64) {
+        var payload = { kind: 'pre_existing_damage', contentType: normType(file), dataBase64: b64, fileName: file.name };
+        if (finalCaption) payload.note = finalCaption;
+        return postUpload(payload);
+      }).then(function (r) {
+        return r.json().then(function (j) { return { ok: r.ok, j: j }; });
+      }).then(function (out) {
+        if (out.ok && out.j && out.j.ok) {
+          savedOnce = true;
+          okBadge.hidden = false;
+          stEl.className = 'st saved'; stEl.textContent = 'Saved';
+        } else {
+          stEl.className = 'st failed'; stEl.textContent = 'Not saved, tap the caption to retry';
+        }
+      }).catch(function () {
+        stEl.className = 'st failed'; stEl.textContent = 'Not saved, tap the caption to retry';
+      });
+    }
+
+    // Upload immediately with no caption so a photo is never lost if the sub walks
+    // away. Caption edits re-save the note.
+    doUpload('');
+    var t = null;
+    capInput.addEventListener('input', function () {
+      if (t) clearTimeout(t);
+      t = setTimeout(function () { doUpload(capInput.value.trim()); }, 900);
+    });
+  }
+
+  // ================= STAGE 3: GETTING PAID =================
+  var submitBtn = document.getElementById('submitBtn');
+  var submitLabel = document.getElementById('submitLabel');
+  var paidDoneStrip = document.getElementById('paidDoneStrip');
+  var paidNavhint = document.getElementById('paidNavhint');
+  var perr = document.getElementById('perr');
+  var submittedNote = document.getElementById('submittedNote');
+  var stepInstall = document.getElementById('stepInstall');
+  var stepPaid = document.getElementById('stepPaid');
+  var paidLede = document.getElementById('paidLede');
+  var qcBox = document.getElementById('qc');
+
+  // local attestation state so a background refresh does not flip a checked box
+  var attestOn = { confirm_client_approval: false, confirm_work_done: false };
+  var attestBusy = { confirm_client_approval: false, confirm_work_done: false };
+  var paidSubmitted = false;
+
+  function renderPaid() {
+    hideAll();
+    els.paid.hidden = false;
+    els.navPaid.hidden = false;
+
+    var o = data.offer || {};
+    var scope = data.scope || {};
+    var c = data.customer || {};
+
+    document.getElementById('paidPayout').textContent = money(owedPayout(o)) || '$0';
+    var honestyEl = document.getElementById('paidHonestyText');
+    if (honestyEl) honestyEl.innerHTML = payoutHonestyHtml(o);
+
+    // firm install date (read-only; "Key will confirm" if null)
+    var dateEl = document.getElementById('paidDate');
+    if (o.firm_install_date) {
+      var d = new Date(o.firm_install_date + 'T00:00:00');
+      dateEl.textContent = isNaN(d.getTime())
+        ? String(o.firm_install_date)
+        : d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+    } else {
+      dateEl.textContent = 'Key will confirm';
+    }
+
+    document.getElementById('paidCustomer').textContent = c.name || '-';
+    var addr = c.address || null;
+    var addrEl = document.getElementById('paidAddr');
+    if (addr) {
+      addrEl.innerHTML = esc(addr) + '<br><a href="https://maps.google.com/?q=' + encodeURIComponent(addr) + '" target="_blank" rel="noopener">Open in Maps</a>';
+      document.getElementById('paidAddrRow').hidden = false;
+    } else { document.getElementById('paidAddrRow').hidden = true; }
+
+    // Scope recap from what the view returns (amp + cord length)
+    var bits = [];
+    if (scope.amp != null) bits.push(scope.amp + 'A');
+    if (scope.cord_length_ft != null) bits.push('inlet run about ' + scope.cord_length_ft + ' ft');
+    var scopeEl = document.getElementById('paidScope');
+    if (bits.length) { scopeEl.textContent = bits.join(', '); document.getElementById('paidScopeRow').hidden = false; }
+    else { document.getElementById('paidScopeRow').hidden = true; }
+
+    // A failed inspection can move a submitted job back to corrective work.
+    // Restore the active controls and trust the current server stamps so an open
+    // portal does not remain locked on stale local state after that rollback.
+    if (data.status !== 'pass_submitted' && paidSubmitted) unlockPaidForRework();
+    if (!attestBusy.confirm_client_approval) attestOn.confirm_client_approval = !!o.client_approval_confirmed_at;
+    if (!attestBusy.confirm_work_done) attestOn.confirm_work_done = !!o.work_done_tested_confirmed_at;
+    // Reset the QC list + attestations to reflect current filled slots.
+    renderAttestations();
+    renderSlots();
+
+    // If already past submit (pass_submitted), lock into the submitted look.
+    if (data.status === 'pass_submitted') {
+      lockPaidSubmitted();
+    } else {
+      refreshSubmitGate();
+    }
+  }
+
+  function renderAttestations() {
+    document.querySelectorAll('.attest').forEach(function (a) {
+      var key = a.dataset.attest;
+      a.classList.toggle('on', !!attestOn[key]);
+      a.classList.toggle('busy', !!attestBusy[key]);
+      if (a.dataset.wired) return;
+      a.dataset.wired = '1';
+      a.addEventListener('click', function () { onAttestTap(a); });
+    });
+  }
+
+  function onAttestTap(a) {
+    var key = a.dataset.attest;
+    if (attestOn[key] || attestBusy[key]) return; // stamped-once, cannot un-check
+    attestBusy[key] = true;
+    a.classList.add('busy');
+    postAction(key).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j, status: r.status }; });
+    }).then(function (out) {
+      attestBusy[key] = false;
+      a.classList.remove('busy');
+      if (out.ok && out.j && out.j.ok) {
+        attestOn[key] = true;
+        a.classList.add('on');
+      } else {
+        // most common: install photos not uploaded yet (409). Name it.
+        toast(out.j && out.j.error ? out.j.error : 'Could not confirm yet. Add your install photos first.', true);
+      }
+      refreshSubmitGate();
+    }).catch(function () {
+      attestBusy[key] = false;
+      a.classList.remove('busy');
+      toast('Network error. Try again.', true);
+    });
+  }
+
+  // photo slots: render each named slot from photo_slots; the inspection_pass_proof
+  // slot's upload IS the submit (it triggers the pass_submitted transition).
+  var SLOT_ICON = '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.4"/><path d="M8 6l1.5-2h5L16 6"/></svg>';
+  var SLOT_OK = '<span class="ok"><svg viewBox="0 0 24 24"><path d="M5 12.5l4 4 10-10"/></svg></span>';
+  function renderSlots() {
+    var slots = Array.isArray(data.photo_slots) ? data.photo_slots : [];
+    // Order: install_qc slots first, inspection_pass last (matches the comp).
+    slots = slots.slice().sort(function (a, b) {
+      var ak = a.kind === 'inspection_pass' ? 1 : 0;
+      var bk = b.kind === 'inspection_pass' ? 1 : 0;
+      return ak - bk;
+    });
+    qcBox.innerHTML = slots.map(function (s) {
+      var done = !!s.filled;
+      var status = done ? 'Uploaded' : (s.is_required ? 'Pending' : 'Optional');
+      var statusCls = done ? 's' : (s.is_required ? 's' : 's opt');
+      return '' +
+        '<div class="qrow ' + (done ? 'done' : '') + '" data-slot="' + esc(s.code) + '" data-kind="' + esc(s.kind) + '" data-req="' + (s.is_required ? '1' : '0') + '">' +
+          '<span class="thumb">' + SLOT_ICON + SLOT_OK + '</span>' +
+          '<span class="qt"><span class="n">' + esc(s.label) + '</span><span class="' + statusCls + '">' + status + '</span></span>' +
+          '<button class="addbtn" type="button"><svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg>' + (done ? 'Replace' : 'Add') + '</button>' +
+        '</div>';
+    }).join('');
+    qcBox.querySelectorAll('.qrow').forEach(function (row) {
+      row.querySelector('.addbtn').addEventListener('click', function () { onSlotAdd(row); });
+    });
+  }
+
+  function onSlotAdd(row) {
+    var slot = row.dataset.slot;
+    var kind = row.dataset.kind; // install_qc | inspection_pass
+    var btn = row.querySelector('.addbtn');
+    perr.hidden = true;
+
+    // The inspection_pass_proof upload is the gated submit. Guard it client-side so
+    // the sub gets a named blocker instead of a raw 409 (the server still hard-gates).
+    if (kind === 'inspection_pass') {
+      var blocker = submitBlocker();
+      if (blocker) { showPerr(blocker); return; }
+    }
+
+    pickImage('image/*').then(function (file) {
+      if (!file) return;
+      if (file.size > 15 * 1024 * 1024) { showPerr('That photo is over 15 MB. Try a smaller one, nothing else was lost.'); return; }
+      var origLabel = btn.textContent;
+      btn.disabled = true; btn.textContent = '...';
+      // If this is the inspection_pass proof, the primary should also reflect submitting.
+      var isSubmit = (kind === 'inspection_pass');
+      if (isSubmit) { submitBtn.classList.add('busy'); submitBtn.innerHTML = '<span class="spin"></span><span>Submitting...</span>'; }
+      fileToBase64(file).then(function (b64) {
+        return postUpload({ kind: kind, contentType: normType(file), dataBase64: b64, fileName: file.name, slot: slot });
+      }).then(function (r) {
+        return r.json().then(function (j) { return { ok: r.ok, j: j, status: r.status }; });
+      }).then(function (out) {
+        if (out.ok && out.j && out.j.ok) {
+          // mark this row done
+          row.classList.add('done');
+          var st = row.querySelector('.qt span:last-child');
+          if (st) { st.className = 's'; st.textContent = 'Uploaded'; }
+          btn.disabled = false; btn.textContent = 'Replace';
+          if (out.j.status === 'pass_submitted') {
+            lockPaidSubmitted();
+          } else {
+            // pull fresh slot state so the gate + counts are exact
+            refresh();
+          }
+        } else {
+          btn.disabled = false; btn.textContent = origLabel;
+          if (isSubmit) resetSubmitBtn();
+          // server named the blocker (missing slots / attestations): surface it
+          var msg = out.j && out.j.error ? out.j.error : 'That photo did not upload, tap Add to try again.';
+          showPerr(msg);
+        }
+      }).catch(function () {
+        btn.disabled = false; btn.textContent = origLabel;
+        if (isSubmit) resetSubmitBtn();
+        showPerr('Network error, tap Add to try again. Nothing was lost.');
+      });
+    });
+  }
+
+  function showPerr(msg) {
+    document.getElementById('perrText').textContent = msg;
+    perr.hidden = false;
+  }
+
+  // What still blocks the pass_submitted submit (mirror of the server hard-gate),
+  // returns a human blocker string or '' when clear.
+  function submitBlocker() {
+    if (!attestOn.confirm_client_approval || !attestOn.confirm_work_done) {
+      return 'Check both boxes above first (ready for Key\'s QC, work done and tested).';
+    }
+    var remaining = requiredInstallRemaining();
+    if (remaining > 0) {
+      return 'Add your required install photos first (' + remaining + ' still needed).';
+    }
+    return '';
+  }
+
+  // count required install_qc slots not yet filled (inspection_pass_proof is the
+  // slot the sub is about to fill, so it is excluded from this pre-check).
+  function requiredInstallRemaining() {
+    var slots = Array.isArray(data.photo_slots) ? data.photo_slots : [];
+    return slots.filter(function (s) {
+      return s.is_required && s.kind === 'install_qc' && !s.filled;
+    }).length;
+  }
+
+  // Sticky signpost: names what is left and explains on tap. Never gold. Never the
+  // money transition. The inspection_pass Add is the real submit.
+  function refreshSubmitGate() {
+    if (paidSubmitted || data.status === 'pass_submitted') { lockPaidSubmitted(); return; }
+    var bothChecked = attestOn.confirm_client_approval && attestOn.confirm_work_done;
+    var installRemaining = requiredInstallRemaining();
+    var inspectionFilled = isInspectionFilled();
+    submitBtn.classList.remove('busy');
+
+    if (!bothChecked) {
+      submitLabel.textContent = 'Finish the list below';
+    } else if (installRemaining > 0) {
+      submitLabel.textContent = installRemaining + ' install ' + (installRemaining === 1 ? 'photo' : 'photos') + ' still needed below';
+    } else if (!inspectionFilled) {
+      submitLabel.textContent = 'Add the inspection-pass photo below';
+    } else {
+      // Transient: inspection upload already advanced; refresh will flip to submitted.
+      submitBtn.classList.add('busy');
+      submitLabel.textContent = 'Submitting...';
+    }
+  }
+
+  function isInspectionFilled() {
+    var slots = Array.isArray(data.photo_slots) ? data.photo_slots : [];
+    return slots.some(function (s) { return s.kind === 'inspection_pass' && s.is_required && s.filled; });
+  }
+
+  function resetSubmitBtn() {
+    submitBtn.classList.remove('busy');
+    submitBtn.innerHTML = '<span id="submitLabel">Finish the list below</span>';
+    submitLabel = document.getElementById('submitLabel');
+    refreshSubmitGate();
+  }
+
+  function lockPaidSubmitted() {
+    paidSubmitted = true;
+    submitBtn.hidden = true;
+    paidNavhint.hidden = true;
+    paidDoneStrip.hidden = false;
+    submittedNote.hidden = false;
+    paidLede.hidden = true;
+    // advance the stepper
+    stepInstall.className = 'step done';
+    stepInstall.querySelector('.node').innerHTML = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4 4 10-10"/></svg>';
+    stepPaid.className = 'step current';
+    stepPaid.querySelector('.node').innerHTML = '<span class="d"></span>';
+    // lock attestations visually
+    document.querySelectorAll('.attest').forEach(function (a) { a.classList.add('busy'); });
+  }
+
+  function unlockPaidForRework() {
+    paidSubmitted = false;
+    submitBtn.hidden = false;
+    paidNavhint.hidden = false;
+    paidDoneStrip.hidden = true;
+    submittedNote.hidden = true;
+    paidLede.hidden = false;
+    submitBtn.classList.remove('busy');
+    submitBtn.innerHTML = '<span id="submitLabel">Finish the list below</span>';
+    submitLabel = document.getElementById('submitLabel');
+    stepInstall.className = 'step current';
+    stepInstall.querySelector('.node').innerHTML = '<span class="d"></span>';
+    stepPaid.className = 'step';
+    stepPaid.querySelector('.node').innerHTML = '<span class="d"></span>';
+    document.querySelectorAll('.attest').forEach(function (a) { a.classList.remove('busy'); });
+  }
+
+  // Signpost tap explains the blocker (clickable because it is not HTML-disabled).
+  // Scrolls toward the checklist so the thumb finds the real Add.
+  submitBtn.addEventListener('click', function () {
+    if (submitBtn.classList.contains('busy')) return;
+    var blocker = submitBlocker();
+    if (blocker) showPerr(blocker);
+    var paid = document.getElementById('s-paid');
+    if (paid) {
+      var target = paid.querySelector('.qrow:not(.done) .addbtn') || paid.querySelector('.attest:not(.on)') || paid;
+      try { target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { /* no-op */ }
+    }
+  });
+
+  // ------- boot + auto-refresh -------
+  refresh();
+  // Light auto-refresh so a status change made in the CRM (Key edits, withdraws,
+  // approves) reaches the open page. Paused implicitly while an action is settling
+  // via the offerSettled / paidSubmitted guards.
+  setInterval(function () { refresh(); }, 60000);
+})();
+</script>
+</body>
+</html>

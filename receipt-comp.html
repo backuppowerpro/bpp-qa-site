@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="x-apple-disable-message-reformatting">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="color-scheme" content="light only">
+<meta name="supported-color-schemes" content="light only">
+<!-- connect-src so the live invoice-view fetch is allowed; img/style/font kept open for the DS + logo. This is a VIEW page (no checkout, no Stripe), so no api.stripe.com is needed. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co;">
+<!-- resolve relative asset paths to the live domain so the logo renders in any viewer/preview panel -->
+<base href="https://qa.backuppowerpro.com/">
+<title>Paid in full, your receipt | Backup Power Pro</title>
+<!--
+  BPP RECEIPT, customer-facing VIEW page. Data-driven sibling of invoice.html's paid state.
+  This was originally an email-transposition comp of the receipt; it is now wired to live data:
+  it fetches a PAID invoice via the invoice-view edge function (same call invoice.html uses, with
+  the publishable key) and renders the receipt. It is a VIEW only, money was already collected, so
+  there is NO pay button and NO checkout call. A receipt only exists for a paid invoice; if the
+  invoice is not paid yet, a gentle "not ready" state is shown instead.
+
+  The original visual design (navy bar, paid seal, receipt core, "what you now own", trust strip,
+  signed note) is preserved. The layout keeps its table structure + inline hex so it reads the same
+  in a browser as it did as a comp. JS binds real data into the marked slots and removes the sample.
+
+  Inline token equivalents of bpp-ds.css:
+    navy #0b1f3b | gold #ffba00 | ink #1a2a42 | text2 #4a5568 | text3 #6b7280 | line #eef1f6
+    page #eef1f7 | card #ffffff | ok-bg #f0fdf6 | ok-ink #067a52 | chip-bg #f4f6fa | radius 16px
+    display 'Outfit',Arial | body 'Inter',Arial | script 'Dancing Script','Brush Script MT',cursive
+
+  PHONE: (864) 863-7800, matches the LIVE site + the whole comp family.
+-->
+<!--[if mso]>
+<style>
+  body,table,td,a{font-family:Arial,Helvetica,sans-serif !important}
+  .display{font-family:Arial,Helvetica,sans-serif !important}
+</style>
+<![endif]-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Inter:wght@400;500;600&family=Dancing+Script:wght@700&display=swap');
+  body{margin:0;padding:0;width:100%!important;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
+  a{text-decoration:none}
+  .display{font-family:'Outfit',Arial,Helvetica,sans-serif}
+  .body-font{font-family:'Inter',Arial,Helvetica,sans-serif}
+  .script{font-family:'Dancing Script','Brush Script MT',cursive}
+  .num{font-variant-numeric:tabular-nums}
+  @media only screen and (max-width:600px){
+    .wrap{width:100%!important}
+    .px{padding-left:24px!important;padding-right:24px!important}
+    .h1{font-size:26px!important}
+  }
+  /* Dark-mode survival: the receipt facts, the navy bar, and the white card must never wash out. */
+  @media (prefers-color-scheme:dark){
+    .dm-page{background:#eef1f7!important}
+    .dm-card{background:#ffffff!important}
+    .dm-navy{background:#0b1f3b!important}
+    .dm-ink{color:#0b1f3b!important}
+    .dm-ink2{color:#4a5568!important}
+    .dm-ink3{color:#6b7280!important}
+    .dm-okbg{background:#f0fdf6!important}
+    .dm-chip{background:#f4f6fa!important}
+  }
+  /* State surfaces (loading / not-found / not-yet-paid), on-brand, no new visual language. */
+  #state-root{display:none}
+  .state-card{max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;padding:48px 36px;text-align:center}
+  .state-spin{width:34px;height:34px;border:3px solid #eef1f6;border-top-color:#0b1f3b;border-radius:50%;animation:rspin .7s linear infinite;margin:0 auto 18px}
+  @keyframes rspin{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.state-spin{animation:none}}
+  .state-card h2{margin:0 0 8px;font-family:'Outfit',Arial,sans-serif;font-size:21px;font-weight:800;color:#0b1f3b}
+  .state-card p{margin:0 auto;font-family:'Inter',Arial,sans-serif;font-size:14px;line-height:1.6;color:#6b7280;max-width:34em}
+  .state-card a{color:#0b1f3b;font-weight:600}
+</style>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body class="dm-page" style="margin:0;padding:0;background:#eef1f7;">
+
+<!-- PREHEADER (kept for parity; bound to real values on load) -->
+<div id="preheader" style="display:none;max-height:0;overflow:hidden;opacity:0;font-size:1px;line-height:1px;color:#eef1f7;"></div>
+
+<!-- STATE LAYER (loading / error / not-yet-paid). Shown until the paid receipt is ready. -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" id="state-root" class="dm-page" style="background:#eef1f7;">
+  <tr>
+    <td align="center" style="padding:48px 12px;">
+      <div class="state-card" id="state-card">
+        <div class="state-spin" id="state-spin"></div>
+        <h2 id="state-title">Loading your receipt...</h2>
+        <p id="state-msg">One moment while we pull up your receipt.</p>
+      </div>
+    </td>
+  </tr>
+</table>
+
+<!-- RECEIPT (the full paid receipt; hidden until real data binds) -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" id="receipt-root" class="dm-page" style="display:none;background:#eef1f7;">
+  <tr>
+    <td align="center" style="padding:24px 12px 40px;">
+
+      <!-- 600px column -->
+      <table role="presentation" width="600" class="wrap" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;">
+
+        <!-- BRAND BAR (navy + logo + Paid pill) -->
+        <tr>
+          <td bgcolor="#0b1f3b" class="dm-navy" style="background:#0b1f3b;border-radius:16px 16px 0 0;padding:16px 28px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td align="left" valign="middle">
+                  <img src="assets/images/logo-white-v2.png" width="150" alt="Backup Power Pro" style="display:block;border:0;height:auto;width:150px;max-width:150px;">
+                </td>
+                <td align="right" valign="middle">
+                  <span class="display" id="paid-pill" style="font-family:'Outfit',Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:.03em;color:#9be7c4;background:#16352b;border-radius:20px;padding:6px 12px;white-space:nowrap;">&#10003; Paid in full</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- PAID SEAL + HERO -->
+        <tr>
+          <td bgcolor="#ffffff" class="dm-card px" align="center" style="background:#ffffff;padding:36px 36px 6px;">
+            <!-- seal: fixed 64x64 cell, raw hex, no box-shadow (Gmail/Outlook drop it) -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 16px;">
+              <tr><td width="64" height="64" align="center" valign="middle" bgcolor="#f0fdf6" class="dm-okbg" style="width:64px;height:64px;border-radius:50%;color:#067a52;font-family:Arial,sans-serif;font-size:30px;font-weight:bold;line-height:64px;text-align:center;">&#10003;</td></tr>
+            </table>
+            <h1 class="display h1 dm-ink" id="hero-title" style="margin:0 0 8px;font-family:'Outfit',Arial,sans-serif;font-size:28px;line-height:1.16;font-weight:800;color:#0b1f3b;letter-spacing:-.01em;">You're all set. Paid in full.</h1>
+            <p class="body-font dm-ink2" id="hero-sub" style="margin:0 0 4px;font-family:'Inter',Arial,sans-serif;font-size:15px;line-height:1.55;color:#4a5568;max-width:32em;">
+              Your generator inlet install is done and now paid in full. Nothing else is owed. I handle the permit and the county inspection from here, so there is nothing left on your plate.
+            </p>
+          </td>
+        </tr>
+
+        <!-- BILLED TO + RECEIPT NUMBER -->
+        <tr>
+          <td bgcolor="#ffffff" class="dm-card px" style="background:#ffffff;padding:18px 36px 4px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #eef1f6;">
+              <tr>
+                <td valign="top" style="padding:16px 0 0;">
+                  <p class="display dm-ink3" style="margin:0 0 4px;font-family:'Outfit',Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6b7280;">Billed to</p>
+                  <p class="body-font dm-ink" id="billed-to" style="margin:0;font-family:'Inter',Arial,sans-serif;font-size:13.5px;line-height:1.6;color:#1a2a42;"></p>
+                </td>
+                <td valign="top" align="right" style="padding:16px 0 0;">
+                  <p class="display dm-ink3" style="margin:0 0 4px;font-family:'Outfit',Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6b7280;">Receipt</p>
+                  <p class="body-font num dm-ink2" id="receipt-num" style="margin:0;font-family:'Inter',Arial,sans-serif;font-size:13.5px;color:#4a5568;"></p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- RECEIPT CORE (the honest job, load-bearing) -->
+        <tr>
+          <td bgcolor="#ffffff" class="dm-card px" style="background:#ffffff;padding:14px 36px 6px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f8fafc" style="background:#f8fafc;border:1px solid #eef1f6;border-radius:14px;">
+              <tr><td style="padding:20px 22px 16px;">
+
+                <p class="display dm-ink3" style="margin:0 0 4px;font-family:'Outfit',Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6b7280;">Payment received</p>
+                <p class="display num dm-ink" id="amount-paid" style="margin:0 0 2px;font-family:'Outfit',Arial,sans-serif;font-size:44px;line-height:1;font-weight:900;color:#0b1f3b;letter-spacing:-.02em;">$0</p>
+                <p class="body-font dm-ink3" id="paid-meta" style="margin:0 0 16px;font-family:'Inter',Arial,sans-serif;font-size:12.5px;color:#6b7280;"></p>
+
+                <!-- proof breakdown so 'paid in full' is verifiable, not asserted (bound to line_items + total) -->
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="num" id="breakdown" style="font-family:'Inter',Arial,sans-serif;font-size:14px;">
+                  <tbody id="breakdown-rows"></tbody>
+                  <tr>
+                    <td align="left"  class="display dm-ink" style="padding:11px 0 2px;color:#0b1f3b;font-family:'Outfit',Arial,sans-serif;font-weight:800;font-size:15px;border-top:2px solid #0b1f3b;">Balance remaining</td>
+                    <td align="right" class="display dm-ink" style="padding:11px 0 2px;color:#0b1f3b;font-family:'Outfit',Arial,sans-serif;font-weight:900;font-size:18px;border-top:2px solid #0b1f3b;">$0</td>
+                  </tr>
+                </table>
+
+              </td></tr>
+            </table>
+            <p class="body-font dm-ink3" id="receipt-summary" style="margin:12px 2px 0;font-family:'Inter',Arial,sans-serif;font-size:13px;line-height:1.55;color:#6b7280;">
+              Questions on this receipt? Text Key at <a href="sms:+18648637800" class="dm-ink" style="color:#0b1f3b;font-weight:600;text-decoration:none;">(864) 863-7800</a>.
+            </p>
+          </td>
+        </tr>
+
+        <!-- WHAT YOU NOW OWN (the readiness record, Certificate substance) -->
+        <tr>
+          <td bgcolor="#ffffff" class="dm-card px" style="background:#ffffff;padding:26px 36px 6px;">
+            <p class="display dm-ink" style="margin:0 0 12px;font-family:'Outfit',Arial,sans-serif;font-size:16px;font-weight:800;color:#0b1f3b;">What you now own</p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="body-font" style="font-family:'Inter',Arial,sans-serif;font-size:14px;line-height:1.5;color:#4a5568;">
+              <tr>
+                <td width="22" valign="top" style="color:#067a52;font-weight:bold;padding:5px 0;">&#10003;</td>
+                <td valign="top" class="dm-ink2" style="padding:5px 0;color:#4a5568;">A generator inlet and interlock, installed on your panel</td>
+              </tr>
+              <tr>
+                <td width="22" valign="top" style="color:#067a52;font-weight:bold;padding:5px 0;">&#10003;</td>
+                <td valign="top" class="dm-ink2" style="padding:5px 0;color:#4a5568;">The permit and county inspection, handled by me start to finish, so there is nothing for you to file</td>
+              </tr>
+              <tr>
+                <td width="22" valign="top" style="color:#067a52;font-weight:bold;padding:5px 0;">&#10003;</td>
+                <td valign="top" class="dm-ink2" style="padding:5px 0;color:#4a5568;">My workmanship on this install is warranted starting today, and I am the one person you text if it ever needs a look</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- WHEN THE GRID DROPS (one plain line + the kept link) -->
+        <tr>
+          <td bgcolor="#ffffff" class="dm-card px" style="background:#ffffff;padding:18px 36px 6px;">
+            <p class="display dm-ink" style="margin:0 0 8px;font-family:'Outfit',Arial,sans-serif;font-size:16px;font-weight:800;color:#0b1f3b;">When the grid drops</p>
+            <p class="body-font dm-ink2" style="margin:0;font-family:'Inter',Arial,sans-serif;font-size:14px;line-height:1.6;color:#4a5568;">
+              Run one cord from your portable generator into the inlet and you can power the circuits we set up, your fridge, your lights, your well pump. Not the whole house, just the circuits we chose together, which is exactly what keeps a portable safe and steady. The full steps are on the label by your main breaker, and I left the <a href="inlet-safety-instructions.html" class="dm-ink" style="color:#0b1f3b;font-weight:600;text-decoration:none;">walkthrough here</a> if you ever want it.
+            </p>
+          </td>
+        </tr>
+
+        <!-- TRUST STRIP -->
+        <tr>
+          <td bgcolor="#ffffff" class="dm-card px" style="background:#ffffff;padding:18px 36px 4px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #eef1f6;">
+              <tr>
+                <td align="center" class="body-font dm-ink3" style="font-family:'Inter',Arial,sans-serif;font-size:13px;color:#6b7280;padding-top:16px;line-height:1.6;">
+                  <span style="color:#ffba00;font-weight:700;">&#9733; 4.9</span>&nbsp; 100+ Google reviews&nbsp;&nbsp;&middot;&nbsp;&nbsp;Licensed SC #2942&nbsp;&nbsp;&middot;&nbsp;&nbsp;Fully insured
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- SIGNED NOTE + the single soft referral beat -->
+        <tr>
+          <td bgcolor="#ffffff" class="dm-card px" style="background:#ffffff;border-radius:0 0 16px 16px;padding:22px 36px 34px;">
+            <p class="body-font dm-ink2" style="margin:0 0 14px;font-family:'Inter',Arial,sans-serif;font-size:15px;line-height:1.6;color:#4a5568;">
+              Save this. It is your record that the install is done and paid in full, with the permit and county inspection handled by me. Whenever you need the details, they are all right here.
+            </p>
+            <p class="body-font dm-ink2" style="margin:0 0 16px;font-family:'Inter',Arial,sans-serif;font-size:15px;line-height:1.6;color:#4a5568;">
+              If a neighbor ever asks who did your generator hookup, send them my way. That is the highest compliment I get. Either way, you know where to find me.
+            </p>
+            <p class="body-font dm-ink2" id="signoff" style="margin:0 0 2px;font-family:'Inter',Arial,sans-serif;font-size:15px;line-height:1.6;color:#4a5568;">Glad your home is ready. Stay warm when the next one hits.</p>
+            <p class="script dm-ink" style="margin:6px 0 2px 20px;font-family:'Dancing Script','Brush Script MT',cursive;font-size:30px;line-height:1.1;color:#0b1f3b;">Key Goodson</p>
+            <p class="body-font dm-ink3" style="margin:0;font-family:'Inter',Arial,sans-serif;font-size:12px;color:#6b7280;">Backup Power Pro by Key Electric</p>
+          </td>
+        </tr>
+
+        <!-- FOOTER -->
+        <tr>
+          <td align="center" class="body-font dm-ink3" style="font-family:'Inter',Arial,sans-serif;font-size:12px;line-height:1.8;color:#6b7280;padding:22px 24px 0;">
+            Backup Power Pro by Key Electric &middot; Greenville, Spartanburg &amp; Pickens counties<br>
+            Questions? Text Key at <a href="sms:+18648637800" class="dm-ink" style="color:#0b1f3b;font-weight:600;text-decoration:none;">(864) 863-7800</a><br>
+            <span style="font-size:11px;color:#9aa3af;">Secure card payment, processed by Stripe</span>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+
+<script>
+// ── CONFIG (mirrors invoice-comp.html / invoice.html exactly) ───────
+var SUPABASE_URL = 'https://hfatblrcwytxvijjhpal.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_kBXthY-Han29JLqcT514RQ_RtwxXLZ-';
+
+var INV = null; // invoice record
+var PAYMENTS = []; // whitelisted payment rows (card/bank, discount, refund) from invoice-view
+
+// ── HELPERS ─────────────────────────────────────────────────────────
+function esc(s){ if(s===null||s===undefined) return ''; var d=document.createElement('div'); d.textContent=String(s); return d.innerHTML; }
+function fmt(n){ return '$' + Number(n||0).toLocaleString('en-US'); }
+function fmtDate(v){
+  if(!v) return '';
+  try{ return new Date(v).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}); }
+  catch(e){ return ''; }
+}
+function firstNameOf(name){
+  var n=(name||'').trim();
+  if(!n) return '';
+  return n.split(/\s+/)[0];
+}
+
+// Show a state card (loading / error / not-yet-paid) and hide the receipt.
+function showState(title,msg,spin){
+  var sr=document.getElementById('state-root');
+  var rr=document.getElementById('receipt-root');
+  if(rr) rr.style.display='none';
+  if(sr) sr.style.display='table';
+  var spinEl=document.getElementById('state-spin');
+  if(spinEl) spinEl.style.display = spin ? 'block' : 'none';
+  var t=document.getElementById('state-title'); if(t) t.textContent=String(title||'');
+  var m=document.getElementById('state-msg');   if(m) m.innerHTML=String(msg||'');
+}
+
+// Swap to the rendered receipt (hide state layer).
+function showReceipt(){
+  var sr=document.getElementById('state-root');
+  var rr=document.getElementById('receipt-root');
+  if(sr) sr.style.display='none';
+  if(rr) rr.style.display='table';
+}
+
+// ── INIT ────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', function(){
+  showState('Loading your receipt...','One moment while we pull up your receipt.', true);
+  var token = new URLSearchParams(window.location.search).get('token');
+  if(!token){
+    showState('Receipt not found.','This isn\'t the personal link Key texted you. Text or call Key at <a href="sms:+18648637800">(864) 863-7800</a> and he will send a fresh one.', false);
+    return;
+  }
+  loadReceipt(token);
+});
+
+async function loadReceipt(token){
+  // Reads go through the invoice-view edge function (service role internally),
+  // the same call invoice.html / invoice-comp.html use. Hard 10s timeout so a
+  // hung edge fn / network blip cannot leave the customer staring at "Loading...".
+  var data=null, errorReason=null;
+  try{
+    var ctrl=new AbortController();
+    var timer=setTimeout(function(){ ctrl.abort(); }, 10000);
+    var res=await fetch(SUPABASE_URL+'/functions/v1/invoice-view?token='+encodeURIComponent(token),{
+      headers:{ 'Authorization':'Bearer '+SUPABASE_KEY },
+      signal:ctrl.signal,
+    });
+    clearTimeout(timer);
+    if(res.ok){
+      var j=await res.json();
+      data=(j && j.invoice) || null;
+      if(j && Array.isArray(j.payments)) PAYMENTS=j.payments;
+    } else if(res.status===410){
+      errorReason='This receipt link was replaced by a newer one. Please use the latest link or contact <a href="sms:+18648637800">(864) 863-7800</a>.';
+    } else if(res.status===404 || res.status===400){
+      errorReason='This link may be invalid or expired. Please contact <a href="sms:+18648637800">(864) 863-7800</a> if you need help.';
+    } else {
+      errorReason='Could not load this receipt right now (server returned '+res.status+'). Please try again or contact <a href="sms:+18648637800">(864) 863-7800</a>.';
+    }
+  } catch(e){
+    if(e && e.name==='AbortError'){
+      errorReason='This is taking longer than expected. Please refresh, or contact <a href="sms:+18648637800">(864) 863-7800</a> if it keeps failing.';
+    } else {
+      errorReason='Network issue loading this receipt. Please refresh, or contact <a href="sms:+18648637800">(864) 863-7800</a>.';
+    }
+  }
+
+  if(!data){
+    showState('Receipt not available.', errorReason || 'This link may be invalid or has been removed. Please contact <a href="sms:+18648637800">(864) 863-7800</a>.', false);
+    return;
+  }
+
+  INV=data;
+
+  // A receipt only exists for a PAID invoice. Guard every non-paid status.
+  if(INV.status!=='paid'){
+    var firstName=firstNameOf(INV.contact_name);
+    showState(
+      'This receipt is not ready yet.',
+      (firstName?esc(firstName)+', your':'Your')+' invoice has not been paid yet, so there is no receipt to show. Once your payment clears, your receipt will appear here. If you still need to pay, please use the invoice link we sent, or contact <a href="sms:+18648637800">(864) 863-7800</a>.',
+      false
+    );
+    return;
+  }
+
+  renderReceipt();
+}
+
+// ── LINE ITEMS / TOTAL (same source of truth as invoice.html) ───────
+function invoiceTotal(){
+  var items=(INV.line_items||[]);
+  if(INV.total!==null && INV.total!==undefined && INV.total!=='') return Number(INV.total);
+  return items.reduce(function(s,li){ return s+Number(li.amount||0); },0);
+}
+
+// Render line_items into the proof-breakdown rows. Negative amounts (deposits,
+// credits) render as a credit with a true U+2212 minus and the credit color.
+function renderBreakdownRows(){
+  var tbody=document.getElementById('breakdown-rows');
+  if(!tbody) return;
+  tbody.innerHTML='';
+  var items=(INV.line_items||[]);
+  items.forEach(function(li,i){
+    var amt=Number(li.amount||0);
+    var credit=amt<0;
+    var amtTxt=(credit?'−':'')+fmt(Math.abs(amt));
+    var topBorder = i===0 ? '' : 'border-top:1px solid #eef1f6;';
+    var nameHtml=esc(li.name||'');
+    if(li.sub) nameHtml+='<br><span style="font-size:12px;color:#9aa3af;">'+esc(li.sub)+'</span>';
+    var tr=document.createElement('tr');
+    tr.innerHTML=
+      '<td align="left"  style="padding:7px 0;color:#4a5568;'+topBorder+'">'+nameHtml+'</td>'+
+      '<td align="right" style="padding:7px 0;color:'+(credit?'#067a52':'#1a2a42')+';font-weight:600;'+topBorder+'">'+amtTxt+'</td>';
+    tbody.appendChild(tr);
+  });
+
+  // Total paid row, separating it from the $0 balance line that follows.
+  var total=invoiceTotal();
+  var totalTr=document.createElement('tr');
+  totalTr.innerHTML=
+    '<td align="left"  style="padding:9px 0 7px;color:#1a2a42;font-weight:600;border-top:1px solid #eef1f6;">Total paid</td>'+
+    '<td align="right" class="num" style="padding:9px 0 7px;color:#1a2a42;font-weight:700;border-top:1px solid #eef1f6;">'+fmt(total)+'</td>';
+  tbody.appendChild(totalTr);
+}
+
+// ── RENDER (PAID receipt) ───────────────────────────────────────────
+function renderReceipt(){
+  var name=INV.contact_name||'';
+  var firstName=firstNameOf(name);
+  var total=invoiceTotal();
+  var paid=fmtDate(INV.paid_at);
+  var method=INV.payment_method||'';
+  var isDeposit = INV.notes==='deposit';
+  // Actual cash paid + any bank-transfer discount the customer earned. For a card
+  // payment cashPaid === total (no discount); for a bank payment the cash is the list
+  // total minus the discount, shown as a savings (never a card surcharge).
+  var _paid = (Array.isArray(PAYMENTS)?PAYMENTS:[]).filter(function(p){ return String(p.status||'').toLowerCase()==='completed'; });
+  var bankDiscount = _paid.reduce(function(s,p){ return s + (Number(p.discount_amount)||0); }, 0);
+  var cashPaid = _paid.length ? _paid.reduce(function(s,p){ return s + (Number(p.amount)||0); }, 0) : total;
+  var receiptNum = INV.id ? String(INV.id).slice(0,8).toUpperCase()
+    : (new URLSearchParams(window.location.search).get('token')||'').slice(0,8).toUpperCase();
+
+  // Hero greeting
+  var hero=document.getElementById('hero-title');
+  if(hero) hero.textContent = firstName ? ("You're all set, "+firstName+'. Paid in full.') : "You're all set. Paid in full.";
+
+  // Sign-off greeting (keeps the existing copy, just personalizes the name)
+  var signoff=document.getElementById('signoff');
+  if(signoff) signoff.textContent = firstName
+    ? ('Glad your home is ready, '+firstName+'. Stay warm when the next one hits.')
+    : 'Glad your home is ready. Stay warm when the next one hits.';
+
+  // Billed-to block (name / address / phone / email)
+  var billed=document.getElementById('billed-to');
+  if(billed){
+    var lines=[];
+    if(name) lines.push('<b style="color:#0b1f3b;">'+esc(name)+'</b>');
+    if(INV.contact_address) lines.push(esc(INV.contact_address));
+    if(INV.contact_phone)   lines.push(esc(INV.contact_phone));
+    if(INV.contact_email)   lines.push(esc(INV.contact_email));
+    billed.innerHTML = lines.join('<br>');
+  }
+
+  // Receipt number
+  var rn=document.getElementById('receipt-num');
+  if(rn) rn.textContent = receiptNum ? '#'+receiptNum : '';
+
+  // Headline amount paid (the actual cash, less than list for a bank discount)
+  var amt=document.getElementById('amount-paid');
+  if(amt) amt.textContent = fmt(cashPaid);
+
+  // Paid date + method line (+ the bank savings, when earned, framed positively)
+  var meta=document.getElementById('paid-meta');
+  if(meta){
+    var parts=[];
+    if(paid)   parts.push('Payment received '+esc(paid));
+    if(method) parts.push(esc(method));
+    if(bankDiscount>0) parts.push('You saved '+fmt(bankDiscount)+' by paying by bank');
+    meta.innerHTML = parts.join(' &middot; ');
+  }
+
+  // Proof breakdown (line_items + total)
+  renderBreakdownRows();
+
+  // Short summary line under the breakdown (keep the text-Key prompt)
+  var summary=document.getElementById('receipt-summary');
+  if(summary){
+    var head = isDeposit
+      ? 'Deposit received. '
+      : 'Generator inlet install, done and paid in full. ';
+    summary.innerHTML = head + 'Questions on this receipt? Text Key at <a href="sms:+18648637800" class="dm-ink" style="color:#0b1f3b;font-weight:600;text-decoration:none;">(864) 863-7800</a>.';
+  }
+
+  // Preheader (inbox-style preview text), bound to real values
+  var pre=document.getElementById('preheader');
+  if(pre){
+    var preParts=['Payment of '+fmt(cashPaid)+' received'];
+    if(paid) preParts.push('on '+ (function(){ try{ return new Date(INV.paid_at).toLocaleDateString('en-US',{month:'long',day:'numeric'}); }catch(e){ return ''; } })());
+    pre.textContent = preParts.join(' ')+'. Generator inlet install, done and paid in full. Nothing else is owed.';
+  }
+
+  // ── REFUND OVERRIDES (S6): applied last so they win over the paid copy.
+  // The charge.refunded webhook records payments.refunded_amount while the
+  // invoice stays status=paid, so the payments array is the refund truth. A
+  // refunded customer must never see "you're all set" celebration copy.
+  var refunded=(Array.isArray(PAYMENTS)?PAYMENTS:[]).reduce(function(s,p){ return s + (Number(p.refunded_amount)||0); }, 0);
+  refunded=Math.round(refunded*100)/100;
+  var isRefund = refunded > 0 && refunded >= cashPaid - 0.005;
+  var isPartialRefund = refunded > 0 && !isRefund;
+  var netPaid = Math.max(0, Math.round((cashPaid - refunded)*100)/100);
+  if(isRefund){
+    document.title='Refund issued, your receipt | Backup Power Pro';
+    if(hero) hero.textContent = firstName ? (firstName+', your refund has been issued.') : 'Your refund has been issued.';
+    var pill=document.getElementById('paid-pill');
+    if(pill) pill.innerHTML='Refund issued';
+    if(signoff) signoff.textContent = firstName ? ('Take care, '+firstName+'. If plans change down the road, you know where to find me.') : 'Take care. If plans change down the road, you know where to find me.';
+    if(meta) meta.innerHTML = 'Refunded '+fmt(refunded)+' &middot; Depending on your bank, it can take 5 to 10 business days to appear back on your statement';
+    if(summary) summary.innerHTML = 'Your payment of '+fmt(refunded)+' was refunded in full. Questions on this refund? Text Key at <a href="sms:+18648637800" class="dm-ink" style="color:#0b1f3b;font-weight:600;text-decoration:none;">(864) 863-7800</a>.';
+    if(pre) pre.textContent = 'Refund of '+fmt(refunded)+' issued. Depending on your bank, it can take 5 to 10 business days to appear.';
+    var heroSub=document.getElementById('hero-sub');
+    if(heroSub) heroSub.textContent = 'Your payment of '+fmt(refunded)+' was refunded. Depending on your bank, it can take 5 to 10 business days to appear back on your statement. If it has not shown up by then, text Key at (864) 863-7800.';
+  } else if(isPartialRefund){
+    if(summary) summary.innerHTML = summary.innerHTML + ' Note: '+fmt(refunded)+' of this payment has been refunded, so your net paid is '+fmt(netPaid)+'.';
+  }
+
+  showReceipt();
+}
+</script>
+</body>
+</html>

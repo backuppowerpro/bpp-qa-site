@@ -1,0 +1,88 @@
+/*  bpp-print-bw.css  ,  the BPP black-and-white print primitive (design-system layer).
+
+    WHY: every BPP print doc (guides, cheat-sheets, certificates) needs a clean
+    black-and-white variant for a home/office laser printer. Instead of each doc
+    reinventing the rules, author colors via the standard vars below, link this
+    file, and toggle `body.bw` (or load with ?bw=1 and add the class). The doc
+    gets a legible B&W mode for free.
+
+    THE DISCIPLINE (non-negotiable, learned on the guide build 2026-06-04):
+    1. Nothing relies on COLOR to carry meaning. Danger is a bold border + a text
+       label ("Avoid"), not a red fill. Recommended is a label, not a green fill.
+       Status uses shape/words, never hue alone.
+    2. No ink-heavy fills. Navy/dark panels become white with a black border and
+       black text (a laser printer should not flood the page with toner).
+    3. Photos go grayscale with a touch of contrast so they stay readable.
+    4. A white-on-navy logo is inverted to black so it reads on white.
+    5. Everything stays legible at arm's length: black text on white, real weight.
+
+    HOW TO ADOPT (in a new print doc):
+      :root { --bpp-navy:#0b1f3b; --bpp-gold:#ffba00; --bpp-ink:#1a1a2e;
+              --bpp-paper:#fff; --bpp-accent:#ffba00; --bpp-accent-ink:#0b1f3b;
+              --bpp-header-bg:#0b1f3b; --bpp-header-ink:#fff; }
+      <link rel="stylesheet" href="/assets/css/bpp-print-bw.css">
+      ... author with var(--bpp-navy) etc., put photos in .bpp-photo,
+          dark panels in .bpp-ink-panel, use .bpp-danger / .bpp-recommended ...
+      Toggle: document.body.classList.toggle('bw')  // or ?bw=1 reader
+
+    This file ONLY defines the B&W overrides + helpers. The color theme is the
+    doc's own (via the vars). Keep it dash-clean (no em or en dashes).
+*/
+
+/* ====== B&W TOKEN OVERRIDES ====== */
+/* A doc that authors via the --bpp-* vars flips to black-and-white here. */
+body.bw {
+  --bpp-navy: #000000;
+  --bpp-gold: #000000;
+  --bpp-ink: #000000;
+  --bpp-ink-soft: #1a1a1a;
+  --bpp-paper: #ffffff;
+  --bpp-accent: #000000;          /* accent backgrounds (num circles, buttons) -> black */
+  --bpp-accent-ink: #ffffff;      /* text on those -> white */
+  --bpp-header-bg: #ffffff;       /* table/section headers -> white ground */
+  --bpp-header-ink: #000000;      /* with black ink */
+  --bpp-line: #000000;            /* dividers/borders -> black */
+  --bpp-zebra: #f1f1f1;           /* subtle row tint that still prints light */
+}
+
+/* ====== HELPERS (opt-in classes; only change under body.bw) ====== */
+
+/* photos: grayscale so color art stays readable in B&W */
+body.bw .bpp-photo { filter: grayscale(1) contrast(1.06); }
+
+/* a white-on-navy logo image: invert to black so it reads on the white page */
+body.bw .bpp-logo-invert { filter: invert(1); }
+
+/* dark/navy panels: white ground + black frame instead of an ink flood */
+body.bw .bpp-ink-panel {
+  background: #ffffff !important;
+  border: 1.5px solid #000000 !important;
+  color: #000000 !important;
+}
+body.bw .bpp-ink-panel * { color: #000000 !important; }
+
+/* gold pills/badges: white ground + black outline */
+body.bw .bpp-accent-pill {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #000000 !important;
+}
+
+/* meaning-without-color: danger and recommended.
+   Author the card/box with .bpp-danger or .bpp-recommended; in B&W they get a
+   bold black border and a text label appended to the card's heading via the
+   .bpp-label element (so the label is in the markup, never color-only). */
+body.bw .bpp-danger { border: 1.5px solid #000000 !important; background: #ffffff !important; }
+body.bw .bpp-recommended { border: 2px solid #000000 !important; background: #ffffff !important; }
+body.bw .bpp-danger .bpp-label::after { content: " (Avoid)"; }
+body.bw .bpp-recommended .bpp-label::after { content: " (Recommended)"; }
+
+/* tables that use the header var: black underline under the head row in B&W */
+body.bw .bpp-table th { background: #ffffff !important; color: #000000 !important; border-bottom: 2px solid #000000 !important; }
+body.bw .bpp-table tbody tr:nth-child(even) td { background: var(--bpp-zebra); }
+
+/* check/tick marks that were gold or green: go black (shape carries the meaning) */
+body.bw .bpp-tick { color: #000000 !important; }
+
+/* a soft callout with a colored left border: keep the border, lose the fill */
+body.bw .bpp-callout { background: #ffffff !important; border-left: 3px solid #000000 !important; }

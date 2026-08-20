@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!--
+  PRINT TO PDF:
+  1. Open in Chrome  2. Cmd/Ctrl+P  3. Save as PDF
+  4. Paper: Letter   5. Margins: None  6. Background graphics: ON
+  Black-and-white print variant: add ?bw=1 to the URL (or body class "bw") before printing.
+-->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>The Portable Generator Power Guide, Backup Power Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+<script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_qoA51lePZqXYtPJYkrIpdA4U8iMDJ79L1kje7r4pD4O',{api_host:'https://us.i.posthog.com',person_profiles:'identified_only',capture_pageview:true,capture_pageleave:true,enable_heatmaps:true,capture_dead_clicks:true})</script>
+<style>
+:root {
+  --navy: #0b1f3b;
+  --navy-mid: #1a3a5c;
+  --gold: #ffba00;
+  --gold-dark: #b9820a;
+  --light-blue: #e8f1f8;
+  --white: #ffffff;
+  --paper: #ffffff;
+  --text-primary: #1a1a2e;
+  --text-secondary: #43434f;
+  --text-light: #6f6f7d;
+  --border: rgba(11,31,59,.10);
+  --green: #059669;
+  --green-bg: #edf7f1;
+  --red: #b3392b;
+  --red-bg: #fdf0ee;
+  --radius: 12px;
+  /* semantic surfaces (overridden by .bw in the print variant) */
+  --header-bg: var(--navy);
+  --header-ink: #ffffff;
+  --accent: var(--gold);
+  --accent-ink: var(--navy);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-weight: 400;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; font-weight: 700; color: var(--navy); }
+
+@page { size: 8.5in 11in; margin: 0; }
+
+@media print {
+  html, body {
+    width: 8.5in; margin: 0; padding: 0;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact;
+  }
+  .page { box-shadow: none !important; border-radius: 0 !important; }
+  .screen-only { display: none !important; }
+}
+@media screen {
+  body { background: #d5d5d5; display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 24px 0; }
+  /* The letter sheets live inside <main>; without this the body's gap wraps
+     the whole block and all 9 sheets fuse into one flush column (visual
+     sweep 2026-07-18). display:contents lets the gap separate each sheet.
+     Screen-scoped so print pagination is untouched. */
+  #main { display: contents; }
+  .page { box-shadow: 0 2px 20px rgba(0,0,0,0.15); border-radius: 2px; }
+}
+
+/* screen-only B&W toggle pill */
+.bw-toggle {
+  position: fixed; top: 14px; right: 14px; z-index: 99;
+  font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 700;
+  background: var(--navy); color: #fff; border: none; border-radius: 100px;
+  padding: 9px 15px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.25);
+}
+
+/* ===== PAGE LAYOUT ===== */
+.page {
+  width: 8.5in; min-height: 11in; max-height: 11in;
+  padding: 0.6in 0.7in; position: relative; overflow: hidden;
+  page-break-after: always; page-break-inside: avoid; break-after: page; break-inside: avoid;
+  background: var(--paper);
+}
+.page:last-child { page-break-after: auto; break-after: auto; }
+
+.page-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 22px; padding-bottom: 10px; border-bottom: 2px solid var(--accent);
+}
+.page-header-brand { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 700; color: var(--gold-dark); text-transform: uppercase; }
+.page-num { font-family: 'Inter', sans-serif; font-size: 10px; color: var(--text-light); }
+.page-header-cta { position: absolute; top: 0.6in; left: 0.7in; right: 0.7in; margin-bottom: 0; }
+
+.page h2 { font-size: 24px; font-weight: 800; line-height: 1.18; margin-bottom: 6px; color: var(--navy); }
+.page-subtitle { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 18px; }
+.page h3 { font-size: 14px; font-weight: 700; line-height: 1.3; margin-bottom: 4px; color: var(--navy); }
+.page p, .page li { font-size: 12px; line-height: 1.6; color: var(--text-secondary); }
+.page ul, .page ol { padding-left: 18px; }
+.page li { margin-bottom: 3px; }
+
+/* ===== CALLOUT ===== */
+.callout { background: var(--light-blue); border-radius: var(--radius); padding: 14px 18px; margin-top: 16px; border-left: 3px solid var(--accent); }
+.callout p { font-size: 12px; font-weight: 500; color: var(--navy); line-height: 1.55; }
+.callout-label { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 700; color: var(--gold-dark); text-transform: uppercase; margin-bottom: 4px; display: block; }
+
+/* ===== DATA TABLE ===== */
+.data-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 11.5px; }
+.data-table th {
+  font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 10px; text-transform: uppercase;
+  color: var(--header-ink); background: var(--header-bg); padding: 6px 10px; text-align: left;
+}
+.data-table th:first-child { border-radius: 8px 0 0 0; }
+.data-table th:last-child { border-radius: 0 8px 0 0; }
+.data-table td { padding: 5px 10px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 11px; }
+.data-table tr:nth-child(even) td { background: #f6f8fb; }
+.data-table .td-bold { font-weight: 600; color: var(--text-primary); }
+
+/* ===== NUMBERED ITEMS ===== */
+.numbered-item { display: flex; gap: 14px; margin-bottom: 13px; }
+.num-circle {
+  flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
+  background: var(--accent); color: var(--accent-ink);
+  font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 14px;
+  display: flex; align-items: center; justify-content: center; margin-top: 2px;
+}
+.numbered-item h3 { margin-bottom: 3px; }
+.numbered-item p { font-size: 11.5px; line-height: 1.55; }
+
+/* ===== COMPARISON ===== */
+.comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+.comparison-card { border-radius: var(--radius); padding: 16px; }
+.comparison-bad { background: var(--red-bg); border: 1px solid rgba(179,57,43,.18); }
+.comparison-good { background: var(--green-bg); border: 1px solid rgba(21,120,79,.18); }
+.comparison-card h3 { font-size: 13px; margin-bottom: 10px; }
+.comparison-bad h3 { color: var(--red); }
+.comparison-good h3 { color: var(--green); }
+.comparison-card ul { padding-left: 0; }
+.comparison-card li { font-size: 11px; line-height: 1.5; margin-bottom: 5px; list-style: none; padding-left: 18px; position: relative; }
+.comparison-card li::before { position: absolute; left: 0; font-weight: 800; font-size: 12px; }
+.comparison-bad li::before { content: "\2717"; color: var(--red); }
+.comparison-good li::before { content: "\2713"; color: var(--green); }
+
+/* ===== STEP ITEMS ===== */
+.step-item { display: flex; gap: 14px; margin-bottom: 12px; }
+.step-num {
+  flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+  background: var(--navy); color: #fff; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 13px;
+  display: flex; align-items: center; justify-content: center; margin-top: 2px;
+}
+.step-item h3 { margin-bottom: 2px; }
+.step-item p { font-size: 11.5px; line-height: 1.5; }
+.faq-box { background: var(--light-blue); border-radius: var(--radius); padding: 14px 16px; margin-top: 12px; border-left: 3px solid var(--accent); }
+.faq-box h3 { font-size: 12px; margin-bottom: 4px; }
+.faq-box p { font-size: 11.5px; line-height: 1.55; }
+
+/* ===== OUTLET CARDS ===== */
+.outlet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 14px 0; }
+.outlet-card { border: 1.5px solid var(--border); border-radius: var(--radius); padding: 18px 16px; text-align: center; }
+.outlet-card img { width: 92px; height: 92px; object-fit: contain; margin: 0 auto 8px; display: block; }
+.outlet-card .o-amp { font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 800; color: var(--navy); line-height: 1; }
+.outlet-card .o-tag { font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: var(--gold-dark); margin: 3px 0 8px; }
+.outlet-card .o-spec { font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
+.outlet-card .o-watt { font-family: 'Outfit', sans-serif; font-weight: 800; color: var(--navy); }
+
+/* ===== WORKSHEET ===== */
+.worksheet-section { margin-bottom: 14px; }
+.worksheet-section h3 { font-size: 13px; margin-bottom: 7px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+.ws-line { display: flex; align-items: baseline; gap: 8px; font-size: 11.5px; color: var(--text-secondary); margin-bottom: 6px; }
+.ws-fill { flex: 1; border-bottom: 1px solid #b9c2cc; min-width: 60px; height: 14px; }
+.ws-check { font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; break-inside: avoid; }
+.ws-check::before { content: "\2610"; margin-right: 6px; color: var(--navy); font-size: 13px; }
+.ws-watts { color: var(--text-light); font-size: 10px; }
+
+/* ===== TIPS ===== */
+.tip-section { margin-bottom: 12px; }
+.tip-section h3 { font-size: 13px; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+.tip-section li { font-size: 11px; line-height: 1.5; margin-bottom: 4px; }
+
+/* ===== COVER ===== */
+.page-cover { background: var(--navy); color: #fff; display: flex; flex-direction: column; }
+.page-cover.bw-able { } /* hook */
+.cover-logo { height: 34px; width: auto; align-self: flex-start; flex: 0 0 auto; }
+.page-cover h1 { font-family: 'Outfit', sans-serif; font-size: 40px; font-weight: 900; color: #fff; line-height: 1.08; letter-spacing: -.01em; }
+.page-cover h1 span { color: var(--gold); }
+.page-cover .cover-subtitle { font-size: 15px; line-height: 1.55; color: rgba(255,255,255,.88); margin-bottom: 18px; max-width: 440px; }
+.cover-divider { width: 60px; height: 3px; background: var(--gold); border-radius: 2px; margin-bottom: 22px; }
+.cover-photo { width: 100%; max-width: 400px; max-height: 250px; object-fit: cover; border-radius: 14px; margin: 4px auto 0; display: block; }
+.cover-inside { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 14px; padding: 20px 22px; margin: 6px 0 4px; max-width: 430px; }
+.cover-inside-label { font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+.cover-inside ul { list-style: none; padding: 0; margin: 0; }
+.cover-inside li { font-size: 13.5px; color: rgba(255,255,255,.92); line-height: 1.5; padding-left: 24px; position: relative; margin-bottom: 9px; }
+.cover-inside li:last-child { margin-bottom: 0; }
+.cover-inside li::before { content: "\2713"; position: absolute; left: 0; top: 0; color: var(--gold); font-weight: 800; }
+.cover-tagline { font-size: 13px; color: rgba(255,255,255,.85); margin-bottom: 2px; }
+.cover-url { font-size: 12px; color: var(--gold); font-weight: 600; }
+
+/* ===== CTA ===== */
+.page-cta { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.page-cta h2 { font-size: 28px; font-weight: 800; margin-bottom: 12px; }
+.cta-intro { font-size: 13px; color: var(--text-secondary); line-height: 1.65; max-width: 470px; margin-bottom: 26px; }
+.cta-steps { display: flex; gap: 22px; margin-bottom: 28px; text-align: center; max-width: 540px; }
+.cta-step { flex: 1; }
+.cta-step .step-num { margin: 0 auto 8px; }
+.cta-step h3 { font-size: 12.5px; margin-bottom: 4px; }
+.cta-step p { font-size: 10.5px; line-height: 1.45; color: var(--text-secondary); }
+.cta-price { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 30px; color: var(--navy); margin-bottom: 4px; }
+.cta-price span { font-size: 14px; font-weight: 600; color: var(--text-secondary); }
+.cta-button {
+  display: inline-block; background: var(--accent); color: var(--accent-ink);
+  font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 16px;
+  padding: 15px 34px; border-radius: 100px; text-decoration: none; margin-bottom: 8px;
+}
+.cta-phone { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; color: var(--navy); margin-top: 6px; }
+.trust-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 22px; }
+.trust-item { font-size: 10.5px; font-weight: 600; color: var(--text-secondary); background: var(--light-blue); padding: 6px 13px; border-radius: 100px; }
+.cta-footer { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--border); text-align: center; }
+.cta-footer-brand { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 12px; color: var(--navy); }
+.cta-footer-sub { font-size: 10px; color: var(--text-light); margin-top: 2px; }
+.fine { font-size: 9.5px; color: var(--text-light); line-height: 1.45; margin-top: 6px; }
+
+/* ===== BLACK-AND-WHITE PRINT VARIANT (?bw=1 or the Toggle B&W button) =====
+   Pure black on white. Nothing relies on color to carry meaning: danger uses a
+   bold border + an "(Avoid)" label, recommended uses a "(Recommended)" label,
+   the comparison marks are distinct shapes, photos go grayscale, the navy header
+   logo is inverted to black so it reads on white. Built for a home laser printer. */
+body.bw {
+  --navy: #000; --navy-mid: #000;
+  --gold: #000; --gold-dark: #000;
+  --light-blue: #ffffff;
+  --green: #000; --green-bg: #ffffff;
+  --red: #000; --red-bg: #ffffff;
+  --border: #000;
+  --text-primary: #000; --text-secondary: #1a1a1a; --text-light: #555;
+  --header-bg: #ffffff; --header-ink: #000;
+  --accent: #000; --accent-ink: #ffffff;
+}
+body.bw .data-table th { border-bottom: 2px solid #000; }
+body.bw .data-table tr:nth-child(even) td { background: #f1f1f1; }
+body.bw .page-cover { background: #ffffff; color: #000; }
+body.bw .page-cover h1, body.bw .page-cover h1 span { color: #000; }
+body.bw .page-cover .cover-subtitle { color: #1a1a1a; }
+body.bw .cover-tagline, body.bw .cover-url { color: #000; }
+body.bw .cover-logo { filter: invert(1); }
+body.bw .cover-photo, body.bw .outlet-card img { filter: grayscale(1) contrast(1.06); }
+body.bw .cover-inside { background: #ffffff; border: 1px solid #000; }
+body.bw .cover-inside-label { color: #000; }
+body.bw .cover-inside li { color: #1a1a1a; }
+body.bw .cover-inside li::before { color: #000; }
+body.bw .comparison-card { border: 1.5px solid #000; }
+body.bw .comparison-bad h3::after { content: " (Avoid)"; font-size: 10px; font-weight: 700; color: #000; }
+body.bw .comparison-good h3::after { content: " (Recommended)"; font-size: 10px; font-weight: 700; color: #000; }
+body.bw .trust-item { border: 1px solid #000; }
+body.bw .bw-toggle { background: #000; }
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+:where(a[href], button):focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.bw-toggle{min-height:44px;min-width:44px}
+/* White ring (visual sweep 2026-07-18): the fixed navy pill can sit over the
+   navy cover sheet, where its body merged invisibly with the page. The ring
+   keeps it legible on any background it floats across. */
+.bw-toggle{box-shadow:0 0 0 1.5px rgba(255,255,255,.9), 0 2px 10px rgba(0,0,0,.25)}
+/* Wrapper for the two pills: invisible on desktop (children are fixed; a
+   block wrapper would add a phantom flex-gap row), a centered row on mobile. */
+.guide-tools{display:contents}
+
+/* ===== MOBILE (SCREEN ONLY): the .page metaphor is 8.5in print paper, which
+   overflows any phone viewport. Print/@page sizing above is untouched; this
+   only reflows the on-screen preview so a phone never has to scroll sideways. */
+@media screen and (max-width: 900px) {
+  /* Pills are static in-flow on mobile, so the 64px top padding reserved for
+     the desktop fixed position was a dead zone (visual sweep 2026-07-18). */
+  body { padding: 12px 12px 24px; gap: 14px; }
+  .guide-tools { display: flex; gap: 8px; justify-content: center; }
+  .page {
+    width: 100%; max-width: 8.5in;
+    min-height: auto; max-height: none;
+    padding: 26px 20px;
+  }
+  .comparison-grid, .outlet-grid { grid-template-columns: 1fr; }
+  .cta-steps { flex-direction: column; gap: 18px; max-width: 100%; text-align: left; }
+  .cta-steps .step-num { margin: 0 0 8px; }
+  .cover-inside, .cover-subtitle, .cta-intro { max-width: 100%; }
+  .page-cover h1 { font-size: 30px; }
+  .page-header-cta { position: static; margin-bottom: 18px; }
+  .bw-toggle { position: static; display: inline-flex; margin: 0 8px 8px 0; }
+}
+@media screen and (max-width: 420px) {
+  .bw-toggle { font-size: 11px; padding: 8px 12px; }
+}
+</style>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body>
+
+<div class="guide-tools screen-only">
+  <button class="bw-toggle screen-only" style="right:128px" onclick="window.print()">Print / Save PDF</button>
+  <button class="bw-toggle screen-only" onclick="document.body.classList.toggle('bw')">Toggle B&amp;W</button>
+</div>
+
+<main id="main">
+<!-- ===== PAGE 1: COVER ===== -->
+<div class="page page-cover">
+  <img src="../assets/images/logo-white-v2.png" alt="Backup Power Pro" class="cover-logo">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:14px 0">
+    <h1>The Portable<br>Generator<br><span>Power Guide</span></h1>
+    <div class="cover-divider" style="margin-top:22px"></div>
+    <p class="cover-subtitle">Everything you need to know about portable generator safety, what your unit can actually power, and how to connect it to your home the right way. This is portable hookup, not a whole-home standby.</p>
+    <div class="cover-inside">
+      <p class="cover-inside-label">Inside this guide</p>
+      <ul>
+        <li>What your generator can really power, watt by watt</li>
+        <li>The 5 safety mistakes behind most generator accidents</li>
+        <li>Which 240V outlet you need, and why it matters</li>
+        <li>A fill-in outage power-plan worksheet to keep with your generator</li>
+      </ul>
+    </div>
+  </div>
+  <p class="cover-tagline">A free guide from Backup Power Pro</p>
+  <p class="cover-url">backuppowerpro.com</p>
+</div>
+
+<!-- ===== PAGE 2: WHAT IT CAN POWER ===== -->
+<div class="page">
+  <div class="page-header"><span class="page-header-brand">Backup Power Pro</span><span class="page-num">2</span></div>
+  <h2>What Your Generator Can Actually Power</h2>
+  <p class="page-subtitle" style="margin-bottom:12px">It is hard to know how much your generator can really handle until you see it laid out. Here is a straightforward breakdown.</p>
+
+  <h3 style="margin-bottom:4px">Running Watts vs. Starting Watts</h3>
+  <p style="margin-bottom:10px"><strong>Running watts</strong> is the steady power an appliance uses while it is on. <strong>Starting watts</strong> is the extra surge some appliances need for the first second or two when they kick on. Anything with a motor (fridge, well pump, A/C) draws 2 to 3 times more watts to start than to run. Your generator needs to handle both.</p>
+
+  <table class="data-table">
+    <thead><tr><th>Appliance</th><th>Running Watts</th><th>Starting Watts</th></tr></thead>
+    <tbody>
+      <tr><td class="td-bold">Refrigerator</td><td>200 W</td><td>1,200 W</td></tr>
+      <tr><td class="td-bold">Chest Freezer</td><td>75 W</td><td>800 W</td></tr>
+      <tr><td class="td-bold">Sump Pump (1/3 HP)</td><td>800 W</td><td>1,300 W</td></tr>
+      <tr><td class="td-bold">Well Pump (1/2 HP)</td><td>1,000 W</td><td>2,100 W</td></tr>
+      <tr><td class="td-bold">Window A/C (10,000 BTU)</td><td>1,200 W</td><td>3,600 W</td></tr>
+      <tr><td class="td-bold">Furnace Blower (gas furnace)</td><td>700 W</td><td>2,000 W</td></tr>
+      <tr><td class="td-bold">Garage Door Opener (1/2 HP)</td><td>725 W</td><td>1,400 W</td></tr>
+      <tr><td class="td-bold">Washing Machine</td><td>1,150 W</td><td>2,250 W</td></tr>
+      <tr><td class="td-bold">Ceiling Fan</td><td>70 W</td><td>140 W</td></tr>
+      <tr><td class="td-bold">Electric Water Heater</td><td>4,500 W</td><td>n/a</td></tr>
+      <tr><td class="td-bold">Microwave (1,000 W cooking)</td><td>1,500 W</td><td>n/a</td></tr>
+      <tr><td class="td-bold">Coffee Maker</td><td>1,000 W</td><td>n/a</td></tr>
+      <tr><td class="td-bold">Space Heater</td><td>1,500 W</td><td>n/a</td></tr>
+      <tr><td class="td-bold">TV (55 inch LED)</td><td>100 W</td><td>n/a</td></tr>
+      <tr><td class="td-bold">LED Lights (per room, 4 to 6 bulbs)</td><td>40 to 60 W</td><td>n/a</td></tr>
+      <tr><td class="td-bold">WiFi Router + Modem</td><td>20 W</td><td>n/a</td></tr>
+      <tr><td class="td-bold">Security System + Cameras</td><td>100 W</td><td>n/a</td></tr>
+      <tr><td class="td-bold">Phone Charger</td><td>10 W</td><td>n/a</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:9.5px;color:var(--text-light);line-height:1.45;margin-top:2px;margin-bottom:8px">Common estimates. Actual wattage varies by brand and model, check your appliance label or owner's manual for exact figures. Gas appliances (gas dryer, gas water heater, gas stove) use much less electricity since the gas does the heating, they may only need 300 to 600 W for controls and fans.</p>
+
+  <div class="callout" style="margin-top:8px;padding:12px 16px">
+    <span class="callout-label">Rule of Thumb</span>
+    <p>Your generator's nameplate shows its maximum output. Plan your total running load at about 75% of that number to leave headroom for starting watts. A 7,500-watt generator should run about 5,600 watts of steady load comfortably.</p>
+  </div>
+</div>
+
+<!-- ===== PAGE 3: SAFETY MISTAKES ===== -->
+<div class="page">
+  <div class="page-header"><span class="page-header-brand">Backup Power Pro</span><span class="page-num">3</span></div>
+  <h2>The 5 Biggest Generator Safety Mistakes</h2>
+  <p class="page-subtitle">These are the most common, and most dangerous, things homeowners get wrong with portable generators.</p>
+
+  <div class="numbered-item"><div class="num-circle">1</div><div>
+    <h3>Running It in the Garage With the Door "Cracked"</h3>
+    <p>Carbon monoxide from a generator can kill in minutes. Over 80 people die from generator CO poisoning every year in the U.S. The only safe location is outside, at least 20 feet from any window, door, or vent. A cracked garage door is not enough.</p>
+  </div></div>
+
+  <div class="numbered-item"><div class="num-circle">2</div><div>
+    <h3>Plugging It Into a Wall Outlet (Backfeeding)</h3>
+    <p>This sends power backward through your panel and out onto the utility lines. It can electrocute a lineman working to restore your power. It violates electrical code and utility rules everywhere. Some homeowners do this without realizing the danger.</p>
+  </div></div>
+
+  <div class="numbered-item"><div class="num-circle">3</div><div>
+    <h3>Overloading the Generator</h3>
+    <p>Running more watts than your generator can handle does not just trip a breaker. It can damage the generator, damage your appliances, or cause overheating. Know your wattage limits (see page 2).</p>
+  </div></div>
+
+  <div class="numbered-item"><div class="num-circle">4</div><div>
+    <h3>Running It in Rain Without Proper Cover</h3>
+    <p>Water and electricity do not mix. A generator sitting in a puddle is a shock hazard. If you run it in rain, use a manufacturer-rated canopy. A tarp duct-taped to a frame does not count.</p>
+  </div></div>
+
+  <div class="numbered-item"><div class="num-circle">5</div><div>
+    <h3>Extension Cords Everywhere</h3>
+    <p>Running six cords through a cracked window is the most common "plan," and the least safe. Cords get pinched, overheat, get rained on, and create trip hazards. They also mean you cannot power anything hardwired, your furnace, well pump, sump pump, ceiling lights, or water heater. If it does not have a plug, an extension cord cannot reach it.</p>
+  </div></div>
+
+  <div class="callout">
+    <span class="callout-label">Notice</span>
+    <p>Four out of five of these problems are solved by how you connect your generator, not by the generator itself.</p>
+  </div>
+</div>
+
+<!-- ===== PAGE 4: CORDS VS CONNECTION ===== -->
+<div class="page">
+  <div class="page-header"><span class="page-header-brand">Backup Power Pro</span><span class="page-num">4</span></div>
+  <h2>Extension Cords vs. a Proper Connection</h2>
+  <p class="page-subtitle">Here is what changes when you stop running cords through your windows.</p>
+
+  <div class="comparison-grid">
+    <div class="comparison-card comparison-bad">
+      <h3>Running Extension Cords</h3>
+      <ul>
+        <li>Can only power things with a plug, no furnace, no well pump, no sump pump</li>
+        <li>Cords run through cracked windows, heat loss, rain entry, security risk</li>
+        <li>Trip hazards throughout the house</li>
+        <li>Easy to overload a single cord and create a fire risk</li>
+        <li>Cannot power your home's circuits, only individual appliances</li>
+        <li>Not code-compliant as a permanent solution</li>
+        <li>Set it all up from scratch every time the power goes out</li>
+      </ul>
+    </div>
+    <div class="comparison-card comparison-good">
+      <h3>With an Inlet + Interlock</h3>
+      <ul>
+        <li>Powers circuits through your breaker panel, furnace, well pump, sump pump, lights</li>
+        <li>Generator stays outside, connected by one cord to a weatherproof inlet box</li>
+        <li>You choose which circuits to power by flipping breakers, just like normal</li>
+        <li>No cords through windows, no trip hazards</li>
+        <li>Hardwired appliances work normally</li>
+        <li>Code-compliant, permitted, and inspected</li>
+        <li>Set it up once, works every outage after that</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout">
+    <span class="callout-label">What Are These Things?</span>
+    <p>An <strong>inlet box</strong> is a weatherproof plug mounted on the outside of your house. An <strong>interlock kit</strong> is a small mechanical device on your breaker panel that prevents your main breaker and generator breaker from being on at the same time, which is what prevents backfeeding. Together they give you a safe, permanent, code-compliant way to connect your portable generator to your home.</p>
+  </div>
+</div>
+
+<!-- ===== PAGE 5: HOW IT WORKS ===== -->
+<div class="page">
+  <div class="page-header"><span class="page-header-brand">Backup Power Pro</span><span class="page-num">5</span></div>
+  <h2>How an Inlet + Interlock Actually Works</h2>
+  <p class="page-subtitle">Here is exactly what happens when the power goes out, step by step.</p>
+
+  <div class="step-item"><div class="step-num">1</div><div><h3>Power Goes Out</h3><p>You walk to your generator, wherever you store it (garage, shed, carport). Roll or carry it to the inlet box on the side of your house.</p></div></div>
+  <div class="step-item"><div class="step-num">2</div><div><h3>Plug In</h3><p>Connect the generator cord to the weatherproof inlet box on your exterior wall. One cord, one connection.</p></div></div>
+  <div class="step-item"><div class="step-num">3</div><div><h3>Start the Generator</h3><p>Fire it up and let it warm up for about 60 seconds before connecting any load.</p></div></div>
+  <div class="step-item"><div class="step-num">4</div><div><h3>Flip Your Breakers</h3><p>Go to your panel inside. Switch the interlock to the generator position, this automatically disconnects you from the grid (that is the safety mechanism). Then flip on the circuits you want: refrigerator, lights, furnace, well pump, whatever you chose.</p></div></div>
+  <div class="step-item"><div class="step-num">5</div><div><h3>When Power Returns</h3><p>Reverse the process. Flip breakers off, switch the interlock back, unplug the cord, turn off the generator. Done.</p></div></div>
+
+  <div class="callout" style="margin-top:14px"><span class="callout-label">Good to Know</span><p>The whole process takes about 3 minutes once you have done it once. Most people say it becomes second nature after the first outage.</p></div>
+
+  <div class="faq-box"><h3>Can I Run My Central A/C?</h3><p>Central air conditioners draw 3,000 to 6,000 starting watts, more than most portable generators can handle. A device called a <strong>soft start</strong> can cut that surge by up to 70%. An HVAC technician installs it on your A/C unit (not the generator), letting the compressor ramp up gradually. With a soft start, many homeowners can run their A/C on a mid-size portable generator. Ask your HVAC tech about it.</p></div>
+
+  <div class="faq-box"><h3>What About Sensitive Electronics?</h3><p>Standard generators produce rougher power with voltage fluctuations. That is fine for fridges, lights, pumps, and furnace blowers. Sensitive electronics like computers and medical equipment do better with an <strong>inverter generator</strong>, which produces clean, stable power. For a typical outage running the essentials, a regular generator through an inlet and interlock works great.</p></div>
+</div>
+
+<!-- ===== PAGE 6: WHICH GENERATOR, WHICH OUTLET ===== -->
+<div class="page">
+  <div class="page-header"><span class="page-header-brand">Backup Power Pro</span><span class="page-num">6</span></div>
+  <h2>Which Generator, and Which Outlet?</h2>
+  <p class="page-subtitle">The 240-volt outlet on your generator decides how it connects to your home. There are two common ones.</p>
+
+  <div class="outlet-grid">
+    <div class="outlet-card">
+      <img src="../img/30amp-outlet.png" alt="30-amp 240V outlet, round 4-prong twist lock">
+      <div class="o-amp">30-Amp</div>
+      <div class="o-tag">L14-30 &middot; 4-Prong</div>
+      <p class="o-spec">Round, twist-lock. Up to <span class="o-watt">7,200 W</span> at 240V. The most common outlet on 5,000 to 8,000-watt generators. Plenty to run a home's essentials: fridge, furnace, well pump, sump pump, lights, and outlets.</p>
+    </div>
+    <div class="outlet-card">
+      <img src="../img/50amp-outlet.png" alt="50-amp 240V outlet, large 4-prong">
+      <div class="o-amp">50-Amp</div>
+      <div class="o-tag">CS6365 / 14-50 &middot; 4-Prong</div>
+      <p class="o-spec">Larger, 4 prongs. Up to <span class="o-watt">12,000 W</span> at 240V. Found on bigger 9,000-watt and up generators. Lets you run more at the same time, including larger loads.</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:6px;margin-bottom:4px">How to size it</h3>
+  <p style="margin-bottom:10px">Add up the running watts of what you want on during an outage (use the table on page 2 and the worksheet on page 7). To run the essentials comfortably, a 30-amp connection on a 5,000 to 8,000-watt generator is plenty. Step up to 50-amp if you have a larger generator or want to run more circuits at once. Either way, with an interlock you control each circuit with its own breaker, so you turn things on and off as needed.</p>
+
+  <div class="callout">
+    <span class="callout-label">The One Requirement</span>
+    <p>To connect to your home, your generator needs one of these two 240-volt outlets. If yours has either, you qualify. On the quote walk we confirm your outlet type and size the connection to it. If your generator does not have a 240-volt outlet, that is the one thing to upgrade before a home connection.</p>
+  </div>
+</div>
+
+<!-- ===== PAGE 7: WORKSHEET ===== -->
+<div class="page">
+  <div class="page-header"><span class="page-header-brand">Backup Power Pro</span><span class="page-num">7</span></div>
+  <h2>Your Outage Power Plan</h2>
+  <p class="page-subtitle">Fill this out and keep it with your generator. When the power goes out, you will already know exactly what to do.</p>
+
+  <div class="worksheet-section">
+    <h3>A. My Generator</h3>
+    <div class="ws-line"><span>Brand / Model:</span> <span class="ws-fill"></span></div>
+    <div class="ws-line"><span>Rated Running Watts:</span> <span class="ws-fill"></span> <span>W</span></div>
+    <div class="ws-line"><span>Rated Starting Watts:</span> <span class="ws-fill"></span> <span>W</span></div>
+    <div class="ws-line"><span>Outlet Type:</span> <span class="ws-fill"></span> <span>(30A or 50A)</span></div>
+  </div>
+
+  <div class="worksheet-section">
+    <h3>B. What I Want to Power During an Outage</h3>
+    <div style="columns:2;column-gap:24px">
+      <div class="ws-check">Refrigerator <span class="ws-watts">(200W)</span></div>
+      <div class="ws-check">Chest Freezer <span class="ws-watts">(75W)</span></div>
+      <div class="ws-check">Sump Pump <span class="ws-watts">(800W)</span></div>
+      <div class="ws-check">Well Pump <span class="ws-watts">(1,000W)</span></div>
+      <div class="ws-check">Furnace Blower <span class="ws-watts">(700W)</span></div>
+      <div class="ws-check">Window A/C <span class="ws-watts">(1,200W)</span></div>
+      <div class="ws-check">Space Heater <span class="ws-watts">(1,500W)</span></div>
+      <div class="ws-check">Garage Door Opener <span class="ws-watts">(725W)</span></div>
+      <div class="ws-check">Washing Machine <span class="ws-watts">(1,150W)</span></div>
+      <div class="ws-check">Electric Water Heater <span class="ws-watts">(4,500W)</span></div>
+      <div class="ws-check">Microwave <span class="ws-watts">(1,500W)</span></div>
+      <div class="ws-check">Coffee Maker <span class="ws-watts">(1,000W)</span></div>
+      <div class="ws-check">LED Lights ___ rooms <span class="ws-watts">(50W ea.)</span></div>
+      <div class="ws-check">Ceiling Fan <span class="ws-watts">(70W)</span></div>
+      <div class="ws-check">TV <span class="ws-watts">(100W)</span></div>
+      <div class="ws-check">WiFi + Modem <span class="ws-watts">(20W)</span></div>
+      <div class="ws-check">Security System <span class="ws-watts">(100W)</span></div>
+      <div class="ws-check">Medical Equipment: ____</div>
+    </div>
+  </div>
+
+  <div class="worksheet-section">
+    <h3>C. My Totals</h3>
+    <div class="ws-line"><span>Total Running Watts Needed:</span> <span class="ws-fill"></span> <span>W</span></div>
+    <div class="ws-line"><span>My Generator's Rated Output:</span> <span class="ws-fill"></span> <span>W</span></div>
+    <div class="ws-line"><span>75% of My Generator's Output:</span> <span class="ws-fill"></span> <span>W</span></div>
+    <div class="ws-line"><span>Is My Total Under 75%?</span> <span style="font-weight:600;color:var(--text-primary)">Yes / No</span></div>
+  </div>
+
+  <div class="callout"><span class="callout-label">If Your Total Is Close or Over</span><p>That is okay, it just means you will manage which circuits are on at the same time. With an interlock this is easy. You control each circuit with its own breaker switch, so you turn things on and off as needed.</p></div>
+</div>
+
+<!-- ===== PAGE 8: MAINTENANCE ===== -->
+<div class="page">
+  <div class="page-header"><span class="page-header-brand">Backup Power Pro</span><span class="page-num">8</span></div>
+  <h2>Storage &amp; Maintenance Basics</h2>
+  <p class="page-subtitle">A generator that sits unused for two years and will not start when you need it is not backup power. It is a paperweight.</p>
+
+  <div class="tip-section"><h3>Storage</h3><ul>
+    <li>Store in a dry, ventilated area, garage or shed is fine, not a sealed space</li>
+    <li>Keep fuel fresh: use fuel stabilizer if storing gas for more than 30 days</li>
+    <li>Keep the battery tender connected if your generator has electric start</li>
+    <li>Store the generator cord with the generator so everything is together when you need it</li>
+  </ul></div>
+
+  <div class="tip-section"><h3>Before Storm Season</h3><ul>
+    <li>Run the generator for 15 minutes once a quarter, this keeps seals lubricated and the carburetor clear</li>
+    <li>Check oil level and condition</li>
+    <li>Verify you have at least 5 gallons of fresh fuel (treated with stabilizer)</li>
+    <li>Test your connection: if you have an inlet, plug in and flip your interlock to confirm everything works before you actually need it</li>
+  </ul></div>
+
+  <div class="tip-section"><h3>During an Outage</h3><ul>
+    <li>Let the generator warm up for 60 seconds before connecting load</li>
+    <li>Add circuits one at a time to manage starting watts, do not flip everything on at once</li>
+    <li>Refuel only when the generator is OFF and cooled down, never refuel a running generator</li>
+    <li>Check fuel level every 4 to 6 hours during extended outages</li>
+  </ul></div>
+
+  <div class="tip-section"><h3>Fuel Planning</h3><ul>
+    <li>Most portable generators burn 0.5 to 1 gallon per hour at half load</li>
+    <li>A 5-gallon tank gives you roughly 6 to 10 hours of runtime depending on load</li>
+    <li>Keep at least 10 to 15 gallons on hand for a multi-day outage</li>
+    <li>Store gas in approved containers, in a ventilated area away from heat sources</li>
+    <li>Rotate stored fuel every 6 months or treat it with stabilizer</li>
+  </ul></div>
+
+  <div class="callout"><span class="callout-label">15 Minutes, Once a Quarter</span><p>That is all it takes to make sure your generator starts when it matters. About 50 cents in gas buys you peace of mind that your backup power actually works.</p></div>
+</div>
+
+<!-- ===== PAGE 9: CTA ===== -->
+<div class="page page-cta">
+  <div class="page-header page-header-cta"><span class="page-header-brand">Backup Power Pro</span><span class="page-num">9</span></div>
+
+  <h2>Ready to Make Your Generator<br>Actually Useful?</h2>
+  <p class="cta-intro">If you have read this far, you already know extension cords are not the answer. An inlet and interlock kit gives you a safe, permanent, code-compliant way to connect the generator you already own to your home's electrical panel. No video call, no salesperson at your door. Take the short quote walk and Key will text your firm number after he reviews.</p>
+
+  <div class="cta-steps">
+    <div class="cta-step"><div class="step-num">1</div><h3>Two-Minute Quote Walk</h3><p>A few questions about your home and generator outlet (30A or 50A). About two minutes from your phone.</p></div>
+    <div class="cta-step"><div class="step-num">2</div><h3>Ballpark, Then Firm Price</h3><p>You see a ballpark range on the walk. Key texts the firm all-in number after he reviews, hardware, permit, inspection, and cord included.</p></div>
+    <div class="cta-step"><div class="step-num">3</div><h3>Done in One Day</h3><p>Permitted, inspected, and done right. Most installs are completed in a single visit.</p></div>
+  </div>
+
+  <div class="cta-price"><span>One all-in price</span> <span>no line items</span></div>
+  <a href="https://qa.backuppowerpro.com/walk-v2/?src=guide" class="cta-button">Get My Quote</a>
+  <p class="cta-phone">or text <span data-bpp="phone">(864) 863-7800</span></p>
+
+  <div class="trust-row">
+    <span class="trust-item">Licensed SC Electrical Contractor LIC #2942</span>
+    <span class="trust-item">100+ Five-Star Google Reviews</span>
+  </div>
+  <div class="trust-row" style="margin-top:6px">
+    <span class="trust-item">Permit &amp; Inspection Included</span>
+    <span class="trust-item">Greenville, Pickens &amp; Spartanburg Counties</span>
+  </div>
+
+  <div class="cta-footer">
+    <p class="cta-footer-brand">Backup Power Pro</p>
+    <p class="cta-footer-sub">A division of Key Electric &middot; backuppowerpro.com &middot; <span data-bpp="phone">(864) 863-7800</span></p>
+  </div>
+</div>
+
+</main>
+<script src="../assets/js/bpp-config.js"></script>
+<script>
+  // Black-and-white print variant: ?bw=1 adds the .bw class (styles land in the B&W iteration).
+  if (new URLSearchParams(location.search).get('bw') === '1') document.body.classList.add('bw');
+</script>
+</body>
+</html>

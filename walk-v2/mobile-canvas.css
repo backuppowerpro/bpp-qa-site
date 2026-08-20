@@ -1,0 +1,1656 @@
+/*
+  Accepted customer canvas.
+  Keep every Quote Walk page at the same compact mobile-first width on desktop.
+  Real phone viewports continue to fill the available screen.
+*/
+@media (min-width: 480px) {
+  .stack {
+    width: 100% !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    padding: 28px 14px 96px !important;
+  }
+
+  .page,
+  .page.w-desktop {
+    width: 390px !important;
+    max-width: 390px !important;
+    min-height: calc(100vh - 56px);
+    margin: 0 auto !important;
+    border-radius: 24px !important;
+    box-shadow: 0 10px 28px rgba(11,31,59,.10), 0 2px 8px rgba(11,31,59,.05) !important;
+    overflow: hidden;
+  }
+
+  .state-label,
+  .state-label.wide {
+    width: 390px !important;
+  }
+
+  .site-head {
+    padding-right: 20px !important;
+    padding-left: 20px !important;
+  }
+
+  .page[data-screen-label="Quote walk: generator connection"] .body {
+    max-width: none !important;
+    padding: 28px 20px 10px !important;
+  }
+
+  .page[data-screen-label="Quote walk: generator connection"] h1 {
+    font-size: 29px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page.qw-range-page {
+    display: grid !important;
+    grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr) !important;
+    grid-template-areas:
+      "range-head range-head"
+      "range-hero range-work"
+      "range-proof range-proof"
+      "range-foot range-foot" !important;
+    gap: 22px !important;
+  }
+
+  .page.qw-range-page > .site-head {
+    grid-area: range-head;
+  }
+
+  .page.qw-range-page > .qw-range-hero {
+    grid-area: range-hero;
+    min-height: 0 !important;
+    height: 100%;
+    padding: 34px 38px !important;
+    border-radius: 22px;
+    overflow: hidden;
+  }
+
+  .page.qw-range-page > #rangePage {
+    grid-area: range-work;
+    display: flex !important;
+    min-width: 0;
+    height: 100%;
+    flex-direction: column;
+    gap: 14px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+
+  .page.qw-range-page > #rangePage > [data-fit-card],
+  .page.qw-range-page > #rangePage > [data-options],
+  .page.qw-range-page > #rangePage > [data-distance-revision] {
+    flex: 1 1 auto;
+  }
+
+  .page.qw-range-page > .qw-range-proof-carousel {
+    grid-area: range-proof;
+    min-width: 0;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+
+  .page.qw-range-page > .qw-range-proof-carousel .proof-track {
+    gap: 18px !important;
+    padding: 0 28px 0 0 !important;
+    scroll-padding-inline: 0 !important;
+  }
+
+  .page.qw-range-page > .qw-range-proof-carousel .proof-slide {
+    flex-basis: calc((100% - 36px) / 3.18) !important;
+    height: 230px !important;
+  }
+
+  .page.qw-range-page > .foot {
+    grid-area: range-foot;
+  }
+
+  .page.qw-final-page {
+    display: grid !important;
+    grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr) !important;
+    grid-template-areas:
+      "final-head final-head"
+      "final-hero final-body"
+      "final-foot final-foot" !important;
+    gap: 22px !important;
+  }
+
+  .page.qw-final-page > .site-head {
+    grid-area: final-head;
+  }
+
+  .page.qw-final-page > .qw-final-hero {
+    grid-area: final-hero;
+    min-height: 0 !important;
+    height: 100%;
+    padding: 34px 38px !important;
+    border-radius: 22px;
+    overflow: hidden;
+  }
+
+  .page.qw-final-page > .body-grid {
+    grid-area: final-body;
+    display: block !important;
+    height: 100%;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .page.qw-final-page > .body-grid .col-main,
+  .page.qw-final-page > .body-grid .price {
+    height: 100%;
+  }
+
+  .page.qw-final-page > .body-grid .price {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 0 !important;
+    padding: 28px !important;
+  }
+
+  .page.qw-final-page > .foot {
+    grid-area: final-foot;
+  }
+}
+
+@media (max-width: 479px) {
+  .page,
+  .page.w-desktop {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100vh;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+}
+
+.page {
+  --qw-content-gutter: 20px;
+}
+
+/*
+  Page 1 is the visual template for the payoff pages. The range and final
+  screens reuse its canvas, header, connected navy opening, card edge, shadow,
+  and footer rhythm instead of maintaining separate page shells.
+*/
+.qw-template-page {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 100vh !important;
+  background: var(--page, #fafbfc) !important;
+}
+
+/* Page 1 and the final page already sit above the review canvas' 28px lower
+   breathing room. Range has no outer .stack wrapper, so provide the same
+   document-level space without changing Page 1 or altering footer content. */
+body.qw-template-document {
+  padding-bottom: 28px !important;
+  background: #fafbfc !important;
+  -webkit-font-smoothing: antialiased !important;
+  text-rendering: optimizeLegibility !important;
+}
+
+html.qw-template-document-root {
+  background: #fafbfc !important;
+}
+
+.qw-template-page .site-head {
+  display: flex !important;
+  align-items: center !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  padding: 0 var(--qw-content-gutter) !important;
+  background: var(--navy, #0b1f3b) !important;
+}
+
+.qw-template-page .site-head .lockup {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 44px !important;
+  padding: 8px 0 !important;
+  line-height: 0 !important;
+}
+
+.qw-template-page .site-head .lockup img {
+  display: block !important;
+  width: auto !important;
+  height: 28px !important;
+}
+
+.qw-template-hero {
+  min-height: 322.875px !important;
+  padding: 18px var(--qw-content-gutter) 28px !important;
+  color: #fff !important;
+  background:
+    radial-gradient(100% 70% at 0 0, rgba(35,72,119,.6), transparent 64%),
+    var(--navy, #0b1f3b) !important;
+}
+
+.qw-template-hero h1 {
+  margin: 0 !important;
+  color: #fff !important;
+  font-family: Outfit, sans-serif !important;
+  font-size: 28px !important;
+  font-weight: 750 !important;
+  line-height: 1.06 !important;
+  letter-spacing: -.025em !important;
+}
+
+.qw-template-hero > p:not(.qw-template-eyebrow),
+.qw-template-hero .next-step p {
+  margin: 10px 0 0 !important;
+  color: rgba(255,255,255,.80) !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+.qw-template-eyebrow {
+  margin: 0 0 7px !important;
+  color: var(--gold, #ffba00) !important;
+  font-family: Outfit, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 750 !important;
+  line-height: 1.2 !important;
+  letter-spacing: .14em !important;
+  text-transform: uppercase !important;
+}
+
+.qw-template-page .card,
+.qw-template-page .range,
+.qw-template-page .notice,
+.qw-template-page .reviewing,
+.qw-template-page .recap,
+.qw-template-page .price {
+  border-radius: 20px !important;
+  box-shadow: 0 10px 28px rgba(11,31,59,.10), 0 2px 8px rgba(11,31,59,.05), inset 0 0 0 1px rgba(11,31,59,.07) !important;
+}
+
+.qw-template-page .range,
+.qw-template-page .price {
+  box-shadow: 0 10px 28px rgba(11,31,59,.13), 0 2px 8px rgba(11,31,59,.07) !important;
+}
+
+.qw-range-page #rangePage {
+  background: var(--page, #fafbfc) !important;
+}
+
+.qw-range-hero {
+  display: flex !important;
+  flex-direction: column !important;
+  padding-bottom: 22px !important;
+}
+
+.qw-template-page .qw-range-hero h1 {
+  width: 100% !important;
+  max-width: 100% !important;
+  font-size: clamp(19px, 6.15vw, 24px) !important;
+  font-weight: 750 !important;
+  line-height: 1.08 !important;
+  letter-spacing: -.03em !important;
+}
+
+.qw-range-hero.is-recovery {
+  min-height: 164px !important;
+}
+
+.qw-range-hero .qw-range-payoff {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  margin-top: 0 !important;
+}
+
+.qw-range-hero .qw-range-payoff.hidden {
+  display: none !important;
+}
+
+.qw-range-hero [data-amount] {
+  display: block !important;
+  margin-top: 5px !important;
+  font-size: 1.18em !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+.qw-range-hero [data-amount]::after {
+  content: ".";
+}
+
+.qw-range-hero .range-basis {
+  margin: 15px 0 0 !important;
+  color: #dbe4f2 !important;
+  font-size: 13px !important;
+  line-height: 1.36 !important;
+}
+
+.qw-range-hero .range-next-step {
+  margin: 10px 0 0 !important;
+  color: #dbe4f2 !important;
+  font-size: 13px !important;
+  line-height: 1.36 !important;
+}
+
+.qw-range-hero .range-primary-action {
+  margin-top: auto !important;
+}
+
+.qw-range-hero.is-accepted .range-basis {
+  display: none !important;
+}
+
+.qw-range-hero.is-accepted .range-next-step {
+  margin-top: 12px !important;
+}
+
+.accepted-delivery {
+  margin: 18px 0 0 !important;
+  padding: 15px 0 0 !important;
+  border-top: 1px solid rgba(255,255,255,.22) !important;
+}
+
+.accepted-delivery h2 {
+  margin: 0 !important;
+  color: #fff !important;
+  font-size: 16px !important;
+  line-height: 1.2 !important;
+}
+
+.accepted-delivery > p {
+  margin: 7px 0 0 !important;
+  color: #dbe4f2 !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+.accepted-delivery > .link-btn {
+  display: flex !important;
+  width: 100% !important;
+  min-height: 44px !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  margin-top: 2px !important;
+  padding: 6px 0 !important;
+  color: #fff !important;
+  font-size: 13px !important;
+}
+
+.accepted-phone-form {
+  display: grid !important;
+  gap: 9px !important;
+  margin-top: 12px !important;
+  padding-top: 13px !important;
+  border-top: 1px solid rgba(255,255,255,.20) !important;
+}
+
+.accepted-phone-form label {
+  color: #fff !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+.accepted-phone-form input {
+  width: 100% !important;
+  min-height: 50px !important;
+  padding: 11px 13px !important;
+  border: 1.5px solid rgba(11,31,59,.18) !important;
+  border-radius: 12px !important;
+  color: var(--navy, #0b1f3b) !important;
+  background: #f8fafc !important;
+  font-size: 16px !important;
+}
+
+.accepted-phone-form input:focus {
+  border-color: #1464c0 !important;
+  outline: 3px solid rgba(20,100,192,.18) !important;
+  outline-offset: 1px !important;
+}
+
+.accepted-phone-form .btn {
+  min-height: 50px !important;
+  font-size: 15px !important;
+}
+
+.accepted-phone-form .link-btn {
+  display: flex !important;
+  width: 100% !important;
+  min-height: 44px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #fff !important;
+}
+
+.accepted-phone-error {
+  margin: 0 !important;
+  color: #fecaca !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+}
+
+.accepted-phone-status {
+  margin-top: 10px !important;
+  padding: 10px 12px !important;
+  border-radius: 12px !important;
+  color: #075b3d !important;
+  background: #ecfdf3 !important;
+  font-weight: 650 !important;
+}
+
+.accepted-delivery > p.accepted-phone-status {
+  color: #075b3d !important;
+}
+
+.accepted-delivery.hidden,
+.accepted-phone-form.hidden {
+  display: none !important;
+}
+
+.qw-range-page .proof-carousel {
+  position: relative !important;
+  padding: 14px 0 0 !important;
+  background: var(--page, #fafbfc) !important;
+}
+
+.qw-range-page .proof-track {
+  display: flex !important;
+  gap: 10px !important;
+  padding: 0 18px !important;
+  overflow-x: auto !important;
+  scroll-snap-type: x mandatory !important;
+  scroll-padding-inline: 18px !important;
+  scrollbar-width: none !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior-x: contain !important;
+  touch-action: pan-y !important;
+  cursor: grab !important;
+}
+
+.qw-range-page .proof-track.is-dragging { cursor: grabbing !important; }
+
+.qw-range-page .proof-track:focus-visible {
+  border-radius: 16px !important;
+  outline: 3px solid var(--gold, #ffba00) !important;
+  outline-offset: -3px !important;
+}
+
+.qw-range-page .proof-track::-webkit-scrollbar { display: none !important; }
+
+.qw-range-page .proof-slide {
+  position: relative !important;
+  display: flex !important;
+  flex: 0 0 calc(100% - 48px) !important;
+  height: 184px !important;
+  overflow: hidden !important;
+  scroll-snap-align: center !important;
+  scroll-snap-stop: always !important;
+  border-radius: 16px !important;
+  background: #fff !important;
+  box-shadow: var(--shadow-sm), inset 0 0 0 1px rgba(11,31,59,.06) !important;
+}
+
+.qw-range-page .proof-slide .proof-image {
+  width: 61% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.qw-range-page .proof-slide .proof-copy {
+  display: flex !important;
+  flex: 1 !important;
+  align-items: center !important;
+  padding: 13px 12px !important;
+  color: var(--navy, #0b1f3b) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 1.42 !important;
+}
+
+.qw-range-page .proof-slide--image .proof-image { width: 100% !important; }
+
+.qw-range-page .proof-slide--image .proof-copy {
+  position: absolute !important;
+  inset: auto 0 0 !important;
+  min-height: 52px !important;
+  margin: 0 !important;
+  padding: 17px 16px 13px !important;
+  align-items: flex-end !important;
+  color: #fff !important;
+  background: linear-gradient(180deg, transparent, rgba(7,23,45,.9)) !important;
+  font-family: var(--head) !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+}
+
+.qw-range-page .proof-slide--review {
+  align-items: stretch !important;
+  background: linear-gradient(160deg, #fff, #f5f7fb) !important;
+}
+
+.qw-range-page .proof-review {
+  position: relative !important;
+  display: flex !important;
+  min-width: 0 !important;
+  flex: 1 !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 14px 18px 10px !important;
+  color: var(--navy, #0b1f3b) !important;
+}
+
+.qw-range-page .proof-review::before {
+  content: "“" !important;
+  height: 20px !important;
+  color: var(--gold, #ffba00) !important;
+  font-family: Georgia, serif !important;
+  font-size: 34px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+
+.qw-range-page .proof-review p {
+  margin: 3px 0 0 !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
+}
+
+.qw-range-page .proof-review .review-stars {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  margin-top: 2px !important;
+  color: var(--gold, #ffba00) !important;
+  font-size: 11px !important;
+  line-height: 1 !important;
+  letter-spacing: .08em !important;
+}
+
+.qw-range-page .proof-review .review-stars img {
+  position: absolute !important;
+  top: 16px !important;
+  right: 18px !important;
+  width: 17px !important;
+  height: 17px !important;
+}
+
+.qw-range-page .proof-review cite {
+  margin-top: 5px !important;
+  color: #68758a !important;
+  font-size: 11.5px !important;
+  font-style: normal !important;
+  font-weight: 600 !important;
+  line-height: 1.3 !important;
+}
+
+.qw-range-page .scope-expansion {
+  display: grid !important;
+  min-width: 0 !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  border-top: 0 !important;
+  scroll-margin-top: 16px !important;
+}
+
+.qw-range-page .scope-expansion.hidden {
+  display: none !important;
+}
+
+.qw-range-page .scope-head h2 {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1.22 !important;
+}
+
+.qw-range-page .scope-summary-copy {
+  margin: 5px 0 0 !important;
+  color: var(--muted, #526074) !important;
+  font-size: 13px !important;
+  line-height: 1.42 !important;
+}
+
+.qw-range-page .scope-list + .btn {
+  margin-top: 14px !important;
+}
+
+.qw-range-page [data-options] .options-return {
+  display: flex !important;
+  width: fit-content !important;
+  margin: 10px auto 0 !important;
+}
+
+.qw-final-hero {
+  display: grid !important;
+  gap: 12px !important;
+  padding-top: 16px !important;
+  padding-bottom: 28px !important;
+}
+
+.qw-final-hero .celebrate,
+.qw-final-hero .reviewing,
+.qw-final-hero .next-step {
+  margin: 0 !important;
+}
+
+.qw-final-hero .celebrate h1,
+.qw-final-hero .reviewing .rline,
+.qw-final-hero .reviewing .rsub,
+.qw-final-hero .next-step .tk {
+  color: #fff !important;
+}
+
+.qw-final-hero .reviewing,
+.qw-final-hero .next-step {
+  background: rgba(255,255,255,.08) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.11) !important;
+}
+
+.qw-final-hero .reviewing .rsub {
+  opacity: .72 !important;
+}
+
+.qw-final-page .body-grid {
+  background: var(--page, #fafbfc) !important;
+}
+
+.page .site-head,
+.page .hero .textzone,
+.page .body-grid {
+  padding-right: var(--qw-content-gutter) !important;
+  padding-left: var(--qw-content-gutter) !important;
+}
+
+.page > .body-grid {
+  padding-top: 20px !important;
+}
+
+.page .proof-track {
+  padding-top: 8px !important;
+  padding-right: var(--qw-content-gutter) !important;
+  padding-bottom: 8px !important;
+  padding-left: var(--qw-content-gutter) !important;
+  scroll-padding-inline: var(--qw-content-gutter) !important;
+}
+
+.page .proof-carousel::before,
+.page .proof-carousel::after {
+  display: none !important;
+  width: 0 !important;
+  content: none !important;
+  background: none !important;
+}
+
+/*
+  One journey progress primitive.
+  Generator, Panel, Distance, and Photos keep identical geometry and state
+  treatment on normal entry and saved return.
+*/
+.qw-progress {
+  padding: 14px 10px 12px !important;
+  background: var(--card, #fff) !important;
+  border-bottom: 1px solid var(--edge-soft, rgba(11,31,59,.07)) !important;
+}
+
+.qw-progress .qw-progress-rail {
+  --qw-progress-fill: 0%;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  position: relative !important;
+  width: 100% !important;
+  max-width: 390px !important;
+  margin: 0 auto !important;
+}
+
+.qw-progress .qw-progress-rail::before,
+.qw-progress .qw-progress-rail::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 5px !important;
+  left: 12.5% !important;
+  height: 2px !important;
+}
+
+.qw-progress .qw-progress-rail::before {
+  right: 12.5% !important;
+  background: var(--edge, rgba(11,31,59,.12)) !important;
+}
+
+.qw-progress .qw-progress-rail::after {
+  display: none !important;
+}
+
+.qw-progress .pstep {
+  position: relative !important;
+  z-index: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 7px !important;
+  min-width: 0 !important;
+}
+
+.qw-progress .pstep.reached:not(:last-child)::after {
+  content: "" !important;
+  position: absolute !important;
+  z-index: -1 !important;
+  top: 5px !important;
+  left: 50% !important;
+  width: 100% !important;
+  height: 2px !important;
+  background: var(--gold, #ffba00) !important;
+}
+
+.qw-progress .pstep .dot {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 12px !important;
+  height: 12px !important;
+  border-radius: 50% !important;
+  color: var(--navy, #0b1f3b) !important;
+  background: var(--page, #fafbfc) !important;
+  box-shadow: inset 0 0 0 2px var(--edge, rgba(11,31,59,.12)) !important;
+}
+
+.qw-progress .pstep .dot svg {
+  display: none !important;
+  width: 7px !important;
+  height: 7px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 3.4 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+.qw-progress .pstep.done .dot {
+  background: var(--gold, #ffba00) !important;
+  box-shadow: none !important;
+}
+
+.qw-progress .pstep.done .dot svg {
+  display: none !important;
+}
+
+.page .qw-back {
+  display: inline-grid !important;
+  place-items: center !important;
+  width: 44px !important;
+  min-width: 44px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  margin: 6px 0 0 var(--qw-content-gutter) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  color: #0b1f3b !important;
+  box-shadow: none !important;
+}
+
+.page .qw-back svg {
+  width: 20px !important;
+  height: 20px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2 !important;
+}
+
+.page .qw-back:active {
+  background: rgba(11,31,59,.06) !important;
+}
+
+.page .qw-back:focus-visible {
+  outline: 3px solid #ffba00 !important;
+  outline-offset: 1px !important;
+}
+
+/*
+  Keep the page task close to the shared back control. Local source pages used
+  different top padding values, which created a large blank band on several
+  normal and recovery screens.
+*/
+.page > .qw-back + .body,
+.page > .qw-back + .body-grid {
+  padding-top: 4px !important;
+}
+
+.qw-progress .pstep.on .dot {
+  background: var(--page, #fafbfc) !important;
+  box-shadow: 0 0 0 4px rgba(255,186,0,.22) !important;
+}
+
+.qw-progress .pstep.on.done .dot {
+  background: var(--gold, #ffba00) !important;
+}
+
+.qw-progress .pstep .pl {
+  overflow: hidden !important;
+  max-width: 100% !important;
+  color: var(--faint, #5d6b7e) !important;
+  font-family: var(--head, Outfit, sans-serif) !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.qw-progress .pstep.on .pl,
+.qw-progress .pstep.done .pl {
+  color: var(--gold-ink, #8a5a00) !important;
+}
+
+/*
+  Shared answer-confirmation actions.
+  The primary action stays visually dominant. The secondary action has a
+  44px hit area without becoming a second button.
+*/
+.qw-action-stack {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 2px !important;
+  width: 100% !important;
+  margin-top: 12px !important;
+}
+
+.qw-primary-action {
+  width: 100% !important;
+  min-height: 52px !important;
+  padding: 0 20px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  color: #0b1f3b !important;
+  background: #ffba00 !important;
+  box-shadow: 0 6px 24px rgba(255,186,0,.28) !important;
+  font-family: Outfit, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+}
+
+/*
+  Shared type scale.
+  One page headline carries the strongest emphasis. Supporting headings,
+  choices, and actions stay calm enough to scan on a phone.
+*/
+.page h1,
+.page .ask h1,
+.page .ask h2,
+.page .celebrate h1 {
+  font-size: 28px !important;
+  font-weight: 800 !important;
+  line-height: 1.1 !important;
+}
+
+.page .hero h1 {
+  width: 100% !important;
+  max-width: 100% !important;
+  font-size: 24px !important;
+  font-weight: 750 !important;
+  line-height: 1.02 !important;
+  letter-spacing: -.035em !important;
+}
+
+.page h2 {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+}
+
+.page button,
+.page .btn,
+.page .cta,
+.page .choice strong {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+}
+
+.page #rangePage {
+  gap: 12px !important;
+  padding: 20px 16px 34px !important;
+}
+
+.page #rangePage .intro p {
+  margin-top: 6px !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+}
+
+.page #rangePage .card,
+.page #rangePage .range,
+.page #rangePage .notice {
+  padding: 15px !important;
+  border-radius: 14px !important;
+}
+
+.page #rangePage .recap-grid {
+  gap: 0 !important;
+  margin-top: 6px !important;
+}
+
+.page #rangePage .recap-row {
+  min-height: 38px !important;
+  padding: 8px 0 !important;
+}
+
+.page #rangePage .path-proof,
+.page #rangePage .photo-proof {
+  margin-top: 10px !important;
+}
+
+.page #rangePage .amount {
+  font-size: 32px !important;
+  line-height: 1.05 !important;
+}
+
+.page #rangePage .range p {
+  margin-top: 8px !important;
+  font-size: 13.5px !important;
+  line-height: 1.4 !important;
+}
+
+.page #rangePage .actions {
+  gap: 8px !important;
+  margin-top: 10px !important;
+}
+
+.page #rangePage h2 {
+  font-size: 16px !important;
+  font-weight: 650 !important;
+  line-height: 1.32 !important;
+}
+
+.page #rangePage .btn {
+  min-height: 50px !important;
+  padding: 10px 16px !important;
+}
+
+.page #rangePage .distance-options + .btn {
+  margin-top: 14px !important;
+}
+
+.page #rangePage .distance-options + .btn + .link-btn {
+  margin-top: 6px !important;
+}
+
+.page[data-screen-label*="thank you"] .body-grid {
+  gap: 0 !important;
+  padding: 22px 18px 10px !important;
+}
+
+.page[data-screen-label*="thank you"] .rv {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+.page[data-screen-label*="thank you"] .col-main {
+  gap: 12px !important;
+}
+
+.page[data-screen-label*="thank you"] .celebrate {
+  display: grid !important;
+  grid-template-columns: 36px 1fr !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.page[data-screen-label*="thank you"] .celebrate .big-check {
+  width: 36px !important;
+  height: 36px !important;
+  margin: 0 !important;
+}
+
+.page[data-screen-label*="thank you"] .reviewing,
+.page[data-screen-label*="thank you"] .recap,
+.page[data-screen-label*="thank you"] .price {
+  margin: 0 !important;
+  padding: 13px 14px !important;
+  border-radius: 14px !important;
+}
+
+.page[data-screen-label*="thank you"] .reviewing {
+  min-height: 58px !important;
+}
+
+.page[data-screen-label*="thank you"] .ravatar {
+  width: 40px !important;
+  height: 40px !important;
+}
+
+.page[data-screen-label*="thank you"] .price .pn {
+  margin-top: 3px !important;
+  font-size: 29px !important;
+  line-height: 1.05 !important;
+}
+
+.page[data-screen-label*="thank you"] .price .pl,
+.page[data-screen-label*="thank you"] .price .pf,
+.page[data-screen-label*="thank you"] .next-step p {
+  margin: 5px 0 0 !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+
+.page[data-screen-label*="thank you"] .compact-recap ul {
+  gap: 4px !important;
+  margin-top: 7px !important;
+}
+
+.page[data-screen-label*="thank you"] .compact-recap li {
+  min-height: 30px !important;
+  font-size: 13px !important;
+}
+
+.page[data-screen-label*="thank you"] .foot {
+  padding: 14px 18px 18px !important;
+}
+
+@media (max-width: 340px) {
+  .page h1,
+  .page .ask h1,
+  .page .ask h2,
+  .page .celebrate h1 {
+    font-size: 25px !important;
+  }
+
+  .page #rangePage {
+    padding-right: 14px !important;
+    padding-left: 14px !important;
+  }
+
+  .page #rangePage .amount {
+    font-size: 29px !important;
+  }
+
+  .page .hero h1 {
+    font-size: 19.5px !important;
+  }
+}
+
+.qw-secondary-action {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  justify-self: center !important;
+  width: fit-content !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  margin: 0 auto !important;
+  padding: 8px 12px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  color: #0b1f3b !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-family: Inter, system-ui, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  text-decoration: underline !important;
+  text-decoration-thickness: 1px !important;
+  text-underline-offset: 3px !important;
+}
+
+.qw-secondary-action[hidden] {
+  display: none !important;
+}
+
+.qw-secondary-action:hover {
+  text-decoration-thickness: 2px !important;
+}
+
+.qw-secondary-action:active {
+  background: rgba(11,31,59,.06) !important;
+}
+
+.qw-secondary-action:focus-visible {
+  outline: 3px solid #ffba00 !important;
+  outline-offset: 1px !important;
+}
+
+.page .foot {
+  margin-top: 18px !important;
+  padding: 22px 24px 28px !important;
+  border-top: 1px solid rgba(11,31,59,.09) !important;
+  background: transparent !important;
+  color: #68758a !important;
+  text-align: center !important;
+}
+
+.page .foot strong,
+.page .foot span,
+.page .foot .foot-identity {
+  display: block !important;
+}
+
+.page .foot .foot-identity strong {
+  color: #4f5e73 !important;
+  font-family: Outfit, Inter, system-ui, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 750 !important;
+  line-height: 1.25 !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+}
+
+.page .foot .foot-identity span {
+  margin-top: 3px !important;
+  color: #4f5e73 !important;
+  font-family: Outfit, Inter, system-ui, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 650 !important;
+  line-height: 1.3 !important;
+}
+
+.page .foot .foot-area {
+  margin-top: 10px !important;
+  color: #5e6c80 !important;
+  font-family: Inter, system-ui, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 450 !important;
+  line-height: 1.45 !important;
+}
+
+.page .foot .foot-process {
+  max-width: 330px !important;
+  margin: 14px auto 0 !important;
+  color: #68758a !important;
+  font-family: Inter, system-ui, sans-serif !important;
+  font-size: 11.5px !important;
+  font-weight: 400 !important;
+  line-height: 1.55 !important;
+  text-wrap: pretty !important;
+}
+
+/* Final cascade lock for the three-page review. Local page rules must not
+   weaken the Page 1 card geometry after the shared template is applied. */
+.qw-template-page #rangePage .card,
+.qw-template-page #rangePage .range,
+.qw-template-page #rangePage .notice,
+.qw-template-page .body-grid .price,
+.qw-template-page .body-grid .recap,
+.qw-template-page .body-grid .reviewing {
+  border-radius: 20px !important;
+  box-shadow: 0 18px 44px rgba(11,31,59,.14), 0 4px 12px rgba(11,31,59,.06), inset 0 0 0 1px rgba(11,31,59,.07) !important;
+}
+
+.page.qw-final-page .foot {
+  padding: 22px 24px 28px !important;
+}
+
+.page.qw-template-page > .foot {
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin-top: auto !important;
+  background: transparent !important;
+  font-family: Inter, system-ui, -apple-system, sans-serif !important;
+  text-wrap: pretty !important;
+  overflow: visible !important;
+}
+
+/* Match Page 1's inherited footer type metrics on the standalone range page. */
+body.qw-template-document .page > .foot {
+  font-size: 12.5px !important;
+  line-height: 20px !important;
+}
+
+@media (max-width: 340px) {
+  .qw-template-hero {
+    min-height: 336.875px !important;
+  }
+}
+
+/*
+  Governing review rule: recognition reduces effort. Repeated headings,
+  navigation, selection feedback, primary actions, and change actions reuse
+  shared primitives unless the behavior genuinely differs.
+*/
+
+@font-face {
+  font-family: "Dancing Script Review";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/assets/fonts/bpp-money/dancing-script-latin-700.woff2") format("woff2");
+}
+
+.page[data-screen-label="Landing page (interactive, mobile)"] .hero .identity strong {
+  font-family: "Dancing Script Review", "Dancing Script", cursive;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.page[data-screen-label="Landing page (interactive, mobile)"] .proof-review {
+  position: relative;
+}
+
+.page[data-screen-label="Landing page (interactive, mobile)"] .proof-review .review-stars img {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  width: 17px;
+  height: 17px;
+}
+
+.page[data-screen-label="Landing page (interactive, mobile)"] .proof-review cite {
+  color: #68758a;
+  font-weight: 600;
+}
+
+.page[data-screen-label="Landing page (interactive, mobile)"] > .body-grid {
+  padding-top: 20px;
+}
+
+.page[data-screen-label="Landing page (interactive, mobile)"] .proof-carousel::before,
+.page[data-screen-label="Landing page (interactive, mobile)"] .proof-carousel::after {
+  display: none !important;
+  width: 0 !important;
+  content: none !important;
+  background: none !important;
+}
+
+@media (max-width: 339px) {
+  .page[data-screen-label="Landing page (interactive, mobile)"] .hero .identity strong {
+    font-size: 23px;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .proof-review .review-stars img {
+    top: 14px;
+    right: 15px;
+  }
+}
+
+/* Page 1 keeps its accepted mobile structure until the wide composition fits. */
+.page .intro-card {
+  display: contents;
+}
+
+/* Desktop Quote Walk shell. The wide layout activates only when the approved
+   nested composition has enough room to read as two intentional columns. */
+@media (min-width: 1024px) {
+  .stack {
+    padding: 32px 24px 72px !important;
+  }
+
+  .page[data-screen-label] {
+    width: min(1100px, calc(100vw - 64px)) !important;
+    max-width: 1100px !important;
+    min-height: 0 !important;
+    margin: 0 auto !important;
+    padding: 22px !important;
+    border-radius: 28px !important;
+    background: var(--page, #fafbfc) !important;
+    box-shadow: 0 18px 48px rgba(11,31,59,.12), inset 0 0 0 1px rgba(11,31,59,.06) !important;
+    overflow: hidden;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] {
+    display: grid !important;
+    grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr) !important;
+    grid-template-areas:
+      "intro form"
+      "proof proof"
+      "foot foot" !important;
+    gap: 22px !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .intro-card {
+    grid-area: intro;
+    display: flex !important;
+    min-width: 0;
+    height: 100%;
+    flex-direction: column;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #17385f 0%, #0b1f3b 42%, #081a33 100%) !important;
+    overflow: hidden;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .site-head {
+    flex: 0 0 auto;
+    padding: 0 42px !important;
+    background: #0b1f3b !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .hero {
+    display: flex;
+    min-width: 0;
+    flex: 1 1 auto;
+    background: linear-gradient(135deg, #17385f 0%, #0b1f3b 42%, #081a33 100%) !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .intro-card .site-head,
+  .page[data-screen-label="Landing page (interactive, mobile)"] .intro-card .hero {
+    background: transparent !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .hero .textzone {
+    display: flex;
+    width: 100%;
+    min-height: 0;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 42px 44px !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .hero h1 {
+    max-width: 21ch !important;
+    font-size: clamp(31px, 2.8vw, 40px) !important;
+    line-height: 1.03 !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .hero .identity {
+    margin-top: 28px;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .hero .process {
+    max-width: 46ch;
+    margin-top: 24px;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .body-grid {
+    grid-area: form;
+    display: block !important;
+    width: 100%;
+    max-width: none !important;
+    height: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .col-main,
+  .page[data-screen-label="Landing page (interactive, mobile)"] .form-card {
+    width: 100%;
+    height: 100%;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .form-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 30px 28px;
+    border-radius: 22px;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .form-card .fc-title {
+    font-size: 21px !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .proof-carousel {
+    grid-area: proof;
+    min-width: 0;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .proof-track {
+    gap: 18px;
+    padding: 0 28px 0 0 !important;
+    scroll-padding-inline: 0 !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .proof-slide {
+    flex-basis: calc((100% - 36px) / 3.18);
+    height: 242px;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .proof-review {
+    padding: 25px 23px 22px;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .proof-review p {
+    font-size: 14px;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .proof-review cite {
+    font-size: 12px;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .foot {
+    grid-area: foot;
+    margin-top: 0 !important;
+    padding: 0 22px 2px !important;
+    border-top: 0 !important;
+  }
+
+  /* Continuation screens reuse the same light outer canvas, nested navy
+     identity rail, white working card, and quiet footer. */
+  .page[data-screen-label]:not([data-screen-label="Landing page (interactive, mobile)"]) {
+    display: flex !important;
+    flex-direction: column;
+  }
+
+  .page[data-screen-label]:not([data-screen-label="Landing page (interactive, mobile)"]) > .site-head,
+  .page[data-screen-label]:not([data-screen-label="Landing page (interactive, mobile)"]) > .head {
+    width: 100%;
+    height: 64px;
+    flex: 0 0 64px;
+    padding: 0 30px !important;
+    border-radius: 18px;
+    background: var(--navy, #0b1f3b) !important;
+  }
+
+  .page[data-screen-label]:not([data-screen-label="Landing page (interactive, mobile)"]) > .qw-progress {
+    width: min(560px, 100%);
+    margin: 14px auto 0;
+    border: 1px solid rgba(11,31,59,.08) !important;
+    border-radius: 14px;
+  }
+
+  .page[data-screen-label]:not([data-screen-label="Landing page (interactive, mobile)"]) > .qw-back {
+    margin: 8px 0 0 !important;
+  }
+
+  .page[data-screen-label]:not([data-screen-label="Landing page (interactive, mobile)"]) > .body,
+  .page[data-screen-label]:not([data-screen-label="Landing page (interactive, mobile)"]) > .body-grid,
+  .page[data-screen-label="Quote walk incomplete"] > main {
+    width: 100%;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 30px !important;
+    border-radius: 20px;
+    background: #fff !important;
+    box-shadow: 0 8px 24px rgba(11,31,59,.07), inset 0 0 0 1px rgba(11,31,59,.07);
+  }
+
+  .page[data-screen-label]:not([data-screen-label="Landing page (interactive, mobile)"]) > .qw-back + .body,
+  .page[data-screen-label]:not([data-screen-label="Landing page (interactive, mobile)"]) > .qw-back + .body-grid {
+    padding-top: 30px !important;
+  }
+
+  .page[data-screen-label]:not([data-screen-label="Landing page (interactive, mobile)"]) > .foot {
+    margin-top: 18px !important;
+    padding: 0 22px 2px !important;
+    border-top: 0 !important;
+    background: transparent !important;
+    color: #68758a !important;
+  }
+
+  .page[data-screen-label="Quote walk step 1 (interactive, mobile)"] .col-main {
+    display: grid;
+    grid-template-columns: minmax(260px, .82fr) minmax(0, 1.18fr);
+    grid-template-rows: auto auto 1fr;
+    gap: 18px 32px;
+    align-items: start;
+  }
+
+  .page[data-screen-label="Quote walk step 1 (interactive, mobile)"] .ask,
+  .page[data-screen-label="Quote walk step 1 (interactive, mobile)"] .echo,
+  .page[data-screen-label="Quote walk step 1 (interactive, mobile)"] .selection-actions,
+  .page[data-screen-label="Quote walk step 1 (interactive, mobile)"] .panel-guide {
+    grid-column: 1;
+  }
+
+  .page[data-screen-label="Quote walk step 1 (interactive, mobile)"] .rooms {
+    grid-column: 2;
+    grid-row: 1 / span 4;
+    align-self: start;
+  }
+
+  .page[data-screen-label="Quote walk step 2 (interactive, mobile)"] > .body {
+    display: grid;
+    grid-template-columns: minmax(280px, .86fr) minmax(0, 1.14fr);
+    gap: 16px 34px;
+    align-items: start;
+  }
+
+  .page[data-screen-label="Quote walk step 2 (interactive, mobile)"] .explain {
+    grid-column: 1;
+    grid-row: 1 / span 4;
+  }
+
+  .page[data-screen-label="Quote walk step 2 (interactive, mobile)"] .ask,
+  .page[data-screen-label="Quote walk step 2 (interactive, mobile)"] .opts,
+  .page[data-screen-label="Quote walk step 2 (interactive, mobile)"] .echo,
+  .page[data-screen-label="Quote walk step 2 (interactive, mobile)"] .distance-confirm {
+    grid-column: 2;
+  }
+
+  .page[data-screen-label="Quote walk step 3 (interactive, mobile)"] .col-main {
+    display: grid;
+    grid-template-columns: minmax(260px, .82fr) minmax(0, 1.18fr);
+    gap: 18px 32px;
+    align-items: start;
+  }
+
+  .page[data-screen-label="Quote walk step 3 (interactive, mobile)"] .ask {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+
+  .page[data-screen-label="Quote walk step 3 (interactive, mobile)"] .col-main > section:nth-of-type(2),
+  .page[data-screen-label="Quote walk step 3 (interactive, mobile)"] .photo-actions {
+    grid-column: 2;
+  }
+
+  .page[data-screen-label="Quote walk: generator connection"] [data-question],
+  .page[data-screen-label="Quote walk: generator needed"] [data-education]:not([hidden]) {
+    display: grid;
+    grid-template-columns: minmax(280px, .86fr) minmax(0, 1.14fr);
+    gap: 14px 34px;
+    align-items: start;
+  }
+
+  .page[data-screen-label="Quote walk: generator needed"] [data-education][hidden] {
+    display: none;
+  }
+
+  .page[data-screen-label="Quote walk: generator connection"] [data-question] > h1,
+  .page[data-screen-label="Quote walk: generator connection"] [data-question] > .helper,
+  .page[data-screen-label="Quote walk: generator needed"] [data-education] > .kicker,
+  .page[data-screen-label="Quote walk: generator needed"] [data-education] > h1,
+  .page[data-screen-label="Quote walk: generator needed"] [data-education] > .helper {
+    grid-column: 1;
+  }
+
+  .page[data-screen-label="Quote walk: generator connection"] [data-question] > .choices,
+  .page[data-screen-label="Quote walk: generator connection"] [data-question] > .other,
+  .page[data-screen-label="Quote walk: generator connection"] [data-question] > .selection-echo,
+  .page[data-screen-label="Quote walk: generator connection"] [data-question] > .confirm-actions,
+  .page[data-screen-label="Quote walk: generator connection"] [data-question] > .error,
+  .page[data-screen-label="Quote walk: generator needed"] [data-education] > .compatible,
+  .page[data-screen-label="Quote walk: generator needed"] [data-education] > .not-compatible,
+  .page[data-screen-label="Quote walk: generator needed"] [data-education] > .submit {
+    grid-column: 2;
+  }
+
+  .page[data-screen-label="Quote walk thank you (interactive, mobile)"] .col-main {
+    display: grid !important;
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    gap: 16px !important;
+    align-items: stretch;
+  }
+
+  .page[data-screen-label="Quote walk thank you (interactive, mobile)"] .celebrate,
+  .page[data-screen-label="Quote walk thank you (interactive, mobile)"] .price {
+    grid-column: 1 / -1;
+  }
+
+  .page[data-screen-label="Quote walk thank you (interactive, mobile)"] .reviewing,
+  .page[data-screen-label="Quote walk thank you (interactive, mobile)"] .recap,
+  .page[data-screen-label="Quote walk thank you (interactive, mobile)"] .price {
+    padding: 20px !important;
+  }
+
+  .page[data-screen-label="Quote walk incomplete"] > main {
+    margin-top: 18px !important;
+  }
+
+  .page[data-screen-label="Quote walk incomplete"] .tasks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .page[data-screen-label="Quote walk incomplete"] .task:first-child:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .page[data-screen-label="Quote walk range"] > #rangePage {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px !important;
+    margin-top: 18px !important;
+    padding: 30px !important;
+    border-radius: 20px;
+    background: #fff !important;
+    box-shadow: 0 8px 24px rgba(11,31,59,.07), inset 0 0 0 1px rgba(11,31,59,.07);
+  }
+
+  .page[data-screen-label="Quote walk range"] #rangePage > .intro,
+  .page[data-screen-label="Quote walk range"] #rangePage > .notice,
+  .page[data-screen-label="Quote walk range"] #rangePage > .street-view,
+  .page[data-screen-label="Quote walk range"] #rangePage > [data-scope-reveal],
+  .page[data-screen-label="Quote walk range"] #rangePage > [data-scope],
+  .page[data-screen-label="Quote walk range"] #rangePage > [data-fit-card],
+  .page[data-screen-label="Quote walk range"] #rangePage > [data-options],
+  .page[data-screen-label="Quote walk range"] #rangePage > [data-distance-revision] {
+    grid-column: 1 / -1;
+  }
+
+  .page[data-screen-label="Quote walk range"] #rangePage .street-view img {
+    max-height: 300px;
+    object-fit: cover;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page[data-screen-label].qw-range-page {
+    display: grid !important;
+  }
+
+  .page[data-screen-label].qw-range-page > #rangePage {
+    display: flex !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .page[data-screen-label].qw-final-page {
+    display: grid !important;
+  }
+
+  .page[data-screen-label].qw-final-page > .body-grid {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}

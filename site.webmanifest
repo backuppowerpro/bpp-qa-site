@@ -1,0 +1,25 @@
+{
+  "name": "Backup Power Pro",
+  "short_name": "BPP",
+  "description": "Generator inlet installation in Upstate SC",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b1f3b",
+  "theme_color": "#0b1f3b",
+  "icons": [
+    {
+      "src": "/assets/images/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/images/apple-touch-icon.jpg",
+      "type": "image/jpeg",
+      "sizes": "2048x2048",
+      "purpose": "any"
+    }
+  ]
+}

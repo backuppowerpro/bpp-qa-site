@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta name="referrer" content="strict-origin-when-cross-origin">
+
+
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-wygnGpICbMppymZ/+XZT8Vgnv0wtsjTA4zJ1JolzPtc=' 'sha256-dbc+cQFTeFXYLAHyKLG0yqfE9xcbdW5bH/a2J/kl3z0='; script-src-attr 'none'; style-src 'self'; style-src-elem 'self' https://fonts.googleapis.com 'sha256-MrmhzpkHukIm0k9SqZ9up/8dFOQd/BtFVpwQCG7swsw='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
+<script src="/walk-v2/no-js-bootstrap.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>Backup Power Pro · Quote Walk · Step 1</title>
+<link rel="icon" href="/favicon.png" type="image/png" />
+<link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.jpg" />
+<meta name="theme-color" content="#0b1f3b" />
+<style>
+  :root {
+    --navy: #0b1f3b;
+    --navy-mid: #1a3a5c;
+    --gold: #ffba00;
+    --gold-hover: #ffc519;
+    --gold-ink: #8a5a00;
+    --gold-tint: #fff7e0;
+    --bg: #eef1f6;
+    --page: #fafbfc;
+    --card: #ffffff;
+    --sunken: #f4f6fa;
+    --edge: rgba(11, 31, 59, 0.10);
+    --edge-soft: rgba(11, 31, 59, 0.07);
+    --text: #16243a;
+    --muted: #4d5a6e;
+    --faint: #5d6b7e;
+
+    --shadow-sm: 0 2px 6px rgba(11,31,59,0.06), 0 1px 2px rgba(11,31,59,0.04);
+    --shadow-md: 0 10px 28px rgba(11,31,59,0.10), 0 2px 8px rgba(11,31,59,0.05);
+    --shadow-lift: 0 18px 44px rgba(11,31,59,0.14), 0 4px 12px rgba(11,31,59,0.06);
+    --shadow-gold: 0 6px 24px rgba(255,186,0,0.30);
+
+    --r-md: 14px;
+    --r-lg: 20px;
+    --r-pill: 100px;
+
+    --head: 'Outfit', sans-serif;
+    --body: 'Inter', system-ui, -apple-system, sans-serif;
+
+    --dur: 220ms;
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body {
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  button {
+    font-family: inherit;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+  svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+
+  .stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 48px;
+    padding: 28px 14px 96px;
+  }
+  .state-label {
+    width: 390px;
+    max-width: 100%;
+    font-family: var(--head);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: -34px;
+    padding-left: 4px;
+  }
+  .state-label.wide { width: 1080px; }
+  .snapshot { pointer-events: none; }
+
+  /* ================= page frame ================= */
+  .page {
+    width: 390px;
+    max-width: 100%;
+    background: var(--page);
+    border-radius: 24px;
+    box-shadow: var(--shadow-md), inset 0 0 0 1px var(--edge-soft);
+    overflow: hidden;
+    container-type: inline-size;
+    container-name: page;
+  }
+  .page.w-desktop { width: 1080px; }
+  /* staging: the comp's own desktop composition activates responsively
+     (the comps showed it via a snapshot clone with .w-desktop) */
+  @media (min-width: 1140px) {
+    .page { width: 1080px; }
+  }
+
+  .page * { text-wrap: pretty; }
+
+  /* ================= scroll reveal ================= */
+  .rv {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 560ms var(--ease), transform 560ms var(--ease);
+    transition-delay: var(--rvd, 0ms);
+  }
+  .rv.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .rv { opacity: 1; transform: none; transition: none; }
+  }
+
+  /* ================= 1. site header ================= */
+  .site-head {
+    height: 56px;
+    background: var(--navy);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+  }
+  .lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 8px 0;
+    box-sizing: border-box;
+  }
+  .lockup .bolt {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--gold);
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+  .lockup .bolt svg { width: 14px; height: 14px; fill: var(--navy); stroke: none; }
+  .lockup .wm {
+    font-family: var(--head);
+    font-weight: 800;
+    font-size: 13.5px;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .lockup .wm small {
+    display: block;
+    font-size: 7px;
+    font-weight: 600;
+    letter-spacing: 0.34em;
+    color: var(--gold);
+    margin-top: 3px;
+    white-space: nowrap;
+  }
+
+  /* back-a-step control */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 44px;
+    margin: 12px 0 0 14px;
+    padding: 6px 10px 6px 6px;
+    background: none;
+    font-family: var(--head);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .back-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .back-btn:active { color: var(--navy); }
+
+  /* ================= 2. progress band ================= */
+  .prog {
+    background: var(--card);
+    border-bottom: 1px solid var(--edge-soft);
+    padding: 16px 20px 14px;
+  }
+  .prog .rail {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    position: relative;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+  .prog .rail::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: calc(100% / 6);
+    right: calc(100% / 6);
+    height: 2px;
+    background: var(--edge);
+  }
+  .prog .rail::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: calc(100% / 6);
+    width: 0;
+    height: 2px;
+    background: var(--gold);
+  }
+  .pstep {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+  }
+  .pstep .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--page);
+    box-shadow: inset 0 0 0 2px var(--edge);
+    position: relative;
+    z-index: 1;
+  }
+  .pstep.on .dot {
+    background: var(--gold);
+    box-shadow: 0 0 0 4px rgba(255,186,0,0.22);
+  }
+  .pstep .pl {
+    font-family: var(--head);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .pstep.on .pl { color: var(--gold-ink); }
+
+  /* ================= body grid ================= */
+  .body-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 28px 20px 8px;
+  }
+  .col-main { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+  .col-side { display: none; min-width: 0; }
+
+  @container page (min-width: 760px) {
+    .site-head { padding: 0 48px; }
+    .prog { padding: 18px 48px 16px; }
+    .body-grid {
+      grid-template-columns: 1fr;
+      max-width: 620px;
+      margin: 0 auto;
+      gap: 22px;
+      padding: 40px 24px 12px;
+    }
+    /* .page prefix (visual sweep 2026-07-18): dead-rule fix, see outlet.html */
+    .page .ask h2 { font-size: 36px; }
+    .page .foot { padding-left: 48px; padding-right: 48px; }
+  }
+
+  /* ================= 3. ask ================= */
+  .ask .kicker {
+    font-family: var(--head);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold-ink);
+    margin: 0 0 10px;
+  }
+  .ask h2 {
+    font-family: var(--head);
+    font-weight: 800;
+    font-size: 28px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--navy);
+    margin: 0 0 8px;
+  }
+  .ask .helper {
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  /* ================= 4. room cards ================= */
+  .rooms {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .room {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-height: 58px;
+    padding: 10px 14px 10px 16px;
+    background: var(--card);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1.5px var(--edge);
+    font-family: var(--head);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--navy);
+    text-align: left;
+    overflow: hidden;
+    transition: box-shadow var(--dur) var(--ease), background var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .room::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--gold);
+    transform: scaleY(0);
+    transform-origin: center;
+    transition: transform var(--dur) var(--ease);
+  }
+  .room:active { transform: scale(0.98); }
+  .room .ric {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 auto;
+    border-radius: 9px;
+    background: var(--sunken);
+    color: var(--navy-mid);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .room .ric svg { width: 16px; height: 16px; stroke-width: 1.8; }
+  .room[aria-pressed="true"] {
+    background: var(--navy);
+    color: #fff;
+    box-shadow: var(--shadow-md), inset 0 0 0 1.5px var(--navy);
+  }
+  .room[aria-pressed="true"]::before { transform: scaleY(1); }
+  .room[aria-pressed="true"] .ric {
+    background: rgba(255,186,0,0.16);
+    color: var(--gold);
+  }
+  .room.room--wide { grid-column: 1 / -1; }
+  .room-copy { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+  .room-copy strong { font: inherit; }
+  .room-sub { color: var(--muted); font-family: var(--body); font-size: 13px; font-weight: 500; line-height: 1.3; }
+  .room[aria-pressed="true"] .room-sub { color: rgba(255,255,255,.76); }
+  .rooms.is-collapsed { grid-template-columns: 1fr; }
+  .rooms.is-collapsed .room:not([aria-pressed="true"]) { display: none; }
+  .selection-actions {
+    display: none;
+    gap: 10px;
+    align-items: center;
+  }
+  .selection-actions.show { display: grid; }
+  .continue-btn, .change-btn, .guide-btn {
+    min-height: 48px;
+    border-radius: var(--r-pill);
+    font-family: var(--head);
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .continue-btn {
+    flex: 1 1 auto;
+    padding: 0 22px;
+    color: var(--navy);
+    background: var(--gold);
+    box-shadow: var(--shadow-gold);
+  }
+  .change-btn {
+    flex: 0 0 auto;
+    padding: 0 14px;
+    color: var(--navy);
+    background: transparent;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .panel-guide {
+    display: none;
+    padding: 14px;
+    border-radius: var(--r-lg);
+    background: var(--card);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1.5px var(--edge);
+  }
+  .ask[hidden], .rooms[hidden] { display: none !important; }
+  .panel-guide.show { display: grid; gap: 10px; }
+  .panel-guide img {
+    width: 100%;
+    height: 132px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+  .panel-guide h3 {
+    margin: 0;
+    color: var(--navy);
+    font-family: var(--head);
+    font-size: 17px;
+  }
+  .panel-guide p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.4;
+  }
+  .guide-actions {
+    display: grid;
+    gap: 2px;
+    margin-top: 2px;
+  }
+  .guide-btn {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 22px;
+    color: var(--navy);
+    background: var(--gold);
+    box-shadow: var(--shadow-gold);
+  }
+  .guide-btn.secondary {
+    min-height: 44px;
+    background: transparent;
+    box-shadow: none;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  /* echo line */
+  .echo {
+    display: none;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--head);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gold-ink);
+  }
+  .echo.show { display: flex; animation: rise 360ms var(--ease) both; }
+  @media (prefers-reduced-motion: reduce) { .echo.show { animation: none; } }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .echo .ring {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-gold);
+  }
+  .echo .ring svg { width: 11px; height: 11px; stroke-width: 3; }
+
+  /* ================= 5. education card (navy) ================= */
+  .edu {
+    background: var(--navy);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-md);
+    padding: 22px;
+    color: #fff;
+  }
+  .edu .tk {
+    font-family: var(--head);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 10px;
+  }
+  .edu p {
+    font-size: 16px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.84);
+    margin: 0 0 16px;
+  }
+  .edu p strong { color: #fff; }
+  .edu .frames {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .edu .frame { display: flex; flex-direction: column; gap: 7px; }
+  .edu .frame .ph {
+    aspect-ratio: 4 / 5;
+    border-radius: 12px;
+    overflow: hidden;
+    background:
+      linear-gradient(160deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.14);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.45);
+  }
+  .edu .frame .ph svg { width: 42px; height: 42px; stroke-width: 1.4; }
+  .edu .frame .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .edu .frame.disc .ph img { object-position: 60% center; }
+  .edu .frame .cap {
+    font-family: var(--head);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: rgba(255,255,255,0.66);
+    text-align: center;
+    line-height: 1.35;
+  }
+
+  /* ================= side summary (desktop) ================= */
+  .side-card {
+    background: var(--card);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--edge-soft);
+    padding: 20px;
+  }
+  .side-card .tk {
+    font-family: var(--head);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold-ink);
+    margin: 0 0 14px;
+  }
+  .side-card ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .side-card li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 0;
+  }
+  .side-card li .n {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--sunken);
+    box-shadow: inset 0 0 0 1.5px var(--edge);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--head);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--faint);
+  }
+  .side-card li.cur .n {
+    background: var(--gold);
+    box-shadow: 0 0 0 4px rgba(255,186,0,0.22);
+    color: var(--navy);
+  }
+  .side-card li .lt {
+    font-family: var(--head);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--navy);
+    padding-top: 2px;
+  }
+  .side-card li .ls {
+    font-size: 14px;
+    color: var(--faint);
+    margin-top: 2px;
+    line-height: 1.45;
+  }
+  .side-card li.dim .lt { color: var(--faint); font-weight: 600; }
+  .side-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    padding: 4px 6px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--faint);
+  }
+  .side-note svg { width: 16px; height: 16px; stroke-width: 1.8; color: var(--gold-ink); flex: 0 0 auto; }
+  .side-note strong { color: var(--muted); font-weight: 600; }
+
+  /* ================= 6. footer ================= */
+  .foot {
+    margin-top: 26px;
+    padding: 20px 20px 28px;
+    border-top: 1px solid var(--edge-soft);
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--faint);
+    text-align: center;
+  }
+  .foot strong { font-family: var(--head); font-weight: 600; color: var(--muted); }
+
+  /* Fresh Air mobile (2026-07-13 design audit): drop the phone-frame gutters.
+     Comp staging used .stack padding + rounded .page; on a real phone that
+     wastes width and looks like a mock. Edge-to-edge under 760px; desktop card stays. */
+  @media (max-width: 759px) {
+    html, body { background: var(--page); }
+    .stack { padding: 0 0 calc(28px + env(safe-area-inset-bottom, 0px)); gap: 0; }
+    .page {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .state-label { display: none; }
+  }
+</style>
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=20260808d" />
+<link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body>
+<div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to continue this Quote Walk. Your saved answers remain on file. Turn it on and reload, or call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
+<div class="stack" id="stack">
+
+  <!-- ============ MAIN PAGE (mobile, interactive) ============ -->
+  <main class="page" id="mainPage" data-screen-label="Quote walk step 1 (interactive, mobile)">
+
+    <!-- 1. site header -->
+    <header class="site-head">
+      <a class="lockup" href="https://qa.backuppowerpro.com" aria-label="Backup Power Pro" style="text-decoration:none;">
+        <img src="/assets/images/logo-white-v2.png" alt="Backup Power Pro" style="height:28px;display:block;width:auto;" />
+      </a>
+    </header>
+
+    <!-- 2. progress band -->
+    <div class="prog qw-progress" data-qw-step="panel">
+      <div class="rail qw-progress-rail" role="img" aria-label="Step 2 of 4: Panel. Generator complete.">
+        <div class="pstep done"><span class="dot"></span><span class="pl">Generator</span></div>
+        <div class="pstep on"><span class="dot"></span><span class="pl">Panel</span></div>
+        <div class="pstep"><span class="dot"></span><span class="pl">Distance</span></div>
+        <div class="pstep"><span class="dot"></span><span class="pl">Photos</span></div>
+      </div>
+    </div>
+    <button class="back-btn qw-back" type="button" data-back="" aria-label="Back">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 3.5L6 8l4.5 4.5"></path></svg>
+    </button>
+
+    <div class="body-grid">
+      <div class="col-main">
+
+        <!-- 3. ask -->
+        <section class="ask">
+          <h2>Where does your main panel live?</h2>
+          <p class="helper">Choose where the main breaker panel is located.</p>
+        </section>
+
+        <!-- 4. room cards -->
+        <section class="rooms" data-rooms="">
+          <button class="room" type="button" data-room="Garage" aria-pressed="false">
+            <span class="ric"><svg viewBox="0 0 16 16"><path d="M2 13V6.5L8 2.5l6 4V13"></path><path d="M4.5 13V8h7v5M4.5 10h7"></path></svg></span>
+            Garage
+          </button>
+          <button class="room" type="button" data-room="Basement" aria-pressed="false">
+            <span class="ric"><svg viewBox="0 0 16 16"><path d="M2 7L8 2.5 14 7"></path><path d="M3.5 8.5V13h9V8.5M6 13v-3h4v3"></path></svg></span>
+            Basement
+          </button>
+          <button class="room" type="button" data-room="Outside" aria-pressed="false">
+            <span class="ric"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="3"></circle><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M12.6 3.4l-1.4 1.4M4.8 11.2l-1.4 1.4"></path></svg></span>
+            Outside
+          </button>
+          <button class="room" type="button" data-room="Closet" aria-pressed="false">
+            <span class="ric"><svg viewBox="0 0 16 16"><rect x="3.5" y="2.5" width="9" height="11" rx="1"></rect><path d="M8 2.5v11M6.3 8h.2M9.5 8h.2"></path></svg></span>
+            Closet
+          </button>
+          <button class="room" type="button" data-room="Utility area" aria-pressed="false">
+            <span class="ric"><svg viewBox="0 0 16 16"><rect x="3" y="2.5" width="10" height="11" rx="1.5"></rect><circle cx="8" cy="9" r="2.8"></circle><path d="M5 4.5h.2M7 4.5h.2"></path></svg></span>
+            Utility area
+          </button>
+          <button class="room" type="button" data-room="Not sure" aria-pressed="false">
+            <span class="ric"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5"></circle><path d="M6.5 6.3a1.6 1.6 0 0 1 3.1.5c0 1.2-1.6 1.5-1.6 2.6M8 11.8h.01"></path></svg></span>
+            Not sure
+          </button>
+          <button class="room room--wide" type="button" data-room="Somewhere else" aria-pressed="false">
+            <span class="ric"><svg viewBox="0 0 16 16"><path d="M8 14s4.5-4 4.5-7.5a4.5 4.5 0 0 0-9 0C3.5 10 8 14 8 14z"></path><circle cx="8" cy="6.5" r="1.6"></circle></svg></span>
+            Somewhere else
+          </button>
+          <button class="room room--wide" type="button" data-room="More than one panel" aria-pressed="false">
+            <span class="ric"><svg viewBox="0 0 16 16"><rect x="2.5" y="3" width="5" height="10" rx="1"></rect><rect x="8.5" y="3" width="5" height="10" rx="1"></rect><path d="M4.2 6h1.6M10.2 6h1.6"></path></svg></span>
+            <span class="room-copy"><strong>More than one panel</strong><span class="room-sub">Not sure which is the main</span></span>
+          </button>
+        </section>
+
+        <!-- echo line -->
+        <div class="echo" data-echo="" aria-live="polite">
+          <span class="ring"><svg viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7"></path></svg></span>
+          <span data-echo-text="">Got it, garage.</span>
+        </div>
+
+        <div class="selection-actions" data-selection-actions="">
+          <button class="continue-btn qw-primary-action" type="button" data-continue="">Continue</button>
+          <button class="change-btn qw-secondary-action" type="button" data-change="">Change panel location</button>
+        </div>
+
+        <section class="panel-guide" data-panel-guide="" aria-live="polite">
+          <img src="/img/panel-example.jpg" alt="Electrical panel with its hinged outer door open" />
+          <h3>Common places to look</h3>
+          <p>Check the garage, basement, outside wall, closet, or utility area.</p>
+          <p>You may open the hinged outer door, but never remove screws or the inner cover.</p>
+          <div class="guide-actions">
+            <button class="guide-btn qw-primary-action" type="button" data-found="">I found it</button>
+            <button class="guide-btn secondary qw-secondary-action" type="button" data-later="">I'll check later</button>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- 6. footer -->
+    <footer class="foot">
+      <div class="foot-identity"><strong>Licensed and insured</strong><span>SC Lic #2942 by Key Electric</span></div>
+      <span class="foot-area">Currently serving Greenville, Spartanburg,<br>and Pickens counties</span>
+      <span class="foot-process">Every project is reviewed and permitted by Key, completed with trusted local installation partners, and coordinated through final inspection.</span>
+    </footer>
+  </main>
+
+</div>
+
+<script src="/walk-v2/walk.js?v=20260816-save"></script>
+<script>
+
+(function () {
+  var t = WALK.requireToken(); if (!t) return;
+  WALK.ph('walk_v2_screen_view', { screen: 'location' });
+
+  var main = document.getElementById('mainPage');
+  var echo = main.querySelector('[data-echo]');
+  var echoText = main.querySelector('[data-echo-text]');
+  var ask = main.querySelector('.ask');
+  var rooms = main.querySelector('[data-rooms]');
+  var selectionActions = main.querySelector('[data-selection-actions]');
+  var panelGuide = main.querySelector('[data-panel-guide]');
+  var ROOM_API = { 'Garage': 'garage', 'Basement': 'basement', 'Outside': 'outside', 'Closet': 'closet', 'Utility area': 'laundry', 'Somewhere else': 'other', 'More than one panel': 'more_than_one_panel', 'Not sure': 'not_sure' };
+  var API_ROOM = {}; Object.keys(ROOM_API).forEach(function (k) { API_ROOM[ROOM_API[k]] = k; });
+  var selectedRoom = null, saving = false;
+
+  function paint(room, echoLine) {
+    selectedRoom = room || null;
+    var help = room === 'Not sure';
+    main.querySelectorAll('[data-room]').forEach(function (c) {
+      c.setAttribute('aria-pressed', c.getAttribute('data-room') === room ? 'true' : 'false');
+    });
+    ask.hidden = help;
+    rooms.hidden = help;
+    panelGuide.classList.toggle('show', help);
+    var hasSelection = !!room && !help;
+    rooms.classList.toggle('is-collapsed', hasSelection);
+    selectionActions.classList.toggle('show', hasSelection);
+    if (echoLine && !help) {
+      echoText.textContent = room === 'More than one panel'
+        ? 'Got it, more than one panel.'
+        : 'Got it, ' + room.toLowerCase() + '.';
+      echo.classList.remove('show'); void echo.offsetWidth; echo.classList.add('show');
+    } else {
+      echo.classList.remove('show');
+    }
+  }
+
+  /* welcome back: preselect their earlier answer (never re-ask) */
+  WALK.view(t).then(function (v) {
+    var params = new URLSearchParams(window.location.search);
+    var editMode = params.get('edit') === '1';
+    var recoveryMode = params.get('recovery') === '1';
+    var sequentialEntry = params.get('sequence') === '1';
+    var savedRoom = v.confirmed_panel_room && API_ROOM[v.confirmed_panel_room];
+    var pendingRoom = savedRoom === 'Not sure';
+    if (!editMode && !sequentialEntry && savedRoom && !(recoveryMode && pendingRoom)) paint(savedRoom, false);
+  }).catch(function () { /* the welcome-back preselect is best-effort; a transient read failure must NOT strip the token and bounce a mid-walk customer to a blank form. The step works without it. */ });
+
+  main.querySelectorAll('[data-room]').forEach(function (card) {
+    card.addEventListener('click', function () {
+      if (saving) return;
+      var room = card.getAttribute('data-room');
+      paint(room, true);
+      WALK.ph('walk_v2_confirm_tap', { field: 'panel_room', value: ROOM_API[room] });
+    });
+  });
+
+  main.querySelector('[data-change]').addEventListener('click', function () {
+    paint(null, false);
+    echo.classList.remove('show');
+    main.querySelector('[data-room]').focus();
+  });
+
+  main.querySelector('[data-found]').addEventListener('click', function () {
+    paint(null, false);
+    main.querySelector('[data-room]').focus();
+  });
+
+  main.querySelector('[data-later]').addEventListener('click', function () {
+    saveAndContinue('Not sure', true);
+  });
+
+  function saveAndContinue(room, continueForward) {
+    if (!room || saving) return;
+    saving = true;
+    var payload = { confirmed_panel_room: ROOM_API[room] };
+    if (room === 'More than one panel') {
+      payload.panels = [];
+      payload.panel_inventory_status = 'multiple_unsure_main';
+    } else if (room === 'Not sure') {
+      payload.panels = [];
+      payload.panel_inventory_status = 'incomplete';
+    } else {
+      payload.panels = [{ stable_key: 'main-panel', label: 'Main panel' }];
+      payload.panel_inventory_status = 'single_complete';
+    }
+    WALK.confirm(t, payload).then(function () {
+      var recovery = new URLSearchParams(window.location.search).get('recovery') === '1';
+      if (recovery) {
+        WALK.view(t).then(function (latest) {
+          WALK.routeRecoveryFromState(t, latest);
+        }).catch(function () {
+          WALK.go('incomplete.html', t);
+        });
+      } else if (continueForward) WALK.go('distance.html', t, { sequence: '1' });
+      else WALK.go('incomplete.html', t);
+    }).catch(function () {
+      saving = false;
+      echoText.textContent = 'That answer did not save. Try again.';
+      echo.classList.add('show');
+    });
+  }
+
+  main.querySelector('[data-continue]').addEventListener('click', function () {
+    saveAndContinue(selectedRoom, true);
+  });
+
+  var backBtn = main.querySelector('[data-back]');
+  if (backBtn) backBtn.addEventListener('click', function () {
+    WALK.ph('walk_v2_back_tap', { from: 'location' });
+    WALK.back('connection.html', t);
+  });
+
+  /* scroll reveal (comp behavior, unchanged) */
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var rvEls = main.querySelectorAll('.rv');
+  if (reduce || !('IntersectionObserver' in window)) {
+    rvEls.forEach(function (el) { el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.12 });
+    rvEls.forEach(function (el) { io.observe(el); });
+  }
+
+})();
+</script>
+</body>
+</html>

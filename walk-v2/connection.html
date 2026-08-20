@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-AIOJc5d8FtU+BlUys7/TRkAwVCNArkGFct1vDk7Ha0I='; script-src-attr 'none'; style-src 'self'; style-src-elem 'self' https://fonts.googleapis.com 'sha256-WC8AOrpyz4FW+j8sUzTfUPSzFofPf9tQjOuGMruGuHw='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
+<script src="/walk-v2/no-js-bootstrap.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>Backup Power Pro · Quote Walk · Generator Connection</title>
+<link rel="icon" href="/favicon.png" type="image/png" />
+<link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.jpg" />
+<meta name="theme-color" content="#0b1f3b" />
+<style>
+  :root {
+    --navy:#0b1f3b; --navy-mid:#1a3a5c; --gold:#ffba00; --gold-ink:#8a5a00;
+    --bg:#eef1f6; --page:#fafbfc; --card:#fff; --sunken:#f4f6fa;
+    --edge:rgba(11,31,59,.12); --edge-soft:rgba(11,31,59,.07);
+    --text:#16243a; --muted:#4d5a6e; --faint:#5d6b7e;
+    --shadow-sm:0 2px 6px rgba(11,31,59,.06),0 1px 2px rgba(11,31,59,.04);
+    --shadow-md:0 10px 28px rgba(11,31,59,.10),0 2px 8px rgba(11,31,59,.05);
+    --r-md:14px; --head:'Outfit',sans-serif; --body:'Inter',system-ui,-apple-system,sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{overflow-x:hidden;margin:0;background:var(--bg);color:var(--text);font-family:var(--body);-webkit-font-smoothing:antialiased}
+  button,a{font-family:inherit}
+  button{border:0;background:none;color:inherit;cursor:pointer;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent}
+  button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+  .stack{display:flex;justify-content:center;padding:28px 14px 96px}
+  .page{width:390px;max-width:100%;background:var(--page);border-radius:24px;box-shadow:var(--shadow-md),inset 0 0 0 1px var(--edge-soft);overflow:hidden}
+  .site-head{height:56px;background:var(--navy);display:flex;align-items:center;padding:0 20px}
+  .lockup{display:inline-flex;align-items:center;min-height:44px;padding:8px 0}
+  .body{max-width:620px;margin:0 auto;padding:28px 20px 10px}
+  .kicker{font-family:var(--head);font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-ink);margin:0 0 10px}
+  h1,h2{font-family:var(--head);color:var(--navy);letter-spacing:-.02em}
+  h1{font-size:29px;line-height:1.1;margin:0 0 10px}
+  .helper{font-size:16px;line-height:1.55;color:var(--muted);margin:0 0 22px}
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .choice{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:164px;padding:18px 11px 15px;text-align:center;background:var(--card);border-radius:var(--r-md);box-shadow:var(--shadow-sm),inset 0 0 0 1.5px var(--edge)}
+  .choice:active{transform:scale(.98)}
+  .choice img,.choice .connection-icon{width:96px;height:96px;object-fit:contain;display:block}
+  .connection-icon-30{position:relative;overflow:hidden;border-radius:50%;background:#fff}
+  .connection-icon-30::before{content:"";position:absolute;inset:0;background:var(--navy);-webkit-mask:url("/img/30amp-outlet-navy.png") center/contain no-repeat;mask:url("/img/30amp-outlet-navy.png") center/contain no-repeat}
+  .choice strong{font-family:var(--head);font-size:18px;color:var(--navy)}
+  .choice .shape{font-size:13px;font-weight:600;color:var(--navy-mid)}
+  .choice .truth{font-size:13px;line-height:1.4;color:var(--muted)}
+  .choice[aria-pressed=true]{background:#fff8ec;box-shadow:var(--shadow-md),inset 0 0 0 2.5px var(--gold)}
+  .choice[aria-pressed=true]::after{content:"✓";position:absolute;top:10px;right:10px;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--gold);color:var(--navy);font-size:15px;font-weight:900}
+  .compat{margin:16px 0 0;padding:14px 15px;background:var(--sunken);border-radius:var(--r-md);box-shadow:inset 0 0 0 1px var(--edge-soft);font-size:14px;line-height:1.5;color:var(--muted)}
+  .compat strong{color:var(--navy)}
+  .not-compatible{display:flex;align-items:center;gap:13px;margin-top:10px;padding:12px 14px;background:#fff5f3;border-radius:var(--r-md);box-shadow:inset 0 0 0 1px rgba(180,35,24,.22)}
+  .not-compatible img{width:54px;height:54px;object-fit:contain;flex:0 0 auto}
+  .not-compatible strong,.not-compatible span{display:block}
+  .not-compatible strong{font-family:var(--head);font-size:14px;color:#9f261d}
+  .not-compatible span{margin-top:3px;font-size:13px;line-height:1.4;color:var(--muted)}
+  .other{display:grid;gap:10px;margin-top:14px}
+  .quiet{width:100%;min-height:50px;padding:13px 15px;text-align:left;border-radius:12px;background:var(--card);box-shadow:inset 0 0 0 1.5px var(--edge);font-size:15px;font-weight:600;color:var(--navy)}
+  .quiet[aria-pressed=true]{background:#fff8ec;box-shadow:inset 0 0 0 2px var(--gold)}
+  .confirm-actions{display:grid;gap:2px;margin-top:12px}
+  .selection-echo{margin:12px 0 0;color:var(--navy);font-size:14px;font-weight:700;text-align:center}
+  .submit{width:100%;min-height:54px;margin-top:18px;border-radius:100px;background:var(--gold);color:var(--navy);font-family:var(--head);font-size:17px;font-weight:800;box-shadow:0 6px 24px rgba(255,186,0,.3)}
+  .submit:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
+  .error{display:none;margin:12px 0 0;text-align:center;color:#b42318;font-weight:600;font-size:14px;line-height:1.5}
+  .foot{margin-top:24px;padding:20px;border-top:1px solid var(--edge-soft);font-size:12.5px;line-height:1.6;color:var(--faint);text-align:center}
+  .foot strong{font-family:var(--head);font-weight:600;color:var(--muted)}
+  @media(min-width:760px){.page{width:1080px}.site-head{padding:0 48px}.body{padding:42px 24px 14px}h1{font-size:36px}}
+  @media(max-width:759px){html,body{background:var(--page)}.stack{padding:0 0 calc(28px + env(safe-area-inset-bottom,0px))}.page{width:100%;border-radius:0;box-shadow:none}}
+</style>
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=20260808d" />
+<link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body>
+<div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to continue this Quote Walk. Your saved answers remain on file. Turn it on and reload, or call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
+<div class="stack">
+  <main class="page" id="mainPage" data-screen-label="Quote walk: generator connection">
+    <header class="site-head">
+      <a class="lockup" href="https://qa.backuppowerpro.com" aria-label="Backup Power Pro">
+        <img src="/assets/images/logo-white-v2.png" alt="Backup Power Pro" style="height:28px;width:auto;display:block" />
+      </a>
+    </header>
+    <div class="prog qw-progress" data-qw-step="generator">
+      <div class="rail qw-progress-rail" role="img" aria-label="Step 1 of 4: Generator">
+        <div class="pstep on"><span class="dot"></span><span class="pl">Generator</span></div>
+        <div class="pstep"><span class="dot"></span><span class="pl">Panel</span></div>
+        <div class="pstep"><span class="dot"></span><span class="pl">Distance</span></div>
+        <div class="pstep"><span class="dot"></span><span class="pl">Photos</span></div>
+      </div>
+    </div>
+    <button class="back-btn qw-back" type="button" data-back aria-label="Back">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 3.5L6 8l4.5 4.5"></path></svg>
+    </button>
+    <div class="body">
+      <section data-question id="connectionChooser">
+        <h1>Which connection is on your generator?</h1>
+        <p class="helper">Look at the power outlets on your generator and tap every shape that matches. If both are present, select both.</p>
+        <div class="choices" role="group" aria-label="Compatible generator connections" data-compatible-choices>
+          <button class="choice" type="button" data-status="confirmed_30" aria-pressed="false">
+            <span class="connection-icon connection-icon-30" role="img" aria-label="Round four-slot 30 amp twist-lock connection"></span>
+            <strong>30 Amp</strong>
+          </button>
+          <button class="choice" type="button" data-status="confirmed_50" aria-pressed="false">
+            <img src="/img/50amp-outlet-navy.png" alt="Four-slot 50 amp straight-blade connection" />
+            <strong>50 Amp</strong>
+          </button>
+        </div>
+        <div class="other" role="group" aria-label="Other connection answers">
+          <button class="quiet" type="button" data-status="pending_access" data-compatible-exception aria-pressed="false">Away from your generator?</button>
+          <button class="quiet" type="button" data-status="no_compatible_generator_connection" data-compatible-exception aria-pressed="false">I don't see either connection</button>
+          <button class="quiet" type="button" data-status="no_generator" aria-pressed="false">I don't have a generator yet.</button>
+        </div>
+        <p class="selection-echo" data-selection-echo hidden></p>
+        <div class="confirm-actions qw-action-stack">
+          <button class="submit qw-primary-action" type="button" data-submit disabled>Continue</button>
+          <button class="change-answer qw-secondary-action" type="button" data-change-answer aria-controls="connectionChooser" aria-expanded="false" hidden>Change answer</button>
+        </div>
+        <p class="error" data-error role="alert">That did not save. Tap Continue to try again.</p>
+      </section>
+    </div>
+    <footer class="foot">
+      <div class="foot-identity"><strong>Licensed and insured</strong><span>SC Lic #2942 by Key Electric</span></div>
+      <span class="foot-area">Currently serving Greenville, Spartanburg,<br>and Pickens counties</span>
+      <span class="foot-process">Every project is reviewed and permitted by Key, completed with trusted local installation partners, and coordinated through final inspection.</span>
+    </footer>
+  </main>
+</div>
+<script src="/walk-v2/walk.js?v=20260816-save"></script>
+<script>
+(function () {
+  var t = WALK.requireToken(); if (!t) return;
+  var main = document.getElementById('mainPage');
+  var question = main.querySelector('[data-question]');
+  var submit = main.querySelector('[data-submit]');
+  var error = main.querySelector('[data-error]');
+  var compatibleChoices = main.querySelector('[data-compatible-choices]');
+  var selectionEcho = main.querySelector('[data-selection-echo]');
+  var changeAnswer = main.querySelector('[data-change-answer]');
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var selectedCompatible = [];
+  var selectedException = '';
+  var saving = false;
+  var blockedAtLoad = false;
+  var expanded = true;
+  var choicesReady = true;
+  var userTouched = false;
+  WALK.ph('walk_v2_screen_view', { screen: 'connection' });
+
+  function setChoiceReadiness(ready) {
+    choicesReady = true;
+    main.setAttribute('aria-busy', ready ? 'false' : 'true');
+    main.querySelectorAll('[data-status]').forEach(function (button) {
+      button.disabled = false;
+    });
+  }
+  setChoiceReadiness(true);
+
+  function isCompatible(status) {
+    return status === 'confirmed_30' || status === 'confirmed_50';
+  }
+  function setCompact(status, bringContinue) {
+    var compact = Boolean(selectedCompatible.length && !expanded);
+    main.querySelectorAll('.choice[data-status]').forEach(function (button) {
+      button.hidden = false;
+    });
+    main.querySelectorAll('.other [data-status]').forEach(function (button) {
+      button.hidden = compact;
+    });
+    changeAnswer.hidden = !compact;
+    changeAnswer.setAttribute('aria-expanded', compact ? 'false' : 'true');
+    if (selectionEcho) {
+      selectionEcho.hidden = !compact;
+      if (compact) {
+        var labels = selectedCompatible.map(function (value) {
+          return value === 'confirmed_50' ? '50 Amp' : '30 Amp';
+        });
+        selectionEcho.textContent = 'Selected: ' + labels.join(' and ') + '.';
+      }
+    }
+    if ((selectedCompatible.length || selectedException) && bringContinue) {
+      window.requestAnimationFrame(function () {
+        submit.scrollIntoView({ block: 'nearest', behavior: reduceMotion ? 'auto' : 'smooth' });
+      });
+    }
+  }
+  function renderSelection(bringContinue) {
+    main.querySelectorAll('[data-status]').forEach(function (button) {
+      var status = button.getAttribute('data-status');
+      var pressed = isCompatible(status)
+        ? selectedCompatible.indexOf(status) !== -1
+        : selectedException === status;
+      button.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+    });
+    setCompact(selectedException, bringContinue);
+    submit.disabled = !(selectedCompatible.length || selectedException);
+    error.style.display = 'none';
+  }
+  function select(status, bringContinue) {
+    userTouched = true;
+    if (isCompatible(status)) {
+      selectedException = '';
+      var index = selectedCompatible.indexOf(status);
+      if (index === -1) selectedCompatible.push(status);
+      else selectedCompatible.splice(index, 1);
+      selectedCompatible.sort();
+    } else {
+      selectedCompatible = [];
+      selectedException = status;
+    }
+    expanded = false;
+    renderSelection(bringContinue);
+  }
+  main.querySelectorAll('[data-status]').forEach(function (button) {
+    button.addEventListener('click', function () { select(button.getAttribute('data-status'), true); });
+  });
+  var backBtn = main.querySelector('[data-back]');
+  if (backBtn) backBtn.addEventListener('click', function () {
+    WALK.ph('walk_v2_back_tap', { from: 'connection' });
+    WALK.go('index.html', t, { edit: 'details' });
+  });
+  changeAnswer.addEventListener('click', function () {
+    userTouched = true;
+    selectedCompatible = [];
+    selectedException = '';
+    expanded = true;
+    renderSelection(false);
+    var firstChoice = main.querySelector('.choice[data-status]');
+    if (firstChoice) firstChoice.focus({ preventScroll: true });
+  });
+
+  submit.addEventListener('click', function () {
+    if (!(selectedCompatible.length || selectedException) || saving) return;
+    if (blockedAtLoad && !selectedCompatible.length &&
+        selectedException !== 'no_compatible_generator_connection' &&
+        selectedException !== 'no_generator') {
+      WALK.go('generator-needed.html', t);
+      return;
+    }
+    saving = true; submit.disabled = true; submit.textContent = 'Saving';
+    var observedSet = selectedCompatible.map(function (status) {
+      return status === 'confirmed_50' ? '50A' : '30A';
+    });
+    var legacyStatus = observedSet.indexOf('50A') !== -1
+      ? 'confirmed_50'
+      : observedSet.indexOf('30A') !== -1 ? 'confirmed_30' : selectedException;
+    var fields = observedSet.length ? {
+      connection_status: legacyStatus,
+      connection_answers: observedSet,
+      pricing_basis: WALK.pricingBasis(observedSet) === '50A' ? '50' : WALK.pricingBasis(observedSet) === '30A' ? '30' : undefined,
+      pricing_basis_rule_version: 'connection-set-v1',
+      pricing_basis_authority: 'key_explicit_2026_07_28',
+      outlet_amp: legacyStatus === 'confirmed_50' ? '50' : '30',
+      generator_ownership_status: 'owned'
+    } : {
+      connection_status: selectedException === 'no_generator' ? 'unanswered' : selectedException,
+      generator_ownership_status: selectedException === 'no_generator' ? 'not_owned' : 'owned'
+    };
+    WALK.ph('walk_v2_confirm_tap', {
+      field: 'connection_status',
+      value: legacyStatus,
+      connection_count: observedSet.length,
+      pricing_basis: WALK.pricingBasis(observedSet)
+    });
+    WALK.confirm(t, fields).then(function () {
+      WALK.saveConnectionTruth(t, observedSet);
+      if (selectedException === 'no_compatible_generator_connection' || selectedException === 'no_generator') {
+        WALK.go('generator-needed.html', t);
+      } else {
+        WALK.view(t).then(function (latest) {
+          var params = new URLSearchParams(window.location.search);
+          var recovery = params.get('recovery') === '1';
+          var editing = params.get('edit') === '1';
+          if (selectedException === 'pending_access' && !recovery) WALK.go('location.html', t, { sequence: '1' });
+          else if (recovery || editing) WALK.routeRecoveryFromState(t, latest);
+          else WALK.go('location.html', t, { sequence: '1' });
+        }).catch(function () {
+          WALK.go('location.html', t);
+        });
+      }
+    }).catch(function () {
+      saving = false; submit.disabled = false; submit.textContent = 'Continue'; error.style.display = 'block';
+    });
+  });
+
+  function applyCurrentState(v) {
+    var status = v && v.connection_status || '';
+    var params = new URLSearchParams(window.location.search);
+    var editMode = params.get('edit') === '1';
+    var recoveryMode = params.get('recovery') === '1';
+    var sequentialEntry = params.get('sequence') === '1';
+    var returningFromEducation = params.get('from') === 'generator-needed';
+    blockedAtLoad = Boolean(v && (v.generator_ownership_status === 'not_owned' ||
+      status === 'no_compatible_generator_connection'));
+    if (!sequentialEntry && !returningFromEducation && v && v.generator_ownership_status === 'not_owned') {
+      WALK.go('generator-needed.html', t);
+      return;
+    }
+    if (!sequentialEntry && !returningFromEducation && status === 'no_compatible_generator_connection') {
+      WALK.go('generator-needed.html', t);
+      return;
+    }
+    if (!userTouched && !sequentialEntry) {
+      var truth = WALK.readConnectionTruth(t, v || {});
+      selectedCompatible = editMode ? [] : truth.connection_answers.map(function (value) {
+        return value === '50A' ? 'confirmed_50' : 'confirmed_30';
+      });
+      if (!editMode && !recoveryMode && !selectedCompatible.length && status === 'pending_access') selectedException = status;
+      expanded = !(selectedCompatible.length || selectedException);
+    }
+    setChoiceReadiness(true);
+    renderSelection(false);
+  }
+  function loadCurrentState() {
+    setChoiceReadiness(true);
+    error.style.display = 'none';
+    WALK.view(t).then(applyCurrentState).catch(function () {
+      applyCurrentState({});
+    });
+  }
+  loadCurrentState();
+})();
+</script>
+</body>
+</html>

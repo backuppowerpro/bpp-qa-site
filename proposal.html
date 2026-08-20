@@ -1,0 +1,2843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://js.stripe.com 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://api.stripe.com https://maps.googleapis.com https://*.google.com; frame-src https://js.stripe.com https://www.google.com;">
+<title>Proposal | Backup Power Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous" defer></script>
+<style>
+:root {
+  --navy:#0b1f3b; --navy2:#1a3a5c; --gold:#ffba00;
+  --green:#059669; --red:#dc2626; --border:#e4e8f0;
+  --bg:#eef1f7; --text:#1a2a42; --text2:#4a5568; --text3:#6b7280;
+  --blue:#1d4ed8;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100%}
+
+/* ── HEADER ─────────────────────────────────────────── */
+.site-header{background:var(--navy);padding:18px 24px;text-align:center}
+.site-header .brand{font-family:'Outfit',sans-serif;font-weight:800;font-size:20px;color:#fff;letter-spacing:-.01em}
+.site-header .brand span{color:var(--gold)}
+.site-header .tagline{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px}
+
+/* ── PAGE ───────────────────────────────────────────── */
+.page{max-width:660px;margin:0 auto;padding:24px 20px 48px}
+
+/* ── PROPERTY PHOTO BANNER ──────────────────────────── */
+.property-banner{position:relative;width:calc(100% + 56px);margin:-28px -28px 0;background:var(--navy);overflow:hidden;flex-shrink:0;border-radius:16px 16px 0 0}
+/* When banner is standalone (approved state), fix top bleed + add bottom gap */
+#property-banner-wrap .property-banner{margin:0 -20px;width:calc(100% + 40px);border-radius:16px}
+#property-banner-wrap{margin-bottom:16px}
+/* Inside hero-card, restore bleed design (overrides standalone rules above) */
+.hero-card #property-banner-wrap .property-banner{margin:-28px -28px 0;width:calc(100% + 56px);border-radius:16px 16px 0 0}
+.hero-card #property-banner-wrap{margin-bottom:0}
+/* Professional-polish filter (Key 2026-07-17): bright, not oversaturated.
+   Matches proposal-comp's treatment; the old saturate(1.5)+brightness(.95)
+   read dark and heavy. */
+.property-banner img{width:100%;height:auto;display:block;filter:saturate(1.14) contrast(1.03) brightness(1.08)}
+.property-banner-grad{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(11,31,59,.5) 0%,transparent 30%,rgba(11,31,59,.35) 60%,#0b1f3b 100%);pointer-events:none}
+.property-banner-for-tag{position:absolute;top:18px;left:18px;background:rgba(255,255,255,.18);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:30px;padding:10px 22px;pointer-events:none}
+.property-banner-for-text{font-family:'Outfit',sans-serif;font-size:18px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.3)}
+.property-banner-label{position:absolute;bottom:0;left:0;right:0;padding:14px 20px 18px;pointer-events:none}
+.property-banner-eyebrow{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:4px}
+.property-banner-addr{font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.5);line-height:1.25}
+.property-banner-initials{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:52px;font-weight:800;color:rgba(255,255,255,.18);letter-spacing:-3px;pointer-events:none;min-height:160px}
+@media(max-width:480px){.property-banner{margin:-24px -20px 0;width:calc(100% + 40px)}.property-banner-addr{font-size:13px}.hero-card #property-banner-wrap .property-banner{margin:-24px -20px 0;width:calc(100% + 40px)}}
+/* ── SCOPE + PRICE PRODUCT THUMBS ──────────────────── */
+.scope-thumb{width:52px;height:52px;border-radius:9px;object-fit:cover;flex-shrink:0;margin-left:auto;box-shadow:0 2px 8px rgba(11,31,59,.1)}
+.price-item-cell{display:flex;align-items:flex-start;gap:12px}
+.price-thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;box-shadow:0 2px 8px rgba(11,31,59,.1)}
+
+/* ── SCROLL REVEAL ──────────────────────────────────── */
+.reveal{opacity:0;transform:translateY(32px);transition:opacity .65s ease,transform .65s ease}
+.reveal.revealed{opacity:1;transform:translateY(0)}
+.reveal-fast{transition-duration:.4s}
+.reveal-delay-1{transition-delay:.08s}
+.reveal-delay-2{transition-delay:.16s}
+.reveal-delay-3{transition-delay:.24s}
+.reveal-delay-4{transition-delay:.32s}
+
+/* ── HERO CARD ──────────────────────────────────────── */
+.hero-card{background:var(--navy);border-radius:20px;padding:28px 28px 24px;color:#fff;margin-bottom:16px;position:relative;overflow:hidden}
+.hero-footer-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.09);flex-wrap:wrap}
+.hero-date-text{font-size:11px;color:rgba(255,255,255,.42);font-weight:600;letter-spacing:.04em;font-family:'Outfit',sans-serif}
+.expires-badge{font-size:10px;font-weight:700;letter-spacing:.04em;padding:3px 10px;background:rgba(255,186,0,.15);border-radius:20px;color:var(--gold);white-space:nowrap}
+.hero-title{font-family:'Outfit',sans-serif;font-size:28px;font-weight:900;line-height:1.1;margin-bottom:6px}
+.hero-sub{font-size:14px;color:rgba(255,255,255,.72);line-height:1.5}
+.hero-meta{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px}
+.hero-meta-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:3px;font-family:'Outfit',sans-serif}
+.hero-meta-value{font-size:13px;font-weight:600;color:#fff;word-break:break-word}
+
+/* ── PERSONAL NOTE ──────────────────────────────────── */
+.personal-note{background:linear-gradient(160deg,#fff 0%,#f9fbff 100%);border-radius:14px;padding:18px 20px;margin-bottom:16px;display:flex;gap:14px;align-items:flex-start;box-shadow:0 4px 24px rgba(11,31,59,.08),0 1px 4px rgba(11,31,59,.04)}
+.personal-note-avatar{width:40px;height:40px;border-radius:50%;background:var(--navy);color:var(--gold);font-family:'Outfit',sans-serif;font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.personal-note-from{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:5px}
+.personal-note-text{font-size:13px;color:var(--text2);line-height:1.65}
+
+/* ── REALITY BLOCK (problem + outcome combined) ─────── */
+.reality-block{background:var(--navy);border-radius:16px;overflow:hidden;margin-bottom:16px;color:#fff}
+.section-eyebrow{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.problem-headline{font-family:'Outfit',sans-serif;font-size:22px;font-weight:900;line-height:1.2;color:#fff;margin-bottom:18px}
+.reality-top{padding:24px 22px 20px}
+.reality-bridge{margin:0;font-size:15px;color:rgba(255,255,255,.82);line-height:1.7;font-weight:500;max-width:36em}
+.reality-bottom{padding:16px 22px 22px;background:rgba(255,255,255,.03);border-top:1px solid rgba(255,186,0,.15)}
+.outcome-headline-inner{font-family:'Outfit',sans-serif;font-size:18px;font-weight:900;color:#fff;margin-bottom:10px;line-height:1.25}
+.outcome-scenario-inner{font-size:13px;color:rgba(255,255,255,.68);line-height:1.8}
+
+/* ── CARD (generic fallback) ─────────────────────────── */
+.card{background:linear-gradient(160deg,#fff 0%,#f9fbff 100%);border-radius:14px;margin-bottom:16px;overflow:hidden;box-shadow:0 4px 24px rgba(11,31,59,.08),0 1px 4px rgba(11,31,59,.04)}
+.card-icon{width:32px;height:32px;border-radius:8px;background:#f4f6fa;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-head{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid #f0f3f8}
+.card-head h2{font-family:'Outfit',sans-serif;font-size:16px;font-weight:800;color:var(--navy)}
+.card-body{padding:20px}
+
+/* ── SCOPE LIST ─────────────────────────────────────── */
+.scope-list{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
+.scope-item{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text);opacity:0;transform:translateX(-10px);transition:opacity .4s ease,transform .4s ease;padding:2px 0}
+.scope-item.scope-in{opacity:1;transform:translateX(0)}
+.scope-check{width:18px;height:18px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.scope-check svg{width:10px;height:10px}
+.scope-item-text strong{display:block;font-weight:600;font-size:13px}
+.scope-item-text span{font-size:11px;color:var(--text3)}
+
+/* ── INSTALL PHOTOS ─────────────────────────────────── */
+.photos-section{margin-bottom:16px}
+.photos-label{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);text-align:center;margin-bottom:10px}
+.photos-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.photos-grid img{width:100%;height:90px;object-fit:cover;border-radius:8px;box-shadow:0 2px 10px rgba(11,31,59,.1);transition:transform .2s ease}
+.photos-grid img:hover{transform:scale(1.04)}
+
+/* ── SCOPE + PROOF UNIFIED BLOCK ────────────────────── */
+.scope-proof-block{background:#fff;border-radius:16px;overflow:hidden;margin-bottom:16px;box-shadow:0 4px 24px rgba(11,31,59,.08),0 1px 4px rgba(11,31,59,.04)}
+.scope-proof-head{display:flex;align-items:center;gap:10px;padding:20px 20px 16px}
+.scope-proof-head h2{font-family:'Outfit',sans-serif;font-size:16px;font-weight:800;color:var(--navy)}
+.scope-proof-body{padding:0 20px 22px}
+.scope-proof-anchor{padding:22px 20px 18px;background:#f9fbff}
+.anchor-headline{font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;text-align:center;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:18px}
+.anchor-vs-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:14px}
+.anchor-col{flex:1;text-align:center}
+.anchor-col-label{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.anchor-price-old{font-family:'Outfit',sans-serif;font-size:30px;font-weight:900;color:#94a3b8;position:relative;display:inline-block}
+
+.anchor-vs-badge{background:#fff;border-radius:20px;padding:5px 12px;font-family:'Outfit',sans-serif;font-size:11px;font-weight:800;color:var(--text3);flex-shrink:0;box-shadow:0 2px 8px rgba(11,31,59,.1)}
+.anchor-price-new{font-family:'Outfit',sans-serif;font-size:32px;font-weight:900;color:var(--green)}
+.anchor-tagline{text-align:center;font-size:13px;color:var(--text2);line-height:1.5}
+.anchor-tagline strong{color:var(--navy)}
+.scope-proof-review{padding:18px 20px 20px;background:#f4f7fc}
+.review-card-inner{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 2px 12px rgba(11,31,59,.07),0 1px 3px rgba(11,31,59,.04)}
+.review-stars{font-size:13px;color:var(--gold);margin-bottom:6px;letter-spacing:1px}
+.review-text{font-size:13px;color:var(--text);line-height:1.6;margin-bottom:8px}
+.review-author{font-size:11px;font-weight:700;color:var(--text3)}
+.proof-rating-row{display:flex;align-items:center;justify-content:center;gap:8px}
+.review-carousel{position:relative;overflow:hidden;/* height set by JS */}
+.review-slide{position:absolute;top:0;left:0;right:0;opacity:0;visibility:hidden;transition:opacity .45s ease;pointer-events:none}
+.review-slide.active{opacity:1;visibility:visible;pointer-events:auto}
+.carousel-dots{display:flex;justify-content:center;gap:6px;margin-top:12px;margin-bottom:2px}
+.carousel-dot{width:6px;height:6px;border-radius:50%;background:#cbd5e1;border:none;padding:0;cursor:pointer;transition:background .3s}
+.carousel-dot.active{background:var(--navy)}
+
+/* ── AMP TOGGLE ─────────────────────────────────────── */
+.amp-toggle-wrap{margin-bottom:16px}
+.amp-toggle-label{font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;text-align:center}
+.amp-toggle{display:flex;background:#f1f5f9;border-radius:12px;padding:4px;gap:4px}
+.amp-toggle-btn{flex:1;padding:12px 0;border-radius:10px;border:none;background:transparent;color:var(--text2);font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;text-align:center}
+.amp-toggle-btn.active{background:var(--navy);color:#fff;box-shadow:0 2px 10px rgba(11,31,59,.25)}
+.amp-toggle-btn:not(.active):hover{background:#e2e8f0}
+.amp-toggle-btn .amp-sub{font-size:10px;font-weight:500;opacity:.7;display:block;margin-top:2px}
+
+/* ── PRICING TABLE ──────────────────────────────────── */
+.price-table{width:100%;border-collapse:collapse;font-size:14px}
+.price-table td{padding:16px 0;border-bottom:1px solid #f0f3f8;vertical-align:top}
+.price-table tr:last-child td{border-bottom:none}
+.price-table td:last-child{text-align:right;font-weight:700;color:var(--navy);white-space:nowrap;padding-left:12px}
+.price-item-name{font-weight:700;color:var(--navy);font-size:14px}
+.price-item-desc{font-size:12px;color:var(--text3);margin-top:2px;margin-bottom:8px}
+.price-item-bullets{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.price-item-bullet{font-size:12px;color:var(--text2);display:flex;align-items:baseline;gap:6px;line-height:1.4}
+.price-item-bullet::before{content:'✓';color:var(--green);font-weight:900;font-size:11px;flex-shrink:0}
+.price-total-row td{padding-top:14px;font-family:'Outfit',sans-serif;font-size:17px;font-weight:800;color:var(--navy)}
+.total-badge{background:var(--navy);color:var(--gold);font-family:'Outfit',sans-serif;font-weight:800;font-size:17px;padding:5px 14px;border-radius:8px;display:inline-block;transition:all .3s}
+.per-day-note{text-align:center;padding:10px 0 2px;font-size:13px;color:var(--text3);line-height:1.5}
+
+/* ── POM CARD ───────────────────────────────────────── */
+/* ── UNIFIED INVESTMENT BLOCK ───────────────────────── */
+.investment-block{background:linear-gradient(160deg,#fff 0%,#fffdf5 100%);border-radius:16px;overflow:hidden;margin-bottom:16px;box-shadow:0 6px 32px rgba(11,31,59,.1),0 2px 8px rgba(11,31,59,.05)}
+.investment-head{padding:16px 20px 12px;border-bottom:1px solid #f0f3f8;display:flex;align-items:center;gap:10px}
+.investment-head h2{font-family:'Outfit',sans-serif;font-size:16px;font-weight:800;color:var(--navy)}
+.investment-head-icon{width:32px;height:32px;border-radius:8px;background:#fffbeb;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.investment-items{padding:4px 20px 0}
+.pom-divider-bar{background:var(--gold);padding:7px 20px;display:flex;align-items:center;justify-content:space-between;font-family:'Outfit',sans-serif;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#7a4a00}
+.pom-section{background:linear-gradient(135deg,#0b1f3b 0%,#1a3a5c 100%);padding:18px 20px;cursor:pointer;transition:background .2s}
+.pom-section:hover{background:linear-gradient(135deg,#0f2a50 0%,#1e4570 100%)}
+.pom-top-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.pom-title{font-family:'Outfit',sans-serif;font-size:15px;font-weight:900;color:#fff;flex:1}
+.pom-price-label{font-family:'Outfit',sans-serif;font-size:20px;font-weight:900;color:var(--gold);text-align:right;flex-shrink:0}
+.pom-price-sub{font-size:10px;color:rgba(255,255,255,.4);font-weight:600;text-align:right}
+.pom-features-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pom-feature-pill{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 11px;display:flex;align-items:flex-start;gap:8px}
+.pom-feature-pill-title{font-size:12px;font-weight:700;color:#fff;line-height:1.3}
+.pom-feature-pill-desc{font-size:11px;color:rgba(255,255,255,.5);line-height:1.4;margin-top:2px}
+.investment-total-section{padding:14px 20px 16px;border-top:1px solid #f0f3f8;display:flex;align-items:center;justify-content:space-between}
+.investment-total-label{font-family:'Outfit',sans-serif;font-size:17px;font-weight:800;color:var(--navy)}
+.investment-per-day{text-align:center;padding:0 20px 14px;font-size:13px;color:var(--text3)}
+@media(max-width:480px){.pom-features-grid{grid-template-columns:1fr}}
+.pom-body{padding:16px 18px 18px;position:relative}
+.pom-body::before{content:'';position:absolute;top:0;right:0;width:140px;height:140px;background:radial-gradient(circle,rgba(255,186,0,.08),transparent 70%)}
+.surge-toggle-track{width:52px;height:32px;border-radius:16px;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.2);cursor:pointer;position:relative;transition:all .25s;flex-shrink:0}
+.surge-toggle-track.on{background:var(--gold);border-color:var(--gold)}
+.surge-toggle-knob{width:24px;height:24px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:transform .25s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.surge-toggle-track.on .surge-toggle-knob{transform:translateX(20px)}
+.pom-feature{display:flex;align-items:flex-start;gap:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 12px}
+.pom-feature-title{font-size:12px;font-weight:700;color:#fff;margin-bottom:2px}
+.pom-feature-desc{font-size:11px;color:rgba(255,255,255,.55);line-height:1.4}
+
+/* ── BNPL BLOCKS (Afterpay + Klarna) ────────────────── */
+.bnpl-inner{padding:8px 20px 16px}
+.bnpl-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.09em;margin-bottom:8px}
+.bnpl-options{display:flex;gap:8px}
+.bnpl-option{flex:1;background:#f8f9fb;border-radius:9px;padding:9px 10px;display:flex;align-items:center;gap:8px}
+.bnpl-option-text{font-size:11px;color:var(--text2);line-height:1.4}
+.bnpl-option-text strong{display:block;font-size:11px;font-weight:700;color:var(--navy);margin-bottom:1px}
+@media(max-width:420px){.bnpl-options{flex-direction:column}}
+
+/* ── GUARANTEE SECTION ──────────────────────────────── */
+.guarantee-section{background:linear-gradient(160deg,#fff 0%,#f9fbff 100%);border-radius:16px;padding:24px 20px;margin-bottom:16px;box-shadow:0 4px 24px rgba(11,31,59,.08),0 1px 4px rgba(11,31,59,.04)}
+.guarantee-item{display:flex;align-items:flex-start;gap:12px;padding:16px 18px;background:#fff;border-radius:10px;margin-bottom:10px;box-shadow:0 2px 12px rgba(11,31,59,.07),0 1px 3px rgba(11,31,59,.03)}
+.guarantee-item:last-child{margin-bottom:0}
+.guarantee-icon{font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;color:var(--navy);width:28px;height:28px;border-radius:8px;background:#f0f4f9;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.guarantee-item-title{font-family:'Outfit',sans-serif;font-size:13px;font-weight:800;color:var(--navy);margin-bottom:2px}
+.guarantee-item-desc{font-size:12px;color:var(--text2);line-height:1.45}
+
+/* ── AUTHORITY BADGES ───────────────────────────────── */
+.badge-row{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin-top:18px}
+.authority-badge{display:flex;align-items:center;gap:5px;padding:6px 12px;background:var(--navy);color:#fff;border-radius:20px;font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;opacity:.9}
+
+/* ── NEXT-STEP NOTICE (quiet, not scarcity) ─────────── */
+.scarcity-notice{padding:8px 8px 18px;margin-bottom:4px;text-align:center}
+.scarcity-notice p{font-size:13px;color:var(--text2);line-height:1.6;max-width:34em;margin:0 auto}
+.scarcity-notice strong{color:var(--navy);font-weight:600}
+
+/* ── SIGN SECTION (Tesla quiet confirm, not contractor PDF) ── */
+.sign-card{background:#fff;border-radius:16px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 0 rgba(11,31,59,.04),0 8px 28px rgba(11,31,59,.06)}
+.sign-card-head{background:transparent;padding:28px 24px 8px}
+.sign-card-head h2{font-family:'Outfit',sans-serif;font-size:22px;font-weight:800;color:var(--navy);letter-spacing:-.02em;line-height:1.15}
+.sign-card-head p{font-size:14px;color:var(--text2);margin-top:8px;line-height:1.55;max-width:36em}
+.sign-card-body{padding:12px 24px 24px}
+.ack-row{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:#f8f9fb;border-radius:10px;margin-bottom:12px;cursor:pointer;transition:box-shadow .15s,background .15s;user-select:none;-webkit-user-select:none;min-height:48px;box-shadow:0 1px 6px rgba(11,31,59,.07)}
+.ack-row:hover{background:#f1f4f9;box-shadow:0 2px 10px rgba(11,31,59,.1)}
+.ack-row.checked{background:#f0fdf4;box-shadow:0 2px 10px rgba(5,150,105,.12)}
+.ack-box{width:28px;height:28px;border-radius:7px;border:2px solid #cbd5e1;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:0;transition:all .15s}
+.ack-row.checked .ack-box{background:var(--green);border-color:var(--green)}
+.ack-text{font-size:14px;color:var(--text);line-height:1.5}
+.ack-text a{color:var(--navy);font-weight:600;text-decoration:underline;padding:4px 2px;display:inline-block}
+.form-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:7px;letter-spacing:.03em;display:block}
+.form-label .req{color:var(--red)}
+.name-input{width:100%;padding:12px 14px;border:none;border-radius:8px;font-size:16px;font-family:'Inter',sans-serif;color:var(--text);outline:none;transition:box-shadow .15s;background:#f8f9fb;box-shadow:0 1px 6px rgba(11,31,59,.07)}
+.name-input:focus,.name-input:focus-visible{box-shadow:0 0 0 3px rgba(255,186,0,.45),0 1px 6px rgba(11,31,59,.07);background:#fff}
+.approve-btn:focus-visible,:where(button, a[href], input, select, [role="button"]):focus-visible{outline:2px solid var(--gold,#ffba00);outline-offset:2px}
+.sig-preview{font-family:'Dancing Script',cursive;font-size:28px;color:var(--navy);text-align:center;padding:12px 0 4px;min-height:48px;opacity:.7;transition:opacity .2s}
+.sig-preview:empty{opacity:0}
+.name-hint{font-size:12px;color:var(--text3);margin-top:6px}
+/* Money-committing CTA = the design system's gold money-pill (adopts proposal-comp.html .approve + bpp-ds .btn-gold). Gold is the DS money signifier; the navy pay button was the no-Norman-doors regression the DS-alignment audit flagged. Function/handler untouched. */
+.approve-btn{width:100%;height:56px;padding:0 18px;background:var(--gold);color:var(--navy);border:none;border-radius:28px;font-family:'Outfit',sans-serif;font-size:17px;font-weight:800;cursor:pointer;margin-top:20px;transition:background .2s,box-shadow .2s,opacity .2s;display:flex;align-items:center;justify-content:center;gap:10px;letter-spacing:-.01em;box-shadow:0 2px 12px rgba(255,186,0,.28)}
+.approve-btn:hover:not(:disabled){background:#ffc519;box-shadow:0 4px 16px rgba(255,186,0,.34)}
+.approve-btn:disabled{cursor:not-allowed;background:#e4e8f0;color:#aab2c0;box-shadow:none}
+
+/* ── APPROVED STATE ─────────────────────────────────── */
+.approved-banner{background:var(--navy);border-radius:16px;padding:36px 24px;text-align:center;color:#fff;margin-bottom:16px}
+.approved-icon{width:56px;height:56px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--navy)}
+.approved-banner h2{font-family:'Outfit',sans-serif;font-size:24px;font-weight:800;margin-bottom:8px;letter-spacing:-.02em}
+.approved-banner p{font-size:14px;opacity:.82;line-height:1.55;max-width:32em;margin:0 auto}
+.next-step-item{display:flex;gap:14px;align-items:flex-start;padding:14px 0}
+.next-step-item:not(:last-child){border-bottom:1px solid #f0f3f8}
+.next-step-num{width:32px;height:32px;border-radius:50%;background:var(--navy);color:var(--gold);font-family:'Outfit',sans-serif;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.next-step-text strong{display:block;font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
+.next-step-text span{font-size:12px;color:var(--text3);line-height:1.4}
+
+/* ── LEGAL ──────────────────────────────────────────── */
+.legal-section{background:#f8f9fb;border-radius:10px;padding:16px 18px;margin-top:12px;box-shadow:0 1px 6px rgba(11,31,59,.06)}
+.legal-section-title{font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.legal-row{display:flex;justify-content:space-between;padding:7px 0;font-size:12px;border-bottom:1px solid #edf0f5}
+.legal-row:last-child{border-bottom:none}
+.legal-label{color:var(--text3)}
+.legal-value{font-weight:600;color:var(--text);text-align:right;max-width:60%;word-break:break-word}
+.legal-terms{font-size:12px;color:var(--text2);line-height:1.6;background:#fff;border-radius:8px;padding:12px 14px;margin-top:10px;max-height:200px;overflow-y:auto;box-shadow:inset 0 1px 3px rgba(11,31,59,.06)}
+.legal-footer{font-size:11px;color:var(--text3);text-align:center;margin-top:14px;line-height:1.5;font-style:italic}
+
+/* ── DL BUTTON ──────────────────────────────────────── */
+.dl-btn{width:100%;padding:14px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .15s;box-shadow:0 4px 16px rgba(11,31,59,.25)}
+.dl-btn:hover{background:var(--navy2);box-shadow:0 6px 20px rgba(11,31,59,.35)}
+.dl-btn:disabled{opacity:.6;pointer-events:none}
+
+/* ── LOADING / ERROR ────────────────────────────────── */
+.state-wrap{text-align:center;padding:60px 24px}
+.state-wrap svg{width:48px;height:48px;opacity:.25;margin-bottom:14px}
+.state-wrap h2{font-family:'Outfit',sans-serif;font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px}
+.state-wrap p{font-size:14px;color:var(--text3)}
+.spinner-large{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── QUIET CONFIRM (no confetti / pulse theater) ────── */
+@keyframes quietIn{
+  0%{opacity:0;transform:translateY(10px)}
+  100%{opacity:1;transform:translateY(0)}
+}
+@keyframes checkDraw{
+  0%{stroke-dashoffset:40}
+  100%{stroke-dashoffset:0}
+}
+.approved-banner{animation:quietIn .45s ease forwards}
+.approved-icon svg{stroke:currentColor}
+.approved-icon svg polyline{stroke-dasharray:40;stroke-dashoffset:40;animation:checkDraw .45s ease-out .2s forwards}
+
+/* ── PAYMENT OPTION PICKER ──────────────────────────── */
+.pay-opt{border:2px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s,background .15s,box-shadow .15s;user-select:none}
+.pay-opt:hover{border-color:var(--navy-mid)}
+.pay-opt.selected{border-color:var(--navy);background:rgba(11,31,59,.04);box-shadow:0 0 0 1px var(--navy)}
+.pay-opt-label{display:flex;justify-content:space-between;align-items:center}
+.pay-opt-name{font-weight:700;font-size:14px;color:var(--navy)}
+.pay-opt-amount{font-weight:800;font-size:15px;color:var(--navy)}
+.pay-opt-sub{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.4}
+
+/* ── PREVIEW MODE ───────────────────────────────────── */
+.preview-bar{position:fixed;top:0;left:0;right:0;z-index:99999;background:#f59e0b;color:#1c1003;font-family:'Outfit',sans-serif;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;text-align:center;padding:7px 16px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+.preview-bar-dot{width:7px;height:7px;border-radius:50%;background:#1c1003;opacity:.5;flex-shrink:0}
+.preview-watermark{position:fixed;inset:0;pointer-events:none;z-index:99998;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.preview-watermark span{font-family:'Outfit',sans-serif;font-size:clamp(60px,14vw,120px);font-weight:900;color:rgba(11,31,59,.045);letter-spacing:.1em;text-transform:uppercase;transform:rotate(-35deg);white-space:nowrap;user-select:none}
+body.preview-mode .sign-card{display:none!important}
+body.preview-mode a.approve-btn[href],body.preview-mode button[onclick^="payDeposit"]{display:none!important}
+/* ── FOOTER ─────────────────────────────────────────── */
+.site-footer{text-align:center;padding:28px 24px 24px;font-size:12px;color:var(--text3);border-top:1px solid var(--border);margin-top:20px}
+.site-footer a{color:var(--text3);text-decoration:none}
+.site-footer a:hover{color:var(--navy)}
+.site-footer .cred-company{font-family:'Outfit',sans-serif;font-weight:700;font-size:14px;color:var(--navy);margin-bottom:4px}
+.site-footer .cred-address{margin-bottom:2px}
+.site-footer .cred-license{font-weight:600;color:var(--text2);margin-top:6px}
+.site-footer .cred-dba{font-size:11px;margin-top:2px}
+
+/* ── RESPONSIVE ─────────────────────────────────────── */
+@media(max-width:480px){
+  .scope-list{grid-template-columns:1fr}
+  .hero-title{font-size:22px}
+  .hero-card{padding:24px 20px 20px}
+  .hero-meta{gap:14px}
+  .page{padding:16px 14px 48px}
+  .anchor-price-old,.anchor-price-new{font-size:24px}
+  .sign-card-head{padding:24px 20px 6px}
+  .sign-card-body{padding:10px 20px 20px}
+  .sign-card-head h2{font-size:20px}
+  .photos-grid img{height:72px}
+  .sig-preview{padding:16px 0 12px;min-height:56px}
+}
+/* Print: hide money/sign chrome; keep the quote readable (PDF download remains the B&W path). */
+@media print{
+  .site-header{background:#fff;border-bottom:2px solid #0b1f3b;color:#0b1f3b}
+  .site-header .brand{color:#0b1f3b}
+  .approve-btn,.pay-opts,.sig-pad-wrap,.name-input,.dl-btn{display:none !important}
+  .property-banner{display:none}
+  body{background:#fff}
+  .page{padding:12px}
+  a{color:#0b1f3b !important;text-decoration:none}
+}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+</style>
+<script>
+(function normalizeWrappedProposalToken(){
+  var params=new URLSearchParams(window.location.search);
+  var token=params.get('token');
+  var wrappedKey='';
+  var ambiguous=false;
+  if(token===null){
+    params.forEach(function(value,key){
+      if(key!=='token'&&key.replace(/[\r\n]/g,'')==='token'){
+        if(wrappedKey){ambiguous=true;return;}
+        wrappedKey=key;
+        token=value;
+      }
+    });
+  }
+  var wrappedValue=typeof token==='string'&&/[\r\n]/.test(token);
+  if(ambiguous||(!wrappedKey&&!wrappedValue))return;
+  var canonicalToken=String(token).replace(/[\r\n]/g,'');
+  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(canonicalToken))return;
+  if(wrappedKey)params.delete(wrappedKey);
+  params.set('token',canonicalToken);
+  var query=params.toString();
+  window.history.replaceState(null,'',window.location.pathname+(query?'?'+query:'')+window.location.hash);
+})();
+</script>
+<!-- PostHog, customer-facing proposal view tracking. Closes the growth
+     loop: we can see how long customers spend on their quote, whether they
+     click the Pay Deposit button, whether they bounce. Combined with
+     proposals.view_count + stripe-webhook capture('deposit_paid') we get
+     the full funnel from ad click → quote viewed → deposit paid. -->
+<script>window.__BPP_MONEY_PREVIEW__=new URLSearchParams(window.location.search).get('preview')==='1';if(!window.__BPP_MONEY_PREVIEW__){!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_qoA51lePZqXYtPJYkrIpdA4U8iMDJ79L1kje7r4pD4O',{api_host:'https://us.i.posthog.com',person_profiles:'identified_only',session_recording:{recordCrossOriginIframes:false,maskAllInputs:true},capture_pageview:true,capture_pageleave:true,enable_heatmaps:true,capture_dead_clicks:true});}</script>
+<script>
+  // Tag this pageview with proposal context so PostHog can group all events
+  // from this customer's quote session together.
+  (function() {
+    if (window.__BPP_MONEY_PREVIEW__ || typeof posthog === 'undefined') return;
+    var token = new URLSearchParams(window.location.search).get('token') || '';
+    posthog.register({ page_type: 'proposal', proposal_token: token.slice(0, 8) });
+    // Track time-on-page milestones, helps us spot where customers stall
+    // reading the quote (pricing? terms? deposit button?).
+    var timeMilestones = [10, 30, 60, 120, 300]; // seconds
+    timeMilestones.forEach(function(t) {
+      setTimeout(function() {
+        posthog.capture('proposal_time_on_page', { seconds: t });
+      }, t * 1000);
+    });
+    // Mark when customer hits bottom of proposal, strong intent signal.
+    var bottomSeen = false;
+    window.addEventListener('scroll', function() {
+      if (bottomSeen) return;
+      var h = document.documentElement;
+      if ((h.scrollTop + h.clientHeight) / h.scrollHeight > 0.9) {
+        bottomSeen = true;
+        posthog.capture('proposal_scrolled_to_bottom');
+      }
+    }, { passive: true });
+    // Delegate click tracking on Pay / Approve / Decline buttons, don't
+    // have to wire up every button individually; match by text content.
+    document.addEventListener('click', function(ev) {
+      var el = ev.target.closest('button, a');
+      if (!el) return;
+      var text = (el.textContent || '').trim().toLowerCase();
+      if (/pay (deposit|full|now)|lock in|pay \$|approve|accept/.test(text)) {
+        posthog.capture('proposal_payment_cta_clicked', { label: text.slice(0, 50) });
+      } else if (/decline|reject|not interested/.test(text)) {
+        posthog.capture('proposal_declined_cta', { label: text.slice(0, 50) });
+      }
+    }, { capture: true });
+  })();
+</script>
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.jpg">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body>
+<noscript><div class="preview-bar" data-preview-banner="true">Preview unavailable, JavaScript is off, no customer action can occur</div><div class="preview-watermark" data-preview-watermark="true" aria-hidden="true"><span>Preview unavailable</span></div><div style="max-width:620px;margin:70px auto 24px;padding:18px;border:1px solid #ffba00;border-radius:14px;background:#fff8e6;color:#0b1f3b;text-align:center;font:600 16px/1.55 system-ui,sans-serif;">This proposal did not load. Turn on JavaScript and reload, or call (864) 863-7800.</div></noscript>
+
+<header class="site-header">
+  <img src="/assets/images/logo-white-v2.png" alt="Backup Power Pro" style="height:32px;">
+  <div class="tagline">Licensed Electrical Contractor &middot; SC LIC #2942 &middot; Upstate SC</div>
+</header>
+
+<main class="page" id="main">
+  <div class="state-wrap">
+    <div class="spinner-large"></div>
+    <p>Loading your proposal...</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="cred-company">Backup Power Pro <span style="font-weight:400;font-size:13px;color:var(--text3)">by Key Electric LLC</span></div>
+  <div class="cred-address">22 Kimbell CT, Greenville SC 29617</div>
+  <div class="cred-address"><a href="tel:8648637800">(864) 863-7800</a> &nbsp;&middot;&nbsp; <a href="https://qa.backuppowerpro.com">backuppowerpro.com</a></div>
+  <div class="cred-license">SC Electrical Contractor License #2942 &nbsp;&middot;&nbsp; Fully Licensed &amp; Insured</div>
+</footer>
+
+<script>
+
+const SUPABASE_URL = 'https://hfatblrcwytxvijjhpal.supabase.co';
+// Publishable key (migrated 2026-04-23 off the leaked anon JWT).
+const SUPABASE_KEY = 'sb_publishable_kBXthY-Han29JLqcT514RQ_RtwxXLZ-';
+let P = null;
+let chosenAmp = null;
+let surgeOn = false;
+let pomOn = false;
+let customItemsOn = [];
+let ackScope = false;
+let ackSafety = false;
+let isPreview = false;
+let selectedPayFull = false;
+let signStatusUncertain = false;
+let approvedCheckoutOpening = false;
+let depositCancellationUnconfirmed = true;
+let depositAuthorizationWasReset = false;
+const AUTHORIZATION_GATE_TIMEOUT_MS = 4000;
+let authorizationGateState = 'pending';
+let authorizationGateInFlight = null;
+let authorizationGateToken = '';
+let authorizationFactsRendered = false;
+let authorizationFullRedoPending = false;
+function previewModeActive() {
+  return isPreview || new URLSearchParams(window.location.search).get('preview') === '1';
+}
+function authorizationGateReady() {
+  return authorizationGateState === 'ready';
+}
+function setAuthorizationGateState(state) {
+  authorizationGateState = state;
+  depositCancellationUnconfirmed = state !== 'ready';
+  document.body.dataset.authorizationGate = state;
+  syncAuthorizationGateUI();
+}
+function setAuthorizationControlLocked(control, locked) {
+  if (locked) {
+    if (!control.hasAttribute('data-authorization-gate-locked')) {
+      control.setAttribute('data-authorization-gate-locked', 'true');
+      control.setAttribute('data-authorization-was-disabled', control.disabled ? 'true' : 'false');
+      control.setAttribute('data-authorization-tabindex', control.getAttribute('tabindex') || '');
+      if (control.tagName === 'A' && control.hasAttribute('href')) {
+        control.setAttribute('data-authorization-href', control.getAttribute('href'));
+      }
+    }
+    if ('disabled' in control) control.disabled = true;
+    control.setAttribute('aria-disabled', 'true');
+    if (control.tagName === 'A') control.removeAttribute('href');
+    control.setAttribute('tabindex', '-1');
+    return;
+  }
+  if (!control.hasAttribute('data-authorization-gate-locked')) return;
+  if ('disabled' in control) control.disabled = control.getAttribute('data-authorization-was-disabled') === 'true';
+  if (control.hasAttribute('data-authorization-href')) control.setAttribute('href', control.getAttribute('data-authorization-href'));
+  const priorTabIndex = control.getAttribute('data-authorization-tabindex');
+  if (priorTabIndex) control.setAttribute('tabindex', priorTabIndex);
+  else control.removeAttribute('tabindex');
+  control.removeAttribute('aria-disabled');
+  control.removeAttribute('data-authorization-gate-locked');
+  control.removeAttribute('data-authorization-was-disabled');
+  control.removeAttribute('data-authorization-tabindex');
+  control.removeAttribute('data-authorization-href');
+}
+function syncAuthorizationGateNotice(target) {
+  let notice = document.querySelector('[data-authorization-gate-status]');
+  if (authorizationGateState === 'ready' || authorizationGateState === 'preview' || !target) {
+    if (notice) notice.remove();
+    return;
+  }
+  if (!notice) {
+    notice = document.createElement('div');
+    notice.className = 'card';
+    notice.setAttribute('data-authorization-gate-status', 'true');
+    notice.style.cssText = 'padding:18px 20px;text-align:center;border:1px solid var(--border);';
+    target.parentNode.insertBefore(notice, target);
+  }
+  if (notice.dataset.authorizationGateState === authorizationGateState) return;
+  notice.dataset.authorizationGateState = authorizationGateState;
+  notice.innerHTML = '';
+  const message = document.createElement('p');
+  message.style.cssText = 'margin:0;color:var(--text2);font-size:13px;line-height:1.55';
+  message.textContent = authorizationGateState === 'failed'
+    ? 'We could not confirm that this proposal is ready for a new acceptance. No approval or payment was submitted. Tap Retry to check again.'
+    : 'Confirming that this proposal is ready for a new acceptance.';
+  notice.appendChild(message);
+  if (authorizationGateState === 'failed') {
+    const retry = document.createElement('button');
+    retry.type = 'button';
+    retry.className = 'approve-btn';
+    retry.setAttribute('data-authorization-gate-retry', 'true');
+    retry.textContent = 'Retry authorization check';
+    retry.addEventListener('click', () => beginAuthorizationGate(authorizationGateToken));
+    notice.appendChild(retry);
+  }
+}
+function syncAuthorizationGateUI() {
+  const locked = !authorizationGateReady();
+  document.body.dataset.authorizationGate = authorizationGateState;
+  const panel = document.getElementById('sign-section');
+  if (panel) {
+    if (locked) {
+      if (!panel.hasAttribute('data-authorization-gate-inert')) {
+        panel.setAttribute('data-authorization-gate-inert', panel.hasAttribute('inert') ? 'true' : 'false');
+      }
+      panel.setAttribute('inert', '');
+      if (authorizationGateState === 'pending') panel.setAttribute('aria-busy', 'true');
+      else panel.removeAttribute('aria-busy');
+    } else if (panel.hasAttribute('data-authorization-gate-inert')) {
+      if (panel.getAttribute('data-authorization-gate-inert') === 'false') panel.removeAttribute('inert');
+      panel.removeAttribute('data-authorization-gate-inert');
+      panel.removeAttribute('aria-busy');
+    }
+  }
+  const selector = '#approve-btn,[onclick^="payDeposit"],#checkPaymentTruth,#checkPaymentStatus,[data-authorization-action="payment"]';
+  document.querySelectorAll(selector).forEach((control) => setAuthorizationControlLocked(control, locked));
+  const action = document.querySelector(selector);
+  syncAuthorizationGateNotice(panel || (action && action.closest('.state-wrap')) || action);
+  if (!locked) validateForm();
+}
+function installPreviewChrome() {
+  if (!isPreview || document.querySelector('[data-preview-banner="true"]')) return;
+  document.body.classList.add('preview-mode');
+  document.body.insertAdjacentHTML('afterbegin',
+    `<div class="preview-bar" data-preview-banner="true"><div class="preview-bar-dot"></div>Preview Mode, Not Sent to Client, Read Only<div class="preview-bar-dot"></div></div>
+     <div class="preview-watermark" data-preview-watermark="true" aria-hidden="true"><span>Preview</span></div>`
+  );
+  const bar = document.querySelector('.preview-bar');
+  const header = document.querySelector('.site-header');
+  if (bar && header) header.style.marginTop = bar.offsetHeight + 'px';
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  const params = new URLSearchParams(window.location.search);
+  isPreview = params.get('preview') === '1';
+  setAuthorizationGateState(isPreview ? 'preview' : 'pending');
+  installPreviewChrome();
+  const token = params.get('token');
+  if (!token) { showError('Proposal link not found.', 'This isn\'t the personal link Key texted you. Text or call Key at (864) 863-7800 and he will send a fresh one.'); return; }
+  // Fetch proposal + profile context in parallel. Context is non-critical,
+  // proposal renders fine if the fetch fails. Context is ONLY used for
+  // subtle rendering variants (generator-size subtitle, etc.); no free-text
+  // customer quotes surface here, the edge fn strips those before return.
+  // Customer-facing reads go through the proposal-view edge function
+  // (service-role internally) so the customer-facing anon role never
+  // needs direct SELECT on the proposals table. Closing anon direct
+  // access was blocked on this migration, see the 2026-04-23 RLS
+  // hardening migration for the full story.
+  // Apr 27: hard 10s timeout so a hung edge fn / network blip doesn't
+  // leave the customer on the spinner forever. AbortController fires
+  // showError with a customer-safe message + phone number to call.
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 10000);
+  let _httpStatus = 200;
+  // 2026-05-26 perf fix: the old Promise.all([view, context]) made the
+  // page wait for BOTH before rendering. proposal-context takes ~3.4s
+  // (does a sparky_memory ilike scan); proposal-view takes ~1.7s. The
+  // customer was staring at a loading screen for the slower one.
+  // proposal-context only feeds copy variants, non-critical.
+  // New strategy: kick off both in parallel, await proposal-view, then
+  // race context against a 2-second deadline. If context arrives in
+  // time we use it for variant copy. If not, render with default copy.
+  // Worst case: customer sees the proposal in ~max(1.7s, 2s) instead
+  // of ~3.4s. Best case: when context is hot/cached, ~1.7s.
+  const proposalPromise = fetch(`${SUPABASE_URL}/functions/v1/proposal-view?token=${encodeURIComponent(token)}`, {
+    headers: { 'Authorization': `Bearer ${SUPABASE_KEY}` },
+    signal: ctrl.signal,
+  }).then(async r => {
+    _httpStatus = r.status;
+    if (r.ok) return r.json();
+    if (r.status === 410) return { _superseded: true, ...(await r.json().catch(() => ({}))) };
+    return { proposal: null };
+  }).catch((e) => ({ proposal: null, _aborted: e?.name === 'AbortError' }));
+  const ctxPromise = fetch(`${SUPABASE_URL}/functions/v1/proposal-context?token=${encodeURIComponent(token)}`, {
+    headers: { 'Authorization': `Bearer ${SUPABASE_KEY}` },
+    signal: ctrl.signal,
+  }).then(r => r.ok ? r.json() : null).catch(() => null);
+  const ctxDeadline = new Promise(resolve => setTimeout(() => resolve(null), 2000));
+  beginAuthorizationGate(token);
+  const proposalRes = await proposalPromise;
+  // Race context against a 2s deadline. Don't block the render past that.
+  const ctxRes = await Promise.race([
+    ctxPromise,
+    ctxDeadline,
+  ]);
+  clearTimeout(timer);
+
+  // Superseded quote, newer one exists for this customer
+  if (proposalRes?._superseded) {
+    const latestToken = proposalRes.latest_token;
+    const latestUrl = latestToken ? proposalUrlForToken(latestToken) : null;
+    document.getElementById('main').innerHTML =
+      '<div style="text-align:center;padding:60px 20px;max-width:420px;margin:0 auto">' +
+        '<div style="font-size:48px;margin-bottom:16px">📄</div>' +
+        '<div style="font-family:Outfit,sans-serif;font-size:22px;font-weight:800;color:var(--navy);margin-bottom:12px">This quote was replaced</div>' +
+        '<div style="font-size:14px;color:var(--text3);line-height:1.6;margin-bottom:20px">' +
+          'A newer version of your quote was sent. Please use that one, the price and details may have changed.' +
+        '</div>' +
+        (latestUrl
+          ? '<a href="' + latestUrl + '" style="display:inline-block;background:var(--gold);color:var(--navy);font-family:Outfit,sans-serif;font-weight:800;font-size:15px;padding:12px 24px;border-radius:100px;text-decoration:none">View latest quote &rarr;</a>'
+          : '<a href="tel:8648637800" style="display:inline-block;background:var(--gold);color:var(--navy);font-family:Outfit,sans-serif;font-weight:800;font-size:15px;padding:12px 24px;border-radius:100px;text-decoration:none">Call (864) 863-7800</a>') +
+      '</div>';
+    return;
+  }
+
+  const data = proposalRes?.proposal || null;
+  if (!data) {
+    let msg;
+    if (proposalRes?._aborted) {
+      msg = 'This is taking longer than expected. Please refresh, or contact (864) 863-7800 if it keeps failing.';
+    } else if (_httpStatus === 404 || _httpStatus === 400) {
+      msg = 'This link may be invalid or expired. Please contact (864) 863-7800 if you need help.';
+    } else if (_httpStatus >= 500) {
+      msg = `Couldn't load this proposal right now (server returned ${_httpStatus}). Please try again or contact (864) 863-7800.`;
+    } else {
+      msg = 'This link may be invalid or has been removed. Please contact (864) 863-7800.';
+    }
+    showError('Proposal not available.', msg);
+    return;
+  }
+  P = data;
+  // The public DTO intentionally does not echo bearer capabilities. The
+  // customer page already owns this token from its URL.
+  P.token = token;
+  // FORWARD CUTOVER (2026-06-09): new-standard proposals (deposit_rate other
+  // than the legacy 50%) render on the new proposal page. Existing 50%
+  // proposals stay on this proven page so their locked terms never shift.
+  // deposit_rate is the single source of truth for routing; redirect happens
+  // before trackView + render so there is no double view-count or content flash.
+  {
+    if (P.creator_version === 'v4') {
+      window.location.replace('/proposal-customer-mvp.html' + window.location.search);
+      return;
+    }
+    // CUTOVER LIVE (2026-07-02, Key sign-off: "the preview shows the old one,
+    // fix it"): every new-standard proposal (deposit_rate set and not the
+    // legacy 50%) renders on the new page, for CUSTOMERS and for PREVIEW alike,
+    // so what Key previews is exactly what the customer sees. The query string
+    // (token + preview=1) carries through; proposal-comp.html handles preview
+    // mode (watermark, no view tracking, signing disabled). Legacy 50% and
+    // no-deposit_rate proposals stay on this proven page so locked terms
+    // never shift.
+    const _dr = Number(P.deposit_rate);
+    if (_dr && _dr !== 0.5) {
+      window.location.replace('/proposal-comp.html' + window.location.search);
+      return;
+    }
+  }
+  window.__bpp_ctx = ctxRes || {}; // exposed for downstream reads
+  if (!isPreview) trackView(token);
+  // Closed states must never render a signable quote. The exact-match 'Cancelled'
+  // check missed the lowercase 'cancelled' + 'declined' the CRM actually writes,
+  // so a killed proposal invited the customer to sign and then errored at the CTA
+  // (quality arc 2026-07-21, finding 8; mirrors proposal-comp.html's normalized
+  // check). Normalize once and gate on both, before any signable routing.
+  var _pstatus = String(P.status || '').toLowerCase();
+  if (_pstatus === 'cancelled' || _pstatus === 'declined') {
+    if (hasCheckoutReturnHint()) scrubCheckoutReturnHints(false);
+    document.getElementById('main').innerHTML = '<div style="text-align:center;padding:60px 20px"><div style="font-size:48px;margin-bottom:16px">🚫</div><div style="font-family:Outfit,sans-serif;font-size:22px;font-weight:800;color:var(--navy);margin-bottom:8px">Proposal Closed</div><div style="font-size:14px;color:var(--text3);max-width:360px;margin:0 auto">This proposal is no longer active. Please contact Backup Power Pro at <a href="tel:8648637800" style="color:var(--blue);font-weight:600">(864) 863-7800</a> if you have questions.</div></div>';
+    return;
+  }
+  // A signed-but-deposit-required proposal is NOT approved (the deposit is not in
+  // yet). Route it to the approved view too, which renders the prominent "pay your
+  // deposit" recovery card, so a customer who signed then closed the tab before
+  // paying lands back on the deposit ask on every revisit instead of the blank
+  // sign form. This is the Curtis-gap recovery surface (he viewed 16x, never paid).
+  if (P.status === 'Approved') { renderApproved(); }
+  else if (!isPreview && !authorizationFullRedoPending && P.require_deposit !== false && hasCheckoutReturnHint()
+      && ['sent', 'viewed', 'copied'].includes(String(P.status || '').toLowerCase())) { reconcileCheckoutReturn(P); }
+  else if (String(P.status || '').toLowerCase() === 'signed' && !isPreview && !authorizationFullRedoPending && hasCheckoutReturnHint()) { reconcileCheckoutReturn(P); }
+  else if (String(P.status || '').toLowerCase() === 'signed') { renderApproved(); }
+  else {
+    renderProposal();
+    if (authorizationFullRedoPending) {
+      resetDepositAcceptanceAuthorization('Closing the previous payment attempt. This proposal has not been accepted.');
+    }
+    const acceptanceRetry = consumeDepositAcceptanceRetry();
+    if (depositAuthorizationWasReset || acceptanceRetry) {
+      depositAuthorizationWasReset = false;
+      resetDepositAcceptanceAuthorization('Payment was not confirmed, so this proposal was not accepted. Review it, check each acknowledgment, enter your name, and accept again.');
+    }
+  }
+  syncAuthorizationGateUI();
+});
+
+// ── VIEW TRACKING ────────────────────────────────────────────
+async function trackView(token) {
+  if (previewModeActive()) return;
+  try {
+    await fetch(`${SUPABASE_URL}/functions/v1/proposal-mutate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
+      body: JSON.stringify({ token, action: 'track_view' }),
+    });
+  } catch(e) {}
+}
+
+async function getIP() {
+  try { const r = await fetch('https://api.ipify.org?format=json'); const d = await r.json(); return d.ip; } catch(e) { return 'unknown'; }
+}
+
+// ── PRICING HELPERS ──────────────────────────────────────────
+function getPrice(amp) {
+  if (amp === '50' && P.pricing_50) return P.pricing_50;
+  if (amp === '30' && P.pricing_30) return P.pricing_30;
+  return { base: P.price_base || 0, cord: P.include_cord ? (P.price_cord || 150) : 0, cordIncluded: P.include_cord, mainBreaker: 0, twinQuad: 0, longRun: 0, permitInspection: 0, total: P.total || 0 };
+}
+
+function calcTotal(amp) {
+  const pr = getPrice(amp);
+  const base = pr.total || pr.base || 0;
+  const pomAdder = pomOn ? (P.pom_price || 447) : 0;
+  const customAdder = Array.isArray(P.custom_items) ? P.custom_items.reduce((s, i, idx) => s + (customItemsOn[idx] !== false ? (i.price || 0) : 0), 0) : 0;
+  // V3 percent discount: recompute against current amp's subtotal so toggling amps stays consistent.
+  if (P.creator_version === 'v3' && P._v3_discount_pct > 0) {
+    const sub = base + customAdder;
+    P.discount_amount = Math.round(sub * P._v3_discount_pct / 100);
+  }
+  // V3 totals must subtract the discount themselves (v2 bakes it into pr.total at create time).
+  const v3Discount = (P.creator_version === 'v3' && P.discount_amount > 0) ? P.discount_amount : 0;
+  return base + pomAdder + customAdder - v3Discount;
+}
+
+function fmt(n) { return '$' + Number(n).toLocaleString('en-US'); }
+
+// ── PROPERTY PHOTO BANNER ────────────────────────────────────
+async function renderPropertyBanner() {
+  const wrap = document.getElementById('property-banner-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  const addr = String(P.contact_address || '').trim();
+  const token = new URLSearchParams(window.location.search).get('token');
+  if (!token) return;
+
+  const img = document.createElement('img');
+  img.alt = 'Property at the installation address';
+  img.id = 'banner-photo';
+  img.onload = function() {
+    if (!wrap.isConnected) return;
+    const titleCase = s => (s||'').replace(/\w\S*/g, t => t.charAt(0).toUpperCase()+t.substr(1).toLowerCase());
+    const displayName = titleCase(P.contact_name || '');
+    const gradHtml = `<div class="property-banner-grad"></div>`;
+    const forTagHtml = displayName ? `<div class="property-banner-for-tag"><span class="property-banner-for-text">Prepared for ${esc(displayName)}</span></div>` : '';
+    const labelHtml = addr ? `<div class="property-banner-label"><div class="property-banner-eyebrow">📍 Your Installation Address</div><div class="property-banner-addr">${esc(addr)}</div></div>` : '';
+    wrap.innerHTML = `<div class="property-banner"></div>`;
+    const bannerEl = wrap.querySelector('.property-banner');
+    if (!bannerEl) return;
+    bannerEl.appendChild(img);
+    bannerEl.insertAdjacentHTML('beforeend', gradHtml + forTagHtml + labelHtml);
+  };
+  img.onerror = function() { if (wrap.isConnected) wrap.innerHTML = ''; };
+  img.src = `${SUPABASE_URL}/functions/v1/streetview-hero?t=${encodeURIComponent(token)}`;
+}
+
+// ── SCROLL REVEAL ────────────────────────────────────────────
+function initScrollReveal() {
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('revealed');
+      // Trigger price anchor strike-through
+      if (entry.target.id === 'anchor-section') {
+      }
+      // Stagger scope checklist items
+      if (entry.target.classList.contains('scope-list')) {
+        entry.target.querySelectorAll('.scope-item').forEach((el, i) => {
+          setTimeout(() => el.classList.add('scope-in'), i * 80);
+        });
+      }
+      obs.unobserve(entry.target);
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+}
+
+// ── QUIET CONFIRM (Tesla close, not party) ───────────────────
+function launchConfetti() {
+  // Alias kept so preview + no-deposit paths still call one entry point.
+  showCelebrationModal();
+}
+
+let celebrationReturnFocus = null;
+let celebrationBackground = [];
+let celebrationKeyHandler = null;
+
+function showCelebrationModal() {
+  const firstName = (P.contact_name || '').trim().split(/\s+/)[0] || 'there';
+  celebrationReturnFocus = document.activeElement;
+
+  const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+  document.body.style.paddingRight = scrollbarWidth + 'px';
+  document.body.style.overflow = 'hidden';
+
+  const backdrop = document.createElement('div');
+  backdrop.id = 'congrats-backdrop';
+  backdrop.setAttribute('aria-hidden', 'true');
+  backdrop.style.cssText = 'position:fixed;inset:0;background:rgba(11,31,59,0);z-index:9999;transition:background .35s ease;cursor:pointer';
+  backdrop.addEventListener('click', closeCelebrationModal);
+  document.body.appendChild(backdrop);
+  requestAnimationFrame(() => { backdrop.style.background = 'rgba(11,31,59,.55)'; });
+
+  const modal = document.createElement('div');
+  modal.id = 'congrats-modal';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('aria-labelledby', 'congrats-title');
+  modal.setAttribute('aria-describedby', 'congrats-description');
+  modal.setAttribute('tabindex', '-1');
+  modal.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;pointer-events:none';
+  modal.innerHTML = `
+    <div id="congrats-card" role="document" style="background:#fff;border-radius:18px;padding:36px 28px 28px;max-width:340px;width:100%;text-align:center;pointer-events:all;box-shadow:0 24px 64px rgba(11,31,59,.22);transform:translateY(12px);opacity:0;transition:transform .4s ease,opacity .35s ease">
+      <div style="width:52px;height:52px;border-radius:50%;background:#ffba00;color:#0b1f3b;display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div id="congrats-title" style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:800;color:#0b1f3b;margin-bottom:10px;letter-spacing:-.02em;line-height:1.2">You're set, ${esc(firstName)}.</div>
+      <div id="congrats-description" style="font-size:14px;color:#4d5a6e;line-height:1.6;margin:0">I've got your approval. Next I'll file the permit and text you to lock the install date.</div>
+      <div style="font-size:12px;color:#94a3b8;margin-top:20px">Tap anywhere, or press Escape, to continue</div>
+    </div>`;
+  modal.addEventListener('click', closeCelebrationModal);
+  document.body.appendChild(modal);
+  celebrationBackground = [];
+  Array.from(document.body.children).forEach((node) => {
+    if (node === backdrop || node === modal || node.tagName === 'SCRIPT') return;
+    celebrationBackground.push({ node, wasInert: node.hasAttribute('inert') });
+    node.setAttribute('inert', '');
+  });
+  celebrationKeyHandler = (event) => {
+    if (event.key === 'Escape') closeCelebrationModal();
+    if (event.key === 'Tab') { event.preventDefault(); modal.focus(); }
+  };
+  document.addEventListener('keydown', celebrationKeyHandler);
+  modal.focus();
+  requestAnimationFrame(() => {
+    const card = modal.querySelector('#congrats-card');
+    requestAnimationFrame(() => { card.style.transform = 'translateY(0)'; card.style.opacity = '1'; });
+  });
+
+  const btn = document.getElementById('approve-btn');
+  if (btn) {
+    btn.style.background = '#0b1f3b';
+    btn.style.color = '#fff';
+    btn.style.cursor = 'default';
+    btn.disabled = true;
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Confirmed';
+    btn.style.opacity = '1';
+  }
+}
+
+function closeCelebrationModal() {
+  const backdrop = document.getElementById('congrats-backdrop');
+  const modal = document.getElementById('congrats-modal');
+  if (backdrop) { backdrop.style.background = 'rgba(11,31,59,0)'; setTimeout(() => backdrop.remove(), 350); }
+  if (modal) {
+    const card = modal.querySelector('#congrats-card');
+    if (card) { card.style.transform = 'translateY(8px)'; card.style.opacity = '0'; }
+    setTimeout(() => modal.remove(), 280);
+  }
+  document.body.style.overflow = '';
+  document.body.style.paddingRight = '';
+  celebrationBackground.forEach(({ node, wasInert }) => { if (!wasInert) node.removeAttribute('inert'); });
+  celebrationBackground = [];
+  if (celebrationKeyHandler) document.removeEventListener('keydown', celebrationKeyHandler);
+  celebrationKeyHandler = null;
+  if (celebrationReturnFocus && !celebrationReturnFocus.disabled && celebrationReturnFocus.focus) celebrationReturnFocus.focus();
+  else {
+    const main = document.getElementById('main');
+    if (main) { main.setAttribute('tabindex', '-1'); main.focus(); }
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function animateStats() {}
+
+// V3 NORMALIZATION, runs from BOTH renderProposal and renderApprovedView.
+// V3 saves a single consolidated total; the legacy renderer expects pricing
+// objects with broken-out base / cord / permit / longRun. We synthesize them
+// from the consolidated total so the customer sees an itemized breakdown
+// that still sums to the agreed-upon number.
+//
+// Math contract: pricing.base IS the consolidated total. The renderer's
+// main "Installation" row computes `base - cord - permit - longRun - mb - tq`
+// to derive a clean "installation labor" subtotal. Cord/permit show as
+// separate line items at their list price ($129/$249 for cord, $125 for
+// permit). Toggling cord/inlet/permit OFF in the creator removes both the
+// line item AND its discount from the base, so total stays constant.
+function applyV3Normalization() {
+  if (P.creator_version === 'v3' && !P.pricing_30) {
+    const V3P = { base:{30:1197,50:1497}, perFt:{30:12,50:14},
+      cordOff:{30:129,50:249}, inletOff:{30:129,50:179}, permitOff:125 };
+    const lengthFt = Number(P.length_ft || P.run_ft || 5);
+    const extraFt  = Math.max(0, lengthFt - 5);
+    const includeCord   = P.include_cord   !== false;
+    const includeInlet  = P.include_inlet  !== false;
+    const includePermit = P.include_permit !== false;
+    const buildPr = (amp) => {
+      const a = String(amp);
+      const longRun = extraFt * V3P.perFt[a];
+      const cordOffDisc   = includeCord   ? 0 : V3P.cordOff[a];
+      const inletOffDisc  = includeInlet  ? 0 : V3P.inletOff[a];
+      const permitOffDisc = includePermit ? 0 : V3P.permitOff;
+      const subtotal = V3P.base[a] + longRun - cordOffDisc - inletOffDisc - permitOffDisc;
+      // Surface cord + permit at list price WHEN included so they appear
+      // as itemized line items. The main "Installation" row's math
+      // (base - cord - permit) backs them out, leaving the labor remainder.
+      // Toggle-off paths set 0 + skip the row entirely.
+      return {
+        base: subtotal,
+        cord: includeCord ? V3P.cordOff[a] : 0,
+        mainBreaker: 0, twinQuad: 0,
+        longRun: longRun,
+        permitInspection: includePermit ? V3P.permitOff : 0,
+        total: subtotal,
+      };
+    };
+    P.pricing_30 = buildPr('30');
+    P.pricing_50 = buildPr('50');
+    return true;
+  }
+  return false;
+}
+
+// ── RENDER PROPOSAL ──────────────────────────────────────────
+function renderProposal() {
+  if (applyV3Normalization()) {
+    // Mirror PoM offered → include_pom so the card renders only when offered.
+    P.include_pom    = !!P.pom_offered;
+    // Discount: percent → compute dollar against the consolidated subtotal at render time.
+    if (P.discount_type === 'percent' && Number(P.discount_value) > 0) {
+      const sub = P.pricing_30.total; // applied uniformly; switching amp recomputes via calcTotal
+      P._v3_discount_pct = Number(P.discount_value);
+      P.discount_amount  = Math.round(sub * P._v3_discount_pct / 100);
+    } else if (P.discount_type === 'dollar' && Number(P.discount_value) > 0) {
+      P.discount_amount = Number(P.discount_value);
+    }
+    // extra_line_items → custom_items mirror so existing renderCustomItems works.
+    if (Array.isArray(P.extra_line_items) && !Array.isArray(P.custom_items)) {
+      P.custom_items = P.extra_line_items.map(li => ({ title: li.name || '', price: Number(li.amount)||0 }));
+    }
+  }
+  const isV3 = P.creator_version === 'v3';
+
+  const isNew = !!P.pricing_30 || !!P.pricing_50;
+  const hasBothPricing = !!P.pricing_30 && !!P.pricing_50;
+  chosenAmp = P.selected_amp || P.amp_type || '30';
+  surgeOn = P.selected_surge || false;
+  pomOn = P.selected_pom || false;
+  // V3 honors per-item `checked` from extra_line_items; v2 defaults all on.
+  customItemsOn = Array.isArray(P.custom_items)
+    ? P.custom_items.map((_, i) => {
+        if (P.creator_version === 'v3' && Array.isArray(P.extra_line_items) && P.extra_line_items[i]) {
+          return P.extra_line_items[i].checked !== false;
+        }
+        return true;
+      })
+    : [];
+  const requireDeposit = P.require_deposit !== false;
+
+  const firstName = (P.contact_name || '').trim().split(/\s+/)[0] || P.contact_name || 'Homeowner';
+  const createdDate = new Date(P.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+  // Price-lock window (30 days). Stated as a calm guarantee for the customer, not a countdown.
+  const expiresDate = new Date(new Date(P.created_at).getTime() + 30 * 24 * 60 * 60 * 1000);
+  const daysLeft = Math.ceil((expiresDate - Date.now()) / (1000 * 60 * 60 * 24));
+  const lockDate = expiresDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const expiresBadge = daysLeft > 0
+    ? `<span class="expires-badge">Your price is locked through ${lockDate}</span>`
+    : `<span class="expires-badge">Contact us to refresh your price</span>`;
+
+  // What's included
+  const pr = getPrice(chosenAmp);
+  const _ai = chosenAmp === '50' ? '50' : '30';
+  // V3 toggle handling: omit items when toggled off + collect disclaimers.
+  const v3InletOff   = isV3 && P.include_inlet  === false;
+  const v3PermitOff  = isV3 && P.include_permit === false;
+  const v3CordOff    = (isV3 && P.include_cord  === false) || (!isV3 && P.cord_included === false);
+  const includes = [];
+  if (!v3InletOff)  includes.push({ name: 'Generator inlet box', desc: 'Installed on your exterior wall, weather-rated' });
+  includes.push({ name: 'Interlock kit', desc: 'Panel-matched and code-compliant, prevents dangerous back-feed' });
+  if (!v3PermitOff) {
+    includes.push(
+      { name: 'Permit pulled & filed', desc: 'We handle all county paperwork, nothing for you to do' },
+      { name: 'Electrical inspection', desc: 'We book it for a specific day, you don\'t have to coordinate anything' }
+    );
+  }
+  includes.push(
+    { name: 'Site cleanup', desc: 'We leave your home exactly how we found it' },
+    { name: 'Customer walkthrough', desc: 'We show you exactly how to use your system before we leave' }
+  );
+  if (!v3CordOff) {
+    includes.push(
+      { name: 'Power transfer cord', desc: 'Connects your generator directly to the inlet box' },
+      { name: 'Breaker & panel wiring', desc: 'All internal panel connections done to code, nothing left unfinished' }
+    );
+  }
+  // Build a disclaimer line for any toggled-off items (price reflects the change; not shown to client).
+  const v3Disclaimers = [];
+  if (v3CordOff)   v3Disclaimers.push('Customer providing their own power transfer cord');
+  if (v3InletOff)  v3Disclaimers.push('Customer supplying the generator inlet box');
+  if (v3PermitOff) v3Disclaimers.push('Customer handling the permit & inspection');
+  const disclaimerHtml = (isV3 && v3Disclaimers.length) ? `
+    <div class="reveal" style="margin:14px 18px 0;padding:10px 14px;background:#fff8e0;border-left:3px solid var(--gold);border-radius:6px;font-size:12px;color:var(--text2);font-style:italic">
+      <strong style="font-style:normal;color:var(--navy)">Note:</strong> ${v3Disclaimers.join('. ')}. Quote total reflects this scope.
+    </div>` : '';
+
+
+  const scopeItems = includes.map(i => `
+    <li class="scope-item">
+      <div class="scope-check"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg></div>
+      <div class="scope-item-text"><strong>${esc(i.name)}</strong><span>${esc(i.desc)}</span></div>
+      ${i.img ? `<img class="scope-thumb" src="${i.img}" alt="${esc(i.name)}" loading="lazy">` : ''}
+    </li>`).join('');
+
+  // Personal note from Key
+  const noteHtml = P.notes ? `
+    <div class="personal-note reveal">
+      <div class="personal-note-avatar">K</div>
+      <div>
+        <div class="personal-note-from">A note from Key</div>
+        <div class="personal-note-text">${esc(P.notes)}</div>
+      </div>
+    </div>` : '';
+
+  // Amp toggle
+  const ampToggleHtml = hasBothPricing ? `
+    <div class="amp-toggle-wrap reveal">
+      <div class="amp-toggle-label">Choose Your Setup <span style="font-weight:400;font-size:11px;color:var(--text3)">(match your generator's output)</span></div>
+      <div class="amp-toggle">
+        <button class="amp-toggle-btn ${chosenAmp === '30' ? 'active' : ''}" onclick="switchAmp('30')">
+          30 Amp<span class="amp-sub">${P.amp_type === '30' ? '⭐ Recommended for your specific setup' : 'Standard'}</span>
+        </button>
+        <button class="amp-toggle-btn ${chosenAmp === '50' ? 'active' : ''}" onclick="switchAmp('50')">
+          50 Amp<span class="amp-sub">${P.amp_type === '50' ? '⭐ Recommended for your specific setup' : 'More circuits'}</span>
+        </button>
+      </div>
+    </div>` : '';
+
+  const baseTotal = calcTotal(chosenAmp);
+  const total = baseTotal;
+  const depositRate = Number(P?.deposit_rate ?? 0.20);
+  const depositAmt = Math.round(total * depositRate);
+
+  document.getElementById('main').innerHTML = `
+
+    <!-- ══ ACT 1: PERSONAL HEADER ══ -->
+    <div class="hero-card">
+      <div id="property-banner-wrap"></div>
+      <div style="padding-top:22px">
+        <div class="hero-title">The Outage-Ready<br>Connection System</div>
+        <div class="hero-sub" style="margin-top:8px">Your generator is already paid for.<br>We connect it to your panel, installed in a day. We handle the permit and inspection.</div>
+        ${(() => {
+          // Subtle generator-sized subtitle, only renders when the customer
+          // told us (directly or via form) that they already own a portable
+          // AND we know the amp size. Purely factual; reads as attention to
+          // detail, not surveillance.
+          const ctx = window.__bpp_ctx || {};
+          if (!ctx.storedGenerator || !ctx.ampSize) return '';
+          return `<div class="hero-sub" style="margin-top:6px;font-size:13px;color:rgba(255,255,255,.7)">Sized for a ${esc(ctx.ampSize)}A portable.</div>`;
+        })()}
+        <div class="hero-footer-row">
+          <span class="hero-date-text">${createdDate}</span>
+          ${expiresBadge}
+        </div>
+      </div>
+    </div>
+
+    ${noteHtml}
+
+    <!-- ══ ACT 2: QUIET GAP (no scare, no stat theater) ══ -->
+    <div class="reality-block reveal">
+      <div class="reality-top">
+        <div class="section-eyebrow">Where you stand</div>
+        <div class="problem-headline">Your generator is ready.<br>Your house isn't connected to it yet.</div>
+        <p class="reality-bridge">One permitted inlet and interlock closes that gap. Fridge, lights, and the circuits we choose together stay powered through your panel. I handle permit, install, and inspection.</p>
+      </div>
+    </div>
+
+    <!-- ══ ACT 3b + SOCIAL PROOF: UNIFIED BLOCK ══ -->
+    <div class="scope-proof-block reveal" id="anchor-section">
+
+      <!-- Scope header -->
+      <div class="scope-proof-head">
+        <div class="card-icon" style="background:#f0fdf4">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2>Everything's Handled.</h2>
+      </div>
+
+      <!-- Scope list -->
+      <div class="scope-proof-body">
+        <ul class="scope-list reveal">${scopeItems}</ul>
+        ${disclaimerHtml}
+      </div>
+
+      <!-- Price anchor (seamless, no divider line) -->
+      <div class="scope-proof-anchor">
+        <div class="anchor-headline">Sized to what you actually need. Your essentials powered.</div>
+        <div class="anchor-vs-row">
+          <div class="anchor-col">
+            <div class="anchor-col-label">Standby Generator</div>
+            <div class="anchor-price-old">$15,000</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px">avg. installed cost · plus annual maintenance</div>
+          </div>
+          <div class="anchor-vs-badge">VS</div>
+          <div class="anchor-col">
+            <div class="anchor-col-label">Outage-Ready Connection System</div>
+            <div class="anchor-price-new" id="anchor-our-price">${fmt(baseTotal)}</div>
+            <div style="font-size:11px;color:var(--green);font-weight:600;margin-top:4px">total · everything included</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Review (bottom, blended in) -->
+      <div class="scope-proof-review">
+        <div class="review-carousel" id="review-carousel">
+
+          <div class="review-slide active review-card-inner">
+            <div class="review-stars">★★★★★</div>
+            <div class="review-text">"Key Electric installed a 50-amp Generator inlet box along with a panel interlock system in our home. I was impressed by Key's attention to detail, professionalism, and organization. Key explained the process, reorganized and relabeled the breakers, ensured everything met code, and provided a full system walkthrough of the generator connection and panel interlock system. I highly recommend Key Electric for any of your residential and commercial electrical needs."</div>
+            <div class="review-author">Jim J., Liberty, SC &nbsp;·&nbsp; <span style="color:#4285F4">Google</span></div>
+          </div>
+
+          <div class="review-slide review-card-inner">
+            <div class="review-stars">★★★★★</div>
+            <div class="review-text">"KeyElectric is absolutely outstanding! From start to finish, my first experience with KeyElectric was exceptional. I chose them over two other electrical companies to install a portable generator inlet connected to the main breaker and to add whole-house surge protection."</div>
+            <div class="review-author">Dino S., Greenville, SC &nbsp;·&nbsp; <span style="color:#4285F4">Google</span></div>
+          </div>
+
+          <div class="review-slide review-card-inner">
+            <div class="review-stars">★★★★★</div>
+            <div class="review-text">"My experience with Key Electric was outstanding. From the moment we saw their advertising video on Facebook, to our first contact and all subsequent communications, their proposal and approval process, and their installation, Key Electric did a great job. The owner, Key Goodson, was very polite and courteous at all times, very personable, friendly and knowledgeable. It was just a great experience and I highly recommend Key Electric!"</div>
+            <div class="review-author">Dwellion H., Greenville, SC &nbsp;·&nbsp; <span style="color:#4285F4">Google</span></div>
+          </div>
+
+          <div class="review-slide review-card-inner">
+            <div class="review-stars">★★★★★</div>
+            <div class="review-text">"Outstanding service, competent, on time, quick response, professional installation, clean, organized, safety a priority. Highly recommend! Will use again."</div>
+            <div class="review-author">Mark M., Greenville, SC &nbsp;·&nbsp; <span style="color:#4285F4">Google</span></div>
+          </div>
+
+          <div class="review-slide review-card-inner">
+            <div class="review-stars">★★★★★</div>
+            <div class="review-text">"Key showed up on time and installed my generator inlet. Work was professional and price was reasonable."</div>
+            <div class="review-author">Chris B., Greenville, SC &nbsp;·&nbsp; <span style="color:#4285F4">Google</span></div>
+          </div>
+
+          <div class="review-slide review-card-inner">
+            <div class="review-stars">★★★★★</div>
+            <div class="review-text">"Key moved/wired several breakers, drilled through a brick wall, mounted a generator outlet and installed an interlock. He was very responsive, excellent communication and was very reasonable about an unexpected issue discovered while doing the job. The work was very professional and no mess left behind. Highly recommended."</div>
+            <div class="review-author">Chris A., Greenville, SC &nbsp;·&nbsp; <span style="color:#4285F4">Google</span></div>
+          </div>
+
+        </div>
+        <div class="carousel-dots" id="carousel-dots"></div>
+        <div class="proof-rating-row">
+          <svg width="14" height="14" viewBox="0 0 24 24" style="flex-shrink:0"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          <span style="font-size:13px;font-weight:700;color:var(--text)">4.9</span>
+          <span style="color:var(--gold);font-size:13px;letter-spacing:1px">★★★★★</span>
+          <span style="font-size:11px;color:var(--text3)">100+ Google reviews</span>
+        </div>
+      </div>
+
+    </div>
+
+    ${ampToggleHtml}
+
+    <!-- ══ UNIFIED INVESTMENT BLOCK ══ -->
+    <div class="investment-block reveal">
+
+      <div class="investment-head">
+        <div class="investment-head-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <h2>Your Price Breakdown</h2>
+      </div>
+
+      <div class="investment-items" id="pricing-items"></div>
+
+      <div class="investment-items" id="custom-items-mount"></div>
+
+      ${P.include_pom ? `<div class="pom-divider-bar">
+        <span>Optional Add-On · Same Day</span>
+      </div>
+
+      <div class="pom-section" id="pom-card" onclick="togglePom()">
+        <div class="pom-top-row">
+          <div class="surge-toggle-track ${pomOn ? 'on' : ''}" id="pom-toggle" style="flex-shrink:0"><div class="surge-toggle-knob"></div></div>
+          <span style="font-size:18px">🛡️</span>
+          <div class="pom-title">Peace of Mind Protection Package</div>
+          <div>
+            <div class="pom-price-label">+$${P.pom_price || 447}</div>
+            <div class="pom-price-sub">one-time</div>
+          </div>
+        </div>
+        <div class="pom-features-grid">
+          <div class="pom-feature-pill"><span style="font-size:14px;flex-shrink:0">⚡</span><div><div class="pom-feature-pill-title">Surge Protection</div><div class="pom-feature-pill-desc">$75K equipment warranty</div></div></div>
+          <div class="pom-feature-pill"><span style="font-size:14px;flex-shrink:0">📋</span><div><div class="pom-feature-pill-title">Wattage Guide</div><div class="pom-feature-pill-desc">Know exactly what to run</div></div></div>
+          <div class="pom-feature-pill"><span style="font-size:14px;flex-shrink:0">🔍</span><div><div class="pom-feature-pill-title">Panel Inspection</div><div class="pom-feature-pill-desc">20-point safety check</div></div></div>
+          <div class="pom-feature-pill"><span style="font-size:14px;flex-shrink:0">📅</span><div><div class="pom-feature-pill-title">Priority Scheduling</div><div class="pom-feature-pill-desc">Move to front of the line</div></div></div>
+        </div>
+      </div>` : ''}
+
+      <div class="investment-total-section">
+        <span class="investment-total-label">Total</span>
+        <span class="total-badge" id="total-badge"></span>
+      </div>
+      <div class="investment-per-day" id="per-day-note"></div>
+
+      </div>
+    </div>
+
+    <!-- ══ ACT 5: RISK REMOVAL ══ -->
+    <div class="guarantee-section reveal">
+      <div class="section-eyebrow" style="color:var(--green)">Guarantees</div>
+      <div style="font-family:'Outfit',sans-serif;font-size:20px;font-weight:800;color:var(--navy);margin-bottom:16px;letter-spacing:-.02em">Clear terms. No surprises.</div>
+      <div class="guarantee-item">
+        <div class="guarantee-icon" aria-hidden="true">1</div>
+        <div>
+          <div class="guarantee-item-title">Price lock</div>
+          <div class="guarantee-item-desc">The price you see today is the price you pay.</div>
+        </div>
+      </div>
+      <div class="guarantee-item">
+        <div class="guarantee-icon" aria-hidden="true">2</div>
+        <div>
+          <div class="guarantee-item-title">On time and clean</div>
+          <div class="guarantee-item-desc">We show up on time, keep your home clean, and walk you through the system before we leave.</div>
+        </div>
+      </div>
+      <div class="guarantee-item">
+        <div class="guarantee-icon" aria-hidden="true">3</div>
+        <div>
+          <div class="guarantee-item-title">1-year workmanship</div>
+          <div class="guarantee-item-desc">Permitted, inspected, and backed against defects for a full year. Done right or we make it right.</div>
+        </div>
+      </div>
+      <div class="badge-row">
+        <div class="authority-badge">SC LIC #2942</div>
+        <div class="authority-badge">Permit + Inspection Included</div>
+        <div class="authority-badge">Fully Insured</div>
+        <div class="authority-badge">4.9 Google · 100+ Reviews</div>
+      </div>
+    </div>
+
+    <!-- ══ QUIET NEXT STEP ══ -->
+    <div class="scarcity-notice reveal">
+      <p>Confirming locks your price. I file the permit and get you on the schedule.</p>
+    </div>
+
+    <!-- ══ SIGN ══ -->
+    <div class="sign-card reveal" id="sign-section">
+      <div class="sign-card-head">
+        <h2>Confirm your connection</h2>
+        <p>${requireDeposit ? 'Check the two items below, choose payment, and type your name. Your payment confirms the spot; I pull the permit and book your date.' : 'Check the two items below and type your name. Once confirmed, I pull the permit and text you to schedule. Price stays locked. No payment until the job is done.'}</p>
+      </div>
+      <div class="sign-card-body">
+        <div class="ack-row" id="ack-row-scope">
+          <div class="ack-box" id="ack-box-scope">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polyline points="2,6 5,9 10,3"/></svg>
+          </div>
+          <span class="ack-text">I've reviewed the scope and pricing and I'm ready to move forward.</span>
+        </div>
+        <div class="ack-row" id="ack-row-safety">
+          <div class="ack-box" id="ack-box-safety">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polyline points="2,6 5,9 10,3"/></svg>
+          </div>
+          <span class="ack-text">I've read the <a href="javascript:void(0)" id="safety-link">Generator Safety Instructions</a>.</span>
+        </div>
+        ${requireDeposit ? `
+        <div style="margin-top:20px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <label class="form-label" style="margin-bottom:0">Payment</label>
+            <div style="position:relative;display:inline-block" id="dep-policy-wrap">
+              <button onclick="toggleDepPolicy(event)" style="background:none;border:none;cursor:pointer;font-size:11px;font-weight:700;color:var(--navy-mid);text-decoration:underline;text-underline-offset:2px;padding:0;font-family:'Inter',sans-serif">Deposit Policy</button>
+              <div id="dep-policy-popup" style="display:none;position:absolute;left:0;top:calc(100% + 6px);width:280px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;box-shadow:0 8px 24px rgba(11,31,59,.12);z-index:100;font-size:12px;color:var(--text2);line-height:1.65">
+                <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:13px;color:var(--navy);margin-bottom:8px">Deposit &amp; Refund Policy</div>
+                <ul style="margin:0;padding-left:14px;display:flex;flex-direction:column;gap:5px">
+                  <li><strong>Rescheduling:</strong> Free anytime. Deposit carries over.</li>
+                  <li><strong>Cancel 48+ hrs before install:</strong> Full deposit refunded, minus $125 permit fee (non-refundable once filed).</li>
+                  <li><strong>Cancel under 48 hrs:</strong> Deposit forfeited. You may reschedule instead to keep it.</li>
+                  <li><strong>If we cancel:</strong> Full refund including permit fee.</li>
+                </ul>
+                <div style="margin-top:8px;font-size:11px;color:var(--text3)">The permit is filed within 1 business day of receiving your deposit.</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div class="pay-opt selected" id="pay-opt-deposit" onclick="selectPayOpt(false)">
+              <div class="pay-opt-label"><span class="pay-opt-name">${Math.round(depositRate*100)}% Deposit</span><span class="pay-opt-amount">${fmt(depositAmt)}</span></div>
+              <div class="pay-opt-sub">Remaining ${fmt(total - depositAmt)} due on install day</div>
+            </div>
+            <div class="pay-opt" id="pay-opt-full" onclick="selectPayOpt(true)">
+              <div class="pay-opt-label"><span class="pay-opt-name">Pay in Full</span><span class="pay-opt-amount">${fmt(total)}</span></div>
+              <div class="pay-opt-sub">Remainder is fully refundable if cancelled 48+ hrs before install</div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5">Card or bank transfer. ACH clears in 3 to 5 business days.</div>
+        </div>` : ''}
+        ${(P.discount_amount && P.discount_amount > 0 && P.notes) ? `
+        <div style="margin-top:20px;padding:14px 16px;background:#fefce8;border-left:4px solid #ca8a04;border-radius:8px">
+          <div style="font-size:12px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">Scope Modification, Binding on Approval</div>
+          <p style="font-size:13px;color:#78350f;line-height:1.6;margin:0">${esc(P.notes)}</p>
+          <p style="font-size:11px;color:#92400e;margin-top:8px;margin-bottom:0;line-height:1.5">By confirming below, you acknowledge that the above note modifies the standard scope of work described in this proposal. This modification is contractually binding and supersedes any conflicting default scope description above.</p>
+        </div>` : ''}
+        <div style="margin-top:22px;padding-top:18px;border-top:1px solid var(--border)">
+          <label class="form-label" for="signer-name" style="font-size:13px;margin-bottom:6px;letter-spacing:0;text-transform:none;font-weight:600;color:var(--navy)">Your full name <span class="req">*</span></label>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.5" id="signer-hint">Typing your name confirms this proposal.</p>
+          <input class="name-input" id="signer-name" type="text" placeholder="Full name" autocomplete="name" value="" oninput="validateForm();updateSigPreview()" aria-required="true" aria-describedby="signer-hint">
+          <div class="sig-preview" id="sig-preview"></div>
+          <div class="name-hint" style="text-align:center">Legally binding electronic signature under the ESIGN Act.</div>
+        </div>
+        <button class="approve-btn" id="approve-btn" onclick="approveProposal()" disabled ${daysLeft <= 0 ? 'data-expired="1"' : ''}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="approve-btn-label">${daysLeft <= 0 ? 'Price Lock Ended' : (requireDeposit ? `Confirm &amp; Pay ${fmt(depositAmt)} Deposit` : `Confirm &amp; Lock Price, ${fmt(calcTotal(chosenAmp))}`)}</span>
+        </button>
+        ${daysLeft <= 0 ? `<div style="text-align:center;font-size:12px;color:var(--navy);margin-top:10px;line-height:1.6;font-weight:600">Your 30-day price lock has ended. Text or call Key at <a href="tel:8648637800" style="color:var(--gold)">(864) 863-7800</a> and I'll get you a current price.</div>` : `<div style="text-align:center;font-size:12px;color:var(--text3);margin-top:12px;line-height:1.6">
+          ${requireDeposit ? 'Secure checkout next. Card or bank transfer.' : 'No payment today. Billed on completion.'}</div>`}
+        <div id="approve-err" style="font-size:12px;color:var(--red);margin-top:10px;min-height:16px;text-align:center"></div>
+      </div>
+    </div>
+
+    <div style="font-size:12px;color:var(--text3);text-align:center;line-height:1.8;padding-bottom:8px">
+      Have questions? Text or call Key directly at <strong style="color:var(--navy)">(864) 863-7800</strong>
+    </div>
+  `;
+
+  // Wire interactions
+  wireAckRow('ack-row-scope', 'ack-box-scope', 'scope');
+  wireAckRow('ack-row-safety', 'ack-box-safety', 'safety');
+  document.getElementById('safety-link').addEventListener('click', function(e) {
+    e.stopPropagation();
+    window.open('/inlet-safety-instructions.html', '_blank');
+  });
+
+  renderPricing();
+  renderPropertyBanner();
+  initScrollReveal();
+  initReviewCarousel();
+  updateSigPreview();
+  // Hero entrance
+  const hero = document.querySelector('.hero-card');
+  if (hero) { hero.style.cssText += ';opacity:0;transform:translateY(28px)'; requestAnimationFrame(() => { hero.style.transition = 'opacity .7s ease, transform .7s ease'; hero.style.opacity = '1'; hero.style.transform = 'translateY(0)'; }); }
+  authorizationFactsRendered = true;
+  syncAuthorizationGateUI();
+}
+
+// ── ACK ROW WIRING ───────────────────────────────────────────
+function wireAckRow(rowId, boxId, key) {
+  const row = document.getElementById(rowId);
+  row.addEventListener('click', function(e) {
+    if (e.target.tagName === 'A') return;
+    if (key === 'scope') ackScope = !ackScope;
+    else ackSafety = !ackSafety;
+    updateAckVisual(rowId, boxId, key === 'scope' ? ackScope : ackSafety);
+    validateForm();
+  });
+}
+
+function updateAckVisual(rowId, boxId, checked) {
+  const row = document.getElementById(rowId);
+  const box = document.getElementById(boxId);
+  const svg = box.querySelector('svg');
+  if (checked) { row.classList.add('checked'); svg.style.display = ''; }
+  else { row.classList.remove('checked'); svg.style.display = 'none'; }
+}
+
+// ── RENDER PRICING ───────────────────────────────────────────
+function renderPricing() {
+  const pr = getPrice(chosenAmp);
+  const isNew = !!P.pricing_30 || !!P.pricing_50;
+  let rows = '';
+
+  if (isNew) {
+    const base = pr.base || 0;
+    const longRun = pr.longRun || 0;
+    const mb = pr.mainBreaker || 0;
+    const tq = pr.twinQuad || 0;
+    const cord = pr.cord || 0;
+    const permit = pr.permitInspection || 125;
+    const _pi = (chosenAmp === '50' ? '50' : '30');
+    const is50 = chosenAmp === '50';
+    rows += priceRow(
+      `${_pi} Amp Generator Home Connection Installation`,
+      null,
+      fmt(Math.max(0, base - mb - tq - cord - permit)),
+      `assets/product-images/inlet-${_pi}amp.jpg`,
+      [
+        `${_pi}A weather-rated inlet box, exterior wall mount`,
+        'Interlock kit, panel-matched, prevents back-feed to the grid',
+        'Breaker wiring & panel work',
+        'Site cleanup, we leave it the way we found it',
+        'Step-by-step walkthrough before we leave'
+      ]
+    );
+    if (longRun) {
+      const lrDesc = 'Extra wire length included, already in your quote';
+      rows += priceRowIncluded('Extended Wire Run', lrDesc, null, null);
+    }
+    rows += priceRow(
+      'Permit & County Inspection',
+      null,
+      fmt(permit),
+      'assets/product-images/permit-inspection.jpg',
+      [
+        'Permit application filed with your county on your behalf',
+        'Inspection scheduled and coordinated by us',
+        'Certificate of completion, nothing for you to do'
+      ]
+    );
+    if (cord) rows += priceRow(
+      `${_pi}A Power Transfer Cord`,
+      null,
+      fmt(cord),
+      `assets/product-images/cord-${_pi}amp.jpg`,
+      [
+        `Matches your generator's ${_pi}-amp output`,
+        'Plugs directly into your new inlet box',
+        'Heavy-duty, weather-resistant, stays in the garage'
+      ]
+    );
+    if (mb) rows += priceRow('Main Breaker Replacement', 'Upgraded to current code requirements', fmt(mb));
+    if (tq) rows += priceRow('Panel Space Optimization', 'Twin/quad breaker swap to free up slots', fmt(tq));
+  } else {
+    const _pi2 = (chosenAmp === '50' ? '50' : '30');
+    rows += priceRow(`${_pi2} Amp Generator Home Connection Installation`, 'Inlet box, interlock kit, permit, inspection, walkthrough', fmt(pr.base || P.price_base), `assets/product-images/inlet-${_pi2}amp.jpg`);
+    if (P.include_cord) rows += priceRow(`${_pi2}A Power Transfer Cord`, 'Connects generator to inlet box', fmt(P.price_cord), `assets/product-images/cord-${_pi2}amp.jpg`);
+    if (P.include_surge) rows += priceRow('Whole-House Surge Protector', 'Installed on main panel', fmt(P.price_surge));
+  }
+
+  // Custom items rendered separately as toggle cards (see #custom-items-mount)
+  renderCustomItems();
+
+  if (P.discount_amount && P.discount_amount > 0) {
+    const discountNote = P.notes ? P.notes.trim() : '';
+    rows += `<tr class="price-row discount-row">
+      <td class="price-row-content">
+        <div class="price-row-name" style="color:var(--green)">Discount Applied</div>
+        ${discountNote ? `<div class="price-row-desc" style="color:var(--text2);font-style:italic">${discountNote}, scope modification (see below)</div>` : ''}
+      </td>
+      <td class="price-row-price" style="color:var(--green);white-space:nowrap">−${fmt(P.discount_amount)}</td>
+    </tr>`;
+  }
+
+  const total = calcTotal(chosenAmp);
+
+  const itemsEl = document.getElementById('pricing-items');
+  if (itemsEl) itemsEl.innerHTML = `<table class="price-table" style="margin:0">${rows}</table>`;
+
+  const totalBadge = document.getElementById('total-badge');
+  if (totalBadge) totalBadge.textContent = fmt(total);
+
+  const perDay = document.getElementById('per-day-note');
+  const requireDeposit = P.require_deposit !== false;
+  const depositRate = Number(P?.deposit_rate ?? 0.20);
+  const depositAmt = Math.round(total * depositRate);
+  if (perDay) {
+    if (requireDeposit) {
+      perDay.innerHTML = `<strong style="color:var(--navy)">${Math.round(depositRate*100)}% deposit ($${depositAmt.toLocaleString()}) due to confirm your spot.</strong><br><span style="font-size:12px">Remaining balance due on install day. That's just $${(total / 3650).toFixed(2)}/day for 10 years of protection.</span>`;
+    } else {
+      perDay.innerHTML = `<span style="font-size:12px">One all-in price. Permit, inspection, and cord included.</span>`;
+    }
+  }
+
+  // Update POM toggle visual
+  const pomToggle = document.getElementById('pom-toggle');
+  if (pomToggle) pomToggle.classList.toggle('on', pomOn);
+  const pomCard = document.getElementById('pom-card');
+  if (pomCard) { pomCard.style.boxShadow = pomOn ? 'inset 0 0 0 2px rgba(255,186,0,.4)' : ''; }
+
+  const approveTotal = document.getElementById('approve-total');
+  if (approveTotal) approveTotal.textContent = fmt(total);
+
+  const anchorNew = document.getElementById('anchor-our-price');
+  if (anchorNew) anchorNew.textContent = fmt(total);
+}
+
+function priceRow(name, desc, price, img, bullets) {
+  const imgHtml = img ? `<img class="price-thumb" src="${img}" alt="" loading="lazy">` : '';
+  const bulletsHtml = bullets?.length ? `<div class="price-item-bullets">${bullets.map(b => `<div class="price-item-bullet">${esc(b)}</div>`).join('')}</div>` : '';
+  return `<tr><td><div class="price-item-cell">${imgHtml}<div><div class="price-item-name">${esc(name)}</div>${desc ? `<div class="price-item-desc">${esc(desc)}</div>` : ''}${bulletsHtml}</div></div></td><td>${price}</td></tr>`;
+}
+
+function priceRowIncluded(name, desc, img, bullets) {
+  const imgHtml = img ? `<img class="price-thumb" src="${img}" alt="" loading="lazy">` : '';
+  const bulletsHtml = bullets?.length ? `<div class="price-item-bullets">${bullets.map(b => `<div class="price-item-bullet">${esc(b)}</div>`).join('')}</div>` : '';
+  return `<tr><td><div class="price-item-cell">${imgHtml}<div><div class="price-item-name">${esc(name)}</div>${desc ? `<div class="price-item-desc">${esc(desc)}</div>` : ''}${bulletsHtml}</div></div></td><td><span style="color:var(--green);font-size:12px;font-weight:700">✓ Included</span></td></tr>`;
+}
+
+// ── AMP TOGGLE ───────────────────────────────────────────────
+function switchAmp(amp) {
+  chosenAmp = amp;
+  document.querySelectorAll('.amp-toggle-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim().startsWith(amp === '30' ? '30' : '50'));
+  });
+  renderPricing();
+  updateApproveBtn();
+  saveSelections();
+}
+
+// ── POM TOGGLE ───────────────────────────────────────────────
+function renderCustomItems() {
+  const mount = document.getElementById('custom-items-mount');
+  if (!mount) return;
+  const items = Array.isArray(P.custom_items) ? P.custom_items.filter(i => i.title || i.price) : [];
+  if (!items.length) { mount.innerHTML = ''; return; }
+  const html = items.map((item, idx) => {
+    const on = customItemsOn[idx] !== false;
+    return `<div onclick="toggleCustomItem(${idx})" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;background:${on ? 'var(--light-blue)' : '#f8f9fb'};border-radius:10px;margin-bottom:8px;border:1.5px solid ${on ? 'rgba(11,31,59,.18)' : 'transparent'};transition:all .15s;user-select:none">
+      <div style="width:22px;height:22px;border-radius:50%;border:2px solid ${on ? 'var(--navy)' : '#c8cdd8'};background:${on ? 'var(--navy)' : '#fff'};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s">
+        ${on ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:600;color:${on ? 'var(--navy)' : 'var(--text3)'};${on ? '' : 'text-decoration:line-through'}">${esc(item.title || 'Additional service')}</div>
+      </div>
+      <div style="font-family:'Outfit',sans-serif;font-size:16px;font-weight:800;color:${on ? 'var(--navy)' : 'var(--text3)'}">${fmt(item.price || 0)}</div>
+    </div>`;
+  }).join('');
+  mount.innerHTML = `<div style="margin-bottom:16px">
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Extra Services, Select What You'd Like</div>
+    ${html}
+  </div>`;
+}
+
+function toggleCustomItem(idx) {
+  customItemsOn[idx] = !customItemsOn[idx];
+  renderPricing();
+  updateApproveBtn();
+  saveSelections();
+}
+
+function togglePom() {
+  pomOn = !pomOn;
+  const card = document.getElementById('pom-card');
+  const track = document.getElementById('pom-toggle');
+  if (card) { card.style.boxShadow = pomOn ? 'inset 3px 0 0 rgba(255,186,0,.9), 0 0 0 1px rgba(255,186,0,.25)' : ''; }
+  if (track) track.classList.toggle('on', pomOn);
+  renderPricing();
+  updateApproveBtn();
+  saveSelections();
+}
+
+// Surge is part of POM now (not a standalone toggle), so the old surge-toggle
+// UI was removed. `surgeOn` still hydrates from P.selected_surge for legacy
+// proposals and is recorded in the signed terms; it just has no live toggle.
+
+// ── SIGNATURE & VALIDATION ───────────────────────────────────
+function updateSigPreview() {
+  const name = (document.getElementById('signer-name')?.value || '').trim();
+  const preview = document.getElementById('sig-preview');
+  if (preview) preview.textContent = name;
+}
+
+function validateForm() {
+  const name = (document.getElementById('signer-name')?.value || '').trim();
+  const btn = document.getElementById('approve-btn');
+  if (btn) {
+    if (btn.dataset.expired === '1') { btn.disabled = true; return; }
+    btn.disabled = !authorizationGateReady() || depositCancellationUnconfirmed || !(name.length >= 2 && ackScope && ackSafety);
+  }
+}
+
+// ── PERSIST SELECTIONS (debounced) ───────────────────────────
+let _saveSelectionsTimer = null;
+function saveSelections() {
+  if (previewModeActive() || !P?.token) return;
+  clearTimeout(_saveSelectionsTimer);
+  _saveSelectionsTimer = setTimeout(async () => {
+    try {
+      await fetch(`${SUPABASE_URL}/functions/v1/proposal-mutate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
+        body: JSON.stringify({
+          token: P.token,
+          action: 'save_selections',
+          selected_amp: String(chosenAmp),
+          selected_pom: !!pomOn,
+        }),
+      });
+    } catch(e) { /* non-critical, selections saved on final approve anyway */ }
+  }, 600);
+}
+
+function toggleDepPolicy(e) {
+  e.stopPropagation();
+  const popup = document.getElementById('dep-policy-popup');
+  if (!popup) return;
+  const isOpen = popup.style.display !== 'none';
+  popup.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    const close = (ev) => { if (!document.getElementById('dep-policy-wrap')?.contains(ev.target)) { popup.style.display = 'none'; document.removeEventListener('click', close); } };
+    setTimeout(() => document.addEventListener('click', close), 0);
+  }
+}
+
+function selectPayOpt(full) {
+  selectedPayFull = full;
+  document.getElementById('pay-opt-deposit')?.classList.toggle('selected', !full);
+  document.getElementById('pay-opt-full')?.classList.toggle('selected', full);
+  updateApproveBtn();
+}
+
+function updateApproveBtn() {
+  const total = calcTotal(chosenAmp);
+  const depositRate = Number(P?.deposit_rate ?? 0.20);
+  const depositAmt = Math.round(total * depositRate);
+  const requireDeposit = P && P.require_deposit !== false;
+  const label = document.getElementById('approve-btn-label');
+  if (label) {
+    if (requireDeposit) {
+      label.innerHTML = selectedPayFull
+        ? `Confirm &amp; Pay ${fmt(total)} in Full`
+        : `Confirm &amp; Pay ${fmt(depositAmt)} Deposit`;
+    } else {
+      label.innerHTML = `Confirm &amp; Lock Price, ${fmt(total)}`;
+    }
+  }
+  const btn = document.getElementById('approve-btn');
+  if (btn && !btn.disabled) validateForm();
+}
+
+// ── DEPOSIT PAYMENT (called from approved state) ─────────────
+async function payDeposit(payFull = false) {
+  if (previewModeActive() || !authorizationGateReady() || approvedCheckoutOpening) return;
+  approvedCheckoutOpening = true;
+  const btnId = payFull ? '[onclick="payDeposit(true)"]' : '[onclick="payDeposit()"]';
+  const btn = document.querySelector(btnId);
+  document.querySelectorAll('[onclick="payDeposit()"],[onclick="payDeposit(true)"]').forEach((control) => { control.disabled = true; });
+  if (btn) btn.textContent = 'Redirecting...';
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/proposal-deposit-checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
+      body: JSON.stringify({ proposal_token: P.token, pay_full: payFull }),
+    });
+    const result = await resp.json();
+    let target = null;
+    try {
+      const url = new URL(result.url);
+      if (url.protocol === 'https:' && (url.hostname === 'checkout.stripe.com' || url.hostname.endsWith('.stripe.com'))) target = url.href;
+    } catch {}
+    if (resp.ok && target) { window.location.href = target; return; }
+    alert('Payment error: ' + (result.error || 'Unknown error'));
+  } catch(e) { alert('Network error, please call (864) 863-7800.'); }
+  approvedCheckoutOpening = false;
+  document.querySelectorAll('[onclick="payDeposit()"],[onclick="payDeposit(true)"]').forEach((control) => { control.disabled = isPreview; });
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = payFull
+      ? `Pay $${Math.round(P.signed_total??P.total??0).toLocaleString()} in Full`
+      : `Pay $${Math.round((P.signed_total??P.total??0)*Number(P.deposit_rate??0.20)).toLocaleString()} Deposit`;
+  }
+}
+
+// ── APPROVE ──────────────────────────────────────────────────
+let approving = false;
+function resetSignedCheckoutButton(btn) {
+  btn.disabled = false;
+  approving = false;
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <span id="approve-btn-label">Try secure payment again</span>';
+}
+
+function resetUnsignedApprovalButton(btn) {
+  const total = calcTotal(chosenAmp);
+  const depositRate = Number(P?.deposit_rate ?? 0.20);
+  const deposit = Math.round(total * depositRate);
+  const label = P.require_deposit === false
+    ? `Confirm &amp; Lock Price, ${fmt(total)}`
+    : (selectedPayFull ? `Confirm &amp; Pay ${fmt(total)} in Full` : `Confirm &amp; Pay ${fmt(deposit)} Deposit`);
+  btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <span id="approve-btn-label">${label}</span>`;
+  validateForm();
+}
+
+function resetDepositAcceptanceAuthorization(message) {
+  approving = false;
+  signStatusUncertain = false;
+  selectedPayFull = false;
+  ackScope = false;
+  ackSafety = false;
+  renderProposal();
+  const signer = document.getElementById('signer-name');
+  if (signer) signer.value = '';
+  updateSigPreview();
+  updateAckVisual('ack-row-scope', 'ack-box-scope', false);
+  updateAckVisual('ack-row-safety', 'ack-box-safety', false);
+  validateForm();
+  const err = document.getElementById('approve-err');
+  if (err) err.textContent = message || 'Payment was not confirmed. Review the proposal, check each acknowledgment, enter your name, and accept again.';
+}
+
+async function openPendingDepositCheckout(acceptanceAttemptId) {
+  if (previewModeActive() || !authorizationGateReady()) return;
+  rememberPendingDepositAcceptance(P.token, acceptanceAttemptId);
+  const resp = await fetch(`${SUPABASE_URL}/functions/v1/proposal-deposit-checkout`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
+    body: JSON.stringify({
+      proposal_token: P.token,
+      pay_full: selectedPayFull,
+      acceptance_attempt_id: acceptanceAttemptId,
+    }),
+  });
+  const result = await resp.json().catch(() => ({}));
+  if (!resp.ok || result.error || !result.url) throw new Error(result.error || 'Could not start secure payment.');
+  let target = null;
+  try {
+    const url = new URL(result.url);
+    if (url.protocol === 'https:' && (url.hostname === 'checkout.stripe.com' || url.hostname.endsWith('.stripe.com'))) target = url.href;
+  } catch {}
+  if (!target) throw new Error('Payment setup returned a bad redirect.');
+  window.location.href = target;
+}
+
+async function openSignedCheckout(btn) {
+  if (previewModeActive() || !authorizationGateReady()) return;
+  const err = document.getElementById('approve-err');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner-large" style="width:20px;height:20px;border-width:2.5px;margin:0"></div> Redirecting to payment...';
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/proposal-deposit-checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
+      body: JSON.stringify({ proposal_token: P.token, pay_full: selectedPayFull }),
+    });
+    const result = await resp.json().catch(() => ({}));
+    if (!resp.ok || result.error || !result.url) throw new Error(result.error || 'Could not start secure payment.');
+    let target = null;
+    try {
+      const url = new URL(result.url);
+      if (url.protocol === 'https:' && (url.hostname === 'checkout.stripe.com' || url.hostname.endsWith('.stripe.com'))) target = url.href;
+    } catch {}
+    if (!target) throw new Error('Payment setup returned a bad redirect.');
+    window.location.href = target;
+  } catch (_) {
+    err.textContent = 'Your proposal is signed. Secure payment did not open. Try the payment step again or call (864) 863-7800.';
+    resetSignedCheckoutButton(btn);
+  }
+}
+
+async function retrySignedCheckout() {
+  if (previewModeActive() || !authorizationGateReady() || approving || !P) return;
+  const btn = document.getElementById('approve-btn');
+  const err = document.getElementById('approve-err');
+  if (!btn || !err) return;
+  approving = true;
+  err.textContent = '';
+  await openSignedCheckout(btn);
+}
+
+async function readAuthoritativeProposal() {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 6000);
+  try {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/proposal-view?token=${encodeURIComponent(P.token)}`, {
+      headers: { 'Authorization': `Bearer ${SUPABASE_KEY}` },
+      cache: 'no-store',
+      signal: controller.signal,
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 410) return { __superseded: true, latest_token: data.latest_token || null };
+    if (!response.ok || !data.proposal) throw new Error('status unavailable');
+    return data.proposal;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function hasCheckoutReturnHint() {
+  return /[?&](deposit_paid|card_saved|payment_check|acceptance_cancel)=1(?:&|$)/.test(window.location.search);
+}
+
+const ACCEPTANCE_ATTEMPT_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function pendingDepositStorageKey(token) { return `bpp:pending-deposit-acceptance:${token}`; }
+function rememberPendingDepositAcceptance(token, attemptId) {
+  if (!token || !ACCEPTANCE_ATTEMPT_RE.test(String(attemptId || ''))) return;
+  try { sessionStorage.setItem(pendingDepositStorageKey(token), String(attemptId)); } catch (_) {}
+}
+function storedPendingDepositAcceptance(token) {
+  try {
+    const value = sessionStorage.getItem(pendingDepositStorageKey(token)) || '';
+    return ACCEPTANCE_ATTEMPT_RE.test(value) ? value : null;
+  } catch (_) { return null; }
+}
+function forgetPendingDepositAcceptance(token, attemptId) {
+  try {
+    const key = pendingDepositStorageKey(token);
+    const current = sessionStorage.getItem(key);
+    if (!attemptId || current === String(attemptId)) sessionStorage.removeItem(key);
+  } catch (_) {}
+}
+async function terminatePendingDepositAcceptance(token, attemptId, signal) {
+  if (!token || !ACCEPTANCE_ATTEMPT_RE.test(String(attemptId || ''))) throw new Error('invalid acceptance attempt');
+  depositCancellationUnconfirmed = true;
+  validateForm();
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/proposal-deposit-checkout`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
+    body: JSON.stringify({
+      action: 'cancel_pending_acceptance',
+      proposal_token: token,
+      acceptance_attempt_id: attemptId,
+    }),
+    signal,
+  });
+  const result = await response.json().catch(() => ({}));
+  const finalizationPending = result?.acceptance_pending === true
+    || result?.payment_confirmed === true
+    || result?.reconciliation_required === true;
+  if (!response.ok || result?.ok !== true
+      || (result.accepted !== true
+        && result.authorization_reset_required !== true
+        && !finalizationPending)) {
+    throw new Error(result?.error || 'acceptance cancellation was not confirmed');
+  }
+  if (finalizationPending && result.accepted !== true) {
+    depositCancellationUnconfirmed = true;
+    throw new Error('payment finalization is pending');
+  }
+  forgetPendingDepositAcceptance(token, attemptId);
+  depositCancellationUnconfirmed = false;
+  return result;
+}
+async function terminateActivePendingDepositAcceptance(token, signal) {
+  depositCancellationUnconfirmed = true;
+  validateForm();
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/proposal-deposit-checkout`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
+    body: JSON.stringify({ action: 'cancel_active_pending_acceptance', proposal_token: token }),
+    signal,
+  });
+  const result = await response.json().catch(() => ({}));
+  const finalizationPending = result?.acceptance_pending === true
+    || result?.payment_confirmed === true
+    || result?.reconciliation_required === true;
+  if (!response.ok || result?.ok !== true
+      || (result.active === true
+        && result.accepted !== true
+        && result.authorization_reset_required !== true
+        && !finalizationPending)) {
+    throw new Error(result?.error || 'active acceptance status was not confirmed');
+  }
+  if (finalizationPending && result.accepted !== true) {
+    depositCancellationUnconfirmed = true;
+    throw new Error('payment finalization is pending');
+  }
+  depositCancellationUnconfirmed = false;
+  if (result.authorization_reset_required === true) depositAuthorizationWasReset = true;
+  return result;
+}
+async function checkPendingDepositAcceptance(token, attemptId) {
+  if (!token || !ACCEPTANCE_ATTEMPT_RE.test(String(attemptId || ''))) {
+    throw new Error('acceptance attempt status is unavailable');
+  }
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/proposal-deposit-checkout`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
+    body: JSON.stringify({
+      action: 'check_pending_acceptance',
+      proposal_token: token,
+      acceptance_attempt_id: attemptId,
+    }),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || result?.ok !== true) {
+    throw new Error(result?.error || 'acceptance status was not confirmed');
+  }
+  return result;
+}
+async function settlePendingDepositAcceptanceBeforeLoad(token, signal) {
+  if (previewModeActive()) return null;
+  const params = new URLSearchParams(window.location.search);
+  const queryAttempt = params.get('acceptance_attempt_id') || '';
+  const validQueryAttempt = ACCEPTANCE_ATTEMPT_RE.test(queryAttempt) ? queryAttempt : null;
+  const paidReturn = params.get('deposit_paid') === '1' || params.get('payment_check') === '1';
+  if (paidReturn) {
+    if (validQueryAttempt) rememberPendingDepositAcceptance(token, validQueryAttempt);
+    return null;
+  }
+  const cancelReturn = params.get('acceptance_cancel') === '1';
+  if (cancelReturn && !validQueryAttempt) throw new Error('missing acceptance attempt');
+  const attemptId = validQueryAttempt || storedPendingDepositAcceptance(token);
+  if (!attemptId) return terminateActivePendingDepositAcceptance(token, signal);
+  const result = await terminatePendingDepositAcceptance(token, attemptId, signal);
+  if (result.authorization_reset_required === true) depositAuthorizationWasReset = true;
+  scrubCheckoutReturnHints(false);
+  return result;
+}
+
+async function runAuthorizationGate(token) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), AUTHORIZATION_GATE_TIMEOUT_MS);
+  try {
+    return await settlePendingDepositAcceptanceBeforeLoad(token, controller.signal);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function beginAuthorizationGate(token) {
+  authorizationGateToken = token || authorizationGateToken;
+  if (previewModeActive()) {
+    setAuthorizationGateState('preview');
+    return Promise.resolve(null);
+  }
+  if (!authorizationGateToken || authorizationGateInFlight) return authorizationGateInFlight || Promise.resolve(null);
+  const gateParams = new URLSearchParams(window.location.search);
+  const gatePaidReturn = gateParams.get('deposit_paid') === '1' || gateParams.get('payment_check') === '1';
+  const gateAttempt = gateParams.get('acceptance_attempt_id') || storedPendingDepositAcceptance(authorizationGateToken);
+  if (!gatePaidReturn && (gateParams.get('acceptance_cancel') === '1' || ACCEPTANCE_ATTEMPT_RE.test(String(gateAttempt || '')))) {
+    authorizationFullRedoPending = true;
+  }
+  setAuthorizationGateState('pending');
+  const attempt = runAuthorizationGate(authorizationGateToken).then((result) => {
+    if (result?.accepted === true) {
+      window.location.reload();
+      return result;
+    }
+    if (result?.authorization_reset_required === true && authorizationFactsRendered && P && document.getElementById('approve-btn')) {
+      depositAuthorizationWasReset = false;
+      resetDepositAcceptanceAuthorization('Payment was not confirmed, so this proposal was not accepted. Review it, check each acknowledgment, enter your name, and accept again.');
+    }
+    setAuthorizationGateState('ready');
+    return result;
+  }).catch(() => {
+    setAuthorizationGateState('failed');
+    return null;
+  }).finally(() => {
+    if (authorizationGateInFlight === attempt) authorizationGateInFlight = null;
+  });
+  authorizationGateInFlight = attempt;
+  return attempt;
+}
+
+function proposalUrlForToken(token) {
+  const params = new URLSearchParams(window.location.search);
+  params.set('token', token);
+  params.delete('deposit_paid');
+  params.delete('card_saved');
+  params.delete('payment_check');
+  params.delete('acceptance_cancel');
+  params.delete('acceptance_attempt_id');
+  if (isPreview || params.get('preview') === '1') params.set('preview', '1');
+  else params.delete('preview');
+  const query = params.toString();
+  return `/proposal.html${query ? `?${query}` : ''}`;
+}
+
+function depositAcceptanceRetryUrl(token) {
+  const next = new URLSearchParams(window.location.search);
+  next.set('token', token);
+  next.delete('deposit_paid');
+  next.delete('card_saved');
+  next.delete('payment_check');
+  next.delete('acceptance_cancel');
+  next.delete('acceptance_attempt_id');
+  next.set('acceptance_retry', '1');
+  return `${window.location.pathname}?${next.toString()}`;
+}
+
+function consumeDepositAcceptanceRetry() {
+  const next = new URLSearchParams(window.location.search);
+  if (next.get('acceptance_retry') !== '1') return false;
+  next.delete('acceptance_retry');
+  const query = next.toString();
+  history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}`);
+  return true;
+}
+
+function scrubCheckoutReturnHints(keepChecking = false) {
+  const params = new URLSearchParams(window.location.search);
+  params.delete('deposit_paid');
+  params.delete('card_saved');
+  params.delete('acceptance_cancel');
+  params.delete('acceptance_attempt_id');
+  if (keepChecking) params.set('payment_check', '1');
+  else params.delete('payment_check');
+  const query = params.toString();
+  history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}`);
+}
+
+function approvedPaymentTruthConfirmed(row) {
+  const state = row?.payment_state;
+  if (!state || typeof state !== 'object') return false;
+  if (row.require_deposit === false) return state.kind === 'setup' && state.status === 'card_saved';
+  if (state.kind === 'full_payment') {
+    return state.status === 'paid'
+      && state.paid_in_full === true
+      && state.invoice_paid_in_full === true
+      && Number(state.project_remaining) === 0;
+  }
+  return state.kind === 'deposit'
+    && state.status === 'paid'
+    && state.invoice_paid_in_full === true;
+}
+
+async function showCheckoutReturnPending() {
+  const status = String(P?.status || '').toLowerCase();
+  if (P?.require_deposit !== false && ['sent', 'viewed', 'copied'].includes(status)) {
+    const params = new URLSearchParams(window.location.search);
+    const attemptId = params.get('acceptance_attempt_id') || storedPendingDepositAcceptance(P.token);
+    try {
+      if (!ACCEPTANCE_ATTEMPT_RE.test(String(attemptId || ''))) {
+        throw new Error('acceptance attempt status is unavailable');
+      }
+      const result = await checkPendingDepositAcceptance(P.token, attemptId);
+      if (result.accepted === true) { window.location.reload(); return; }
+      if (result.authorization_reset_required === true) {
+        forgetPendingDepositAcceptance(P.token, attemptId);
+        window.location.replace(depositAcceptanceRetryUrl(P.token));
+        return;
+      }
+      scrubCheckoutReturnHints(true);
+      showError(
+        result.payment_confirmed === true ? 'Final approval is still processing' : 'Payment status needs confirmation',
+        result.payment_confirmed === true
+          ? 'The secure payment provider reports this payment completed, but the proposal is not accepted until the server finishes the approval record. Check again in a moment or call Key if this remains.'
+          : 'The server has not confirmed a completed payment or proposal acceptance. This proposal is not accepted. Check again in a moment or call Key if this remains.',
+        { label: 'Check payment status', onClick: () => reconcileCheckoutReturn(P) }
+      );
+    } catch (_) {
+      scrubCheckoutReturnHints(true);
+      depositCancellationUnconfirmed = true;
+      showError(
+        'Payment status needs confirmation',
+        'We could not safely confirm the previous payment attempt. This proposal is not accepted, and a new acceptance is blocked to prevent a duplicate payment. Refresh to check again, or call Key at (864) 863-7800.',
+        { label: 'Check payment status', onClick: () => reconcileCheckoutReturn(P) }
+      );
+    }
+    return;
+  }
+  scrubCheckoutReturnHints(true);
+  showError(
+    'Checking payment status',
+    'The secure payment page returned here, but the server has not confirmed the result yet. No payment or saved card is being claimed until that confirmation arrives.',
+    { label: 'Check payment status', onClick: () => reconcileCheckoutReturn(P) }
+  );
+}
+
+function reconcileCheckoutReturn(initialRow) {
+  P = initialRow || P;
+  showError('Checking payment status', 'The secure payment page returned here. We are checking the server before showing any payment or saved-card result.');
+  const delays = [0, 300, 900, 1800];
+  let attempt = 0;
+  const check = () => {
+    if (attempt >= delays.length) { showCheckoutReturnPending(); return; }
+    const delay = delays[attempt++];
+    window.setTimeout(async () => {
+      try {
+        const row = await readAuthoritativeProposal();
+        if (row?.__superseded) {
+          scrubCheckoutReturnHints(false);
+          const latest = row.latest_token;
+          const action = latest && /^[a-zA-Z0-9-]{8,64}$/.test(latest)
+            ? { label: 'View your current quote', href: proposalUrlForToken(latest) }
+            : null;
+          showError('This quote was updated', 'A newer version of this quote is available. Review that version before continuing.', action);
+          return;
+        }
+        const token = P.token;
+        P = { ...row, token: row.token || token };
+        const status = String(P.status || '').toLowerCase();
+        if (status === 'approved' && approvedPaymentTruthConfirmed(P)) { scrubCheckoutReturnHints(false); renderApproved(); return; }
+        if (terminalProposalStatus(status)) { scrubCheckoutReturnHints(false); showClosedProposal(P); return; }
+        if (status === 'signed' && P.payment_state?.status === 'partial') { scrubCheckoutReturnHints(false); renderApproved(); return; }
+        check();
+      } catch (_) {
+        check();
+      }
+    }, delay);
+  };
+  check();
+}
+
+function proposalRevision(row) {
+  const value = Number(row?.signature_revision);
+  return Number.isFinite(value) ? value : null;
+}
+
+function terminalProposalStatus(status) {
+  return ['cancelled', 'canceled', 'declined', 'expired', 'superseded'].includes(status);
+}
+
+function showClosedProposal(row) {
+  P = row;
+  if (hasCheckoutReturnHint()) scrubCheckoutReturnHints(false);
+  const expired = String(row?.status || '').toLowerCase() === 'expired';
+  showError(
+    expired ? 'This quote has expired' : 'Proposal closed',
+    expired
+      ? 'This proposal cannot be signed. Please contact (864) 863-7800 for a refreshed quote.'
+      : 'This proposal is no longer active. Please contact (864) 863-7800 if you have questions.'
+  );
+}
+
+function resetAuthorizationForRevisedContract(row) {
+  approving = false;
+  signStatusUncertain = false;
+  P = row;
+  selectedPayFull = false;
+  ackScope = false;
+  ackSafety = false;
+  renderProposal();
+  const signer = document.getElementById('signer-name');
+  if (signer) signer.value = '';
+  updateSigPreview();
+  updateAckVisual('ack-row-scope', 'ack-box-scope', false);
+  updateAckVisual('ack-row-safety', 'ack-box-safety', false);
+  validateForm();
+  const err = document.getElementById('approve-err');
+  const label = document.getElementById('approve-btn-label');
+  if (err) err.textContent = 'This proposal changed. Review the current scope and price, then acknowledge and sign the revised proposal.';
+  if (label) label.textContent = 'Review revised proposal';
+}
+
+async function reconcileSignFailure(btn, err) {
+  btn.disabled = true;
+  btn.textContent = 'Checking signing status...';
+  try {
+    const row = await readAuthoritativeProposal();
+    if (row?.__superseded) {
+      approving = false;
+      signStatusUncertain = false;
+      const latest = row.latest_token;
+      const action = latest && /^[a-zA-Z0-9-]{8,64}$/.test(latest)
+        ? { label: 'View your current quote', href: proposalUrlForToken(latest) }
+        : null;
+      showError('This quote was updated', 'A newer version of this quote is available. Review that version before signing.', action);
+      return;
+    }
+    const token = P.token;
+    const priorRevision = proposalRevision(P);
+    // Rendering adds derived compatibility fields to P. Replace the snapshot
+    // so a sparse authoritative reread cannot retain stale terms from the
+    // prior revision.
+    P = { ...row, token: row.token || token };
+    const status = String(P.status || '').toLowerCase();
+    signStatusUncertain = false;
+    approving = false;
+    if (status === 'approved') {
+      renderApproved();
+      return;
+    }
+    if (status === 'signed') {
+      if (P.require_deposit !== false) {
+        if (hasCheckoutReturnHint()) scrubCheckoutReturnHints(false);
+        showError(
+          'Proposal not accepted',
+          'Payment was not confirmed, so this proposal was not accepted. Ask Key for a refreshed proposal, then review it, check each acknowledgment, enter your name, and accept again.',
+          { label: 'Call Key', href: 'tel:+18648637800' }
+        );
+        return;
+      }
+      if (priorRevision !== proposalRevision(P)) {
+        renderApproved();
+        return;
+      }
+      resetSignedCheckoutButton(btn);
+      err.textContent = 'Your proposal is signed. Continue with the secure payment step.';
+      return;
+    }
+    if (terminalProposalStatus(status)) {
+      showClosedProposal(P);
+      return;
+    }
+    if (priorRevision !== proposalRevision(P)) {
+      resetAuthorizationForRevisedContract(P);
+      return;
+    }
+    resetUnsignedApprovalButton(btn);
+    err.textContent = 'We confirmed your signature was not saved. Your entries are still here, and you can try again.';
+  } catch (_) {
+    signStatusUncertain = true;
+    approving = false;
+    btn.disabled = false;
+    btn.innerHTML = '<span id="approve-btn-label">Check signing status</span>';
+    err.textContent = 'We could not confirm whether your signature was saved. Check its status before trying again, or call (864) 863-7800.';
+  }
+}
+
+async function approveProposal() {
+  const err = document.getElementById('approve-err');
+  const btn = document.getElementById('approve-btn');
+  if (previewModeActive()) {
+    err.textContent = 'Preview mode is read only. Nothing was approved, signed, or paid.';
+    return;
+  }
+  if (approving) return;
+  if (!authorizationGateReady() || depositCancellationUnconfirmed) {
+    err.textContent = 'The previous payment attempt must be confirmed before you can accept again. Use the authorization retry above, or call (864) 863-7800.';
+    return;
+  }
+  if (signStatusUncertain) {
+    approving = true;
+    err.textContent = '';
+    await reconcileSignFailure(btn, err);
+    return;
+  }
+  // The no-deposit card-setup contract keeps its existing Signed retry. A
+  // deposit-required proposal must never reuse an earlier signature without a
+  // paid deposit, so historical Signed rows fail closed instead.
+  if (String(P?.status || '').toLowerCase() === 'signed') {
+    if (P.require_deposit === false) { await retrySignedCheckout(); return; }
+    resetDepositAcceptanceAuthorization('Payment was not confirmed, so this proposal is not accepted. Review and accept again after the proposal is refreshed. If this message remains, call (864) 863-7800.');
+    return;
+  }
+  const name = document.getElementById('signer-name').value.trim();
+  if (!name || !ackScope || !ackSafety) { err.textContent = 'Please complete all fields above.'; return; }
+  approving = true;
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner-large" style="width:20px;height:20px;border-width:2.5px;margin:0"></div> Submitting...';
+  const total = calcTotal(chosenAmp);
+  // IP is stamped server-side from X-Forwarded-For by the proposal-mutate
+  // edge function, the old client-side ipify fetch was trivially
+  // spoofable and corrupted the legal signing record. The terms snapshot
+  // omits ip_address here; the authoritative IP is on the row.
+  const termsSnapshot = JSON.stringify({ proposal_id: P.id, proposal_token: P.token, contact_name: P.contact_name, contact_address: P.contact_address, selected_amp: chosenAmp, selected_surge: surgeOn, surge_price: surgeOn ? (P.surge_price || 446) : 0, pricing: getPrice(chosenAmp), total, scope_acknowledged: true, safety_acknowledged: true, signer_name: name, signed_at: new Date().toISOString(), user_agent: navigator.userAgent });
+  let signErrMsg = null;
+  let signResult = null;
+  const depositRequired = P.require_deposit !== false;
+  const acceptanceRequestKey = crypto.randomUUID();
+  try {
+    const signRes = await fetch(`${SUPABASE_URL}/functions/v1/proposal-mutate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
+      body: JSON.stringify({
+        token: P.token,
+        action: 'sign',
+        proposal_revision: P.signature_revision,
+        signer_name: name,
+        safety_ack: true,
+        selected_amp: String(chosenAmp),
+        selected_surge: !!surgeOn,
+        selected_pom: !!pomOn,
+        // Freeze the customer's TRUE displayed total (base + POM + custom line
+        // items - discount). Without this the edge fn fell back to an amp-only
+        // serverEstimate that DROPPED custom items, under-collecting the deposit
+        // and breaking the balance charge (MONEY-01). Mirrors proposal-comp.html.
+        // The server floors this at ampBase, so a tampered-low value cannot undercharge.
+        signed_total: total,
+        approved_terms_snapshot: termsSnapshot,
+        acceptance_request_key: acceptanceRequestKey,
+        pay_full: !!selectedPayFull,
+      }),
+    });
+    signResult = await signRes.json().catch(() => ({}));
+    if (!signRes.ok) signErrMsg = signResult?.error || `HTTP ${signRes.status}`;
+  } catch (e) { signErrMsg = 'Network error'; }
+  if (signErrMsg) {
+    if (depositRequired) {
+      try {
+        const termination = await terminateActivePendingDepositAcceptance(P.token);
+        if (termination.accepted === true) { window.location.reload(); return; }
+        const row = await readAuthoritativeProposal();
+        if (row?.__superseded) {
+          approving = false;
+          signStatusUncertain = false;
+          const latest = row.latest_token;
+          const action = latest && /^[a-zA-Z0-9-]{8,64}$/.test(latest)
+            ? { label: 'View your current quote', href: proposalUrlForToken(latest) }
+            : null;
+          showError('This quote was updated', 'A newer version of this quote is available. Review that version before accepting.', action);
+          return;
+        }
+        const token = P.token;
+        const priorRevision = proposalRevision(P);
+        P = { ...row, token: row.token || token };
+        if (String(P.status || '').toLowerCase() === 'approved' && approvedPaymentTruthConfirmed(P)) {
+          renderApproved();
+          return;
+        }
+        const status = String(P.status || '').toLowerCase();
+        if (terminalProposalStatus(status)) { showClosedProposal(P); return; }
+        if (status === 'signed') {
+          showError(
+            'Proposal not accepted',
+            'Payment was not confirmed, so this proposal was not accepted. Ask Key for a refreshed proposal, then review it, check each acknowledgment, enter your name, and accept again.',
+            { label: 'Call Key', href: 'tel:+18648637800' }
+          );
+          return;
+        }
+        if (priorRevision !== proposalRevision(P)) {
+          resetAuthorizationForRevisedContract(P);
+          return;
+        }
+        resetDepositAcceptanceAuthorization();
+      } catch (_) {
+        resetDepositAcceptanceAuthorization('We could not safely close the previous payment attempt. Refresh to try again, or call (864) 863-7800. This proposal has not been accepted.');
+        depositCancellationUnconfirmed = true;
+        validateForm();
+      }
+      return;
+    }
+    await reconcileSignFailure(btn, err);
+    return;
+  }
+  if (depositRequired) {
+    const attemptId = String(signResult?.acceptance_attempt_id || '');
+    if (signResult?.pending_payment !== true || !/^[0-9a-f-]{36}$/i.test(attemptId)) {
+      resetDepositAcceptanceAuthorization();
+      return;
+    }
+    btn.innerHTML = '<div class="spinner-large" style="width:20px;height:20px;border-width:2.5px;margin:0"></div> Opening secure payment...';
+    try {
+      await openPendingDepositCheckout(attemptId);
+    } catch (_) {
+      try {
+        const result = await terminatePendingDepositAcceptance(P.token, attemptId);
+        if (result.accepted === true) { window.location.reload(); return; }
+        resetDepositAcceptanceAuthorization();
+      } catch (_) {
+        resetDepositAcceptanceAuthorization('We could not safely close the previous payment attempt. Refresh to try again, or call (864) 863-7800. This proposal has not been accepted.');
+        depositCancellationUnconfirmed = true;
+        validateForm();
+      }
+    }
+    return;
+  }
+  // Reflect the SERVER truth: signing sets status='Signed', NOT 'Approved'. Only a
+  // paid deposit (via the stripe-webhook) grants 'Approved'. Setting 'Approved' here
+  // was a local display lie that let the post-sign UI claim approval before any money
+  // was collected. Keep it 'Signed' so any re-render shows the honest deposit ask.
+  P.status = 'Signed'; P.signer_name = name; P.signed_at = new Date().toISOString(); P.selected_amp = chosenAmp; P.selected_surge = surgeOn; P.selected_pom = pomOn; P.signed_total = total; P.total = total;
+
+  // Every signed proposal must complete the server-authorized checkout setup.
+  // When no deposit is due this securely stores the payment method for $0 today.
+  await openSignedCheckout(btn);
+}
+
+// ── APPROVED STATE ───────────────────────────────────────────
+function renderApproved() {
+  // Synthesize pricing_30/50 for v3 proposals so the itemized breakdown
+  // (Installation / Permit & inspection / Power transfer cord) renders
+  // correctly on the approved page too, not just pre-approval.
+  applyV3Normalization();
+  window.scrollTo(0, 0);
+  renderPropertyBanner && setTimeout(renderPropertyBanner, 100);
+  const requireDeposit = P.require_deposit !== false;
+  const proposalStatus = String(P.status || '').toLowerCase();
+  if (proposalStatus === 'signed' && requireDeposit) {
+    if (hasCheckoutReturnHint()) scrubCheckoutReturnHints(false);
+    showError(
+      'Proposal not accepted',
+      'Payment was not confirmed, so this proposal was not accepted. Ask Key for a refreshed proposal, then review it, check each acknowledgment, enter your name, and accept again.',
+      { label: 'Call Key', href: 'tel:+18648637800' }
+    );
+    return;
+  }
+  if (hasCheckoutReturnHint() && String(P.status || '').toLowerCase() === 'approved') scrubCheckoutReturnHints(false);
+  if (P.approval_source === 'operator_recorded') {
+    const action = P.payment_action;
+    const channel = esc(String(P.approval_channel || 'your conversation').replace('_', ' '));
+    const actionHTML = !isPreview && action?.kind === 'invoice' && action?.href
+      ? `<a class="approve-btn" data-authorization-action="payment" href="${esc(action.href)}">${esc(action.label || 'Open secure deposit invoice')}</a>`
+      : '';
+    document.getElementById('main').innerHTML = `
+      <div class="state-wrap">
+        <h2>Approval recorded</h2>
+        <p>Key recorded your approval from ${channel}. No electronic signature or card authorization was created.</p>
+        <p>${actionHTML ? 'Use the separate secure invoice below for the deposit.' : 'Key will contact you to confirm the next step.'}</p>
+        ${actionHTML}
+      </div>`;
+    return;
+  }
+  if (P.payment_action?.kind === 'invoice' && P.payment_action?.href) {
+    const paymentKind = P.payment_state?.kind === 'full_payment' ? 'project payment' : 'deposit';
+    const fallbackLabel = P.payment_state?.kind === 'full_payment'
+      ? 'Open secure payment invoice'
+      : 'Open secure deposit invoice';
+    const actionHTML = !isPreview
+      ? `<a class="approve-btn" data-authorization-action="payment" href="${esc(P.payment_action.href)}">${esc(P.payment_action.label || fallbackLabel)}</a>`
+      : '';
+    document.getElementById('main').innerHTML = `
+      <div class="state-wrap">
+        <h2>One payment step remains</h2>
+        <p>${P.payment_state?.status === 'partial' ? `Part of this ${paymentKind} is already recorded. ` : ''}Use the secure invoice for the exact remaining balance.${isPreview ? ' Preview mode cannot open payment.' : ''}</p>
+        ${actionHTML}
+      </div>`;
+    return;
+  }
+  const paymentFlowStatus = P.payment_state && typeof P.payment_state === 'object' ? P.payment_state.status : null;
+  if ((proposalStatus === 'approved' && !approvedPaymentTruthConfirmed(P))
+      || (proposalStatus === 'signed' && paymentFlowStatus !== 'not_started')) {
+    if (hasCheckoutReturnHint()) scrubCheckoutReturnHints(true);
+    showError(
+      'Payment status needs confirmation',
+      'Your proposal approval is recorded, but the payment ledger is not available or does not agree yet. No payment or saved card is being claimed until the server confirms it.',
+      { label: 'Check payment status', onClick: () => reconcileCheckoutReturn(P) }
+    );
+    return;
+  }
+  if (proposalStatus === 'approved' && hasCheckoutReturnHint()) scrubCheckoutReturnHints(false);
+  const paymentState = P.payment_state && typeof P.payment_state === 'object' ? P.payment_state : {};
+  const depositPaid = paymentState.kind === 'deposit' && paymentState.status === 'paid';
+  const fullPaymentPaid = paymentState.kind === 'full_payment' && paymentState.status === 'paid' && paymentState.paid_in_full === true;
+  const paymentConfirmed = depositPaid || fullPaymentPaid || (paymentState.kind === 'setup' && paymentState.status === 'card_saved');
+  const signedDate = P.signed_at ? new Date(P.signed_at).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : '';
+  const signedTime = P.signed_at ? new Date(P.signed_at).toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) : '';
+  const total = Number(P.signed_total ?? P.total ?? 0);
+  const depositRate = Number(P?.deposit_rate ?? 0.20);
+  const depositAmt = Math.round(total * depositRate);
+  const projectRemaining = Number.isFinite(Number(paymentState.project_remaining)) ? Number(paymentState.project_remaining) : Math.max(total - Number(paymentState.net_paid || 0), 0);
+  const installationPaymentCopy = fullPaymentPaid
+    ? 'Your project is paid in full. No project balance is due.'
+    : (depositPaid
+      ? `${fmt(projectRemaining)} remains for the project and is due upon completion.`
+      : (requireDeposit
+        ? `After the deposit, ${fmt(Math.max(total - depositAmt, 0))} is due upon completion.`
+        : 'Payment is due upon completion.'));
+  const ampLabel = P.selected_amp === '50' ? '50 Amp' : '30 Amp';
+  const pr = getPrice(P.selected_amp || P.amp_type || '30');
+  let pricingRowsHtml = '';
+  if (P.pricing_30 || P.pricing_50) {
+    // For v3 the synthesizer sets permitInspection=0 when permit is toggled
+    // off in the creator (don't fall back to 125 in that case). The legacy
+    // path defaults to 125 since v2 always includes permit.
+    const isV3Approved = P.creator_version === 'v3';
+    const base = pr.base || 0; const longRun = pr.longRun || 0; const mb = pr.mainBreaker || 0; const tq = pr.twinQuad || 0; const cord = pr.cord || 0;
+    const permit = isV3Approved ? (pr.permitInspection || 0) : (pr.permitInspection || 125);
+    // chosenAmp is set inside renderProposal but may be null when the page
+    // loads directly into renderApproved, pull from the approved proposal's
+    // own selected_amp / amp_type fields.
+    const _piA = (P.selected_amp || P.amp_type) === '50' ? '50' : '30';
+    // Use the same rich priceRow format as the pre-approval view,
+    // thumbnails + scope bullets, not a plain table. Customer sees the
+    // exact item-by-item detail they signed for, not a generic
+    // "Installation" line.
+    pricingRowsHtml += priceRow(
+      `${_piA} Amp Generator Home Connection Installation`,
+      null,
+      fmt(Math.max(0, base - mb - tq - cord - permit)),
+      `/assets/product-images/inlet-${_piA}amp.jpg`,
+      [
+        `${_piA}A weather-rated inlet box, exterior wall mount`,
+        'Interlock kit, panel-matched, prevents back-feed to the grid',
+        'Breaker wiring & panel work',
+        'Site cleanup, we leave it the way we found it',
+        'Step-by-step walkthrough before we leave',
+      ]
+    );
+    if (longRun) pricingRowsHtml += priceRowIncluded('Extended Wire Run', 'Extra wire length included, already in your quote', null, null);
+    if (permit) pricingRowsHtml += priceRow(
+      'Permit & County Inspection',
+      null,
+      fmt(permit),
+      '/assets/product-images/permit-inspection.jpg',
+      [
+        'Permit application filed with your county on your behalf',
+        'Inspection scheduled and coordinated by us',
+        'Certificate of completion, nothing for you to do',
+      ]
+    );
+    if (cord) pricingRowsHtml += priceRow(
+      `${_piA}A Power Transfer Cord`,
+      null,
+      fmt(cord),
+      `/assets/product-images/cord-${_piA}amp.jpg`,
+      [
+        `Matches your generator's ${_piA}-amp output`,
+        'Plugs directly into your new inlet box',
+        'Heavy-duty, weather-resistant',
+      ]
+    );
+    if (mb) pricingRowsHtml += priceRow('Main Breaker Replacement', 'Upgraded to current code requirements', fmt(mb));
+    if (tq) pricingRowsHtml += priceRow('Panel Space Optimization', 'Twin/quad breaker swap to free up slots', fmt(tq));
+    // V3 custom line items (cord, panel adders, etc.) the customer kept
+    // checked. These ARE part of the agreed total but were previously
+    // omitted from the approved view, so the rows didn't sum to Total
+    // Approved. Render each checked item as a priced row so the column
+    // reconciles to the badge. Mirrors the pre-approval renderCustomItems.
+    if (Array.isArray(P.custom_items)) {
+      P.custom_items.forEach((ci, i) => {
+        const checked = (P.creator_version === 'v3' && Array.isArray(P.extra_line_items) && P.extra_line_items[i])
+          ? P.extra_line_items[i].checked !== false
+          : true;
+        if (!checked || !(ci.title || ci.price)) return;
+        pricingRowsHtml += priceRow(ci.title || 'Additional service', null, fmt(ci.price || 0));
+});
+    }
+  } else {
+    pricingRowsHtml += `<tr><td class="price-item-name">Base installation</td><td>${fmt(pr.base || P.price_base || 0)}</td></tr>`;
+    if (P.include_cord) pricingRowsHtml += `<tr><td class="price-item-name">Power transfer cord</td><td>${fmt(P.price_cord || 0)}</td></tr>`;
+  }
+  if (P.selected_pom) pricingRowsHtml += `<tr><td class="price-item-name">Peace of Mind Protection Package</td><td>${fmt(P.pom_price || 447)}</td></tr>`;
+  if (P.discount_amount && P.discount_amount > 0) pricingRowsHtml += `<tr><td class="price-item-name" style="color:var(--green)">Discount${P.notes ? `, ${esc(P.notes)}` : ''}</td><td style="color:var(--green)">−${fmt(P.discount_amount)}</td></tr>`;
+
+  let termsDisplay = '';
+  if (P.approved_terms_snapshot) {
+    try {
+      const terms = typeof P.approved_terms_snapshot === 'string' ? JSON.parse(P.approved_terms_snapshot) : P.approved_terms_snapshot;
+      termsDisplay = `<div class="legal-terms"><strong>Scope & Pricing Acknowledged:</strong> ${esc(terms.contact_name)} approved a ${terms.selected_amp || '30'} Amp Connection System ${terms.selected_pom ? 'with the Peace of Mind Protection Package' : 'without the protection package'} for a total of ${fmt(terms.total)}.<br><br><strong>Acknowledgments:</strong><br>${terms.scope_acknowledged ? '&#10003; Reviewed and agreed to the scope of work and pricing.' : ''}<br>${terms.safety_acknowledged ? '&#10003; Read and understood the Generator Safety Instructions.' : ''}</div>`;
+    } catch(e) { termsDisplay = `<div class="legal-terms">${esc(P.approved_terms_snapshot)}</div>`; }
+  }
+
+  document.getElementById('main').innerHTML = `
+    <div id="property-banner-wrap"></div>
+
+    ${!paymentConfirmed && String(P.status || '').toLowerCase() === 'signed' ? `
+    <div style="background:var(--navy);border-radius:16px;padding:28px 22px;text-align:center;color:#fff;margin-bottom:16px">
+      <div style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px;letter-spacing:-.02em">One quiet step left</div>
+      <p style="font-size:14px;opacity:.85;margin-bottom:22px;line-height:1.55;max-width:30em;margin-left:auto;margin-right:auto">${requireDeposit ? 'Your name is on it and the price is locked. Confirm with your deposit and I book the install.' : 'Your proposal is signed and your price is locked. Save your card securely to finish setup. You pay $0 today.'}</p>
+      <div style="display:flex;flex-direction:column;gap:10px;max-width:320px;margin:0 auto">
+        <button onclick="payDeposit()" ${isPreview ? 'disabled aria-disabled="true"' : ''} style="background:var(--gold);color:var(--navy);font-family:'Outfit',sans-serif;font-size:16px;font-weight:800;padding:14px 28px;border:none;border-radius:28px;cursor:pointer">${isPreview ? 'Preview, payment disabled' : (requireDeposit ? `Pay $${depositAmt.toLocaleString()} Deposit` : 'Save my card securely')}</button>
+        ${requireDeposit ? `<button onclick="payDeposit(true)" ${isPreview ? 'disabled aria-disabled="true"' : ''} style="background:transparent;color:#fff;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;padding:12px 24px;border:1.5px solid rgba(255,255,255,.35);border-radius:28px;cursor:pointer">${isPreview ? 'Preview, payment disabled' : `Pay $${total.toLocaleString()} in Full`}</button>` : ''}
+      </div>
+      <p style="font-size:11px;opacity:.7;margin-top:14px;line-height:1.5">${requireDeposit ? 'Paying in full is optional. Beyond the deposit is fully refundable any time before install is completed.' : 'No payment is collected today. This securely saves the payment method authorized for this project.'}</p>
+    </div>` : `
+    <div class="approved-banner">
+      <div class="approved-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <h2>${fullPaymentPaid ? 'Payment confirmed.' : (depositPaid ? 'Deposit received. You\'re locked in.' : 'You\'re set.')}</h2>
+      <p>${fullPaymentPaid ? 'Your project payment is confirmed. Key will text you to confirm the next project step.' : (depositPaid ? `Your ${fmt(Number(paymentState.net_paid || depositAmt))} deposit is confirmed. I'll text within 48 hours to schedule. ${fmt(projectRemaining)} remains for the project.` : 'Your proposal and payment setup are confirmed. Key will text you to confirm the next project step.')}</p>
+    </div>`}
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon" style="background:#f4f6fa"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <h2>What Happens Next</h2>
+      </div>
+      <div class="card-body">
+        <div class="next-step-item"><div class="next-step-num">1</div><div class="next-step-text"><strong>Key reaches out within 48 hours</strong><span>You'll get a text to confirm your date and answer any final questions.</span></div></div>
+        ${P.include_permit !== false ? '<div class="next-step-item"><div class="next-step-num">2</div><div class="next-step-text"><strong>We coordinate the permit</strong><span>We handle the required local paperwork and inspection scheduling for this project.</span></div></div>' : ''}
+        <div class="next-step-item"><div class="next-step-num">3</div><div class="next-step-text"><strong>Installation day, done in a day</strong><span>Me or one of my trusted install partners arrives, installs everything, cleans up, and walks you through your new system. Either way the work is held to my standard and county-inspected. ${installationPaymentCopy}</span></div></div>
+        <div class="next-step-item"><div class="next-step-num">4</div><div class="next-step-text"><strong>State electrical inspection</strong><span>We schedule and coordinate the inspection. You're officially code-compliant and outage-ready.</span></div></div>
+        <div style="text-align:center;margin-top:16px;padding-top:16px">
+          <div style="font-size:14px;color:var(--text2);margin-bottom:4px">Questions? Call or text Key anytime</div>
+          <a href="tel:8648637800" style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:800;color:var(--navy);text-decoration:none">(864) 863-7800</a>
+        </div>
+      </div>
+    </div>
+
+    ${!P.selected_pom ? `
+    <div style="background:linear-gradient(135deg,#0b1f3b,#1a3a5c);border-radius:14px;padding:18px 20px;margin-bottom:16px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;right:0;width:160px;height:160px;background:radial-gradient(circle,rgba(255,186,0,.08),transparent 70%)"></div>
+      <div style="font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">One More Thing</div>
+      <div style="font-family:'Outfit',sans-serif;font-size:16px;font-weight:800;color:#fff;margin-bottom:8px">Add the Peace of Mind Protection Package?</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+        <div style="font-size:12px;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:7px"><span style="color:var(--gold)">⚡</span> Whole-home surge protection + $75,000 connected equipment warranty</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:7px"><span style="color:var(--gold)">🔍</span> 20-point main panel safety inspection</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:7px"><span style="color:var(--gold)">📋</span> Customized safety &amp; wattage planning guide</div>
+      </div>
+      <div style="font-size:13px;color:rgba(255,255,255,.7)">Text Key at <a href="sms:8648637800?body=I'd like to add the Peace of Mind Protection Package" style="color:var(--gold);font-weight:700;text-decoration:none">(864) 863-7800</a>, say "add protection package" and he'll update your invoice before install day.</div>
+    </div>` : ''}
+
+    <div style="background:linear-gradient(135deg,#fffbe6,#fff8d0);border:2px solid var(--gold);border-radius:14px;padding:18px 20px;margin-bottom:16px">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="font-size:28px;flex-shrink:0">🏡</div>
+        <div>
+          <div style="font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;color:var(--navy);margin-bottom:4px">Know a Neighbor With a Generator?</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:10px">If a neighbor asks who to call for a generator hookup, send them my way. That is the highest compliment I get.</div>
+          <a href="sms:8648637800?body=${encodeURIComponent("Hey Key, I want to refer a neighbor, my name is " + (P.contact_name || ''))}" style="display:inline-block;background:transparent;color:var(--navy);font-family:'Outfit',sans-serif;font-size:13px;font-weight:800;padding:9px 18px;border-radius:28px;border:1.5px solid rgba(11,31,59,.22);text-decoration:none">Text Key to Refer a Neighbor &rarr;</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon" style="background:#fffbeb"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <h2>Approved Pricing</h2>
+      </div>
+      <div class="card-body">
+        <table class="price-table">
+          ${pricingRowsHtml}
+          <tr class="price-total-row"><td>Total Approved</td><td><span class="total-badge">${fmt(total)}</span></td></tr>
+          ${requireDeposit ? `
+          <tr><td colspan="2" style="padding:0;border-bottom:none"><div style="border-top:2px dashed #e2e8f0;margin:4px 0"></div></td></tr>
+          ${fullPaymentPaid ? `
+          <tr><td class="price-item-name" style="color:var(--green)">✓ Project Paid in Full</td><td style="color:var(--green);font-weight:700">${fmt(Number(paymentState.net_paid || total))}</td></tr>
+          <tr><td style="font-family:'Outfit',sans-serif;font-weight:800;font-size:16px;color:var(--navy);padding-top:6px">Project Balance</td><td style="font-family:'Outfit',sans-serif;font-weight:800;font-size:16px;color:var(--navy);padding-top:6px">${fmt(projectRemaining)}</td></tr>
+          ` : depositPaid ? `
+          <tr><td class="price-item-name" style="color:var(--green)">✓ Deposit Paid</td><td style="color:var(--green);font-weight:700">−${fmt(Number(paymentState.net_paid || 0))}</td></tr>
+          <tr><td style="font-family:'Outfit',sans-serif;font-weight:800;font-size:16px;color:var(--navy);padding-top:6px">Project Balance</td><td style="font-family:'Outfit',sans-serif;font-weight:800;font-size:16px;color:var(--navy);padding-top:6px">${fmt(projectRemaining)}</td></tr>
+          ` : `
+          <tr><td class="price-item-name" style="color:var(--text3)">${Math.round(depositRate*100)}% Deposit Due Now</td><td style="color:var(--text3);font-weight:700">${fmt(depositAmt)}</td></tr>
+          <tr><td class="price-item-name" style="color:var(--text3)">Balance Due on Install Day</td><td style="color:var(--text3);font-weight:700">${fmt(total - depositAmt)}</td></tr>
+          `}` : ''}
+        </table>
+        ${(P.discount_amount && P.discount_amount > 0 && P.notes) ? `
+        <div style="margin-top:14px;padding:12px 14px;background:#fefce8;border-left:3px solid #ca8a04;border-radius:0 8px 8px 0">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#92400e;margin-bottom:4px">Scope Modification</div>
+          <div style="font-size:13px;color:#78350f;line-height:1.5">${esc(P.notes)}</div>
+        </div>` : ''}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon" style="background:#f0fdf4"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h2>Agreement & Authorization</h2>
+      </div>
+      <div class="card-body">
+        ${termsDisplay}
+        <div class="legal-section" style="margin-top:14px">
+          <div class="legal-section-title">Electronic Signature</div>
+          <div class="legal-row"><span class="legal-label">Signed By</span><span class="legal-value" style="font-family:'Dancing Script',cursive;font-size:18px;color:var(--navy)">${esc(P.signer_name)}</span></div>
+          <div class="legal-row"><span class="legal-label">Date & Time</span><span class="legal-value">${signedTime}</span></div>
+          <div class="legal-row"><span class="legal-label">IP Address</span><span class="legal-value">${esc(P.approved_ip || 'N/A')}</span></div>
+          <div class="legal-row"><span class="legal-label">Safety Instructions</span><span class="legal-value">${P.safety_ack ? '&#10003; Acknowledged' : 'Not acknowledged'}</span></div>
+        </div>
+        ${(P.discount_amount && P.discount_amount > 0 && P.notes) ? `<div class="legal-row" style="background:#fefce8;border-left:3px solid #ca8a04"><span class="legal-label" style="color:#92400e">Scope Modification</span><span class="legal-value" style="color:#78350f;font-style:italic">${esc(P.notes)}</span></div>` : ''}
+        <div class="legal-footer">This document constitutes a binding agreement under the Electronic Signatures in Global and National Commerce Act (ESIGN Act).${(P.discount_amount && P.discount_amount > 0 && P.notes) ? ' Any scope modification noted above supersedes the default scope description.' : ''}</div>
+      </div>
+    </div>
+
+    <button class="dl-btn" onclick="downloadPDF()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download Proposal PDF
+    </button>
+
+    <div style="font-size:12px;color:var(--text3);text-align:center;line-height:1.6;margin-top:8px">
+      Questions? Call or text <strong style="color:var(--navy)">(864) 863-7800</strong>
+      <div style="margin-top:12px"><a href="/inlet-safety-instructions.html" target="_blank" style="color:var(--blue);font-weight:600;text-decoration:none" rel="noopener noreferrer">📘 Generator Safety Instructions</a></div>
+    </div>
+
+    <details style="margin-top:16px;background:#f8f9fb;border:1px solid var(--border);border-radius:10px;padding:0">
+      <summary style="font-size:12px;color:var(--text3);cursor:pointer;padding:12px 16px;list-style:none;display:flex;justify-content:space-between;align-items:center">
+        <span>Need to reschedule or cancel?</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </summary>
+      <div style="padding:0 16px 14px;font-size:12px;color:var(--text2);line-height:1.65">
+        <div style="margin-bottom:8px"><strong>Rescheduling:</strong> Free anytime, text Key at <a href="sms:8648637800" style="color:var(--navy);font-weight:600">(864) 863-7800</a>. Your deposit carries over.</div>
+        <div style="margin-bottom:8px"><strong>Cancel 48+ hrs before install:</strong> Full deposit refunded, minus the $125 permit fee (non-refundable once filed, typically within 1 business day of deposit).</div>
+        <div style="margin-bottom:8px"><strong>Cancel under 48 hrs:</strong> Deposit is forfeited. You may reschedule instead to keep it.</div>
+        <div><strong>If we cancel for any reason:</strong> Full refund including permit fee. No questions asked.</div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">Full policy: <a href="/terms" target="_blank" style="color:var(--navy);font-weight:600" rel="noopener noreferrer">Terms &amp; Conditions</a></div>
+      </div>
+    </details>
+  `;
+
+  setTimeout(initScrollReveal, 100);
+  syncAuthorizationGateUI();
+}
+
+// ── PDF DOWNLOAD ─────────────────────────────────────────────
+let downloading = false;
+async function downloadPDF() {
+  if (downloading) return;
+  if (!approvedPaymentTruthConfirmed(P)) {
+    showError('Payment status needs confirmation', 'The proposal PDF is available after the server confirms the payment or saved-card state. Check payment status or call (864) 863-7800.');
+    return;
+  }
+  downloading = true;
+  const dlBtn = document.querySelector('.dl-btn');
+  if (dlBtn) { dlBtn.disabled = true; dlBtn.innerHTML = '<div class="spinner-large" style="width:18px;height:18px;border-width:2px;margin:0"></div> Generating PDF...'; }
+  const signedDate = P.signed_at ? new Date(P.signed_at).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : '';
+  const createdDate = new Date(P.created_at).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  const total = Number(P.signed_total ?? P.total ?? 0);
+  const paymentState = P.payment_state && typeof P.payment_state === 'object' ? P.payment_state : {};
+  const projectRemaining = Number.isFinite(Number(paymentState.project_remaining)) ? Number(paymentState.project_remaining) : Math.max(total - Number(paymentState.net_paid || 0), 0);
+  const ampLabel = P.selected_amp === '50' ? '50 Amp' : '30 Amp';
+  const pr = getPrice(P.selected_amp || P.amp_type || '30');
+  let pricingRows = '';
+  if (P.pricing_30 || P.pricing_50) {
+    const isV3Approved = P.creator_version === 'v3';
+    const base = pr.base || 0; const longRun = pr.longRun || 0; const mb = pr.mainBreaker || 0; const tq = pr.twinQuad || 0; const cord = pr.cord || 0;
+    const permit = isV3Approved ? (pr.permitInspection || 0) : (pr.permitInspection || 125);
+    pricingRows += `<tr><td style="padding:6px 0">Installation</td><td style="padding:6px 0;text-align:right;font-weight:600">${fmt(Math.max(0, base - longRun - mb - tq - cord - permit))}</td></tr>`;
+    if (longRun) pricingRows += `<tr><td style="padding:6px 0">Extended wire run</td><td style="padding:6px 0;text-align:right;font-weight:600;color:#059669">✓ Included</td></tr>`;
+    if (permit) pricingRows += `<tr><td style="padding:6px 0">Permit & inspection</td><td style="padding:6px 0;text-align:right;font-weight:600">${fmt(permit)}</td></tr>`;
+    if (cord) pricingRows += `<tr><td style="padding:6px 0">Power transfer cord</td><td style="padding:6px 0;text-align:right;font-weight:600">${fmt(cord)}</td></tr>`;
+    if (mb) pricingRows += `<tr><td style="padding:6px 0">Main breaker replacement</td><td style="padding:6px 0;text-align:right;font-weight:600">${fmt(mb)}</td></tr>`;
+    if (tq) pricingRows += `<tr><td style="padding:6px 0">Panel space optimization</td><td style="padding:6px 0;text-align:right;font-weight:600">${fmt(tq)}</td></tr>`;
+  } else {
+    pricingRows += `<tr><td style="padding:6px 0">Base installation</td><td style="padding:6px 0;text-align:right;font-weight:600">${fmt(pr.base || P.price_base || 0)}</td></tr>`;
+    if (P.include_cord) pricingRows += `<tr><td style="padding:6px 0">Power transfer cord</td><td style="padding:6px 0;text-align:right;font-weight:600">${fmt(P.price_cord || 0)}</td></tr>`;
+  }
+  if (P.selected_pom) pricingRows += `<tr><td style="padding:6px 0">Peace of Mind Protection Package</td><td style="padding:6px 0;text-align:right;font-weight:600">${fmt(P.pom_price || 447)}</td></tr>`;
+
+  const pageHtml = `<div style="font-family:'Inter',system-ui,sans-serif;background:#fff;padding:32px;color:#1a2a42">
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #0b1f3b;padding-bottom:16px;margin-bottom:20px">
+      <div><div style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:900;color:#0b1f3b">Backup Power Pro</div><div style="font-size:11px;color:#5f6f8a">SC LIC #2942 · (864) 863-7800 · backuppowerpro.com</div></div>
+      <div style="background:#ffba00;color:#0b1f3b;font-family:'Outfit',sans-serif;font-size:11px;font-weight:800;padding:6px 14px;border-radius:6px">✓ APPROVED</div>
+    </div>
+    <div style="margin-bottom:18px"><div style="font-size:11px;color:#5f6f8a;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">PROPOSAL</div><div style="font-size:24px;font-weight:800;color:#0b1f3b">The Outage-Ready Connection System</div></div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:18px;font-size:13px">
+      <tr><td style="padding:6px 0;color:#8a9ab5">Customer</td><td style="padding:6px 0;font-weight:600;text-align:right">${esc(P.contact_name)}</td></tr>
+      ${P.contact_address ? '<tr><td style="padding:6px 0;color:#8a9ab5">Address</td><td style="padding:6px 0;font-weight:600;text-align:right">' + esc(P.contact_address) + '</td></tr>' : ''}
+      <tr><td style="padding:6px 0;color:#8a9ab5">Proposal Date</td><td style="padding:6px 0;font-weight:600;text-align:right">${createdDate}</td></tr>
+      <tr><td style="padding:6px 0;color:#8a9ab5">Signed</td><td style="padding:6px 0;font-weight:600;text-align:right">${signedDate}</td></tr>
+      <tr><td style="padding:6px 0;color:#8a9ab5">Setup Type</td><td style="padding:6px 0;font-weight:600;text-align:right">${ampLabel} Connection System</td></tr>
+    </table>
+    <div style="border-top:2px solid #e4e8f0;margin:12px 0"></div>
+    <div style="font-size:14px;font-weight:800;color:#0b1f3b;margin-bottom:10px">Everything Included</div>
+    <div style="font-size:12px;color:#4a5568;line-height:1.8;margin-bottom:16px">
+      &#10003; Generator inlet box (weather-rated, exterior mount)<br>
+      &#10003; Interlock kit (panel-matched, code-compliant)<br>
+      &#10003; Permit pulled &amp; filed with local jurisdiction<br>
+      &#10003; Electrical inspection scheduled &amp; coordinated<br>
+      &#10003; Complete site cleanup<br>
+      &#10003; Customer walkthrough &amp; training<br>
+      ${(pr.cordIncluded !== false) ? '&#10003; Power transfer cord<br>' : ''}
+    </div>
+    <div style="border-top:2px solid #e4e8f0;margin:12px 0"></div>
+    <div style="font-size:14px;font-weight:800;color:#0b1f3b;margin-bottom:10px">Pricing</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:8px">${pricingRows}<tr style="border-top:2px solid #0b1f3b"><td style="padding:10px 0;font-weight:800;font-size:16px;color:#0b1f3b">Total</td><td style="padding:10px 0;font-weight:800;font-size:16px;color:#0b1f3b;text-align:right">${fmt(total)}</td></tr></table>
+    ${P.notes ? '<div style="border-top:2px solid #e4e8f0;margin:12px 0"></div><div style="font-size:12px;font-weight:700;color:#0b1f3b;margin-bottom:6px">Notes from Key</div><div style="font-size:11px;color:#4a5568;line-height:1.6">' + esc(P.notes) + '</div>' : ''}
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px 14px;margin-top:16px;font-size:11px;color:#92400e;line-height:1.6"><strong>Payment Status:</strong> ${paymentState.kind === 'full_payment' && paymentState.status === 'paid' && paymentState.paid_in_full === true ? `Project payment confirmed. Remaining project balance ${fmt(projectRemaining)}.` : (paymentState.kind === 'deposit' && paymentState.status === 'paid' ? `Deposit payment ${fmt(Number(paymentState.net_paid || 0))} confirmed. Remaining project balance ${fmt(projectRemaining)}.` : (paymentState.kind === 'setup' && paymentState.status === 'card_saved' ? `Card setup confirmed. No payment was collected today. Project balance ${fmt(projectRemaining)}.` : 'Payment status unavailable.'))}</div>
+    <div style="text-align:center;font-size:10px;color:#8a9ab5;border-top:1px solid #e4e8f0;padding-top:12px;margin-top:16px">Backup Power Pro · SC LIC #2942 · (864) 863-7800 · backuppowerpro.com</div>
+  </div>`;
+
+  const el = document.createElement('div');
+  el.style.cssText = 'width:680px;';
+  el.innerHTML = pageHtml;
+  document.body.appendChild(el);
+  try {
+    const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' });
+    const pdf = new jspdf.jsPDF({ unit: 'mm', format: 'letter', orientation: 'portrait' });
+    const pageW = 215.9, marginX = 12, marginY = 10, contentW = pageW - (marginX * 2);
+    const img = canvas.toDataURL('image/jpeg', 0.98);
+    const h = (canvas.height * contentW) / canvas.width;
+    pdf.addImage(img, 'JPEG', marginX, marginY, contentW, h);
+    pdf.save('BPP-Proposal-' + (P.contact_name || 'Customer').replace(/[^a-zA-Z0-9]/g, '-') + '.pdf');
+  } catch(e) { console.error('PDF generation failed:', e); }
+  if (el.parentNode) document.body.removeChild(el);
+  downloading = false;
+  if (dlBtn) { dlBtn.disabled = false; dlBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Proposal PDF'; }
+}
+
+// ── REVIEW CAROUSEL ──────────────────────────────────────────
+function initReviewCarousel() {
+  const carousel = document.getElementById('review-carousel');
+  const dotsWrap = document.getElementById('carousel-dots');
+  if (!carousel || !dotsWrap) return;
+  const slides = Array.from(carousel.querySelectorAll('.review-slide'));
+  if (slides.length < 2) return;
+  let current = 0;
+
+  // Slides are position:absolute, make all visible to measure, then fix container height
+  slides.forEach(s => { s.style.visibility = 'visible'; });
+  const maxH = Math.max(...slides.map(s => s.offsetHeight));
+  carousel.style.height = maxH + 'px';
+  slides.forEach(s => { s.style.visibility = ''; });
+
+  // Build dots
+  slides.forEach((_, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'Review ' + (i + 1));
+    dot.addEventListener('click', () => goTo(i));
+    dotsWrap.appendChild(dot);
+  });
+
+  function goTo(idx) {
+    const dots = dotsWrap.querySelectorAll('.carousel-dot');
+    slides[current].classList.remove('active');
+    current = (idx + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+  }
+
+  setInterval(() => goTo(current + 1), 7000);
+}
+
+// ── ERROR ─────────────────────────────────────────────────────
+function showError(title, msg, action) {
+  // Build via DOM APIs (not template literal innerHTML) so arbitrary
+  // caller-provided HTML in title/msg is never evaluated. Future
+  // contributors can pass DB-sourced error messages safely.
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+  const wrap = document.createElement('div'); wrap.className = 'state-wrap';
+  wrap.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+  const h2 = document.createElement('h2'); h2.textContent = String(title || '');
+  const p  = document.createElement('p');  p.textContent  = String(msg || '');
+  wrap.appendChild(h2); wrap.appendChild(p);
+  if (action && typeof action === 'object' && action.label && (action.href || action.onClick)) {
+    const control = action.href ? document.createElement('a') : document.createElement('button');
+    control.className = 'approve-btn';
+    if (action.href) control.href = String(action.href);
+    else {
+      control.type = 'button';
+      control.setAttribute('data-authorization-action', 'payment');
+      control.addEventListener('click', action.onClick);
+    }
+    control.textContent = String(action.label);
+    wrap.appendChild(control);
+  }
+  main.appendChild(wrap);
+  syncAuthorizationGateUI();
+}
+
+window.addEventListener('pageshow', (event) => {
+  if (!event.persisted || previewModeActive()) return;
+  const token = new URLSearchParams(window.location.search).get('token');
+  const attemptId = token && storedPendingDepositAcceptance(token);
+  if (!token || !attemptId || /[?&](deposit_paid|payment_check)=1(?:&|$)/.test(window.location.search)) return;
+  if (P) resetDepositAcceptanceAuthorization('Closing the previous payment attempt. This proposal has not been accepted.');
+  beginAuthorizationGate(token);
+});
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+</script>
+</body>
+</html>

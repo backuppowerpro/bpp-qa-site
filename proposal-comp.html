@@ -1,0 +1,2034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co; form-action 'self';">
+<script>document.documentElement.className += ' js'</script>
+<title>Proposal | Backup Power Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+<!-- BPP design system: single source of truth (tokens, reset, primitives, modal, motion). Edit there to restyle every surface. -->
+<link rel="stylesheet" href="assets/css/bpp-ds.css?v=20260713a">
+<style>
+/* tokens, reset, base, .page, .card/.pad, .eyebrow/.sec, .badge, modal system, base scroll-reveal,
+   and confetti keyframes all live in assets/css/bpp-ds.css (single source of truth). Only the
+   proposal-specific layout lives below. */
+/* Interaction + device-reality (Operational DNA 6a): no tap delay / double-tap-zoom on the comp's custom controls. */
+.pom,.ack,.policy-link,.pom-learn,.sig-input,button,[role="button"]{touch-action:manipulation}
+/* Hide the page + sticky bar until the server proposal is bound, so the static
+   placeholder copy/numbers in the markup never flash to a real customer. A
+   lightweight spinner stands in. JS removes .booting once a view renders. */
+.booting .page,.booting .sticky{visibility:hidden}
+.boot-spin{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:60}
+.booting .boot-spin{display:flex}
+.boot-spin .dot{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:bootspin .7s linear infinite}
+@keyframes bootspin{to{transform:rotate(360deg)}}
+html:not(.js) .boot-spin{display:none}
+
+/* Header */
+.site-header{background:var(--navy);padding:14px 24px;text-align:center}
+.hdr-logo{height:30px;width:auto;display:inline-block;margin-bottom:5px}
+.tagline{font-size:11px;color:rgba(255,255,255,.6);margin-top:2px}
+.preview-bar{position:fixed;top:0;left:0;right:0;z-index:99999;background:#f59e0b;color:#1c1003;font-family:var(--font-display);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-align:center;padding:8px 16px;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+.preview-watermark{position:fixed;inset:0;pointer-events:none;z-index:99998;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.preview-watermark span{font-family:var(--font-display);font-size:clamp(60px,14vw,120px);font-weight:900;color:rgba(11,31,59,.06);letter-spacing:.1em;text-transform:uppercase;transform:rotate(-35deg);white-space:nowrap;user-select:none}
+body.preview-mode{padding-top:34px}
+body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.approve-nav[href*="invoice"]{display:none!important}
+
+/* Page (base .page in bpp-ds.css). While the signature field is focused, add scroll runway so the field AND its cursive preview lift clear of the on-screen keyboard. */
+.kb .page{padding-bottom:calc(280px + env(safe-area-inset-bottom))}
+/* reserve room under the fixed sticky CTA so a short page (short viewport + POM off)
+   can never park the footer/policy links under the bar with no scroll to hide it. */
+.page{padding-bottom:calc(82px + env(safe-area-inset-bottom))}
+
+/* 1. HERO with Street View slot */
+.hero{background:var(--navy);border-radius:var(--r-lg);color:#fff;margin-bottom:14px;overflow:hidden;box-shadow:var(--shadow)}
+/* House stays clearly visible up top (gradient is fully clear through ~35%), then fades to SOLID
+   navy by 82% so the bright driveway/foreground is covered before the navy hero body, no seam.
+   position 40% keeps the house body (not the sky) framed. */
+.streetview{position:relative;height:215px;background-color:var(--navy);overflow:hidden;
+  --sv-img:none}
+/* Photo on its own layer so the professional-polish filter (Key 2026-07-17,
+   "brighter, more professional") brightens ONLY the photo, never the navy
+   gradient above it (filtering both lightened the navy and left a seam
+   against the hero body). ::before = photo, ::after = gradient, labels z:2. */
+.streetview::before{content:'';position:absolute;inset:0;background-image:var(--sv-img);
+  background-size:cover;background-position:center 50%;background-repeat:no-repeat;
+  filter:saturate(1.14) brightness(1.08) contrast(1.03)}
+/* 50% (neutral band) not 40%: the old sky-biased crop amputated houses that
+   sit low in the frame (below-grade lots, Key's own home 2026-07-17). */
+.streetview::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(to bottom,rgba(11,31,59,.10) 0%,rgba(11,31,59,0) 35%,rgba(11,31,59,.42) 62%,#0b1f3b 82%,#0b1f3b 100%)}
+.sv-addr{position:absolute;left:18px;bottom:12px;right:18px;z-index:2}
+.sv-addr .lbl{font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.7);margin-bottom:2px}
+.sv-name{font-family:var(--font-display);font-size:29px;font-weight:900;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.6);line-height:1.05;letter-spacing:-.01em}
+.sv-addr-line{font-family:var(--font-body);font-size:12px;font-weight:600;color:rgba(255,255,255,.82);text-shadow:0 1px 6px rgba(0,0,0,.55);margin-top:4px}
+.hero-body{padding:18px 20px 20px}
+.hero-kicker{font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);opacity:.9;margin-bottom:8px}
+.hero h1{font-family:var(--font-display);font-size:22px;font-weight:800;line-height:1.2;margin-bottom:8px}
+.hero .sub{font-size:14px;color:rgba(255,255,255,.74);line-height:1.5}
+.hero-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:16px;padding-top:13px;border-top:1px solid rgba(255,255,255,.1);flex-wrap:wrap}
+.hero-foot .by{font-size:11px;color:rgba(255,255,255,.6);font-weight:600;font-family:var(--font-display)}
+.lock-chip{font-size:10px;font-weight:700;letter-spacing:.03em;padding:4px 11px;background:rgba(255,186,0,.16);border-radius:20px;color:var(--gold);white-space:nowrap}
+
+/* personal note */
+.note{display:flex;gap:13px;align-items:flex-start}
+.note .av{width:44px;height:44px;border-radius:50%;background:var(--navy);color:var(--gold);font-family:var(--font-display);font-weight:900;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.note img.av{object-fit:cover;object-position:center 40%;box-shadow:0 2px 8px rgba(11,31,59,.18)}
+.note .txt{font-size:13px;color:var(--text2);line-height:1.6}
+
+/* price */
+.amp{margin-bottom:16px}
+.amp-label{font-family:var(--font-display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:7px}
+.amp-seg{display:flex;gap:8px}
+.amp-opt{flex:1;height:48px;border-radius:var(--r-sm);border:1.5px solid var(--border);background:#fff;font-family:var(--font-display);font-weight:800;font-size:15px;color:var(--navy);cursor:pointer;transition:background .15s,color .15s,border-color .15s;display:flex;align-items:center;justify-content:center}
+.amp-opt.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.amp-rec{margin-top:9px;font-size:11.5px;font-weight:700;color:var(--amber);display:flex;align-items:center;gap:5px}
+.amp-rec span{color:var(--gold);font-size:12px;line-height:1}
+.disclose{margin-top:12px;border-top:1px solid var(--line);padding-top:6px}
+.disclose summary{list-style:none;cursor:pointer;font-size:13px;font-weight:700;color:var(--blue);padding:8px 0;display:flex;align-items:center;gap:6px}
+.disclose summary::-webkit-details-marker{display:none}
+.disclose[open] summary .chev{transform:rotate(90deg)}
+.chev{transition:transform .2s ease}
+.line{display:flex;align-items:center;gap:12px;padding:10px 0;font-size:13px;border-bottom:1px solid var(--line)}
+.line-thumb{width:46px;height:46px;border-radius:var(--r-sm);object-fit:cover;flex-shrink:0;box-shadow:0 2px 8px rgba(11,31,59,.1)}
+.line-subs{margin:0 0 0 58px;display:flex;flex-direction:column;gap:5px;padding:2px 0 11px;border-bottom:1px solid var(--line)}
+.line-sub{font-size:11.5px;color:var(--text3);line-height:1.4;display:flex;gap:7px;align-items:flex-start}
+.line-sub span{color:var(--green);font-weight:800;flex-shrink:0;font-size:12px}
+.anchor-line{font-size:11.5px;color:var(--text2);line-height:1.5;margin:0 0 10px}
+.anchor-line b{color:var(--red)}
+.anchor-line b.anchor-total{color:var(--navy)}
+.pay-block{margin:4px 0 14px}
+/* the committed price line: wraps to two readable lines on narrow phones instead of
+   shrinking the number to unreadable (the price is the one number that must always be
+   effortless to read). .pay-phrase keeps each "$X label" intact so it never orphans. */
+.pay-line{font-size:12px;color:var(--text2);font-weight:600;line-height:1.35}
+.pay-phrase{white-space:nowrap}
+.pay-line .num{font-family:var(--font-display);font-size:2.167em;font-weight:800;color:var(--navy);letter-spacing:-.01em}
+.pay-line .num2{font-family:var(--font-display);font-size:1.5em;font-weight:800;color:var(--navy);letter-spacing:-.01em}
+.pay-lead{font-family:var(--font-display);font-size:.833em;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-right:7px}
+.psep{color:var(--text3);margin:0 5px}
+.timeline{display:flex;align-items:flex-start;justify-content:space-between;margin:6px 0 12px;gap:4px}
+.tl-step{display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto;width:78px;text-align:center}
+.tl-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;font-size:13px;background:#fff;border:2px solid var(--border);color:var(--text3)}
+.tl-lbl{font-size:11px;font-weight:600;color:var(--text2);line-height:1.25}
+.tl-bar{flex:1;height:2px;background:var(--track);margin-top:14px;border-radius:2px}
+.tl-note{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:14px}
+.tl-dot.now{background:#fff;border-color:var(--navy);color:var(--navy)}
+.sign-divider{height:1px;background:var(--line);margin:18px 0}
+.expiry-note{font-size:11.5px;color:var(--text3);text-align:center;margin-top:10px}
+.policy-links{text-align:center;margin-top:8px;font-size:12px}
+.policy-sep{color:var(--text3);margin:0 8px}
+.promise-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.promise-seal{width:36px;height:36px;border-radius:var(--r-sm);flex-shrink:0;object-fit:cover;box-shadow:0 2px 8px rgba(11,31,59,.18)}
+.promise-grid{display:flex;flex-direction:column;gap:11px}
+.promise-item{font-size:13px;color:var(--text2);line-height:1.5;padding-left:22px;position:relative}
+.promise-item::before{content:'✓';position:absolute;left:0;top:0;color:var(--green);font-weight:800;font-size:14px}
+.promise-item b{color:var(--navy)}
+.prom-rev-divider{height:1px;background:var(--line);margin:20px 0}
+.cmp-intro{font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:14px}
+.cmp{border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden}
+.cmp-head{display:flex;align-items:center;background:var(--fill);padding:9px 12px;font-family:var(--font-display);font-size:9.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--text3)}
+.cmp-h-label{flex:1}
+.cmp-h-cheap{width:62px;text-align:center}
+.cmp-h-ours{width:62px;text-align:center;color:var(--navy)}
+.cmp-row{display:flex;align-items:center;padding:11px 12px;border-top:1px solid var(--line);font-size:13px;color:var(--navy);font-weight:600}
+.cmp-label{flex:1;line-height:1.3}
+.cmp-x{width:62px;text-align:center;color:var(--control);font-weight:800;font-size:14px}
+.cmp-ok{width:62px;text-align:center;color:var(--green);font-weight:800;font-size:15px}
+.cmp-foot{font-size:12px;color:var(--text2);line-height:1.55;margin-top:13px}
+/* Base card/hero scroll-reveal is in bpp-ds.css. Below: proposal-specific reveal accents. */
+.js .card .tl-bar{transform:scaleX(0);transform-origin:left;transition:transform .55s ease .2s}
+.js .card.in .tl-bar{transform:scaleX(1)}
+.js .card .cmp-ok{transform:scale(.6);transition:transform .4s cubic-bezier(.22,.61,.36,1)}
+.js .card.in .cmp-ok{transform:scale(1)}
+.js .card.in .cmp-row:nth-child(3) .cmp-ok{transition-delay:.06s}
+.js .card.in .cmp-row:nth-child(4) .cmp-ok{transition-delay:.12s}
+.js .card.in .cmp-row:nth-child(5) .cmp-ok{transition-delay:.18s}
+.js .card.in .cmp-row:nth-child(6) .cmp-ok{transition-delay:.24s}
+.js .card.in .cmp-row:nth-child(7) .cmp-ok{transition-delay:.30s}
+@media (prefers-reduced-motion:reduce){.js .hero,.js .card,.js .card .tl-bar,.js .card .cmp-ok{opacity:1!important;transform:none!important;transition:none!important}}
+/* PRINT / Save-as-PDF (audit S4, 2026-07-17): a customer saving their proposal
+   got a near-blank PDF, the scroll-reveal cards stay opacity:0 with no scroll,
+   and the fixed sticky CTA overprinted every page. Force ALL reveal-gated
+   content visible, drop the on-screen-only chrome (sticky CTA, boot spinner,
+   modals), and let cards break across pages. Everything animated elsewhere is
+   covered by the same all-visible reset the reduced-motion rule uses. */
+@media print{
+  .js .hero,.js .card,.js .card *{opacity:1!important;transform:none!important;transition:none!important}
+  .sticky,.boot-spin,.modal-overlay{display:none!important}
+  .page{padding-bottom:0!important}
+  .card{break-inside:avoid;page-break-inside:avoid}
+  body,.booting .page{visibility:visible!important}
+}
+/* element-specific accents: headshot pop, typewriter title, stars fill, deposit pop */
+.js .card .note .av{transform:scale(.85);opacity:0;transition:transform .55s cubic-bezier(.22,.61,.36,1) .05s,opacity .5s ease .05s}
+.js .card.in .note .av{transform:scale(1);opacity:1}
+.js .card .stars .star{display:inline-block;opacity:0;transform:translateY(3px);transition:opacity .45s ease,transform .45s cubic-bezier(.22,.61,.36,1)}
+.js .card.in .stars .star{opacity:1;transform:none}
+.js .card.in .stars .star:nth-child(2){transition-delay:.06s}
+.js .card.in .stars .star:nth-child(3){transition-delay:.12s}
+.js .card.in .stars .star:nth-child(4){transition-delay:.18s}
+.js .card.in .stars .star:nth-child(5){transition-delay:.24s}
+.js .card .pay-line .num{display:inline-block;transform:scale(.96);opacity:0;transition:transform .55s cubic-bezier(.22,.61,.36,1) .1s,opacity .45s ease .1s}
+.js .card.in .pay-line .num{transform:scale(1);opacity:1}
+@media (prefers-reduced-motion:reduce){.js .card .note .av,.js .card .stars .star,.js .card .pay-line .num{opacity:1!important;transform:none!important;transition:none!important}}
+.pom-popular{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--warn-ink);background:var(--warn-bg);border:1px solid #fde68a;border-radius:20px;padding:2px 8px;flex-shrink:0;white-space:nowrap}
+.line .mid{flex:1;min-width:0}
+.line .nm{color:var(--text);font-weight:600}
+.line .ds{color:var(--text3);font-size:12px;margin-top:2px;line-height:1.4}
+.line .pr{color:var(--text2);font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* POM toggle */
+.pom{margin-top:14px;border:1.5px solid rgba(255,186,0,.5);background:linear-gradient(160deg,#fffdf5,#fff);border-radius:var(--r-lg);padding:14px;cursor:pointer;transition:box-shadow .2s,border-color .2s}
+.pom.on{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,186,0,.14)}
+.pom-top{display:flex;align-items:center;gap:11px}
+.tgl{width:42px;height:25px;border-radius:20px;background:var(--control);position:relative;flex-shrink:0;transition:background .2s}
+.pom.on .tgl{background:var(--gold)}
+.knob{position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .2s}
+.pom.on .knob{left:20px}
+.pom-title{font-family:var(--font-display);font-weight:800;font-size:14px;color:var(--navy);flex:1;min-width:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pom-price{font-family:var(--font-display);font-weight:800;font-size:14px;color:var(--navy);white-space:nowrap}
+.pom-price small{display:block;font-size:10px;color:var(--text3);font-weight:600;text-align:right}
+.pom-surge{background:#fff;border-radius:var(--r-md);padding:13px 14px;margin-top:12px;box-shadow:0 2px 10px rgba(11,31,59,.06)}
+.pom-surge-row{display:flex;gap:13px;align-items:center;justify-content:space-between}
+.pom-surge-img{width:84px;height:84px;border-radius:var(--r-sm);object-fit:cover;flex-shrink:0;box-shadow:0 2px 10px rgba(11,31,59,.12)}
+.pom-surge-main{flex:1;min-width:0}
+.pom-surge-title{font-family:var(--font-display);font-weight:800;font-size:16px;color:var(--navy);line-height:1.15}
+.pom-surge-sub{font-size:12px;color:var(--amber);font-weight:700;margin-top:3px}
+.pom-surge-desc{font-size:12.5px;color:var(--text2);line-height:1.5;margin-top:11px}
+.pom-learn{color:var(--blue);font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
+.pom-also{margin-top:13px;padding-top:12px;border-top:1px solid var(--line)}
+.pom-also-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:7px}
+.pom-also-items{display:flex;flex-wrap:wrap;gap:6px 16px}
+.pom-also-items span{font-size:12.5px;color:var(--text2);font-weight:500}
+.pom-also-items b{color:var(--green);font-weight:800;margin-right:4px}
+.pom-remove{font-size:11px;color:var(--text3);text-align:center;margin-top:12px;font-weight:600}
+
+/* trust strip */
+.stars{color:var(--gold);font-size:14px;letter-spacing:1px}
+.review-txt{font-size:13px;color:var(--text2);line-height:1.6;margin:8px 0 8px;font-style:italic}
+.review-auth{font-size:12px;color:var(--text3);font-weight:600}
+.badges{display:flex;flex-wrap:nowrap;gap:6px;margin-top:14px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.badges::-webkit-scrollbar{display:none}
+
+/* close */
+.ack{display:flex;gap:11px;align-items:flex-start;padding:13px;border:1.5px solid var(--border);border-radius:var(--r-md);cursor:pointer;margin-bottom:14px;transition:border-color .15s,background .15s}
+.ack.on{border-color:var(--green);background:var(--ok-bg)}
+.ack-box{width:22px;height:22px;border-radius:6px;border:2px solid var(--control);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s}
+.ack.on .ack-box{background:var(--green);border-color:var(--green)}
+.ack-box svg{opacity:0;transition:opacity .15s}
+.ack.on .ack-box svg{opacity:1}
+.ack-txt{font-size:13px;color:var(--text);line-height:1.45}
+.mandate-full{font-size:11px;color:var(--text3);line-height:1.55;margin-top:5px;font-weight:400}
+.ack-txt a{color:var(--blue);font-weight:600}
+.sig-label{font-family:var(--font-display);font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.sig-hint{font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.5}
+.sig-input{width:100%;height:48px;font-size:16px;padding:0 14px;border:none;background:var(--fill);border-radius:var(--r-sm);font-family:var(--font-body);color:var(--text);box-shadow:inset 0 0 0 1px rgba(11,31,59,.08);scroll-margin-top:96px;scroll-margin-bottom:200px}
+.sig-input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--gold)}
+.sig-preview{min-height:46px;display:flex;align-items:center;justify-content:center;font-family:var(--font-script);font-size:32px;color:var(--navy);margin-top:8px;border-bottom:1.5px dashed var(--border)}
+.fineprint{font-size:11px;color:var(--text3);text-align:center;margin-top:8px;line-height:1.5}
+
+/* card-on-file authorization amount line (uses existing tokens, on-brand) */
+.charge-amount-line{font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:10px;padding:11px 13px;background:var(--fill);border-radius:var(--r-md)}
+.charge-amount-line b{color:var(--navy);font-weight:800}
+.charge-amount-line .zero-today{color:var(--green)}
+
+/* approve */
+.approve{width:100%;height:56px;border:none;border-radius:28px;background:var(--gold);color:var(--navy);font-family:var(--font-display);font-weight:800;font-size:17px;letter-spacing:-.01em;cursor:pointer;margin-top:18px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 22px rgba(255,186,0,.4);transition:transform .07s,background .2s,color .2s,box-shadow .2s}
+.approve:active{transform:scale(.98)}
+.approve:disabled{background:var(--line);color:var(--muted);box-shadow:none;cursor:not-allowed}
+.approve-err{text-align:center;font-size:13px;color:var(--red);font-weight:600;margin-top:10px;line-height:1.5;min-height:0}
+.approve-err:empty{display:none}
+.approve-sub{text-align:center;font-size:12px;color:var(--text3);margin-top:10px;line-height:1.6}
+.policy-link{color:var(--blue);font-weight:600;text-decoration:underline;cursor:pointer;display:inline-flex;align-items:center;min-height:44px;padding:0 6px}
+.footer{text-align:center;font-size:12px;color:var(--text3);line-height:1.8;padding:8px 0 4px}
+.footer b{color:var(--navy)}
+
+/* sticky mobile bar */
+.sticky{position:fixed;left:16px;right:16px;bottom:calc(12px + env(safe-area-inset-bottom));max-width:528px;margin:0 auto;background:rgba(255,255,255,.97);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 6px 26px rgba(11,31,59,.18);border:1px solid rgba(11,31,59,.06);border-radius:var(--r-lg);padding:7px 8px 7px 16px;display:flex;align-items:center;gap:12px;z-index:50}
+.sticky .s-total{flex-shrink:0}
+.sticky .s-total .l{font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.sticky .s-total .v{font-family:var(--font-display);font-size:18px;font-weight:900;color:var(--navy);line-height:1}
+.sticky{visibility:visible;transition:opacity .25s ease,transform .25s ease,visibility 0s linear 0s}
+.sticky.hidden{opacity:0;transform:translateY(24px);pointer-events:none;visibility:hidden;transition:opacity .25s ease,transform .25s ease,visibility 0s linear .25s}
+.sticky.initializing{transition:none!important}
+/* Sticky scroll cue is NOT money. Gold is reserved for .approve (sign/pay).
+   Navy secondary keeps appearance honest with "Review & sign below" scroll. */
+.sticky .s-btn{flex:1;min-height:48px;height:48px;border:none;border-radius:24px;background:var(--navy);color:#fff;font-family:var(--font-display);font-weight:800;font-size:15px;cursor:pointer;box-shadow:0 2px 12px rgba(11,31,59,.22)}
+@media (prefers-reduced-motion:reduce){.sticky,.sticky.hidden{transition:none!important}}
+.approve-nav{width:100%;min-height:56px;height:56px;border:none;border-radius:28px;background:var(--navy);color:#fff;font-family:var(--font-display);font-weight:800;font-size:17px;letter-spacing:-.01em;cursor:pointer;margin-top:18px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 22px rgba(11,31,59,.22);text-decoration:none}
+/* .comp-flag now lives in bpp-ds.css (shared by every *-comp.html) */
+
+</style>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body class="booting">
+<div class="boot-spin"><div class="dot"></div></div>
+<noscript><div class="preview-bar" data-preview-banner="true">Preview unavailable, JavaScript is off, no customer action can occur</div><div class="preview-watermark" data-preview-watermark="true" aria-hidden="true"><span>Preview unavailable</span></div><div style="max-width:560px;margin:70px auto 24px;padding:18px;border:1px solid #ffba00;border-radius:14px;background:#fff8e6;color:#0b1f3b;text-align:center;font:600 16px/1.55 system-ui,sans-serif;">This proposal did not load. Turn on JavaScript and reload, or call (864) 863-7800.</div></noscript>
+<div class="site-header">
+  <img src="assets/images/logo-white-v2.png" alt="Backup Power Pro" class="hdr-logo">
+  <div class="tagline">Licensed Electrical Contractor · SC LIC #2942 · Upstate SC</div>
+</div>
+
+<div class="page">
+
+  <!-- 1. HERO -->
+  <div class="hero">
+    <div class="streetview">
+      <div class="sv-addr">
+        <div class="lbl">Prepared for</div>
+        <div class="sv-name">Your proposal</div>
+        <div class="sv-addr-line"></div>
+      </div>
+    </div>
+    <div class="hero-body">
+      <div class="hero-kicker">The Outage-Ready Connection System</div>
+      <h1>Keep your essential circuits on when the power goes out.</h1>
+      <div class="sub">Your generator powers your essential circuits, like your fridge and lights, right through your panel. The install is done in one day, and we handle the permit and county inspection from start to finish.</div>
+      <div class="hero-foot">
+        <span class="by">Prepared by Key Goodson · Jun 3</span>
+        <span class="lock-chip">Good through Jun 17</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- personal note -->
+  <div class="card pad">
+    <div class="note">
+      <img src="assets/images/key-headshot.jpg" alt="Key" class="av">
+      <div>
+        <div class="txt"><span class="note-name">Hi</span>, here is everything we talked through for your install, priced and ready. Approve it right from your phone and I will take it from there. Looking forward to getting your home outage-ready.</div>
+        <div class="signature sig-pen" style="margin-top:10px">Key Goodson</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHAT YOU GET + PRICE (merged) -->
+  <div class="card pad">
+    <div class="amp">
+      <div class="amp-label">Installation</div>
+      <div class="amp-seg">
+        <button class="amp-opt active" id="amp30" aria-pressed="true" onclick="setAmp('30')">30 Amp</button>
+        <button class="amp-opt" id="amp50" aria-pressed="false" onclick="setAmp('50')">50 Amp</button>
+      </div>
+      <div class="amp-rec" id="ampRec"><span>★</span> What I recommend for your setup</div>
+    </div>
+    <div class="anchor-line">All-in at <b class="anchor-total" id="allInTotal">$1,197</b>: parts, labor, permit, and inspection. Nothing added later.</div>
+    <div class="pay-block">
+      <div class="pay-line"><span class="pay-lead">Your price</span> <span class="pay-phrase"><span class="num" id="payToday">$239</span> deposit</span> <span class="psep">·</span> <span class="pay-phrase"><span class="num2" id="payLater">$958</span> after installation</span></div>
+    </div>
+
+    <details class="disclose">
+      <summary><span class="chev">▸</span> See everything included</summary>
+      <div class="line" style="border-bottom:none;padding-bottom:4px">
+        <img class="line-thumb" id="ampBoxThumb" src="assets/product-images/inlet-30amp.jpg" alt="">
+        <div class="mid"><div class="nm" id="ampBoxName">30A weather-rated connection box</div><div class="ds">Professionally mounted outside your home</div></div>
+        <div class="pr" id="ampBoxPrice">$1,072</div>
+      </div>
+      <div class="line-subs">
+        <div class="line-sub"><span>✓</span>Power transfer system, panel-matched, prevents back-feed</div>
+        <div class="line-sub"><span>✓</span>Breaker wiring and panel work</div>
+        <div class="line-sub"><span>✓</span>Site cleanup, left the way we found it</div>
+        <div class="line-sub"><span>✓</span>Step-by-step walkthrough before we leave</div>
+        <div class="line-sub"><span>✓</span>1-year workmanship guarantee</div>
+      </div>
+      <!-- optional scope items render here from the SCOPE config; excluding one removes it here AND in the comparison table -->
+      <div id="scopeLines">
+        <div class="line">
+          <img class="line-thumb" src="assets/product-images/cord-30amp.jpg" alt="">
+          <div class="mid"><div class="nm">30A heavy-duty compatible cord</div><div class="ds">Plugs into your connection box</div></div>
+          <div class="pr" style="color:var(--green)">Included</div>
+        </div>
+        <div class="line">
+          <img class="line-thumb" src="assets/product-images/wire-run.jpg" alt="">
+          <div class="mid"><div class="nm">Extended wire run</div><div class="ds">For the run we discussed</div></div>
+          <div class="pr" style="color:var(--green)">Included</div>
+        </div>
+        <div class="line" style="border-bottom:none">
+          <img class="line-thumb" src="assets/product-images/permit-inspection.jpg" alt="">
+          <div class="mid"><div class="nm">Permit + county inspection</div><div class="ds">Filed and coordinated by us</div></div>
+          <div class="pr">$125</div>
+        </div>
+      </div>
+    </details>
+
+    <!-- POM default OFF -->
+    <div class="pom" id="pom" role="switch" aria-checked="false" tabindex="0" onclick="togglePom()" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();togglePom()}">
+      <div class="pom-top">
+        <div class="tgl"><div class="knob"></div></div>
+        <div class="pom-title"><span>Peace of Mind Protection</span> <span class="pom-popular">Key recommends this</span></div>
+        <div class="pom-price">+$447<small>one-time</small></div>
+      </div>
+      <div class="pom-surge">
+        <div class="pom-surge-row">
+          <div class="pom-surge-main">
+            <div class="pom-surge-title">Whole-Home Surge Protection</div>
+            <div class="pom-surge-sub">$75,000 manufacturer's warranty</div>
+          </div>
+          <img class="pom-surge-img" src="assets/images/home-square.jpg" alt="A Greenville home">
+        </div>
+        <div class="pom-surge-desc">When the grid snaps back on after an outage, the spike can reach anything plugged in, your TV, fridge, HVAC boards, and computers. A whole-home surge protector guards every circuit at your panel, stopping that spike before it reaches them. <span class="pom-learn" role="button" tabindex="0" onclick="openPom(event)" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();openPom(event)}">What is surge protection?</span></div>
+        <div class="pom-also">
+          <div class="pom-also-label">Also included</div>
+          <div class="pom-also-items">
+            <span><b>✓</b>Wattage guide</span>
+            <span><b>✓</b>20-point panel check</span>
+            <span><b>✓</b>Priority scheduling</span>
+          </div>
+        </div>
+      </div>
+      <div class="pom-remove" id="pomRemove">Tap to add this protection.</div>
+    </div>
+  </div>
+
+  <!-- APPLES TO APPLES (completeness differentiation; never price-signaling, Key 2026-07-02) -->
+  <div class="card pad">
+    <div class="eyebrow">Apples to apples</div>
+    <h2 class="sec" style="margin-bottom:6px">You're getting the complete install, done right.</h2>
+    <div class="cmp-intro">Not every generator install includes everything it should. Yours includes all of it. Here is the full picture, next to what other quotes often leave out.</div>
+    <div class="cmp">
+      <div class="cmp-head"><span class="cmp-h-label"></span><span class="cmp-h-cheap">Others</span><span class="cmp-h-ours">Yours</span></div>
+      <div class="cmp-row"><span class="cmp-label">Permit pulled &amp; filed</span><span class="cmp-x">✕</span><span class="cmp-ok">✓</span></div>
+      <div class="cmp-row"><span class="cmp-label">County inspection</span><span class="cmp-x">✕</span><span class="cmp-ok">✓</span></div>
+      <div class="cmp-row"><span class="cmp-label">Generator cord included</span><span class="cmp-x">✕</span><span class="cmp-ok">✓</span></div>
+      <div class="cmp-row"><span class="cmp-label">Licensed &amp; insured electrician</span><span class="cmp-x">✕</span><span class="cmp-ok">✓</span></div>
+      <div class="cmp-row"><span class="cmp-label">Proper interlock, no back-feed</span><span class="cmp-x">✕</span><span class="cmp-ok">✓</span></div>
+      <div class="cmp-row"><span class="cmp-label">1-year workmanship warranty</span><span class="cmp-x">✕</span><span class="cmp-ok">✓</span></div>
+    </div>
+    <div class="cmp-foot">Your install is permitted, inspected, and wired with a proper interlock, so it passes at resale, keeps your insurance valid, and keeps the power crews safe. That is how we do every job.</div>
+  </div>
+
+  <!-- THE PROMISE (risk reversal) -->
+  <div class="card pad">
+    <div class="promise-head"><img class="promise-seal" src="assets/images/icon-192.png" alt="Backup Power Pro"><div><div class="eyebrow" style="margin:0">Our promise to you</div><h2 class="sec" style="margin:2px 0 0">The No-Surprises Guarantee</h2></div></div>
+    <div class="promise-grid">
+      <div class="promise-item"><b>Permitted and inspected.</b> I pull the permit and coordinate your county inspection. Passing it is my job, not yours.</div>
+      <div class="promise-item"><b>The price you approve is the price you pay.</b> No surprise fees and no add-ons at the end.</div>
+      <div class="promise-item"><b>Your deposit is protected.</b> It goes straight toward your install, never an extra fee, and carries over any time you reschedule.</div>
+    </div>
+    <div class="prom-rev-divider"></div>
+    <div class="eyebrow" style="margin:0 0 10px">Backup Power Pro by Key Electric</div>
+    <div class="stars">★★★★★</div>
+    <div class="review-txt">"KeyElectric is absolutely outstanding! From start to finish, my first experience with KeyElectric was exceptional. I chose them over two other electrical companies to install a portable generator inlet connected to the main breaker..."</div>
+    <div class="review-auth">Dino S. · Google</div>
+    <div class="badges">
+      <span class="badge"><span style="color:var(--gold)">★</span> 4.9 · 100+ Google</span>
+      <span class="badge">⚡ SC LIC #2942</span>
+      <span class="badge">🛡️ Fully Insured</span>
+      <span class="badge">📋 Permit + Inspection</span>
+    </div>
+  </div>
+
+  <!-- CLOSE / APPROVAL -->
+  <div class="card pad" id="close-card">
+    <div id="closeStart"></div>
+
+    <div class="eyebrow">What happens next</div>
+    <div class="timeline">
+      <div class="tl-step"><div class="tl-dot now">1</div><div class="tl-lbl">Approve</div></div>
+      <div class="tl-bar"></div>
+      <div class="tl-step"><div class="tl-dot">2</div><div class="tl-lbl">We handle the permit</div></div>
+      <div class="tl-bar"></div>
+      <div class="tl-step"><div class="tl-dot">3</div><div class="tl-lbl">Install day</div></div>
+    </div>
+    <div class="tl-note">The moment you approve, I get your permit filed and text you to set your install day, usually within a week or two. On install day it's me or one of my trusted install partners, either way the work is done to my standard and county-inspected.</div>
+
+    <div class="sign-divider"></div>
+
+    <!-- Lead-in FIRST, then both boxes as one tight group (Key 2026-07-17:
+         the "these two boxes" line sat after box 1 with the money chip
+         wedged between, reading scattered). The money line stays directly
+         above the charge box it explains. -->
+    <div class="tl-note" style="margin:0 0 10px">These two boxes keep us both protected. Standard for every install.</div>
+
+    <div class="ack" id="ack" style="margin-bottom:10px" role="checkbox" aria-checked="false" tabindex="0" onclick="toggleAck()" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleAck()}">
+      <div class="ack-box"><svg width="13" height="13" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg></div>
+      <div class="ack-txt">I've read and understood the <a href="/inlet-safety-instructions.html" target="_blank" rel="noopener" onclick="event.stopPropagation();openSafety(event);return false">Generator Safety Instructions</a> for a portable generator inlet install.</div>
+    </div>
+
+    <!-- Card-on-file authorization (required). Amount line + variant text bound from server numbers in JS. -->
+    <div class="charge-amount-line" id="chargeAmountLine"></div>
+    <div class="ack" id="mandate" role="checkbox" aria-checked="false" tabindex="0" onclick="toggleMandate()" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleMandate()}">
+      <div class="ack-box"><svg width="13" height="13" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg></div>
+      <div class="ack-txt" id="mandateText"></div>
+    </div>
+
+    <div class="sig-label">Sign to approve</div>
+    <div class="sig-hint">This is your electronic signature, edit if needed.</div>
+    <input class="sig-input" id="sig" type="text" placeholder="Type your full name to sign" oninput="onSig()" autocomplete="name" value="">
+    <div class="sig-preview" id="sigPrev"></div>
+    <div class="fineprint">By checking the box above and tapping Approve, you adopt the name shown as your electronic signature and agree to be legally bound by this proposal under the federal ESIGN Act and applicable state e-signature law.</div>
+
+    <button class="approve" id="approve" disabled onclick="approve()">
+      <span id="approveLabel">Approve &amp; lock in my price</span>
+    </button>
+    <div class="approve-err" id="approveErr" role="alert"></div>
+    <div class="approve-sub">Just a <span id="depAmt">$239</span> deposit, then <span id="balanceNote">$958 when it's working.</span><br>Reschedule anytime, your deposit carries over.</div>
+    <div class="policy-links"><span class="policy-link" role="button" tabindex="0" onclick="openDeposit(event)" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();openDeposit(event)}">Deposit &amp; refund policy</span><span class="policy-sep">·</span><span class="policy-link" role="button" tabindex="0" onclick="openWarranty(event)" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();openWarranty(event)}">Warranty policy</span></div>
+    <div class="expiry-note">This quote stays good through Jun 17 (about two weeks). After that I refresh it, parts pricing and my install calendar move over time.</div>
+  </div>
+
+  <div class="footer">Questions? Text or call Key directly at <b>(864) 863-7800</b></div>
+</div>
+
+<!-- Peace of Mind learn-more modal -->
+<div class="modal-overlay" id="pomModal" onclick="if(event.target===this)closePom()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pomModalTitle">
+    <div class="modal-head">
+      <div class="modal-title" id="pomModalTitle">Peace of Mind Protection</div>
+      <button class="modal-x" onclick="closePom()" aria-label="Close">✕</button>
+    </div>
+    <div class="mb-item">
+      <div class="mb-t">⚡ Whole-Home Surge Protection</div>
+      <div class="mb-d">A power surge is a sudden spike in electricity, often from a storm, a downed line, or the grid snapping back on after an outage. It can quietly fry the electronics plugged into your home: your TV, fridge, HVAC, and computer. A whole-home surge protector installs at your panel and absorbs those spikes before they ever reach your devices. This one is backed by a $75,000 manufacturer's warranty.</div>
+    </div>
+    <div class="mb-item">
+      <div class="mb-t">📋 Wattage guide</div>
+      <div class="mb-d">A simple sheet showing what your generator can safely run at once, so you never overload it.</div>
+    </div>
+    <div class="mb-item">
+      <div class="mb-t">🔍 20-point panel check</div>
+      <div class="mb-d">While we are in your panel, we check it end to end for loose connections, code issues, and safety concerns.</div>
+    </div>
+    <div class="mb-item">
+      <div class="mb-t">📅 Priority scheduling</div>
+      <div class="mb-d">You move to the front of the install line.</div>
+    </div>
+    <button class="modal-add" onclick="addPomFromModal()">Add to my install, +$447</button>
+  </div>
+</div>
+
+<!-- deposit & refund policy modal -->
+<div class="modal-overlay" id="depositModal" onclick="if(event.target===this)closeDeposit()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="depositModalTitle">
+    <div class="modal-head">
+      <div class="modal-title" id="depositModalTitle">Deposit &amp; refund policy</div>
+      <button class="modal-x" onclick="closeDeposit()" aria-label="Close">✕</button>
+    </div>
+    <div class="mb-item"><div class="mb-t">A 20% deposit holds your date</div><div class="mb-d">Your deposit is 20% of the total. It goes straight toward your balance, it is not an extra fee, and the rest is due once your system is installed and working.</div></div>
+    <div class="mb-item"><div class="mb-t">Reschedule anytime, free</div><div class="mb-d">Life happens. Your deposit carries over to your new date, no charge.</div></div>
+    <div class="mb-item"><div class="mb-t">Cancel 48+ hours before install</div><div class="mb-d">We refund your deposit, minus the county permit fee. We file that permit right after you approve, so that part is already spent.</div></div>
+    <div class="mb-item"><div class="mb-t">Cancel under 48 hours</div><div class="mb-d">The deposit is forfeited. Reschedule instead and you keep every dollar toward your new date.</div></div>
+    <div class="mb-item"><div class="mb-t">If we ever cancel</div><div class="mb-d">You get a full refund, including the permit fee.</div></div>
+    <button class="modal-add" onclick="closeDeposit()">Got it</button>
+  </div>
+</div>
+
+<!-- Warranty policy modal -->
+<div class="modal-overlay" id="warrantyModal" onclick="if(event.target===this)closeWarranty()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="warrantyModalTitle">
+    <div class="modal-head">
+      <div class="modal-title" id="warrantyModalTitle">Warranty policy</div>
+      <button class="modal-x" onclick="closeWarranty()" aria-label="Close">✕</button>
+    </div>
+    <div class="mb-item"><div class="mb-t">1-year workmanship guarantee</div><div class="mb-d">For 12 months after your install, if anything we installed (the connection box, the power transfer system, or the wiring between them) is not working right, we come back and make it right at no charge.</div></div>
+    <div class="mb-item"><div class="mb-t">Manufacturer warranties</div><div class="mb-d">Your connection box and power transfer system carry their own manufacturer warranty. If you add Whole-Home Surge Protection, it includes the manufacturer's $75,000 connected-equipment warranty.</div></div>
+    <div class="mb-item"><div class="mb-t">What is not covered</div><div class="mb-d">Your generator and its maintenance, the generator's neutral-ground bond, normal wear, and anything changed or added to the installation after we leave. Safe operation is the owner's responsibility, per the Generator Safety Instructions.</div></div>
+    <button class="modal-add" onclick="closeWarranty()">Got it</button>
+  </div>
+</div>
+
+<!-- Generator safety instructions modal -->
+<div class="modal-overlay" id="safetyModal" onclick="if(event.target===this)closeSafety()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="safetyModalTitle">
+    <div class="modal-head">
+      <div class="modal-title" id="safetyModalTitle">Generator Operating &amp; Safety Notice</div>
+      <button class="modal-x" onclick="closeSafety()" aria-label="Close">✕</button>
+    </div>
+    <div class="mb-item"><div class="mb-t">🔌 Generator bonding (floating neutral), do this first</div><div class="mb-d">Most portable generators ship with the neutral and ground bonded together inside. Once yours connects to your panel (which already has its own bond), that double bond trips GFCIs and is a code violation (NEC 250.34). Convert your generator to a floating neutral before first use. A small engine shop can do it in minutes. This is the owner's responsibility.</div></div>
+    <div class="mb-item"><div class="mb-t">⚠️ Carbon monoxide</div><div class="mb-d">Run the generator outdoors only, at least 20 feet from windows, doors, and vents, with the exhaust pointed away. Never in a garage or covered space, even with the door open. CO is odorless and deadly. Install CO detectors on every level of your home.</div></div>
+    <div class="mb-item"><div class="mb-t">⚡ Compatible generators only</div><div class="mb-d">Connect only a 240V twist-lock generator (NEMA L14-30 or L14-50). Do not connect any other plug type.</div></div>
+    <div class="mb-item"><div class="mb-t">🔁 Operate in sequence</div><div class="mb-d">Start the generator, plug into the connection box, slide the interlock (main off, generator on), then switch on circuits one at a time within your wattage. Reverse the steps to shut down, and let it cool before refueling.</div></div>
+    <div class="mb-item"><div class="mb-t">🛠️ What we are responsible for</div><div class="mb-d">Our installation covers the connection box, the interlock, and the wiring between them, permitted and inspected. It does not include your generator, its maintenance, the neutral-ground bond, or anything modified after we leave. You are responsible for safe operation per these instructions.</div></div>
+    <a href="/inlet-safety-instructions.html" target="_blank" rel="noopener" style="display:block;text-align:center;font-size:13px;font-weight:700;color:var(--blue);text-decoration:underline;text-underline-offset:2px;margin-top:4px">View the full safety guide</a>
+    <button class="modal-add" onclick="closeSafety()">Got it</button>
+  </div>
+</div>
+
+<!-- sticky mobile CTA -->
+<div class="sticky hidden initializing" aria-hidden="true" inert>
+  <div class="s-total"><div class="l">Deposit</div><div class="v" id="sTotal">$239</div></div>
+  <button class="s-btn" onclick="focusSig()">Review &amp; sign below &darr;</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0" integrity="sha384-wgi7s9Y2xefdDru3II6Xb11y/YNoKVbuydTikWejwId9z2xRd8SveCTrJjj/QAnH" crossorigin="anonymous"></script>
+<script>
+// ── BACKEND WIRING ───────────────────────────────────────────
+// Same publishable key + edge-function contract the live proposal.html uses.
+// Customer-facing reads go through proposal-view (service-role internally); the
+// anon/publishable role never touches the proposals table directly.
+var SUPABASE_URL='https://hfatblrcwytxvijjhpal.supabase.co';
+var SUPABASE_KEY='sb_publishable_kBXthY-Han29JLqcT514RQ_RtwxXLZ-';
+// Single source of truth for the deposit fraction. The server
+// (proposal-deposit-checkout) charges round(signed_total*deposit_rate); we
+// display the SAME math so what the customer sees equals what Stripe charges.
+// Bound from P.deposit_rate at load (see "P=row" below), NOT hardcoded: the
+// old fixed 0.20 only matched because every -comp proposal happens to be 20%
+// today; any non-20% -comp proposal would have shown 20% while Stripe charged
+// the stored rate (audit S3, 2026-07-17). 0.20 is only the pre-load default.
+var DEPOSIT_RATE=0.20;
+var MANDATE_VERSION='mandate-v1-2026-06-08';
+
+// Populated from the server proposal row.
+var P=null;                 // raw proposal row from proposal-view
+var POM=447;                // P.pom_price (server)
+var RECOMMENDED_AMP='30';   // P.selected_amp (Key's pre-selected recommendation)
+var RECOMMEND_POM=true;     // whether to show Key's POM nudge badge
+var AMP={};                 // per-amp display config, built from server pricing
+var chosenAmp='30';
+var BASE=0;                 // install-only subtotal for the chosen amp (pre-POM)
+var pomOn=false, ackOn=false, mandateOn=false;
+var REQUIRE_DEPOSIT=true;   // P.require_deposit !== false
+// Key's View-as-customer opens with ?preview=1: watermarked, view not counted,
+// signing + checkout disabled (guards in approve() and resumeCheckout()).
+var isPreview=new URLSearchParams(window.location.search).get('preview')==='1';
+function previewModeActive(){return isPreview||new URLSearchParams(window.location.search).get('preview')==='1';}
+var submitting=false;
+var signStatusUncertain=false;
+var depositCancellationUnconfirmed=true;
+var depositAuthorizationWasReset=false;
+var AUTHORIZATION_GATE_TIMEOUT_MS=4000;
+var authorizationGateState=isPreview?'preview':'pending';
+var authorizationGateInFlight=null;
+var authorizationGateToken='';
+var authorizationFactsRendered=false;
+var authorizationFullRedoPending=false;
+document.body.dataset.authorizationGate=authorizationGateState;
+function authorizationGateReady(){return authorizationGateState==='ready';}
+function setAuthorizationGateState(state){
+  authorizationGateState=state;
+  depositCancellationUnconfirmed=state!=='ready';
+  document.body.dataset.authorizationGate=state;
+  syncAuthorizationGateUI();
+}
+function setAuthorizationControlLocked(control,locked){
+  if(locked){
+    if(!control.hasAttribute('data-authorization-gate-locked')){
+      control.setAttribute('data-authorization-gate-locked','true');
+      control.setAttribute('data-authorization-was-disabled',control.disabled?'true':'false');
+      control.setAttribute('data-authorization-tabindex',control.getAttribute('tabindex')||'');
+      if(control.tagName==='A'&&control.hasAttribute('href'))control.setAttribute('data-authorization-href',control.getAttribute('href'));
+    }
+    if('disabled' in control)control.disabled=true;
+    control.setAttribute('aria-disabled','true');
+    if(control.tagName==='A')control.removeAttribute('href');
+    control.setAttribute('tabindex','-1');
+    return;
+  }
+  if(!control.hasAttribute('data-authorization-gate-locked'))return;
+  if('disabled' in control)control.disabled=control.getAttribute('data-authorization-was-disabled')==='true';
+  if(control.hasAttribute('data-authorization-href'))control.setAttribute('href',control.getAttribute('data-authorization-href'));
+  var priorTabIndex=control.getAttribute('data-authorization-tabindex');
+  if(priorTabIndex)control.setAttribute('tabindex',priorTabIndex);else control.removeAttribute('tabindex');
+  control.removeAttribute('aria-disabled');
+  control.removeAttribute('data-authorization-gate-locked');
+  control.removeAttribute('data-authorization-was-disabled');
+  control.removeAttribute('data-authorization-tabindex');
+  control.removeAttribute('data-authorization-href');
+}
+function syncAuthorizationGateNotice(target){
+  var notice=document.querySelector('[data-authorization-gate-status]');
+  if(authorizationGateState==='ready'||authorizationGateState==='preview'||!target){if(notice)notice.remove();return;}
+  if(!notice){
+    notice=document.createElement('div');
+    notice.className='card pad';
+    notice.setAttribute('data-authorization-gate-status','true');
+    notice.style.cssText='text-align:center;padding:18px 20px;margin-bottom:14px';
+    target.parentNode.insertBefore(notice,target);
+  }
+  if(notice.getAttribute('data-authorization-gate-state')===authorizationGateState)return;
+  notice.setAttribute('data-authorization-gate-state',authorizationGateState);
+  notice.innerHTML='';
+  var message=document.createElement('div');
+  message.style.cssText='color:var(--text2);font-size:13px;line-height:1.55';
+  message.textContent=authorizationGateState==='failed'
+    ? 'We could not confirm that this proposal is ready for a new acceptance. No approval or payment was submitted. Tap Retry to check again.'
+    : 'Confirming that this proposal is ready for a new acceptance.';
+  notice.appendChild(message);
+  if(authorizationGateState==='failed'){
+    var retry=document.createElement('button');
+    retry.type='button';retry.className='approve';retry.setAttribute('data-authorization-gate-retry','true');
+    retry.style.marginTop='14px';retry.textContent='Retry authorization check';
+    retry.addEventListener('click',function(){beginAuthorizationGate(authorizationGateToken);});
+    notice.appendChild(retry);
+  }
+}
+function syncAuthorizationGateUI(){
+  var locked=!authorizationGateReady();
+  document.body.dataset.authorizationGate=authorizationGateState;
+  var panel=document.getElementById('close-card');
+  if(panel){
+    if(locked){
+      if(!panel.hasAttribute('data-authorization-gate-inert'))panel.setAttribute('data-authorization-gate-inert',panel.hasAttribute('inert')?'true':'false');
+      panel.setAttribute('inert','');
+      if(authorizationGateState==='pending')panel.setAttribute('aria-busy','true');else panel.removeAttribute('aria-busy');
+    }else if(panel.hasAttribute('data-authorization-gate-inert')){
+      if(panel.getAttribute('data-authorization-gate-inert')==='false')panel.removeAttribute('inert');
+      panel.removeAttribute('data-authorization-gate-inert');panel.removeAttribute('aria-busy');
+    }
+  }
+  var selector='#approve,#payDepositBtn,#checkPaymentTruth,#checkPaymentStatus,[data-authorization-action="payment"]';
+  Array.prototype.forEach.call(document.querySelectorAll(selector),function(control){setAuthorizationControlLocked(control,locked);});
+  var action=document.querySelector(selector);
+  syncAuthorizationGateNotice(panel||(action&&action.closest('.card'))||action);
+  if(!locked&&document.getElementById('sig')&&document.getElementById('approve'))validate();
+}
+function installPreviewChrome(){
+  if(!isPreview||document.querySelector('[data-preview-banner="true"]')) return;
+  document.body.classList.add('preview-mode');
+  document.body.insertAdjacentHTML('afterbegin',
+    '<div class="preview-bar" data-preview-banner="true">Preview Mode, Not Sent to Client, Read Only</div>'
+    +'<div class="preview-watermark" data-preview-watermark="true" aria-hidden="true"><span>Preview</span></div>');
+}
+function money(n){return '$'+Number(n||0).toLocaleString('en-US')}
+function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function titleCase(s){return String(s||'').replace(/\w\S*/g,function(t){return t.charAt(0).toUpperCase()+t.substr(1).toLowerCase();});}
+
+// Read one amp's pricing object off the proposal row, mirroring proposal.html's getPrice().
+function ampPricing(row,amp){
+  if(amp==='50'&&row.pricing_50) return row.pricing_50;
+  if(amp==='30'&&row.pricing_30) return row.pricing_30;
+  return null;
+}
+// V3 proposals carry ONE flat price (price_base/total for the amp Key picked at
+// create time); pricing_30/pricing_50 are null in the DB. The proven live page
+// (proposal.html applyV3Normalization) SYNTHESIZES both per-amp pricing objects
+// client-side from the v3 price book; without this step the amp toggle relabels
+// the box but cannot reprice (the bug Key hit 2026-06-09: 30A and 50A both
+// showed the same total). Exact port, same constants, same math.
+function applyV3Normalization(row){
+  if(row.creator_version==='v3' && !row.pricing_30){
+    var V3P={ base:{30:1197,50:1497}, perFt:{30:12,50:14},
+      cordOff:{30:129,50:249}, inletOff:{30:129,50:179}, permitOff:125 };
+    var lengthFt=Number(row.length_ft||row.run_ft||5);
+    var extraFt=Math.max(0,lengthFt-5);
+    var includeCord=row.include_cord!==false;
+    var includeInlet=row.include_inlet!==false;
+    var includePermit=row.include_permit!==false;
+    var buildPr=function(amp){
+      var a=String(amp);
+      var longRun=extraFt*V3P.perFt[a];
+      var subtotal=V3P.base[a]+longRun
+        -(includeCord?0:V3P.cordOff[a])
+        -(includeInlet?0:V3P.inletOff[a])
+        -(includePermit?0:V3P.permitOff);
+      return { base:subtotal, cord:includeCord?V3P.cordOff[a]:0,
+        mainBreaker:0, twinQuad:0, longRun:longRun,
+        permitInspection:includePermit?V3P.permitOff:0, total:subtotal };
+    };
+    row.pricing_30=buildPr('30');
+    row.pricing_50=buildPr('50');
+    // Percent discount: keep the pct so the dollar amount recomputes per amp
+    // (mirrors proposal.html; a fixed dollar discount rides discount_amount).
+    if(row.discount_type==='percent'&&Number(row.discount_value)>0){
+      row._v3_discount_pct=Number(row.discount_value);
+    } else if(row.discount_type==='dollar'&&Number(row.discount_value)>0){
+      row.discount_amount=Number(row.discount_value);
+    }
+    return true;
+  }
+  return false;
+}
+// Build the per-amp display config (box price, total, comparable range, labels, images)
+// from the server proposal row. Falls back to the row's flat fields when a per-amp
+// pricing object is absent so an older-shape proposal still renders.
+function buildAmpConfig(row){
+  var out={};
+  ['30','50'].forEach(function(amp){
+    var pr=ampPricing(row,amp);
+    var total = pr ? Number(pr.total!=null?pr.total:pr.base) : Number((amp===String(row.selected_amp)? (row.total||row.price_base) : (row.total||row.price_base))||0);
+    var box   = pr && pr.base!=null ? Number(pr.base) : Number(row.price_base|| (total? total-125 : 0));
+    var is50  = amp==='50';
+    out[amp]={
+      box:box,
+      total:total,
+      // Comparable-install anchor range. Server may carry it; else a reasonable band around total.
+      cmpLow:  Number((pr&&pr.compare_low)||row.compare_low|| (is50?1800:1500)),
+      cmpHigh: Number((pr&&pr.compare_high)||row.compare_high|| (is50?2300:2000)),
+      boxName: is50?'50A weather-rated connection box':'30A weather-rated connection box',
+      boxImg:  is50?'assets/product-images/inlet-50amp.jpg':'assets/product-images/inlet-30amp.jpg',
+      cordName:is50?'50A heavy-duty compatible cord':'30A heavy-duty compatible cord',
+      cordImg: is50?'assets/product-images/cord-50amp.jpg':'assets/product-images/cord-30amp.jpg'
+    };
+  });
+  return out;
+}
+// Optional scope items the quote builder can include/exclude. Excluding one removes ALL its
+// mentions: its line in "everything included" AND its row in the comparison table.
+var SCOPE={cord:{included:true},wireRun:{included:true},permit:{included:true}};
+function renderScopeLines(){
+  var box=document.getElementById('scopeLines'); if(!box) return;
+  var a=AMP[chosenAmp],items=[];
+  if(SCOPE.cord.included)    items.push({img:a.cordImg,name:a.cordName,desc:'Plugs into your connection box',price:'Included',inc:true});
+  if(SCOPE.wireRun.included) items.push({img:'assets/product-images/wire-run.jpg',name:'Extended wire run',desc:'Extra wire length included, already in your quote',price:'Included',inc:true});
+  if(SCOPE.permit.included)  items.push({img:'assets/product-images/permit-inspection.jpg',name:'Permit + county inspection',desc:'Filed and coordinated by us',price:'$125',inc:false});
+  // Extra line items Key added in the quote builder. They are part of the
+  // total (customAdder), so they MUST be visible: no invisible money.
+  CUSTOM_ITEMS.forEach(function(ci){
+    items.push({name:escHtml(ci.name||'Additional work'),desc:'Added to your quote',price:money(ci.price),inc:false});
+  });
+  // Discount rides the displayed total too; show it so the math is honest.
+  var disc=currentDiscount();
+  if(disc>0) items.push({name:'Your discount',desc:'Applied to this quote',price:'-'+money(disc),inc:true});
+  box.innerHTML=items.map(function(it,i){
+    var last=i===items.length-1;
+    var pr=it.inc?'<div class="pr" style="color:var(--green)">'+it.price+'</div>':'<div class="pr">'+it.price+'</div>';
+    var thumb=it.img?'<img class="line-thumb" src="'+it.img+'" alt="">':'';
+    return '<div class="line"'+(last?' style="border-bottom:none"':'')+'>'+thumb+'<div class="mid"><div class="nm">'+it.name+'</div><div class="ds">'+it.desc+'</div></div>'+pr+'</div>';
+  }).join('');
+}
+// Comparison rows. A row with `req` only shows when that scope item is included.
+var CMP_ROWS=[
+  {label:'Permit pulled &amp; filed',req:'permit'},
+  {label:'County inspection',req:'permit'},
+  {label:'Generator cord included',req:'cord'},
+  {label:'Licensed &amp; insured electrician',req:null},
+  {label:'Proper interlock, no back-feed',req:null},
+  {label:'1-year workmanship warranty',req:null}
+];
+function renderCmpRows(){
+  var cmp=document.querySelector('.cmp'); if(!cmp) return;
+  [].slice.call(cmp.querySelectorAll('.cmp-row')).forEach(function(r){r.remove();});
+  cmp.insertAdjacentHTML('beforeend', CMP_ROWS.filter(function(r){return !r.req||(SCOPE[r.req]&&SCOPE[r.req].included);}).map(function(r){
+    return '<div class="cmp-row"><span class="cmp-label">'+r.label+'</span><span class="cmp-x">&#10005;</span><span class="cmp-ok">&#10003;</span></div>';
+  }).join(''));
+}
+// quote-builder / demo hook: flip an item and every mention updates in lockstep
+function setScope(key,on){if(SCOPE[key]){SCOPE[key].included=!!on;renderScopeLines();renderCmpRows();}}
+// Shrink the one-line price summary only as much as a narrow phone needs; wide screens keep the tuned 26/18px.
+function fitPayLine(){
+  // The line now wraps (see .pay-line / .pay-phrase), so we no longer shrink the
+  // committed price toward 8px to force one line. Just hold the CSS size (12px base).
+  var el=document.querySelector('.pay-line'); if(!el) return;
+  el.style.fontSize='';
+}
+// Current displayed total (install + POM if on + extra line items - discount).
+// This is what we send as signed_total at sign, and what the server freezes +
+// charges against. Mirrors proposal.html's calcTotal exactly: the v3 percent
+// discount recomputes against the CURRENT amp's subtotal so toggling amps
+// stays consistent; v2 rows bake the discount into the total at create time.
+var CUSTOM_ITEMS=[];      // [{name, price}] from extra_line_items (checked only)
+var V3_DISCOUNT_PCT=0;    // percent discount (v3), recomputed per amp
+var V3_DISCOUNT_AMT=0;    // fixed dollar discount (v3)
+var IS_V3=false;
+function customAdder(){
+  var s=0; for(var i=0;i<CUSTOM_ITEMS.length;i++) s+=Number(CUSTOM_ITEMS[i].price)||0; return s;
+}
+function currentDiscount(){
+  if(!IS_V3) return 0;
+  if(V3_DISCOUNT_PCT>0) return Math.round((BASE+customAdder())*V3_DISCOUNT_PCT/100);
+  return V3_DISCOUNT_AMT>0?V3_DISCOUNT_AMT:0;
+}
+function currentTotal(){return BASE+(pomOn?POM:0)+customAdder()-currentDiscount();}
+// Deposit displayed == deposit charged: round(total * DEPOSIT_RATE) on the FULL
+// total, matching proposal-deposit-checkout's round(signed_total*deposit_rate).
+function currentDeposit(){return Math.round(currentTotal()*DEPOSIT_RATE);}
+function recompute(){
+  var total=currentTotal();
+  var deposit=currentDeposit();
+  var setT=function(id,v){var el=document.getElementById(id); if(el) el.textContent=v;};
+  setT('allInTotal',money(total));
+  // The headline pay-line must match the sign section's mode. Deposit-ON:
+  // "$X deposit · $Y after installation". Deposit-OFF ($0 today, card on
+  // file): the old static wording showed a deposit that is never charged,
+  // contradicting the $0-today mandate below (caught on Key's 2026-06-09
+  // proposal). Rewrite the line per mode, same spans so fitPayLine holds.
+  var payLine=document.querySelector('.pay-line');
+  if(payLine){
+    payLine.innerHTML=REQUIRE_DEPOSIT
+      ? '<span class="pay-lead">Your price</span> <span class="pay-phrase"><span class="num" id="payToday">'+money(deposit)+'</span> deposit</span> <span class="psep">·</span> <span class="pay-phrase"><span class="num2" id="payLater">'+money(total-deposit)+'</span> after installation</span>'
+      : '<span class="pay-lead">Your price</span> <span class="pay-phrase"><span class="num" id="payToday">'+money(total)+'</span></span> <span class="psep">·</span> <span class="pay-phrase"><span class="num2" id="payLater">$0</span> today, charged after installation</span>';
+  }
+  var st=document.getElementById('sTotal'); if(st) st.textContent=REQUIRE_DEPOSIT?money(deposit):money(0);
+  var lbl=document.getElementById('approveLabel'); if(lbl) lbl.textContent='Approve & lock in my price';
+  var dt=document.getElementById('depAmt'); if(dt) dt.textContent=REQUIRE_DEPOSIT?money(deposit):money(0);
+  var bn=document.getElementById('balanceNote');
+  if(bn) bn.textContent=REQUIRE_DEPOSIT?(money(total-deposit)+" when it's working."):(money(total)+" when it's working.");
+  renderMandate();
+  fitPayLine();
+}
+// Build the card-on-file authorization amount line + checkbox text from the
+// frozen server numbers, picking the deposit-ON vs deposit-OFF variant. Copy is
+// the WORKING mandate copy (mandate-v1-2026-06-08). No em/en dashes.
+function mandateText(){
+  var total=currentTotal(), deposit=currentDeposit(), balance=total-deposit;
+  if(REQUIRE_DEPOSIT){
+    return 'I authorize Key Electric LLC (dba Backup Power Pro) to save my card and charge the remaining balance of '+money(balance)+' one time after my installation is complete. I understand this is a single post-install charge, not a subscription or recurring payment, that Key personally reviews every charge before it runs, and that I can cancel this authorization any time before my install by calling (864) 863-7800.';
+  }
+  return 'I authorize Key Electric LLC (dba Backup Power Pro) to save my card and charge '+money(total)+' one time after my installation is complete. I understand I pay $0 today, that this is a single post-install charge and not a subscription or recurring payment, that Key personally reviews every charge before it runs, and that I can cancel this authorization any time before my install by calling (864) 863-7800.';
+}
+function renderMandate(){
+  var total=currentTotal(), deposit=currentDeposit(), balance=total-deposit;
+  var line=document.getElementById('chargeAmountLine');
+  if(line){
+    line.innerHTML=REQUIRE_DEPOSIT
+      ? 'Today: <b>'+money(deposit)+'</b> deposit. After your install: <b>'+money(balance)+'</b> to the same card.'
+      : '<b class="zero-today">You pay $0 today.</b> After your install is complete, we charge this card the full project total of <b>'+money(total)+'</b>.';
+  }
+  // Calmer presentation (Key 2026-07-02: the paragraph box read huge and
+  // scary). The checkbox label is one short human line; the FULL authorization
+  // sentence stays fully visible right beneath it in quiet fine print. The
+  // legal text itself is unchanged: mandateText() still feeds the signed
+  // terms snapshot verbatim in approve().
+  var txt=document.getElementById('mandateText');
+  if(txt) txt.innerHTML='<div>I authorize this one-time charge.</div><div class="mandate-full">'+escHtml(mandateText())+'</div>';
+}
+function syncPom(){
+  var p=document.getElementById('pom');
+  p.classList.toggle('on',pomOn);
+  p.setAttribute('aria-checked',pomOn?'true':'false');
+  var pp=p.querySelector('.pom-popular');
+  if(pp){ pp.style.display=RECOMMEND_POM?'inline-block':'none'; if(RECOMMEND_POM) pp.textContent='Key recommends this'; }
+  // POM is added to the total, so it lifts both the deposit and the balance.
+  document.getElementById('pomRemove').textContent=pomOn?('Added, this is part of your total. Tap to remove.'):'Tap to add this protection.';
+  recompute();
+}
+function togglePom(){pomOn=!pomOn;syncPom();}
+var _scrollLock=0;
+function lockScroll(){_scrollLock=window.scrollY||window.pageYOffset||0;var b=document.body;b.style.position='fixed';b.style.top=(-_scrollLock)+'px';b.style.left='0';b.style.right='0';b.style.width='100%';}
+function unlockScroll(){var b=document.body;b.style.position='';b.style.top='';b.style.left='';b.style.right='';b.style.width='';window.scrollTo(0,_scrollLock);}
+// Generic modal open/close with focus management + scroll lock
+var _lastFocus=null;
+function openModal(id,e){if(e&&e.stopPropagation)e.stopPropagation();_lastFocus=document.activeElement;lockScroll();var ov=document.getElementById(id);ov.classList.add('open');var x=ov.querySelector('.modal-x');if(x)x.focus();}
+function closeModal(id){var ov=document.getElementById(id);ov.classList.remove('open');unlockScroll();if(_lastFocus&&_lastFocus.focus)try{_lastFocus.focus();}catch(_){}}
+function closeAnyModal(){var ov=document.querySelector('.modal-overlay.open');if(ov){ov.classList.remove('open');unlockScroll();if(_lastFocus&&_lastFocus.focus)try{_lastFocus.focus();}catch(_){}}}
+// Esc closes; Tab is trapped inside the open modal so keyboard focus cannot wander to the inert page behind the scrim (Operational DNA 6a, desktop keyboard discipline).
+document.addEventListener('keydown',function(e){
+  var ov=document.querySelector('.modal-overlay.open');
+  if(!ov)return;
+  if(e.key==='Escape'){closeAnyModal();return;}
+  if(e.key==='Tab'){
+    var f=Array.prototype.filter.call(
+      ov.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'),
+      function(el){return el.offsetParent!==null && !el.disabled;});
+    if(!f.length){e.preventDefault();return;}
+    var first=f[0], last=f[f.length-1];
+    if(!ov.contains(document.activeElement)){e.preventDefault();first.focus();}
+    else if(e.shiftKey && document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey && document.activeElement===last){e.preventDefault();first.focus();}
+  }
+});
+function openPom(e){openModal('pomModal',e);}
+function closePom(){closeModal('pomModal');}
+function addPomFromModal(){pomOn=true;syncPom();closePom();}
+function openSafety(e){openModal('safetyModal',e);}
+function closeSafety(){closeModal('safetyModal');}
+function openDeposit(e){openModal('depositModal',e);}
+function closeDeposit(){closeModal('depositModal');}
+function openWarranty(e){openModal('warrantyModal',e);}
+function closeWarranty(){closeModal('warrantyModal');}
+function renderAmp(){
+  var a=AMP[chosenAmp]; BASE=a.total;
+  document.getElementById('amp30').classList.toggle('active',chosenAmp==='30');
+  document.getElementById('amp50').classList.toggle('active',chosenAmp==='50');
+  document.getElementById('amp30').setAttribute('aria-pressed',chosenAmp==='30'?'true':'false');
+  document.getElementById('amp50').setAttribute('aria-pressed',chosenAmp==='50'?'true':'false');
+  var rec=document.getElementById('ampRec'); if(rec) rec.style.display=chosenAmp===RECOMMENDED_AMP?'flex':'none';
+  var f=function(id,v){var el=document.getElementById(id); if(el) el.textContent=v;};
+  var s=function(id,src){var el=document.getElementById(id); if(el) el.src=src;};
+  f('ampBoxName', a.boxName); s('ampBoxThumb', a.boxImg); f('ampBoxPrice', money(a.box));
+  f('anchorRange', money(a.cmpLow)+' to '+money(a.cmpHigh));
+  renderScopeLines();
+  recompute();
+}
+function setAmp(amp){chosenAmp=amp;renderAmp();}
+function toggleAck(){ackOn=!ackOn;var a=document.getElementById('ack');a.classList.toggle('on',ackOn);a.setAttribute('aria-checked',ackOn?'true':'false');validate()}
+function toggleMandate(){mandateOn=!mandateOn;var m=document.getElementById('mandate');m.classList.toggle('on',mandateOn);m.setAttribute('aria-checked',mandateOn?'true':'false');validate()}
+// Keep the signature field above the on-screen keyboard: pull it toward the top once focused.
+function focusSig(){
+  if(window.BPPStickyCTA) window.BPPStickyCTA.hideForTarget();
+  var s=document.getElementById('sig');
+  if(s)s.focus();
+}
+function onSig(){
+  var v=document.getElementById('sig').value.trim();
+  document.getElementById('sigPrev').textContent=v;
+  validate();
+}
+function validate(){
+  var nameOk=document.getElementById('sig').value.trim().length>2;
+  // Approve unlocks only when BOTH the safety ack AND the card-on-file
+  // authorization are checked (plus a valid signature).
+  document.getElementById('approve').disabled=!authorizationGateReady()||depositCancellationUnconfirmed||!(nameOk&&ackOn&&mandateOn&&!submitting);
+}
+// (Removed launchConfetti + showCompToast: ~48 lines of orphaned celebration code
+//  with no call site on the real approve path, which goes straight to Stripe. A
+//  restrained success beat is tracked as Claude Design item D, to be designed then wired.)
+// Reusable validator for the Stripe redirect URL: only Stripe Checkout hosts.
+function safeStripeUrl(raw){
+  try{
+    var u=new URL(raw);
+    if(u.protocol==='https:'&&(u.hostname==='checkout.stripe.com'||u.hostname.endsWith('.stripe.com'))) return u.href;
+  }catch(_){}
+  return null;
+}
+function approveError(msg){
+  var e=document.getElementById('approveErr');
+  if(e) e.textContent=msg||'';
+}
+function readAuthoritativeProposal(){
+  var controller=new AbortController();
+  var timer=setTimeout(function(){controller.abort();},6000);
+  return fetch(SUPABASE_URL+'/functions/v1/proposal-view?token='+encodeURIComponent(P.token),{
+    headers:{'Authorization':'Bearer '+SUPABASE_KEY},cache:'no-store',signal:controller.signal
+  }).then(function(response){
+    return response.json().catch(function(){return {};}).then(function(data){
+      if(response.status===410) return {__superseded:true,latest_token:data.latest_token||null};
+      if(!response.ok||!data.proposal) throw new Error('status unavailable');
+      return data.proposal;
+    });
+  }).finally(function(){clearTimeout(timer);});
+}
+function proposalRevision(row){
+  var value=Number(row&&row.signature_revision);
+  return Number.isFinite(value)?value:null;
+}
+function terminalProposalStatus(status){
+  return ['cancelled','canceled','declined','expired','superseded'].indexOf(status)>-1;
+}
+function showClosedProposal(row){
+  var status=String(row&&row.status||'').toLowerCase();
+  var expired=status==='expired';
+  if(hasCheckoutReturnHint())scrubCheckoutReturnHints(false);
+  bindData(row);
+  showState(expired?'⏰':'🚫',expired?'This quote has expired':'This proposal is closed',
+    expired?'Text or call Key for a refreshed proposal. The current proposal cannot be signed.':'This proposal is no longer active. Reach Key if you have questions.',
+    '<a class="approve-nav" href="tel:+18648637800"><span>Call Key (864) 863-7800</span></a>');
+}
+function resetAuthorizationForRevisedContract(row){
+  submitting=false;
+  signStatusUncertain=false;
+  P=row;
+  ackOn=false;
+  mandateOn=false;
+  var ack=document.getElementById('ack');
+  if(ack){ack.classList.remove('on');ack.setAttribute('aria-checked','false');}
+  var mandate=document.getElementById('mandate');
+  if(mandate){mandate.classList.remove('on');mandate.setAttribute('aria-checked','false');}
+  var sig=document.getElementById('sig');
+  if(sig)sig.value='';
+  var sigPrev=document.getElementById('sigPrev');
+  if(sigPrev)sigPrev.textContent='';
+  bootProposal(row);
+  if(sig)sig.value='';
+  onSig();
+  approveError('This proposal changed. Review the current scope and price, then acknowledge and sign the revised proposal.');
+  var btn=document.getElementById('approve');
+  var lbl=document.getElementById('approveLabel');
+  if(btn)btn.disabled=true;
+  if(lbl)lbl.textContent='Review revised proposal';
+}
+function resetDepositAcceptanceAuthorization(message){
+  submitting=false;
+  signStatusUncertain=false;
+  ackOn=false;
+  mandateOn=false;
+  var ack=document.getElementById('ack');
+  if(ack){ack.classList.remove('on');ack.setAttribute('aria-checked','false');}
+  var mandate=document.getElementById('mandate');
+  if(mandate){mandate.classList.remove('on');mandate.setAttribute('aria-checked','false');}
+  var sig=document.getElementById('sig');
+  if(sig)sig.value='';
+  var sigPrev=document.getElementById('sigPrev');
+  if(sigPrev)sigPrev.textContent='';
+  var btn=document.getElementById('approve');
+  var lbl=document.getElementById('approveLabel');
+  if(btn)btn.disabled=true;
+  if(lbl)lbl.textContent='Approve & lock in my price';
+  approveError(message||'Payment was not confirmed. Review the proposal, check each acknowledgment, enter your name, and accept again.');
+  validate();
+}
+function openPendingDepositCheckout(acceptanceAttemptId){
+  if(previewModeActive()||!authorizationGateReady())return Promise.reject(new Error('Authorization check is not ready.'));
+  rememberPendingDepositAcceptance(P.token,acceptanceAttemptId);
+  return fetch(SUPABASE_URL+'/functions/v1/proposal-deposit-checkout',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},
+    body:JSON.stringify({proposal_token:P.token,pay_full:false,acceptance_attempt_id:acceptanceAttemptId})
+  }).then(function(r){
+    return r.json().catch(function(){return {};}).then(function(result){
+      if(!r.ok||!result||!result.url)throw new Error(result&&result.error?result.error:'Could not start secure checkout.');
+      var target=safeStripeUrl(result.url);
+      if(!target)throw new Error('Payment setup returned a bad redirect.');
+      window.location.href=target;
+    });
+  }).catch(function(error){
+    return terminatePendingDepositAcceptance(P.token,acceptanceAttemptId).then(function(result){
+      if(result.accepted===true){window.location.reload();return new Promise(function(){});}
+      error.depositCancellationConfirmed=true;
+      throw error;
+    },function(cancelError){
+      cancelError.acceptanceCancellationUnconfirmed=true;
+      throw cancelError;
+    });
+  });
+}
+function reconcileSignFailure(btn,lbl){
+  if(btn)btn.disabled=true;
+  if(lbl)lbl.textContent='Checking signing status...';
+  return readAuthoritativeProposal().then(function(row){
+    if(row&&row.__superseded){
+      var latest=row.latest_token;
+      var action=latest&&/^[a-zA-Z0-9-]{8,64}$/.test(latest)
+        ? '<a class="approve-nav" href="'+checkoutReturnUrl(latest)+'"><span>View your current quote</span></a>'
+        : '';
+      submitting=false;
+      signStatusUncertain=false;
+      showState('📄','This quote was updated','A newer version of this quote is available. Review that version before signing.',action);
+      return;
+    }
+    var token=P.token;
+    var priorRevision=proposalRevision(P);
+    // Replace the local document snapshot instead of merging it. Rendering
+    // derives pricing and compatibility fields on P, and proposal-view omits
+    // absent optional fields. A merge could therefore retain terms from the
+    // superseded revision and show them under the new revision number.
+    P=Object.assign({},row,{token:row.token||token});
+    var status=String(P.status||'').toLowerCase();
+    signStatusUncertain=false;
+    submitting=false;
+    if(status==='approved'){
+      showApproved(P);
+      return;
+    }
+    if(status==='signed'){
+      if(P.require_deposit!==false){showUnpaidDepositNotAccepted(P);return;}
+      if(priorRevision!==proposalRevision(P)){
+        showAwaitingDeposit(P);
+        return;
+      }
+      if(btn)btn.disabled=false;
+      if(lbl)lbl.textContent='Try secure payment again';
+      approveError('Your proposal is signed. Continue with the secure payment step.');
+      validate();
+      return;
+    }
+    if(terminalProposalStatus(status)){
+      showClosedProposal(P);
+      return;
+    }
+    if(priorRevision!==proposalRevision(P)){
+      resetAuthorizationForRevisedContract(P);
+      return;
+    }
+    if(lbl)lbl.textContent='Approve & lock in my price';
+    approveError('We confirmed your signature was not saved. Your entries are still here, and you can try again.');
+    validate();
+  }).catch(function(){
+    signStatusUncertain=true;
+    submitting=false;
+    if(btn)btn.disabled=false;
+    if(lbl)lbl.textContent='Check signing status';
+    approveError('We could not confirm whether your signature was saved. Check its status before trying again, or call (864) 863-7800.');
+  });
+}
+// APPROVE FLOW: sign (proposal-mutate action:'sign') then ALWAYS proceed to
+// proposal-deposit-checkout (which saves the card and, when require_deposit,
+// charges the 20% deposit; on deposit-OFF it charges $0 and just vaults the
+// card). The server decides which by require_deposit; the page always calls it.
+function approve(){
+  if(previewModeActive()){ approveError('Preview mode: signing is disabled. This is exactly what your customer will see.'); return; }
+  if(submitting||!P) return;
+  var btn=document.getElementById('approve');
+  var lbl=document.getElementById('approveLabel');
+  if(!authorizationGateReady()||depositCancellationUnconfirmed){
+    approveError('The previous payment attempt must be confirmed before you can accept again. Use the authorization retry above, or call (864) 863-7800.');
+    return;
+  }
+  if(signStatusUncertain){
+    submitting=true;
+    approveError('');
+    reconcileSignFailure(btn,lbl);
+    return;
+  }
+  if(String(P.status||'').toLowerCase()==='signed'){
+    if(P.require_deposit===false){resumeCheckout(document.getElementById('approve'));return;}
+    resetDepositAcceptanceAuthorization('Payment was not confirmed, so this proposal is not accepted. Review and accept again after the proposal is refreshed. If this message remains, call (864) 863-7800.');
+    return;
+  }
+  var name=document.getElementById('sig').value.trim();
+  if(name.length<2||!ackOn||!mandateOn){ approveError('Please complete all fields above.'); return; }
+  submitting=true; approveError('');
+  if(btn) btn.disabled=true;
+  if(lbl) lbl.textContent='Submitting...';
+
+  var total=currentTotal();
+  var chargeText=mandateText();
+  var depositRequired=P.require_deposit!==false;
+  var acceptanceRequestKey=crypto.randomUUID();
+  // Terms snapshot mirrors proposal.html: a JSON record of exactly what the
+  // customer saw and agreed to, frozen server-side at sign.
+  var termsSnapshot=JSON.stringify({
+    proposal_id:P.id, proposal_token:P.token,
+    contact_name:P.contact_name, contact_address:P.contact_address,
+    selected_amp:chosenAmp, selected_pom:pomOn, selected_surge:false,
+    pricing:ampPricing(P,chosenAmp), total:total,
+    scope_acknowledged:true, safety_acknowledged:true,
+    charge_authorized:true, charge_authorization_text:chargeText, charge_authorization_version:MANDATE_VERSION,
+    signer_name:name, signed_at:new Date().toISOString(), user_agent:navigator.userAgent
+  });
+
+  fetch(SUPABASE_URL+'/functions/v1/proposal-mutate',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},
+    body:JSON.stringify({
+      token:P.token,
+      action:'sign',
+      proposal_revision:P.signature_revision,
+      signer_name:name,
+      selected_amp:String(chosenAmp),
+      selected_surge:false,
+      selected_pom:!!pomOn,
+      safety_ack:true,
+      signed_total:total,
+      approved_terms_snapshot:termsSnapshot,
+      charge_authorized:true,
+      charge_authorization_text:chargeText,
+      charge_authorization_version:MANDATE_VERSION,
+      acceptance_request_key:acceptanceRequestKey,
+      pay_full:false
+    })
+  }).then(function(r){
+    if(r.ok) return r.json();
+    return r.json().catch(function(){return {};}).then(function(j){throw new Error(j&&j.error?j.error:('HTTP '+r.status));});
+  }).then(function(result){
+    if(depositRequired){
+      var attemptId=String(result&&result.acceptance_attempt_id||'');
+      if(result.pending_payment!==true||!/^[0-9a-f-]{36}$/i.test(attemptId))throw new Error('Pending acceptance was not confirmed.');
+      if(lbl)lbl.textContent='Opening secure payment...';
+      return openPendingDepositCheckout(attemptId);
+    }
+    // No-deposit proposals keep their existing signed card-setup contract.
+    P.status='Signed'; P.signer_name=name; P.signed_total=total;
+    if(lbl) lbl.textContent='Redirecting to secure checkout...';
+    return fetch(SUPABASE_URL+'/functions/v1/proposal-deposit-checkout',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},
+      body:JSON.stringify({proposal_token:P.token, pay_full:false})
+    });
+  }).then(function(r){
+    if(depositRequired)return null;
+    return r.json().catch(function(){return {};});
+  }).then(function(result){
+    if(depositRequired)return;
+    if(!result||!result.url) throw new Error(result&&result.error?result.error:'Could not start secure checkout.');
+    var target=safeStripeUrl(result.url);
+    if(!target) throw new Error('Payment setup returned a bad redirect.');
+    window.location.href=target;
+  }).catch(function(err){
+    if(depositRequired){
+      if(err&&err.acceptanceCancellationUnconfirmed){
+        resetDepositAcceptanceAuthorization('We could not safely close the previous payment attempt. Refresh to try again, or call (864) 863-7800. This proposal has not been accepted.');
+        depositCancellationUnconfirmed=true;
+        validate();
+        return;
+      }
+      return terminateActivePendingDepositAcceptance(P.token).then(function(termination){
+        if(termination.accepted===true){window.location.reload();return new Promise(function(){});}
+        return readAuthoritativeProposal();
+      }).then(function(row){
+        if(row&&row.__superseded){
+          submitting=false;
+          signStatusUncertain=false;
+          var latest=row.latest_token;
+          var action=latest&&/^[a-zA-Z0-9-]{8,64}$/.test(latest)
+            ? '<a class="approve-nav" href="'+checkoutReturnUrl(latest)+'"><span>View your current quote</span></a>'
+            : '';
+          showState('📄','This quote was updated','A newer version of this quote is available. Review that version before accepting.',action);
+          return;
+        }
+        var token=P.token;
+        var priorRevision=proposalRevision(P);
+        P=Object.assign({},row,{token:row.token||token});
+        if(String(P.status||'').toLowerCase()==='approved'&&approvedPaymentTruthConfirmed(P)){showApproved(P);return;}
+        if(terminalProposalStatus(String(P.status||'').toLowerCase())){showClosedProposal(P);return;}
+        if(priorRevision!==proposalRevision(P)){resetAuthorizationForRevisedContract(P);return;}
+        resetDepositAcceptanceAuthorization();
+      }).catch(function(){
+        resetDepositAcceptanceAuthorization('We could not safely close the previous payment attempt. Refresh to try again, or call (864) 863-7800. This proposal has not been accepted.');
+        depositCancellationUnconfirmed=true;
+        validate();
+      });
+    }
+    submitting=false;
+    if(btn) btn.disabled=false;
+    if(P&&String(P.status||'').toLowerCase()==='signed'){
+      if(lbl) lbl.textContent='Try secure payment again';
+      approveError('Your proposal is signed. Secure payment did not open. Try the payment step again or call (864) 863-7800.');
+    }else{
+      return reconcileSignFailure(btn,lbl);
+    }
+    validate();
+  });
+}
+(function(){
+  var sig=document.getElementById('sig');
+  if(!sig)return;
+  function ensureSigVisible(){
+    if(!sig.isConnected)return;
+    var r=sig.getBoundingClientRect(),h=window.innerHeight;
+    // only scroll if the field is off-screen / too low / jammed under the header
+    if(r.top>h*0.42 || r.bottom>h-8 || r.top<70){
+      var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      try{sig.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});}catch(e){sig.scrollIntoView();}
+    }
+  }
+  sig.addEventListener('focus',function(){
+    document.body.classList.add('kb');            // adds bottom runway so the field lifts high enough
+    setTimeout(ensureSigVisible,300);             // wait for the keyboard to start animating up
+  });
+  sig.addEventListener('blur',function(){document.body.classList.remove('kb');});
+})();
+// Keep the sticky CTA stable while the browser chrome and keyboard resize the
+// visual viewport. The close-section sentinel must remain beyond a separate
+// hide or show boundary for a short dwell before visibility can change.
+(function(){
+  var sticky=document.querySelector('.sticky');
+  var marker=document.getElementById('closeStart');
+  if(!sticky||!marker)return;
+  var ready=false;
+  var retired=false;
+  var hidden=true;
+  var candidate=null;
+  var candidateTimer=0;
+  var frame=0;
+  var resizeTimer=0;
+  var resizeQuietUntil=0;
+  var DWELL_MS=180;
+  var SHOW_HYSTERESIS=112;
+  var TAKEOVER_GAP=24;
+
+  function setHidden(next){
+    next=!!next;
+    if(hidden===next
+      && sticky.classList.contains('hidden')===next
+      && sticky.getAttribute('aria-hidden')===(next?'true':'false')
+      && sticky.hasAttribute('inert')===next)return;
+    hidden=next;
+    sticky.classList.toggle('hidden',hidden);
+    sticky.setAttribute('aria-hidden',hidden?'true':'false');
+    sticky.toggleAttribute('inert',hidden);
+  }
+  function cancelCandidate(){
+    candidate=null;
+    if(candidateTimer){clearTimeout(candidateTimer);candidateTimer=0;}
+  }
+  function viewportHeight(){
+    return document.documentElement.clientHeight||window.innerHeight||0;
+  }
+  function boundaries(){
+    var height=sticky.getBoundingClientRect().height||64;
+    var hide=viewportHeight()-height-TAKEOVER_GAP;
+    return {hide:hide,show:hide+SHOW_HYSTERESIS};
+  }
+  function qualifies(next){
+    var top=marker.getBoundingClientRect().top;
+    var limits=boundaries();
+    return next ? top<=limits.hide : top>=limits.show;
+  }
+  function settle(next){
+    if(candidate===next)return;
+    cancelCandidate();
+    candidate=next;
+    candidateTimer=setTimeout(function(){
+      candidateTimer=0;
+      if(!ready||retired||performance.now()<resizeQuietUntil||!qualifies(next)){
+        candidate=null;
+        return;
+      }
+      setHidden(next);
+      candidate=null;
+    },DWELL_MS);
+  }
+  function measure(reason){
+    frame=0;
+    if(!ready||retired)return;
+    if(document.body.classList.contains('kb')){
+      cancelCandidate();
+      setHidden(true);
+      return;
+    }
+    if(reason==='resize'||performance.now()<resizeQuietUntil){
+      cancelCandidate();
+      return;
+    }
+    if(!hidden){
+      if(qualifies(true))settle(true);
+      else cancelCandidate();
+    }else{
+      if(qualifies(false))settle(false);
+      else cancelCandidate();
+    }
+  }
+  function schedule(reason){
+    if(frame)return;
+    frame=requestAnimationFrame(function(){measure(reason)});
+  }
+  function onScroll(){
+    schedule('scroll');
+  }
+  function onResize(){
+    resizeQuietUntil=performance.now()+260;
+    cancelCandidate();
+    if(resizeTimer)clearTimeout(resizeTimer);
+    resizeTimer=setTimeout(function(){
+      resizeTimer=0;
+      if(!ready||retired)return;
+      schedule('resize-settled');
+    },280);
+    schedule('resize');
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});
+  window.addEventListener('resize',onResize,{passive:true});
+  if(window.visualViewport)window.visualViewport.addEventListener('resize',onResize,{passive:true});
+  if('IntersectionObserver' in window){
+    var observer=new IntersectionObserver(function(){schedule('observer')},{threshold:[0,1]});
+    observer.observe(marker);
+  }
+  window.BPPStickyCTA={
+    activate:function(){
+      retired=false;
+      ready=true;
+      sticky.style.display='';
+      cancelCandidate();
+      sticky.classList.add('initializing');
+      setHidden(true);
+      requestAnimationFrame(function(){
+        if(!ready||retired)return;
+        setHidden(qualifies(true));
+        sticky.getBoundingClientRect();
+        requestAnimationFrame(function(){sticky.classList.remove('initializing');});
+      });
+    },
+    hideForTarget:function(){
+      if(!ready||retired)return;
+      cancelCandidate();
+      setHidden(true);
+    },
+    retire:function(){
+      ready=false;
+      retired=true;
+      cancelCandidate();
+      if(resizeTimer){clearTimeout(resizeTimer);resizeTimer=0;}
+      setHidden(true);
+      sticky.style.display='none';
+    }
+  };
+})();
+window.addEventListener('resize',fitPayLine);
+window.addEventListener('load',fitPayLine);
+// Re-fit once Outfit is actually loaded; fallback-font width differs from the real numerals.
+if(document.fonts&&document.fonts.ready){document.fonts.ready.then(fitPayLine);}
+
+// Scroll-reveal + element-specific accents (progressive enhancement, honors reduced-motion).
+// Runs once, AFTER the real data is bound, so the signature reveal animates the right name.
+function initReveal(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var starsEl=document.querySelector('.stars');
+  if(starsEl){var s=starsEl.textContent.trim();starsEl.textContent='';for(var k=0;k<s.length;k++){var sp=document.createElement('span');sp.className='star';sp.textContent=s[k];starsEl.appendChild(sp);}}
+  var sigEl=document.querySelector('.note .signature.sig-pen');
+  function reveal(t){t.classList.add('in');if(!reduce&&sigEl&&t.contains(sigEl))sigEl.classList.add('writing');}
+  var els=document.querySelectorAll('.hero,.card');
+  if(!('IntersectionObserver' in window)){els.forEach(reveal);return;}
+  var io=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){reveal(e.target);io.unobserve(e.target);}});},{threshold:0, rootMargin:'0px 0px -20% 0px'});
+  els.forEach(function(el){io.observe(el)});
+}
+
+// ── BIND SERVER DATA TO THE COMP ─────────────────────────────
+// Replaces the old single-name constant. Customer name (hero, note greeting,
+// signature default) and address all derive from the server proposal row.
+function bindData(row){
+  var FULL=titleCase(row.contact_name||'');
+  var FIRST=(FULL.split(/\s+/)[0])||FULL;
+  var addr=row.contact_address||'';
+  var hero=document.querySelector('.sv-name'); if(hero) hero.textContent=FULL||'Your proposal';
+  var addrLine=document.querySelector('.sv-addr-line'); if(addrLine) addrLine.textContent=addr;
+  var note=document.querySelector('.note-name'); if(note) note.textContent=FIRST||'Hi';
+  var sig=document.getElementById('sig'); if(sig) sig.value='';
+  // Dates: "Prepared by ... <prepared>", "Pricing held through <expiry>", and the
+  // expiry note. Prepared = sent_at || created_at; expiry = expires_at || prepared+14d.
+  var fmtDate=function(d){ try{ return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }catch(_){ return ''; } };
+  var prepared=row.sent_at||row.created_at;
+  var preparedD=prepared?new Date(prepared):null;
+  var expiryD=row.expires_at?new Date(row.expires_at):(preparedD?new Date(preparedD.getTime()+14*86400000):null);
+  var by=document.querySelector('.hero-foot .by');
+  if(by&&preparedD) by.textContent='Prepared by Key Goodson · '+fmtDate(preparedD);
+  var lock=document.querySelector('.lock-chip');
+  if(lock&&expiryD) lock.textContent='Good through '+fmtDate(expiryD);
+  var exp=document.querySelector('.expiry-note');
+  if(exp&&expiryD) exp.textContent='This quote stays good through '+fmtDate(expiryD)+' (about two weeks). After that I refresh it, parts pricing and my install calendar move over time.';
+  // Keep the frame navy until the token-gated server confirms and returns an
+  // exact property image. Missing, incomplete, stale, or uncovered addresses
+  // never fall back to a bundled stranger house or a browser-side map request.
+  var sv=document.querySelector('.streetview');
+  if(sv) sv.style.setProperty('--sv-img','none');
+  if(sv){
+    var tok=new URLSearchParams(window.location.search).get('token');
+    if(tok){
+      var url=SUPABASE_URL+'/functions/v1/streetview-hero?t='+encodeURIComponent(tok);
+      var img=new Image();
+      img.onload=function(){ sv.style.setProperty('--sv-img',"url('"+url+"')"); };
+      img.onerror=function(){ sv.style.setProperty('--sv-img','none'); };
+      img.src=url;
+    }
+  }
+}
+
+// ── STATE VIEWS ──────────────────────────────────────────────
+function showState(emoji,title,msg,ctaHtml){
+  document.body.classList.remove('booting');
+  // State views replace the proposal body; the sticky CTA + the sign-keyboard
+  // runway are meaningless here, so retire them.
+  if(window.BPPStickyCTA) window.BPPStickyCTA.retire();
+  else {var sticky=document.querySelector('.sticky'); if(sticky) sticky.style.display='none';}
+  document.body.classList.remove('kb');
+  var page=document.querySelector('.page');
+  if(!page) return;
+  page.innerHTML='<div class="card pad" style="text-align:center;padding:48px 24px">'
+    +'<div style="font-size:46px;margin-bottom:14px">'+emoji+'</div>'
+    +'<h1 style="font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--navy);margin-bottom:10px">'+escHtml(title)+'</h1>'
+    +'<div style="font-size:14px;color:var(--text2);line-height:1.6;max-width:420px;margin:0 auto">'+escHtml(msg)+'</div>'
+    +(ctaHtml||'')+'</div>';
+  // Reveal the state card NOW. It is created after initReveal set up its
+  // IntersectionObserver, so it is never observed and would otherwise stay at
+  // the pre-reveal opacity:0, invisible on surfaces where the reveal CSS
+  // applies (the live site; localhost masked this because bpp-ds.css loaded
+  // cross-origin). State views do not scroll, so reveal directly.
+  var _sc=page.querySelector('.card'); if(_sc) _sc.classList.add('in');
+  syncAuthorizationGateUI();
+}
+function showApproved(row){
+  bindData(row);
+  if(hasCheckoutReturnHint())scrubCheckoutReturnHints(false);
+  if(row.approval_source==='operator_recorded'){
+    var channel=String(row.approval_channel||'your conversation').replace('_',' ');
+    var action=row.payment_action;
+    var cta=!isPreview&&action&&action.kind==='invoice'&&action.href
+      ? '<a class="approve-nav" data-authorization-action="payment" href="'+escHtml(action.href)+'"><span>'+escHtml(action.label||'Open secure deposit invoice')+'</span></a>'
+      : '';
+    showState('✅','Approval recorded',
+      'Key recorded your approval from '+channel+'. No electronic signature or card authorization was created. '+(cta?'Use the separate secure invoice below for the deposit.':'Key will contact you to confirm the next step.'),
+      cta+'<div style="margin-top:14px;font-size:13px;color:var(--text3)">Questions? Text or call Key directly at <b style="color:var(--navy)">(864) 863-7800</b></div>');
+    return;
+  }
+  if(row.payment_action&&row.payment_action.kind==='invoice'&&row.payment_action.href){
+    showAwaitingDeposit(row);
+    return;
+  }
+  if(!approvedPaymentTruthConfirmed(row)){
+    showPaymentTruthUnconfirmed(row);
+    return;
+  }
+  showState('✅','You are all set'+(row.signer_name?(', '+escHtml(titleCase(row.signer_name).split(/\s+/)[0])):''),
+    'Your proposal is approved. Key will text you to confirm the next project step and your install timing.',
+    '<div style="margin-top:18px;font-size:13px;color:var(--text3)">Questions? Text or call Key directly at <b style="color:var(--navy)">(864) 863-7800</b></div>');
+}
+function approvedPaymentTruthConfirmed(row){
+  var state=row&&row.payment_state;
+  if(!state||typeof state!=='object') return false;
+  if(row.require_deposit===false) return state.kind==='setup'&&state.status==='card_saved';
+  if(state.kind==='full_payment')return state.status==='paid'&&state.paid_in_full===true&&state.invoice_paid_in_full===true&&Number(state.project_remaining)===0;
+  return state.kind==='deposit'&&state.status==='paid'&&state.invoice_paid_in_full===true;
+}
+function showPaymentTruthUnconfirmed(row){
+  P=row;
+  bindData(row);
+  if(hasCheckoutReturnHint())scrubCheckoutReturnHints(true);
+  showState('⏳','Payment status needs confirmation',
+    'Your proposal approval is recorded, but the payment ledger is not available or does not agree yet. No payment or saved card is being claimed until the server confirms it.',
+    '<button class="approve" id="checkPaymentTruth" style="margin-top:18px"><span>Check payment status</span></button>'
+    +'<div style="margin-top:14px;font-size:13px;color:var(--text3)">You can also text or call Key directly at <b style="color:var(--navy)">(864) 863-7800</b>.</div>');
+  var button=document.getElementById('checkPaymentTruth');
+  if(button)button.addEventListener('click',function(){reconcileCheckoutReturn(P);});
+}
+function showUnpaidDepositNotAccepted(row){
+  bindData(row);
+  if(hasCheckoutReturnHint())scrubCheckoutReturnHints(false);
+  showState('⚠️','Proposal not accepted',
+    'Payment was not confirmed, so this proposal was not accepted. Ask Key for a refreshed proposal, then review it, check each acknowledgment, enter your name, and accept again.',
+    '<a class="approve-nav" href="tel:+18648637800"><span>Call Key</span></a>'
+    +'<div style="margin-top:14px;font-size:13px;color:var(--text3)">You can also text (864) 863-7800 for a refreshed proposal.</div>');
+}
+// Signed but the card/deposit step was not finished. Offer a one-tap return to checkout.
+function showAwaitingDeposit(row){
+  bindData(row);
+  var total=Number(row.signed_total!=null?row.signed_total:(row.total||0));
+  var req=row.require_deposit!==false;
+  var deposit=Math.round(total*DEPOSIT_RATE);
+  if(req&&String(row.status||'').toLowerCase()==='signed'){showUnpaidDepositNotAccepted(row);return;}
+  if(isPreview){
+    showState('📝','Payment step preview','This proposal is signed, but preview mode cannot open a real payment or card setup.');
+    return;
+  }
+  if(row.approval_source==='operator_recorded'){
+    var action=row.payment_action;
+    var channel=String(row.approval_channel||'your conversation').replace('_',' ');
+    var cta=action&&action.kind==='invoice'&&action.href
+      ? '<a class="approve-nav" data-authorization-action="payment" href="'+escHtml(action.href)+'"><span>'+escHtml(action.label||'Open secure deposit invoice')+'</span></a>'
+      : '';
+    showState('✅','Approval recorded',
+      'Key recorded your approval from '+channel+'. No electronic signature or card authorization was created. '+(cta?'Use the separate secure invoice below for the deposit.':'Key will contact you with the secure deposit step.'),
+      cta+'<div style="margin-top:14px;font-size:13px;color:var(--text3)">Questions? Text or call Key directly at <b style="color:var(--navy)">(864) 863-7800</b></div>');
+    return;
+  }
+  if(row.payment_action&&row.payment_action.kind==='invoice'&&row.payment_action.href){
+    var paymentKind=row.payment_state&&row.payment_state.kind==='full_payment'?'project payment':'deposit';
+    var fallbackLabel=paymentKind==='project payment'?'Open secure payment invoice':'Open secure deposit invoice';
+    var partialAction='<a class="approve-nav" data-authorization-action="payment" href="'+escHtml(row.payment_action.href)+'"><span>'+escHtml(row.payment_action.label||fallbackLabel)+'</span></a>';
+    showState('📝','One payment step remains',
+      (row.payment_state&&row.payment_state.status==='partial'?'Part of this '+paymentKind+' is already recorded. ':'')+'Use the secure invoice for the exact remaining balance.',
+      partialAction+'<div style="margin-top:14px;font-size:13px;color:var(--text3)">Questions? Text or call Key directly at <b style="color:var(--navy)">(864) 863-7800</b></div>');
+    return;
+  }
+  if(!row.payment_state||row.payment_state.status!=='not_started'){
+    showPaymentTruthUnconfirmed(row);
+    return;
+  }
+  var line=req
+    ? 'You signed your proposal. The last step is your '+money(deposit)+' deposit, which secures your install date and saves your card for the '+money(total-deposit)+' balance after install.'
+    : 'You signed your proposal. The last step is to put a card on file. You pay $0 today, the full '+money(total)+' is charged only after your install is complete.';
+  showState('📝','One quick step left',line,
+    '<button class="approve" id="payDepositBtn" style="margin-top:18px" onclick="resumeCheckout(this)"><span>'+(req?('Pay '+money(deposit)+' deposit'):'Save my card')+'</span></button>'
+    +'<div class="approve-err" id="approveErr" role="alert"></div>'
+    +'<div style="margin-top:14px;font-size:13px;color:var(--text3)">Questions? Text or call Key directly at <b style="color:var(--navy)">(864) 863-7800</b></div>');
+}
+function hasCheckoutReturnHint(){
+  return /[?&](deposit_paid|card_saved|payment_check|acceptance_cancel)=1(?:&|$)/.test(window.location.search);
+}
+var ACCEPTANCE_ATTEMPT_RE=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function pendingDepositStorageKey(token){return 'bpp:pending-deposit-acceptance:'+token;}
+function rememberPendingDepositAcceptance(token,attemptId){
+  if(!token||!ACCEPTANCE_ATTEMPT_RE.test(String(attemptId||'')))return;
+  try{sessionStorage.setItem(pendingDepositStorageKey(token),String(attemptId));}catch(_){}
+}
+function storedPendingDepositAcceptance(token){
+  try{var value=sessionStorage.getItem(pendingDepositStorageKey(token))||'';return ACCEPTANCE_ATTEMPT_RE.test(value)?value:null;}catch(_){return null;}
+}
+function forgetPendingDepositAcceptance(token,attemptId){
+  try{var key=pendingDepositStorageKey(token);var current=sessionStorage.getItem(key);if(!attemptId||current===String(attemptId))sessionStorage.removeItem(key);}catch(_){}
+}
+function terminatePendingDepositAcceptance(token,attemptId,signal){
+  if(!token||!ACCEPTANCE_ATTEMPT_RE.test(String(attemptId||'')))return Promise.reject(new Error('invalid acceptance attempt'));
+  depositCancellationUnconfirmed=true;
+  validate();
+  return fetch(SUPABASE_URL+'/functions/v1/proposal-deposit-checkout',{
+    method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},
+    body:JSON.stringify({action:'cancel_pending_acceptance',proposal_token:token,acceptance_attempt_id:attemptId}),signal:signal
+  }).then(function(response){
+    return response.json().catch(function(){return {};}).then(function(result){
+      var finalizationPending=result&&(result.acceptance_pending===true||result.payment_confirmed===true||result.reconciliation_required===true);
+      if(!response.ok||!result||result.ok!==true||(result.accepted!==true&&result.authorization_reset_required!==true&&!finalizationPending))throw new Error(result&&result.error?result.error:'acceptance cancellation was not confirmed');
+      if(finalizationPending&&result.accepted!==true){depositCancellationUnconfirmed=true;throw new Error('payment finalization is pending');}
+      forgetPendingDepositAcceptance(token,attemptId);
+      depositCancellationUnconfirmed=false;
+      return result;
+    });
+  });
+}
+function terminateActivePendingDepositAcceptance(token,signal){
+  depositCancellationUnconfirmed=true;
+  validate();
+  return fetch(SUPABASE_URL+'/functions/v1/proposal-deposit-checkout',{
+    method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},
+    body:JSON.stringify({action:'cancel_active_pending_acceptance',proposal_token:token}),signal:signal
+  }).then(function(response){
+    return response.json().catch(function(){return {};}).then(function(result){
+      var finalizationPending=result&&(result.acceptance_pending===true||result.payment_confirmed===true||result.reconciliation_required===true);
+      if(!response.ok||!result||result.ok!==true||(result.active===true&&result.accepted!==true&&result.authorization_reset_required!==true&&!finalizationPending))throw new Error(result&&result.error?result.error:'active acceptance status was not confirmed');
+      if(finalizationPending&&result.accepted!==true){depositCancellationUnconfirmed=true;throw new Error('payment finalization is pending');}
+      depositCancellationUnconfirmed=false;
+      if(result.authorization_reset_required===true)depositAuthorizationWasReset=true;
+      return result;
+    });
+  });
+}
+function checkPendingDepositAcceptance(token,attemptId){
+  if(!token||!ACCEPTANCE_ATTEMPT_RE.test(String(attemptId||'')))return Promise.reject(new Error('acceptance attempt status is unavailable'));
+  return fetch(SUPABASE_URL+'/functions/v1/proposal-deposit-checkout',{
+    method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},
+    body:JSON.stringify({action:'check_pending_acceptance',proposal_token:token,acceptance_attempt_id:attemptId})
+  }).then(function(response){
+    return response.json().catch(function(){return {};}).then(function(result){
+      if(!response.ok||!result||result.ok!==true)throw new Error(result&&result.error?result.error:'acceptance status was not confirmed');
+      return result;
+    });
+  });
+}
+function settlePendingDepositAcceptanceBeforeLoad(token,signal){
+  if(previewModeActive())return Promise.resolve(null);
+  var params=new URLSearchParams(window.location.search);
+  var queryAttempt=params.get('acceptance_attempt_id')||'';
+  var validQueryAttempt=ACCEPTANCE_ATTEMPT_RE.test(queryAttempt)?queryAttempt:null;
+  var paidReturn=params.get('deposit_paid')==='1'||params.get('payment_check')==='1';
+  if(paidReturn){if(validQueryAttempt)rememberPendingDepositAcceptance(token,validQueryAttempt);return Promise.resolve(null);}
+  var cancelReturn=params.get('acceptance_cancel')==='1';
+  if(cancelReturn&&!validQueryAttempt)return Promise.reject(new Error('missing acceptance attempt'));
+  var attemptId=validQueryAttempt||storedPendingDepositAcceptance(token);
+  if(!attemptId)return terminateActivePendingDepositAcceptance(token,signal);
+  return terminatePendingDepositAcceptance(token,attemptId,signal).then(function(result){if(result.authorization_reset_required===true)depositAuthorizationWasReset=true;scrubCheckoutReturnHints(false);return result;});
+}
+function runAuthorizationGate(token){
+  var controller=new AbortController();
+  var timer=setTimeout(function(){controller.abort();},AUTHORIZATION_GATE_TIMEOUT_MS);
+  return settlePendingDepositAcceptanceBeforeLoad(token,controller.signal).finally(function(){clearTimeout(timer);});
+}
+function beginAuthorizationGate(token){
+  authorizationGateToken=token||authorizationGateToken;
+  if(previewModeActive()){setAuthorizationGateState('preview');return Promise.resolve(null);}
+  if(!authorizationGateToken||authorizationGateInFlight)return authorizationGateInFlight||Promise.resolve(null);
+  var gateParams=new URLSearchParams(window.location.search);
+  var gatePaidReturn=gateParams.get('deposit_paid')==='1'||gateParams.get('payment_check')==='1';
+  var gateAttempt=gateParams.get('acceptance_attempt_id')||storedPendingDepositAcceptance(authorizationGateToken);
+  if(!gatePaidReturn&&(gateParams.get('acceptance_cancel')==='1'||ACCEPTANCE_ATTEMPT_RE.test(String(gateAttempt||''))))authorizationFullRedoPending=true;
+  setAuthorizationGateState('pending');
+  var attempt=runAuthorizationGate(authorizationGateToken).then(function(result){
+    if(result&&result.accepted===true){window.location.reload();return result;}
+    if(result&&result.authorization_reset_required===true&&authorizationFactsRendered&&P&&document.getElementById('approve')){
+      depositAuthorizationWasReset=false;
+      resetDepositAcceptanceAuthorization('Payment was not confirmed, so this proposal was not accepted. Review it, check each acknowledgment, enter your name, and accept again.');
+    }
+    setAuthorizationGateState('ready');
+    return result;
+  }).catch(function(){setAuthorizationGateState('failed');return null;}).finally(function(){if(authorizationGateInFlight===attempt)authorizationGateInFlight=null;});
+  authorizationGateInFlight=attempt;
+  return attempt;
+}
+function checkoutReturnUrl(token){
+  var params=new URLSearchParams(window.location.search);
+  params.set('token',token);
+  params.delete('deposit_paid');
+  params.delete('card_saved');
+  params.delete('payment_check');
+  params.delete('acceptance_cancel');
+  params.delete('acceptance_attempt_id');
+  if(isPreview)params.set('preview','1');
+  else params.delete('preview');
+  var query=params.toString();
+  return window.location.pathname+(query?'?'+query:'');
+}
+function scrubCheckoutReturnHints(keepChecking){
+  var params=new URLSearchParams(window.location.search);
+  params.delete('deposit_paid');
+  params.delete('card_saved');
+  params.delete('acceptance_cancel');
+  params.delete('acceptance_attempt_id');
+  if(keepChecking)params.set('payment_check','1');
+  else params.delete('payment_check');
+  var query=params.toString();
+  history.replaceState(null,'',window.location.pathname+(query?'?'+query:''));
+}
+function depositAcceptanceRetryUrl(token){
+  var next=new URLSearchParams(window.location.search);
+  next.set('token',token);
+  next.delete('deposit_paid');
+  next.delete('card_saved');
+  next.delete('payment_check');
+  next.delete('acceptance_cancel');
+  next.delete('acceptance_attempt_id');
+  next.set('acceptance_retry','1');
+  return window.location.pathname+'?'+next.toString();
+}
+function consumeDepositAcceptanceRetry(){
+  var next=new URLSearchParams(window.location.search);
+  if(next.get('acceptance_retry')!=='1')return false;
+  next.delete('acceptance_retry');
+  var query=next.toString();
+  history.replaceState(null,'',window.location.pathname+(query?'?'+query:''));
+  return true;
+}
+function showCheckoutReturnPending(row){
+  var status=String(row&&row.status||'').toLowerCase();
+  if(row&&row.require_deposit!==false&&['sent','viewed','copied'].indexOf(status)>-1){
+    var token=row.token||P.token;
+    var params=new URLSearchParams(window.location.search);
+    var attemptId=params.get('acceptance_attempt_id')||storedPendingDepositAcceptance(token);
+    checkPendingDepositAcceptance(token,attemptId).then(function(result){
+      if(result.accepted===true)window.location.reload();
+      else if(result.authorization_reset_required===true){forgetPendingDepositAcceptance(token,attemptId);window.location.replace(depositAcceptanceRetryUrl(token));}
+      else{
+        scrubCheckoutReturnHints(true);
+        showState('⏳',result.payment_confirmed===true?'Final approval is still processing':'Payment status needs confirmation',
+          result.payment_confirmed===true
+            ?'The secure payment provider reports this payment completed, but the proposal is not accepted until the server finishes the approval record. Check again in a moment or call Key if this remains.'
+            :'The server has not confirmed a completed payment or proposal acceptance. This proposal is not accepted. Check again in a moment or call Key if this remains.',
+          '<button class="approve" id="checkPaymentStatus" style="margin-top:18px"><span>Check payment status</span></button>');
+        var checkButton=document.getElementById('checkPaymentStatus');
+        if(checkButton)checkButton.addEventListener('click',function(){reconcileCheckoutReturn(P);});
+      }
+    }).catch(function(){
+      scrubCheckoutReturnHints(true);
+      depositCancellationUnconfirmed=true;
+      showState('⚠️','Payment status needs confirmation','We could not safely confirm the previous payment attempt. This proposal is not accepted, and a new acceptance is blocked to prevent a duplicate payment. Refresh to check again, or call Key at (864) 863-7800.',
+        '<button class="approve" id="checkPaymentStatus" style="margin-top:18px"><span>Check payment status</span></button>');
+      var checkButton=document.getElementById('checkPaymentStatus');
+      if(checkButton)checkButton.addEventListener('click',function(){reconcileCheckoutReturn(P);});
+    });
+    return;
+  }
+  scrubCheckoutReturnHints(true);
+  P=row;
+  bindData(row);
+  showState('⏳','Checking payment status',
+    'The secure payment page returned here, but the server has not confirmed the result yet. No payment or saved card is being claimed until that confirmation arrives.',
+    '<button class="approve" id="checkPaymentStatus" style="margin-top:18px"><span>Check payment status</span></button>'
+    +'<div style="margin-top:14px;font-size:13px;color:var(--text3)">You can also text or call Key directly at <b style="color:var(--navy)">(864) 863-7800</b>.</div>');
+  var button=document.getElementById('checkPaymentStatus');
+  if(button) button.addEventListener('click',function(){ reconcileCheckoutReturn(P); });
+}
+function reconcileCheckoutReturn(initialRow){
+  P=initialRow||P;
+  showState('⏳','Checking payment status',
+    'The secure payment page returned here. We are checking the server before showing any payment or saved-card result.');
+  var delays=[0,300,900,1800];
+  var attempt=0;
+  function check(){
+    if(attempt>=delays.length){ showCheckoutReturnPending(P); return; }
+    var delay=delays[attempt++];
+    setTimeout(function(){
+      readAuthoritativeProposal().then(function(row){
+        if(row&&row.__superseded){
+          scrubCheckoutReturnHints(false);
+          var latest=row.latest_token;
+          var action=latest&&/^[a-zA-Z0-9-]{8,64}$/.test(latest)
+            ? '<a class="approve-nav" href="'+checkoutReturnUrl(latest)+'"><span>View your current quote</span></a>'
+            : '';
+          showState('📄','This quote was updated','A newer version of this quote is available. Review that version before continuing.',action);
+          return;
+        }
+        var token=P.token;
+        P=Object.assign({},row,{token:row.token||token});
+        var status=String(P.status||'').toLowerCase();
+        if(terminalProposalStatus(status)){ scrubCheckoutReturnHints(false);showClosedProposal(P);return; }
+        if(status==='approved'&&approvedPaymentTruthConfirmed(P)){ scrubCheckoutReturnHints(false);showApproved(P);return; }
+        if(status==='signed'&&P.payment_state&&P.payment_state.status==='partial'){
+          scrubCheckoutReturnHints(false);showAwaitingDeposit(P);
+          return;
+        }
+        check();
+      }).catch(check);
+    },delay);
+  }
+  check();
+}
+function resumeCheckout(btn){
+  if(previewModeActive()){ approveError('Preview mode: checkout is disabled. This is exactly what your customer will see.'); return; }
+  if(!authorizationGateReady()){approveError('Complete the authorization check before opening secure payment.');return;}
+  if(submitting||!P) return;
+  if(P.require_deposit!==false){
+    resetDepositAcceptanceAuthorization('Payment was not confirmed, so this proposal is not accepted. Review the current proposal and accept again.');
+    return;
+  }
+  submitting=true;
+  if(btn){btn.disabled=true;var sp=btn.querySelector('span');if(sp)sp.textContent='Redirecting to secure checkout...';}
+  approveError('');
+  fetch(SUPABASE_URL+'/functions/v1/proposal-deposit-checkout',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},
+    body:JSON.stringify({proposal_token:P.token, pay_full:false})
+  }).then(function(r){return r.json().catch(function(){return {};});}).then(function(result){
+    if(!result||!result.url) throw new Error(result&&result.error?result.error:'Could not start secure checkout.');
+    var target=safeStripeUrl(result.url);
+    if(!target) throw new Error('bad redirect');
+    window.location.href=target;
+  }).catch(function(){
+    submitting=false;
+    if(btn){btn.disabled=false;var sp=btn.querySelector('span');if(sp)sp.textContent='Try secure payment again';}
+    approveError('Your proposal is signed. Secure payment did not open. Try the payment step again or call (864) 863-7800.');
+  });
+}
+
+// ── BOOT THE NORMAL SIGN VIEW ────────────────────────────────
+function bootProposal(row){
+  // Seed config from the server row.
+  POM=Number(row.pom_price!=null?row.pom_price:447);
+  // Synthesize per-amp pricing for v3 rows BEFORE building the amp config,
+  // exactly like the proven live page. Without this the 30A/50A toggle
+  // cannot reprice (both amps fall back to the same flat row total).
+  applyV3Normalization(row);
+  IS_V3=row.creator_version==='v3';
+  V3_DISCOUNT_PCT=Number(row._v3_discount_pct)||0;
+  V3_DISCOUNT_AMT=(!V3_DISCOUNT_PCT&&Number(row.discount_amount)>0)?Number(row.discount_amount):0;
+  // Extra line items from the quote builder; v3 honors per-item `checked`.
+  CUSTOM_ITEMS=Array.isArray(row.extra_line_items)
+    ? row.extra_line_items.filter(function(li){return li&&li.checked!==false;})
+        .map(function(li){return {name:li.name||'',price:Number(li.amount)||0};})
+    : [];
+  AMP=buildAmpConfig(row);
+  // The amp switcher is only honest when BOTH per-amp prices exist (v3
+  // synthesis or server-provided pricing_30/50). A legacy flat-price row
+  // gets the single price it was built with, no toggle that cannot reprice.
+  var hasBothPricing=!!(row.pricing_30&&row.pricing_50);
+  var seg=document.querySelector('.amp-seg');
+  if(seg&&!hasBothPricing) seg.style.display='none';
+  RECOMMENDED_AMP=(String(row.selected_amp)==='50')?'50':'30';
+  // Show Key's POM nudge when the proposal was built recommending it. The
+  // server marks a recommended POM via selected_pom at create time.
+  RECOMMEND_POM=(row.recommend_pom!=null)?!!row.recommend_pom:(row.selected_pom!==false);
+  chosenAmp=RECOMMENDED_AMP;
+  REQUIRE_DEPOSIT=row.require_deposit!==false;
+  // Honor a saved POM selection if present.
+  pomOn=row.selected_pom===true;
+  // Honor the builder's per-proposal POM choice (walkthrough finding #5): when
+  // Key explicitly did NOT offer POM (pom_offered === false), the card must not
+  // render and POM can never join the total. Legacy rows where the column is
+  // null keep the old always-show behavior.
+  if(row.pom_offered===false){
+    pomOn=false; RECOMMEND_POM=false;
+    // Hide ONLY the #pom switch block. It lives INSIDE the main price card
+    // (after the scope lines), so hiding a parent .card would take the amp
+    // toggle + pay line with it.
+    var _pomEl=document.getElementById('pom');
+    if(_pomEl) _pomEl.style.display='none';
+  }
+  bindData(row);
+  renderAmp();
+  renderCmpRows();
+  syncPom();
+  onSig();
+  validate();
+  fitPayLine();
+  if(window.BPPStickyCTA) window.BPPStickyCTA.activate();
+  document.body.classList.remove('booting');
+  initReveal();
+  authorizationFactsRendered=true;
+  syncAuthorizationGateUI();
+}
+
+// ── INIT: read token, fetch proposal, route to the right view ─
+(function(){
+  function run(){
+    installPreviewChrome();
+    setAuthorizationGateState(isPreview?'preview':'pending');
+    // Safety net: if a render path throws and leaves us stuck behind the boot
+    // overlay, show an HONEST loading state, never reveal the raw page. Removing
+    // booting raw would flash the static placeholder $ and dates (a believable
+    // but WRONG number, the POM 20/20 scar). The fetch self-resolves to a real
+    // render or an error state by its own 10s abort, so this only fires on an
+    // unexpected throw after that; showState overlays, it never reveals .page.
+    setTimeout(function(){ try{ if(document.body.classList.contains('booting')){ showState('⏳','One moment',"I'm pulling up your proposal. If it doesn't load, refresh or text Key at (864) 863-7800."); } }catch(_){} }, 11000);
+    var token=new URLSearchParams(window.location.search).get('token');
+    if(!token){ showState('🔗','Proposal link not found','This isn\'t the personal link Key texted you. Text or call Key at (864) 863-7800 and he will send a fresh one.',
+      '<a class="approve-nav" href="tel:+18648637800"><span>Call Key (864) 863-7800</span></a>'
+      +'<a class="approve-nav" style="margin-top:10px;background:transparent;color:var(--navy);box-shadow:inset 0 0 0 1.5px rgba(11,31,59,.22)" href="sms:+18648637800"><span>Text Key</span></a>'); return; }
+    var ctrl=new AbortController();
+    var timer=setTimeout(function(){ctrl.abort();},10000);
+    var proposalPromise=fetch(SUPABASE_URL+'/functions/v1/proposal-view?token='+encodeURIComponent(token),{
+        headers:{'Authorization':'Bearer '+SUPABASE_KEY},
+        signal:ctrl.signal,
+        cache:'no-store'
+      });
+    beginAuthorizationGate(token);
+    proposalPromise.then(function(r){
+      return r.json().catch(function(){return {};}).then(function(j){return {status:r.status,body:j};});
+    }).then(function(res){
+      clearTimeout(timer);
+      var row=res.body&&res.body.proposal;
+      if(!row){
+        // Superseded: the server 410s WITHOUT a row and hands back the newer
+        // proposal's token. Walk-through 2026-06-09 found this fell into the
+        // generic "refresh" dead-end (refreshing can never help) while the
+        // latest_token went unused. Send the customer to their CURRENT quote.
+        if(res.status===410&&res.body&&res.body.error==='superseded'){
+          var lt=res.body.latest_token;
+          var cta=(lt&&/^[a-zA-Z0-9-]{8,64}$/.test(lt))
+            ? '<a class="approve-nav" href="'+checkoutReturnUrl(lt)+'"><span>View your current quote</span></a>'
+            : '';
+          showState('📄','This quote was updated','I sent you a newer version of this quote, the price or details changed. The button below takes you to the current one.',
+            cta+'<div style="margin-top:14px;font-size:13px;color:var(--text3)">Questions? Text or call Key directly at <b style="color:var(--navy)">(864) 863-7800</b></div>');
+          return;
+        }
+        if(res.status===404||res.status===400) showState('🔗','Proposal not found','This link may be invalid or expired. Reach Key and he will send a fresh one.',
+          '<a class="approve-nav" href="tel:+18648637800"><span>Call Key (864) 863-7800</span></a>'
+          +'<a class="approve-nav" style="margin-top:10px;background:transparent;color:var(--navy);box-shadow:inset 0 0 0 1.5px rgba(11,31,59,.22)" href="sms:+18648637800"><span>Text Key</span></a>');
+        else showState('⚠️','Could not load your proposal','Please refresh, or reach Key if it keeps failing.',
+          '<a class="approve-nav" href="tel:+18648637800"><span>Call Key (864) 863-7800</span></a>');
+        return;
+      }
+      P=row; P.token=row.token||token;
+      // Deposit fraction = the SAME value the server charges on
+      // (proposal-deposit-checkout: deposit_rate ?? 0.20), so the displayed
+      // deposit always equals the Stripe charge (audit S3, 2026-07-17).
+      DEPOSIT_RATE=Number(row.deposit_rate!=null?row.deposit_rate:0.20)||0.20;
+      // SCOPE BINDING (2026-07-02, Key): SCOPE was hardcoded all-true, so every
+      // proposal showed "Extended wire run" even at the 5ft STANDARD minimum.
+      // 5ft is the included baseline, never an "extra": the wire-run line (and
+      // its comparison-table row) shows ONLY when the run exceeds 5ft. Cord and
+      // permit rows follow the quote builder's include flags, matching how the
+      // pricing math already treats them.
+      SCOPE.cord.included   = row.include_cord   !== false;
+      SCOPE.permit.included = row.include_permit !== false;
+      var _runFt = Number(row.length_ft||row.run_ft||5);
+      SCOPE.wireRun.included = (_runFt - 5) > 0;
+      SCOPE.wireRun.ft = _runFt;
+      // PREVIEW MODE (2026-07-02, cutover parity with proposal.html): when Key
+      // opens View-as-customer the URL carries preview=1. Show the banner +
+      // watermark, do NOT count the view, and approve()/resumeCheckout() are
+      // guarded so a preview can never sign or start a checkout.
+      if(!isPreview){
+        // Real customer view: stamp viewed_at / view_count so the CRM's
+        // Viewed signals stay truthful on the new page too (parity with the
+        // old page's trackView). Fire-and-forget.
+        try{ fetch(SUPABASE_URL+'/functions/v1/proposal-mutate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},body:JSON.stringify({token:P.token,action:'track_view'})}).catch(function(){}); }catch(_){}
+      }
+      var st=(row.status||'').toLowerCase();
+      if(st==='cancelled'||st==='declined'){ if(hasCheckoutReturnHint())scrubCheckoutReturnHints(false);showState('🚫','This proposal is closed','This proposal has been cancelled. Reach Key with any questions.',
+        '<a class="approve-nav" href="tel:+18648637800"><span>Call Key (864) 863-7800</span></a>'); return; }
+      if(row.superseded_by && !row.signed_at){ if(hasCheckoutReturnHint())scrubCheckoutReturnHints(false);showState('📄','This quote was replaced','A newer version of your quote was sent. Please use that link, the price and details may have changed.',
+        '<a class="approve-nav" href="sms:+18648637800"><span>Text Key for the current quote</span></a>'); return; }
+      if(st==='approved'){ showApproved(row); return; }
+      if(st==='signed'){
+        if(isPreview){ showAwaitingDeposit(row); return; }
+        if(!authorizationFullRedoPending&&hasCheckoutReturnHint()){ reconcileCheckoutReturn(row); return; }
+        showAwaitingDeposit(row); return;
+      }
+      if(!isPreview&&!authorizationFullRedoPending&&row.require_deposit!==false&&hasCheckoutReturnHint()
+          &&['sent','viewed','copied'].indexOf(st)>-1){reconcileCheckoutReturn(row);return;}
+      // Expired gate (walk-through 2026-06-09): the page DISPLAYED "Pricing held
+      // through <date>" but still rendered a fully signable view after that
+      // date, letting a customer lock stale pricing. Mirror the proven page's
+      // rule: expiry = expires_at || (sent_at||created_at) + 14 days. Expired
+      // and unsigned -> a warm refresh-your-quote state, never a stale sign.
+      var _prep=row.sent_at||row.created_at;
+      var _exp=row.expires_at?new Date(row.expires_at):(_prep?new Date(new Date(_prep).getTime()+14*86400000):null);
+      if(_exp&&!isNaN(_exp.getTime())&&_exp.getTime()<Date.now()&&!row.signed_at){
+        bindData(row);
+        showState('⏰','This quote has expired','Parts pricing and my install schedule shift over time, so quotes are good for two weeks. Text or call me and I will send you a refreshed quote, it only takes a few minutes.',
+          '<a class="approve-nav" href="sms:+18648637800"><span>Text Key for a fresh quote</span></a>'
+          +'<div style="margin-top:14px;font-size:13px;color:var(--text3)">Or call <b style="color:var(--navy)">(864) 863-7800</b></div>');
+        return;
+      }
+      // Normal sign view (Draft / Viewed / anything else open).
+      bootProposal(row);
+      if(authorizationFullRedoPending)resetDepositAcceptanceAuthorization('Closing the previous payment attempt. This proposal has not been accepted.');
+      var acceptanceRetry=consumeDepositAcceptanceRetry();
+      if(depositAuthorizationWasReset||acceptanceRetry){depositAuthorizationWasReset=false;resetDepositAcceptanceAuthorization('Payment was not confirmed, so this proposal was not accepted. Review it, check each acknowledgment, enter your name, and accept again.');}
+    }).catch(function(e){
+      clearTimeout(timer);
+      // Log the real error so a routing bug is diagnosable instead of hiding
+      // behind the generic state (the walk-through chased a silent one).
+      try{ console.error('[proposal-comp] load failed:', e); }catch(_){}
+      if(e&&e.name==='AbortError') showState('⚠️','This is taking too long','Please refresh, or contact (864) 863-7800 if it keeps failing.');
+      else showState('⚠️','Could not load your proposal','Please refresh, or contact (864) 863-7800 if it keeps failing.');
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run);
+  else run();
+})();
+
+window.addEventListener('pageshow',function(event){
+  if(!event.persisted||previewModeActive())return;
+  var token=new URLSearchParams(window.location.search).get('token');
+  var attemptId=token&&storedPendingDepositAcceptance(token);
+  if(!token||!attemptId||/[?&](deposit_paid|payment_check)=1(?:&|$)/.test(window.location.search))return;
+  if(P)resetDepositAcceptanceAuthorization('Closing the previous payment attempt. This proposal has not been accepted.');
+  beginAuthorizationGate(token);
+});
+</script>
+</body>
+</html>

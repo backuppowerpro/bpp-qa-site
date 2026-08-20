@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,follow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://*.i.posthog.com https://us-assets.i.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://*.i.posthog.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'">
+<meta name="theme-color" content="#0b1f3b">
+<meta name="description" content="Backup Power Pro sends steady generator inlet and interlock install jobs to licensed, insured electricians in Greenville, Spartanburg, and Pickens counties. Set your own volume, decline any job, fast pay after QC pass.">
+<meta property="og:title" content="Work with Backup Power Pro, Licensed Electricians, Upstate SC">
+<meta property="og:description" content="Steady generator inlet install work for licensed, insured Upstate SC electricians. You set your own volume. Apply in about two minutes.">
+<meta property="og:image" content="https://qa.backuppowerpro.com/assets/images/logo-white-v2.png">
+<meta property="og:url" content="https://qa.backuppowerpro.com/subs/">
+<meta name="twitter:card" content="summary">
+<title>Work with Backup Power Pro, Licensed Electricians, Upstate SC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- BPP design system: single source of truth (tokens, reset, primitives, motion). REUSE ONLY, no new tokens defined on this page. -->
+<link rel="stylesheet" href="/assets/css/bpp-ds.css?v=20260713a">
+<script>document.documentElement.className += ' js'</script>
+<style>
+/* ============================================================================
+   SUB RECRUITING PAGE, dark launch (noindex,follow; linked from nowhere; Key
+   sends the URL directly). Every visual element below is RECOMPOSED from two
+   already-approved sources, nothing net-new:
+     - docs/redesign-comps/landing-comp.html: full-bleed navy hero + scrim,
+       trust badge strip, numbered .steps list, .lp-form field styling, the
+       reveal-on-scroll wiring, the resilient-submit pattern.
+     - subs/apply/index.html: the county-chip toggle group (same three
+       counties, same interaction), the honeypot pattern.
+   All colors below reference bpp-ds.css tokens (var(--navy), var(--border),
+   var(--fill), etc.), never a new hex. ON-BRAND VARIATION per the DS: SURFACE
+   THEME tokens only (page bg untouched from DS default); BRAND CORE untouched.
+   ============================================================================ */
+
+/* full-bleed hero, on-brand variation of docs/redesign-comps/landing-comp.html's .lp-hero */
+.rhero{position:relative;background-color:var(--navy);background-image:
+  linear-gradient(to bottom,rgba(11,31,59,.45) 0%,rgba(11,31,59,.75) 55%,var(--navy) 92%,var(--navy) 100%),
+  url('/img/install-inlet-brick-hd.jpg');
+  background-size:cover;background-position:center 46%;color:#fff;text-align:center;padding:50px 22px 42px}
+.rhero .inner{max-width:600px;margin:0 auto}
+.rhero .kicker{color:var(--gold);justify-content:center;display:flex}
+.rhero h1{font-family:var(--font-display);font-size:28px;font-weight:900;line-height:1.16;letter-spacing:-.01em;margin:10px 0 12px}
+.rhero .sub{font-size:15px;color:rgba(255,255,255,.84);line-height:1.6;max-width:32em;margin:0 auto 22px}
+.rhero .btn-gold{max-width:320px;margin:0 auto;height:56px;font-size:16.5px}
+.rhero .under{margin-top:12px;font-size:12px;color:rgba(255,255,255,.62);font-weight:600}
+
+/* trust strip just under the hero, reused from landing-comp.html */
+.rtrust{background:var(--navy);padding:0 20px 18px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.rtrust .badge{background:rgba(255,255,255,.1);color:#fff}
+
+/* content column, reuses the DS .page primitive's max-width discipline */
+.rwrap{max-width:600px;margin:0 auto;padding:0 16px}
+.rsec{padding:32px 4px}
+.rsec .eyebrow{justify-content:center}
+.rsec h2{font-family:var(--font-display);font-size:23px;font-weight:800;color:var(--navy);text-align:center;line-height:1.2;margin-bottom:10px}
+.rsec .lead{font-size:15px;color:var(--text2);line-height:1.6;text-align:center;max-width:34em;margin:0 auto}
+
+/* numbered steps, reused verbatim from landing-comp.html's .steps/.step */
+.steps{display:flex;flex-direction:column;gap:12px;margin-top:22px}
+.step{display:flex;gap:14px;align-items:flex-start;background:var(--card-grad);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:18px}
+.step-n{width:34px;height:34px;border-radius:50%;background:var(--navy);color:var(--gold);font-family:var(--font-display);font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-t{font-family:var(--font-display);font-weight:800;font-size:16px;color:var(--navy);margin-bottom:3px}
+.step-d{font-size:15px;color:var(--text2);line-height:1.55}
+
+/* form fields, layout pattern reused from subs/apply/index.html, recolored to DS tokens */
+.rfield{margin-top:16px;text-align:left}
+.rfield label{display:block;font-family:var(--font-display);font-size:13.5px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.rfield label .opt{color:var(--text3);font-weight:500}
+.rfield .help{font-size:12.5px;color:var(--text3);line-height:1.4;margin:6px 0 0}
+.rfield input[type=text],.rfield input[type=tel],.rfield input[type=email],.rfield input[type=number]{
+  width:100%;min-height:50px;font-family:var(--font-body);font-size:16px;font-weight:500;color:var(--navy);
+  background:var(--fill);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;outline:none;
+  -webkit-appearance:none;appearance:none;
+}
+.rfield input::placeholder{color:var(--muted)}
+.rfield.invalid input{border-color:var(--red)}
+.rfield .errmsg{display:none;font-size:12.5px;font-weight:600;color:var(--red);margin:6px 0 0}
+.rfield.invalid .errmsg{display:block}
+
+/* county chip group, reused verbatim (structure + interaction) from subs/apply/index.html,
+   recolored from that page's local hex vars to the DS tokens that mean the same role. */
+.counties{display:flex;flex-direction:column;gap:10px;margin:6px 0 4px}
+.county-chip{display:flex;align-items:center;gap:14px;width:100%;min-height:58px;padding:13px 16px;background:var(--fill);border:2px solid var(--border);border-radius:var(--r-lg);cursor:pointer;font-family:var(--font-body);text-align:left;-webkit-tap-highlight-color:transparent}
+.county-chip .box{flex:0 0 auto;width:26px;height:26px;border-radius:8px;border:2px solid var(--control);background:#fff;display:flex;align-items:center;justify-content:center}
+.county-chip .box svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+.county-chip .nm{font-size:17px;font-weight:700;color:var(--navy);letter-spacing:-.01em}
+.county-chip.on{background:var(--navy);border-color:var(--navy)}
+.county-chip.on .box{background:#fff;border-color:#fff}
+.county-chip.on .box svg{opacity:1;stroke:var(--navy)}
+.county-chip.on .nm{color:#fff}
+
+/* honeypot, reused verbatim from subs/apply/index.html */
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;opacity:0}
+
+/* inline fallback banner (fn-down / network-fail state). Uses the DS danger tint pair, the
+   same semantic pairing status/danger already uses elsewhere on this DS. */
+.rfallback{display:none;text-align:left;background:var(--danger-bg);border:1px solid var(--red);border-radius:var(--r-md);padding:16px;margin-top:18px}
+.rfallback.show{display:block}
+.rfallback .ft{font-family:var(--font-display);font-weight:800;font-size:15px;color:var(--danger-ink);margin-bottom:6px}
+.rfallback .fd{font-size:13.5px;color:var(--text2);line-height:1.5;margin-bottom:12px}
+.rfallback .btn-gold{height:50px;font-size:15px}
+
+/* success swap panel, structure reused from landing-comp.html's .lp-success */
+.rsuccess{display:none;text-align:center;padding:6px 4px}
+.rsuccess .check-icon{font-size:42px;margin-bottom:10px}
+.rsuccess h3{font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px}
+.rsuccess p{font-size:14.5px;color:var(--text2);line-height:1.6;max-width:30em;margin:0 auto}
+
+.rfoot{text-align:center;font-size:12px;color:var(--text3);line-height:1.8;padding:26px 16px}
+.rfoot b{color:var(--navy)}
+.rfoot a{color:var(--navy);font-weight:700;text-decoration:none}
+
+/* kill tap delay on custom controls (Operational DNA 6a) */
+.county-chip,.btn-gold,input{touch-action:manipulation}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body>
+
+<div class="brand-bar">
+  <img src="/assets/images/logo-white-v2.png" alt="Backup Power Pro">
+</div>
+
+<!-- HERO -->
+<div class="rhero">
+  <div class="inner">
+    <div class="kicker">Work with Backup Power Pro</div>
+    <h1>Steady generator inlet install work for licensed Upstate electricians.</h1>
+    <div class="sub">You bring the license, the tools, and the work ethic. We bring the customers, the specialty parts, and the paperwork. Steady work, clear scope, no chasing invoices.</div>
+    <a class="btn-gold" href="#apply">Apply now</a>
+    <div class="under">About two minutes. Key reads every application himself.</div>
+  </div>
+</div>
+<div class="rtrust">
+  <span class="badge">Greenville &middot; Spartanburg &middot; Pickens</span>
+  <span class="badge">Licensed and insured subs only</span>
+  <span class="badge">Fast pay on QC pass</span>
+</div>
+
+<div class="rwrap">
+
+  <!-- HOW THE GIG WORKS -->
+  <div class="rsec reveal" id="how">
+    <div class="eyebrow">How it works</div>
+    <h2>The job shows up complete. You just install it.</h2>
+    <div class="steps">
+      <div class="step"><div class="step-n">1</div><div><div class="step-t">The job arrives complete, on your phone</div><div class="step-d">Scope, the materials list, and the specialty parts (inlet, interlock, breaker) shipped straight to you. Nothing to figure out before you start.</div></div></div>
+      <div class="step"><div class="step-n">2</div><div><div class="step-t">You set your own monthly volume</div><div class="step-d">Tell us how many installs a month you want. Jobs are matched to your pace, not the other way around.</div></div></div>
+      <div class="step"><div class="step-n">3</div><div><div class="step-t">Decline any job</div><div class="step-d">See the full scope before you say yes. If it doesn't fit your route or your schedule, turn it down. No penalty.</div></div></div>
+      <div class="step"><div class="step-n">4</div><div><div class="step-t">Fast pay after QC and permit pass</div><div class="step-d">Smaller residential jobs, most take 2 to 4 hours, flat rate per job, priced so a typical install clears $100+ an hour. You see the exact payout on every offer before you accept. Payment goes out within 48 hours after all quality control and permit pass.</div></div></div>
+    </div>
+  </div>
+
+  <!-- THE HARD FLOOR -->
+  <div class="card pad reveal" id="floor">
+    <div class="eyebrow">Before you apply</div>
+    <h2 class="sec" style="margin-bottom:12px">The floor is simple.</h2>
+    <div class="checklist" style="margin-top:18px">
+      <div class="check"><span class="ck">&#10003;</span>Current SC license and general liability insurance, no exceptions. Workers comp (or a signed exemption), a W-9, and a photo of your work truck or van on your setup link.</div>
+      <div class="check"><span class="ck">&#10003;</span>This week: upload docs on Key's setup link, then text him to finish the contractor agreement (legal text is finalized with him, not a fake online sign).</div>
+      <div class="check"><span class="ck">&#10003;</span>Your first job is a paid test install alongside Key. Pass that, and offers start hitting your phone by text.</div>
+    </div>
+  </div>
+
+  <!-- APPLICATION FORM -->
+  <div class="card pad reveal" id="apply" style="scroll-margin-top:20px">
+    <div id="applyFormWrap">
+      <div class="eyebrow">Apply</div>
+      <h2 class="sec" style="text-align:center;margin-bottom:6px">Tell us about you</h2>
+      <p style="font-size:14px;color:var(--text2);line-height:1.55;text-align:center;margin-bottom:8px">About two minutes. Key reads every application personally.</p>
+
+      <div class="rfield" id="f-name">
+        <label for="rName">Full name</label>
+        <input id="rName" type="text" autocomplete="name" placeholder="Full name">
+        <p class="errmsg">Please add your name.</p>
+      </div>
+
+      <div class="rfield" id="f-phone">
+        <label for="rPhone">Phone <span class="opt">(so Key can text you back)</span></label>
+        <input id="rPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(864) 555-0100">
+        <p class="errmsg" id="rPhoneErr">Enter a valid 10-digit phone number.</p>
+      </div>
+
+      <div class="rfield" id="f-email">
+        <label for="rEmail">Email <span class="opt">(optional)</span></label>
+        <input id="rEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com">
+        <p class="errmsg" id="rEmailErr">Enter a valid email address.</p>
+      </div>
+
+      <div class="rfield">
+        <label for="rBiz">Business name <span class="opt">(optional)</span></label>
+        <input id="rBiz" type="text" autocomplete="organization" placeholder="Your company name">
+      </div>
+
+      <div class="rfield">
+        <label for="rLic">SC license number <span class="opt">(add now, or when Key texts you)</span></label>
+        <input id="rLic" type="text" placeholder="License number">
+      </div>
+
+      <div class="rfield">
+        <label for="rYears">Years of experience <span class="opt">(optional)</span></label>
+        <input id="rYears" type="text" inputmode="numeric" maxlength="40" placeholder="e.g. 8">
+      </div>
+
+      <div class="rfield">
+        <label>Which counties can you cover? <span class="opt">(optional)</span></label>
+        <div class="counties" id="counties" role="group" aria-label="Counties you service">
+          <button type="button" class="county-chip" data-county="Greenville" aria-pressed="false">
+            <span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4 4 10-10"/></svg></span>
+            <span class="nm">Greenville</span>
+          </button>
+          <button type="button" class="county-chip" data-county="Spartanburg" aria-pressed="false">
+            <span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4 4 10-10"/></svg></span>
+            <span class="nm">Spartanburg</span>
+          </button>
+          <button type="button" class="county-chip" data-county="Pickens" aria-pressed="false">
+            <span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4 4 10-10"/></svg></span>
+            <span class="nm">Pickens</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="rfield">
+        <label for="rCapacity">Installs per month you'd want <span class="opt">(optional)</span></label>
+        <input id="rCapacity" type="number" inputmode="numeric" min="1" max="50" placeholder="e.g. 4">
+      </div>
+
+      <div class="rfield" id="f-website">
+        <label for="rWebsiteUrl">Website <span class="opt">(optional)</span></label>
+        <input id="rWebsiteUrl" type="url" inputmode="url" autocomplete="url" placeholder="yourcompany.com">
+        <div class="errmsg">Use a normal web address (http or https).</div>
+      </div>
+
+      <div class="rfield" id="f-facebook">
+        <label for="rFacebookUrl">Facebook <span class="opt">(optional)</span></label>
+        <input id="rFacebookUrl" type="url" inputmode="url" autocomplete="url" placeholder="facebook.com/yourpage">
+        <div class="errmsg">Use a normal Facebook or web address (http or https).</div>
+      </div>
+
+      <!-- honeypot: real people never see or fill this (NOT the optional Website field) -->
+      <div class="hp" aria-hidden="true">
+        <label for="rHpCompany">Company URL</label>
+        <input id="rHpCompany" name="hp_company" type="text" tabindex="-1" autocomplete="off">
+      </div>
+
+      <button type="button" class="btn-gold" id="rSubmitBtn" style="margin-top:22px">
+        Submit application
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+      </button>
+
+      <div class="rfallback" id="rFallback">
+        <div class="ft">That didn't go through.</div>
+        <div class="fd">No problem, nothing you typed above was lost. Text Key directly and he'll get you set up personally.</div>
+        <a class="btn-gold" href="sms:+18648637800" id="rSmsLink">Text Key: (864) 863-7800</a>
+      </div>
+    </div>
+
+    <div class="rsuccess" id="rSuccess">
+      <div class="check-icon">&#9989;</div>
+      <h3>You're in, <span id="rSuccessName"></span>.</h3>
+      <p>Key personally reviews every application. He'll text you, usually within a day.</p>
+    </div>
+  </div>
+
+  <!-- WHAT HAPPENS NEXT -->
+  <div class="rsec reveal" id="next">
+    <div class="eyebrow">What happens next</div>
+    <h2>Key personally texts you, usually within a day.</h2>
+    <div class="lead">He'll ask about your license and your availability, then text you a personal setup link. On that link you upload license, GL, WC or exemption, W-9, and a photo of your work truck or van. When docs are in, you text Key to finish the contractor agreement this week. Then your first paid test install goes on the books.</div>
+  </div>
+
+</div>
+
+<div class="rfoot">Backup Power Pro by Key Electric &middot; Greenville, Spartanburg, Pickens counties<br>Questions? Text or call Key directly at <b><a href="sms:+18648637800">(864) 863-7800</a></b></div>
+
+<!-- PostHog Analytics -->
+<script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_qoA51lePZqXYtPJYkrIpdA4U8iMDJ79L1kje7r4pD4O',{api_host:'https://us.i.posthog.com',person_profiles:'identified_only',capture_pageview:true,capture_pageleave:true,enable_heatmaps:true,capture_dead_clicks:true})</script>
+<script>
+  if (typeof posthog !== 'undefined') {
+    posthog.register({ channel: 'subs_recruit', landing_page: '/subs/' });
+  }
+</script>
+
+<script>
+// reveal-on-scroll, reused verbatim from docs/redesign-comps/landing-comp.html
+(function(){
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els=document.querySelectorAll('.reveal');
+  if(reduce || !('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in')});return;}
+  var io=new IntersectionObserver(function(en){en.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}})},{threshold:0,rootMargin:'0px 0px -12% 0px'});
+  els.forEach(function(e){io.observe(e)});
+})();
+
+document.querySelectorAll('a[href="#apply"]').forEach(function(a){
+  a.addEventListener('click',function(e){
+    e.preventDefault();
+    var t=document.getElementById('apply');
+    if(t) t.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+});
+
+// ==================== SUB APPLICATION FORM ====================
+(function(){
+  'use strict';
+
+  var FN_URL = 'https://hfatblrcwytxvijjhpal.supabase.co/functions/v1/sub-apply';
+  // Publishable key (the sb_publishable_ value, same one every other live page +
+  // the CRM use). The OLD legacy HS256 anon JWT was disabled 2026-04-23 and now
+  // 401s at the gateway, which silently broke this form (verified 2026-07-21).
+  // Sent as apikey + Authorization, per sub-apply's requireAnonOrServiceRole gate.
+  var ANON = 'sb_publishable_kBXthY-Han29JLqcT514RQ_RtwxXLZ-';
+
+  var nameInput = document.getElementById('rName');
+  var phoneInput = document.getElementById('rPhone');
+  var emailInput = document.getElementById('rEmail');
+  var bizInput = document.getElementById('rBiz');
+  var licInput = document.getElementById('rLic');
+  var yearsInput = document.getElementById('rYears');
+  var capacityInput = document.getElementById('rCapacity');
+  var websiteUrlInput = document.getElementById('rWebsiteUrl');
+  var facebookUrlInput = document.getElementById('rFacebookUrl');
+  var hpCompanyInput = document.getElementById('rHpCompany');
+  var submitBtn = document.getElementById('rSubmitBtn');
+  var fallback = document.getElementById('rFallback');
+  var formWrap = document.getElementById('applyFormWrap');
+  var successEl = document.getElementById('rSuccess');
+  var successName = document.getElementById('rSuccessName');
+
+  var formStartedFired = false;
+  function fireFormStarted(field){
+    if(formStartedFired) return;
+    formStartedFired = true;
+    if(typeof posthog !== 'undefined') posthog.capture('sub_apply_form_started', { field: field, channel: 'subs_recruit' });
+  }
+  [nameInput, phoneInput, emailInput, bizInput, licInput, yearsInput, capacityInput, websiteUrlInput, facebookUrlInput].forEach(function(el){
+    if (!el) return;
+    el.addEventListener('input', function(){ fireFormStarted(el.id); }, { once: true });
+  });
+
+  // phone mask, (###) ###-####
+  phoneInput.addEventListener('input', function(e){
+    var v = e.target.value.replace(/\D/g,'');
+    if(v.startsWith('1') && v.length>10) v = v.slice(1);
+    if(v.length>10) v = v.slice(0,10);
+    if(v.length>=7) v = '('+v.slice(0,3)+') '+v.slice(3,6)+'-'+v.slice(6);
+    else if(v.length>=4) v = '('+v.slice(0,3)+') '+v.slice(3);
+    else if(v.length>=1) v = '('+v;
+    e.target.value = v;
+  });
+
+  // county chip toggles
+  document.querySelectorAll('.county-chip').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      var on = chip.classList.toggle('on');
+      chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  });
+  function selectedCounties(){
+    return [].slice.call(document.querySelectorAll('.county-chip.on')).map(function(c){ return c.dataset.county; });
+  }
+
+  function clearErr(fieldId){ document.getElementById(fieldId).classList.remove('invalid'); }
+  function setErr(fieldId){ document.getElementById(fieldId).classList.add('invalid'); }
+
+  function normalizeOptionalUrl(raw){
+    var s = String(raw || '').trim();
+    if(!s) return { ok: true, value: null };
+    if(/^[a-z][a-z0-9+.-]*:/i.test(s) && !/^https?:\/\//i.test(s)) return { ok: false };
+    var candidate = s;
+    if(!/^https?:\/\//i.test(candidate)) candidate = 'https://' + candidate;
+    try {
+      var u = new URL(candidate);
+      if(u.protocol !== 'http:' && u.protocol !== 'https:') return { ok: false };
+      if(u.username || u.password) return { ok: false };
+      if(!u.hostname || u.hostname.indexOf('.') < 0) return { ok: false };
+      return { ok: true, value: u.toString() };
+    } catch (e) {
+      return { ok: false };
+    }
+  }
+
+  nameInput.addEventListener('input', function(){ if(this.value.trim()) clearErr('f-name'); });
+  phoneInput.addEventListener('input', function(){ clearErr('f-phone'); });
+  emailInput.addEventListener('input', function(){ clearErr('f-email'); });
+  websiteUrlInput.addEventListener('input', function(){ if(normalizeOptionalUrl(this.value).ok) clearErr('f-website'); });
+  facebookUrlInput.addEventListener('input', function(){ if(normalizeOptionalUrl(this.value).ok) clearErr('f-facebook'); });
+
+  function validate(){
+    var ok = true;
+    var name = nameInput.value.trim();
+    if(!name){ setErr('f-name'); ok = false; } else { clearErr('f-name'); }
+
+    var phoneDigits = phoneInput.value.replace(/\D/g,'');
+    if(phoneDigits.length > 0 && phoneDigits.length !== 10){
+      setErr('f-phone'); ok = false;
+    } else { clearErr('f-phone'); }
+
+    var email = emailInput.value.trim();
+    var emailOk = !email || /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(email);
+    if(!emailOk){ setErr('f-email'); ok = false; } else { clearErr('f-email'); }
+
+    if(!normalizeOptionalUrl(websiteUrlInput.value).ok){ setErr('f-website'); ok = false; } else { clearErr('f-website'); }
+    if(!normalizeOptionalUrl(facebookUrlInput.value).ok){ setErr('f-facebook'); ok = false; } else { clearErr('f-facebook'); }
+
+    return ok;
+  }
+
+  function buildPayload(){
+    var capRaw = capacityInput.value.trim();
+    var cap = capRaw ? Number(capRaw) : null;
+    var web = normalizeOptionalUrl(websiteUrlInput.value);
+    var fb = normalizeOptionalUrl(facebookUrlInput.value);
+    return {
+      name: nameInput.value.trim(),
+      phone: phoneInput.value.trim() || null,
+      email: emailInput.value.trim() || null,
+      business_name: bizInput.value.trim() || null,
+      sc_license: licInput.value.trim() || null,
+      years_experience: yearsInput.value.trim() || null,
+      service_areas: selectedCounties().join(', ') || null,
+      capacity_per_month: (Number.isFinite(cap) && cap > 0) ? cap : null,
+      website_url: web.ok ? web.value : null,
+      facebook_url: fb.ok ? fb.value : null,
+      source: 'subs-page',
+      hp_company: hpCompanyInput.value.trim() // honeypot, empty for real humans
+    };
+  }
+
+  submitBtn.addEventListener('click', function(){
+    if(!validate()){
+      var firstBad = document.querySelector('.rfield.invalid input');
+      if(firstBad) firstBad.focus();
+      return;
+    }
+
+    fallback.classList.remove('show');
+    submitBtn.disabled = true;
+    var originalHtml = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<div style="width:20px;height:20px;border:2.5px solid rgba(11,31,59,.2);border-top-color:var(--navy);border-radius:50%;animation:spin .6s linear infinite"></div> Sending...';
+
+    var payload = buildPayload();
+    var submitStartMs = Date.now();
+
+    // sub-apply requires an authenticated apikey/Authorization header
+    // (requireAnonOrServiceRole), which navigator.sendBeacon cannot send, so
+    // this uses an awaited keepalive fetch (survives navigation on its own)
+    // with a synchronous XHR fallback, no unauthenticated beacon attempt.
+    fetch(FN_URL, {
+      method: 'POST',
+      keepalive: true,
+      headers: { 'Content-Type': 'application/json', 'apikey': ANON, 'Authorization': 'Bearer ' + ANON },
+      body: JSON.stringify(payload)
+    }).then(function(resp){
+      if(!resp.ok){
+        if(typeof posthog !== 'undefined'){
+          posthog.capture('sub_apply_failed', { status: resp.status, method: 'fetch', channel: 'subs_recruit', latency_ms: Date.now() - submitStartMs });
+        }
+        showFallback();
+        return;
+      }
+      onSuccess(submitStartMs, 'fetch');
+    }).catch(function(fetchErr){
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', FN_URL, false);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('apikey', ANON);
+        xhr.setRequestHeader('Authorization', 'Bearer ' + ANON);
+        xhr.send(JSON.stringify(payload));
+        if(xhr.status >= 200 && xhr.status < 300){
+          onSuccess(submitStartMs, 'xhr');
+        } else {
+          if(typeof posthog !== 'undefined'){
+            posthog.capture('sub_apply_failed', { status: xhr.status, method: 'xhr', channel: 'subs_recruit', fetchErr: String(fetchErr).slice(0,200), latency_ms: Date.now() - submitStartMs });
+          }
+          showFallback();
+        }
+      } catch(xhrErr){
+        if(typeof posthog !== 'undefined'){
+          posthog.capture('sub_apply_failed', { err: String(xhrErr).slice(0,200), method: 'xhr-threw', channel: 'subs_recruit', fetchErr: String(fetchErr).slice(0,200), latency_ms: Date.now() - submitStartMs });
+        }
+        showFallback();
+      }
+    }).finally(function(){
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalHtml;
+    });
+
+    function onSuccess(startMs, method){
+      if(typeof posthog !== 'undefined'){
+        posthog.capture('sub_apply_submitted', { channel: 'subs_recruit', delivery: method, latency_ms: Date.now() - startMs });
+      }
+      successName.textContent = nameInput.value.trim().split(' ')[0] || '';
+      formWrap.style.display = 'none';
+      successEl.style.display = 'block';
+      try { sessionStorage.setItem('bpp_sub_applied', '1'); } catch(e){}
+    }
+
+    function showFallback(){
+      // Failure is first-class: nothing typed above is cleared or hidden.
+      fallback.classList.add('show');
+      fallback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  });
+
+  // Restore success state across a refresh within the same session
+  (function(){
+    try {
+      if(sessionStorage.getItem('bpp_sub_applied')){
+        formWrap.style.display = 'none';
+        successEl.style.display = 'block';
+      }
+    } catch(e){}
+  })();
+})();
+</script>
+</body>
+</html>

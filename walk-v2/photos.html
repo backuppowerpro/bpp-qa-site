@@ -1,0 +1,1255 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta name="referrer" content="strict-origin-when-cross-origin">
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-wygnGpICbMppymZ/+XZT8Vgnv0wtsjTA4zJ1JolzPtc=' 'sha256-jD7bXyAbGLRXUSgeb8YFgT7marimKY68axXzPzvpQGQ='; script-src-attr 'none'; style-src 'self'; style-src-elem 'self' https://fonts.googleapis.com 'sha256-TR5WsvRLJrBeuhBlf0r8jNpbnwt9KX6aRmecxwF1rHg='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data: https://hfatblrcwytxvijjhpal.supabase.co; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
+<script src="/walk-v2/no-js-bootstrap.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>Backup Power Pro · Quote Walk · Step 3</title>
+<link rel="icon" href="/favicon.png" type="image/png" />
+<link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.jpg" />
+<meta name="theme-color" content="#0b1f3b" />
+<link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
+<style>
+  :root {
+    --navy: #0b1f3b;
+    --navy-mid: #1a3a5c;
+    --gold: #ffba00;
+    --gold-hover: #ffc519;
+    --gold-ink: #8a5a00;
+    --gold-tint: #fff7e0;
+    --bg: #eef1f6;
+    --page: #fafbfc;
+    --card: #ffffff;
+    --sunken: #f4f6fa;
+    --edge: rgba(11, 31, 59, 0.10);
+    --edge-soft: rgba(11, 31, 59, 0.07);
+    --text: #16243a;
+    --muted: #4d5a6e;
+    --faint: #5d6b7e;
+    --green: #16a34a;
+    --green-tint: #ecfdf3;
+    --red: #dc2626;
+    --red-tint: #fef2f2;
+
+    --shadow-sm: 0 2px 6px rgba(11,31,59,0.06), 0 1px 2px rgba(11,31,59,0.04);
+    --shadow-md: 0 10px 28px rgba(11,31,59,0.10), 0 2px 8px rgba(11,31,59,0.05);
+    --shadow-lift: 0 18px 44px rgba(11,31,59,0.14), 0 4px 12px rgba(11,31,59,0.06);
+    --shadow-gold: 0 6px 24px rgba(255,186,0,0.30);
+
+    --r-md: 14px;
+    --r-lg: 20px;
+    --r-pill: 100px;
+
+    --head: 'Outfit', sans-serif;
+    --body: 'Inter', system-ui, -apple-system, sans-serif;
+
+    --dur: 220ms;
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body {
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  button {
+    font-family: inherit;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+  svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+
+  .stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 48px;
+    padding: 28px 14px 96px;
+  }
+  .state-label {
+    width: 390px;
+    max-width: 100%;
+    font-family: var(--head);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: -34px;
+    padding-left: 4px;
+  }
+  .state-label.wide { width: 1080px; }
+  .snapshot { pointer-events: none; }
+
+  /* ================= page frame ================= */
+  .page {
+    width: 390px;
+    max-width: 100%;
+    background: var(--page);
+    border-radius: 24px;
+    box-shadow: var(--shadow-md), inset 0 0 0 1px var(--edge-soft);
+    overflow: hidden;
+    container-type: inline-size;
+    container-name: page;
+  }
+  .page.w-desktop { width: 1080px; }
+  /* staging: the comp's own desktop composition activates responsively
+     (the comps showed it via a snapshot clone with .w-desktop) */
+  @media (min-width: 1140px) {
+    .page { width: 1080px; }
+  }
+
+  .page * { text-wrap: pretty; }
+
+  /* ================= scroll reveal ================= */
+  .rv {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 560ms var(--ease), transform 560ms var(--ease);
+    transition-delay: var(--rvd, 0ms);
+  }
+  .rv.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .rv { opacity: 1; transform: none; transition: none; }
+  }
+
+  /* ================= 1. site header ================= */
+  .site-head {
+    height: 56px;
+    background: var(--navy);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+  }
+  .lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 8px 0;
+    box-sizing: border-box;
+  }
+  .lockup .bolt {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--gold);
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+  .lockup .bolt svg { width: 14px; height: 14px; fill: var(--navy); stroke: none; }
+  .lockup .wm {
+    font-family: var(--head);
+    font-weight: 800;
+    font-size: 13.5px;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .lockup .wm small {
+    display: block;
+    font-size: 7px;
+    font-weight: 600;
+    letter-spacing: 0.34em;
+    color: var(--gold);
+    margin-top: 3px;
+    white-space: nowrap;
+  }
+
+  /* back-a-step control */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 44px;
+    margin: 12px 0 0 14px;
+    padding: 6px 10px 6px 6px;
+    background: none;
+    font-family: var(--head);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .back-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .back-btn:active { color: var(--navy); }
+
+  /* ================= 2. progress band ================= */
+  .prog {
+    background: var(--card);
+    border-bottom: 1px solid var(--edge-soft);
+    padding: 16px 20px 14px;
+  }
+  .prog .rail {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    position: relative;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+  .prog .rail::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: calc(100% / 6);
+    right: calc(100% / 6);
+    height: 2px;
+    background: var(--edge);
+  }
+  .prog .rail::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: calc(100% / 6);
+    width: calc(100% / 3 * 2);
+    height: 2px;
+    background: var(--gold);
+  }
+  .pstep {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+  }
+  .pstep .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--page);
+    box-shadow: inset 0 0 0 2px var(--edge);
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--navy);
+  }
+  .pstep .dot svg { width: 7px; height: 7px; stroke-width: 3.4; display: none; }
+  .pstep.done .dot {
+    width: 14px;
+    height: 14px;
+    margin: -1px 0;
+    background: var(--gold);
+    box-shadow: none;
+  }
+  .pstep.done .dot svg { display: block; }
+  .pstep.on .dot {
+    background: var(--gold);
+    box-shadow: 0 0 0 4px rgba(255,186,0,0.22);
+  }
+  .pstep .pl {
+    font-family: var(--head);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .pstep.on .pl, .pstep.done .pl { color: var(--gold-ink); }
+
+  /* ================= body grid ================= */
+  .body-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 28px 20px 8px;
+  }
+  .col-main { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+  .col-side { display: none; min-width: 0; }
+
+  @container page (min-width: 760px) {
+    .site-head { padding: 0 48px; }
+    .prog { padding: 18px 48px 16px; }
+    .body-grid {
+      grid-template-columns: 1fr;
+      max-width: 620px;
+      margin: 0 auto;
+      gap: 22px;
+      padding: 40px 24px 12px;
+    }
+    /* .page prefix (visual sweep 2026-07-18): dead-rule fix, see outlet.html */
+    .page .ask h2 { font-size: 36px; }
+    .page .foot { padding-left: 48px; padding-right: 48px; }
+  }
+
+  /* ================= 3. ask ================= */
+  .ask .kicker {
+    font-family: var(--head);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold-ink);
+    margin: 0 0 10px;
+  }
+  .ask h2 {
+    font-family: var(--head);
+    font-weight: 800;
+    font-size: 28px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--navy);
+    margin: 0 0 8px;
+  }
+  .ask .helper {
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  /* ================= 4. photo strip ================= */
+  .slots {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .slot {
+    position: relative;
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    border-radius: var(--r-md);
+  }
+  .slot .role-label {
+    display: block;
+    margin-top: 7px;
+    color: var(--navy);
+    font-family: var(--head);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .slot .thumb {
+    position: relative;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 4;
+    border-radius: var(--r-md);
+    background: linear-gradient(160deg, #2c3e58 0%, #1a2a42 55%, #11203a 100%);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--edge);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.55);
+    overflow: hidden;
+  }
+  .slot .thumb svg { width: 26px; height: 26px; stroke-width: 1.6; }
+  .slot .thumb .tag {
+    position: absolute;
+    left: 7px;
+    bottom: 7px;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    max-width: calc(100% - 14px);
+    overflow: hidden;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: #fff;
+    background: rgba(11,32,58,0.78);
+    padding: 2px 6px;
+    border-radius: 6px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .slot.uploading .thumb { box-shadow: inset 0 0 0 3px var(--gold), var(--shadow-sm); }
+  .slot.failed .thumb { box-shadow: inset 0 0 0 3px var(--red), var(--shadow-sm); }
+  .slot.failed .thumb .tag { background:var(--red); font-family:var(--body); font-weight:700; }
+  .slot-actions {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+    margin-top:7px;
+  }
+  .slot-actions button {
+    min-height:44px;
+    border:1.5px solid var(--edge);
+    border-radius:10px;
+    background:#fff;
+    color:var(--navy);
+    font-family:var(--head);
+    font-size:12px;
+    font-weight:700;
+  }
+  .slot-actions button[data-retry] { border-color:var(--gold); background:var(--gold); color:var(--navy); }
+  .slot-actions button[data-remove] { border-color:#dc2626; background:var(--red-tint); color:#8b1616; }
+  .slot .remove {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+  }
+  /* Hit area is the 44px control itself (old-person floor). No inset hack. */
+  .slot .remove::before { content: none; }
+  .slot .remove svg { width: 11px; height: 11px; stroke-width: 2.6; }
+  .slot.add-tile button.add {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: var(--r-md);
+    background: var(--card);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1.5px var(--edge);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--navy);
+    font-family: var(--head);
+    font-size: 12.5px;
+    font-weight: 600;
+    transition: background var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .slot.add-tile button.add:hover { background: var(--gold-tint); }
+  .slot.add-tile button.add:active { transform: scale(0.97); }
+  .slot.add-tile .cam {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-gold);
+  }
+  .slot.add-tile .cam svg { width: 19px; height: 19px; stroke-width: 2; }
+  .slot.empty .ph {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--r-md);
+    box-shadow: inset 0 0 0 1.5px var(--edge-soft);
+    background: repeating-linear-gradient(
+      45deg,
+      #eef1f6 0px, #eef1f6 6px,
+      #f6f8fb 6px, #f6f8fb 12px
+    );
+  }
+  .slots-hint {
+    margin: 8px 0 0;
+    font-size: 14px;
+    color: var(--faint);
+  }
+  .photo-examples {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .photo-example {
+    position: relative;
+    flex: 1;
+    height: 76px;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #2c3e58;
+    box-shadow: none;
+  }
+  .photo-example img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-example span {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 5px 6px;
+    color: #fff;
+    background: var(--navy);
+    font-family: var(--head);
+    font-size: 10.5px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .photo-picker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 64px;
+    border: 2px dashed rgba(11,31,59,.2);
+    border-radius: 16px;
+    background: #fff;
+    color: var(--navy);
+    font-family: var(--head);
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .photo-picker span:first-child { color: #8a5a00; font-size: 20px; }
+  .slots {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .slot { width: auto; min-width: 0; }
+  .slot .thumb { width: 100%; height: auto; aspect-ratio: 1; }
+  .slot .role-label { font-size: 11px; }
+  @media (max-width:340px) {
+    .slots { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .slot .thumb { aspect-ratio: 1; }
+    .slot .role-label { font-size:12px; line-height:1.35; overflow-wrap:anywhere; }
+  }
+
+  /* ================= 5. gift banner ================= */
+  .gift {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--gold-tint);
+    border-radius: var(--r-md);
+    box-shadow: inset 0 0 0 1.5px rgba(255,186,0,0.4);
+  }
+  .gift .gi {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .gift .gi svg { width: 17px; height: 17px; stroke-width: 1.8; }
+  .gift .gt {
+    font-family: var(--head);
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.35;
+  }
+
+  /* ================= 6. primary cta ================= */
+  .cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    width: 100%;
+    height: 58px;
+    font-family: var(--head);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.005em;
+    color: var(--navy);
+    background: var(--gold);
+    border-radius: var(--r-pill);
+    box-shadow: var(--shadow-gold);
+    transition: background var(--dur) var(--ease), box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .cta svg { width: 17px; height: 17px; stroke-width: 2.2; }
+  .cta:not(:disabled):hover { background: var(--gold-hover); }
+  .cta:not(:disabled):active { transform: scale(0.985); }
+  .cta:disabled { background: #e9ecf2; color: var(--faint); box-shadow: none; cursor: not-allowed; }
+  .cta .spinner {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2.5px solid rgba(11,31,59,0.25);
+    border-top-color: var(--navy);
+    animation: spin 700ms linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .cta .spinner { animation: none; } }
+  .cta.sending { cursor: progress; }
+
+  /* ================= 7. examples ================= */
+  .examples {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .ex { display: flex; flex-direction: column; gap: 7px; }
+  .ex .ph {
+    aspect-ratio: 4 / 5;
+    border-radius: 12px;
+    overflow: hidden;
+    background: repeating-linear-gradient(
+      45deg,
+      #e8ecf3 0px, #e8ecf3 6px,
+      #f3f5fa 6px, #f3f5fa 12px
+    );
+    box-shadow: inset 0 0 0 1px var(--edge);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--faint);
+  }
+  .ex .ph svg { width: 28px; height: 28px; stroke-width: 1.6; }
+  .ex .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ex.disc .ph img { object-position: 60% center; }
+  .ex .cap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: var(--head);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    line-height: 1.35;
+    text-align: center;
+  }
+  .ex .cap .dot {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ex .cap .dot svg { width: 10px; height: 10px; stroke-width: 3; }
+  .ex.good .cap .dot { background: var(--green-tint); color: var(--green); }
+  .ex.bad .cap .dot { background: var(--red-tint); color: var(--red); }
+
+  /* save confirmation card */
+  .save-card {
+    display: none;
+    align-items: flex-start;
+    gap: 12px;
+    background: var(--navy);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-md);
+    padding: 18px;
+    color: #fff;
+  }
+  .save-card.show { display: flex; animation: rise 360ms var(--ease) both; }
+  @media (prefers-reduced-motion: reduce) { .save-card.show { animation: none; } }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .save-card .ring {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .save-card .ring svg { width: 17px; height: 17px; stroke-width: 2; }
+  .save-card .t {
+    font-family: var(--head);
+    font-size: 15.5px;
+    font-weight: 700;
+    margin: 0 0 3px;
+  }
+  .save-card .s {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: rgba(255,255,255,0.78);
+    margin: 0;
+  }
+
+  /* ================= side summary (desktop) ================= */
+  .side-card {
+    background: var(--card);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--edge-soft);
+    padding: 20px;
+  }
+  .side-card .tk {
+    font-family: var(--head);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold-ink);
+    margin: 0 0 14px;
+  }
+  .side-card ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .side-card li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 0;
+  }
+  .side-card li .n {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--sunken);
+    box-shadow: inset 0 0 0 1.5px var(--edge);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--head);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--faint);
+  }
+  .side-card li .n svg { width: 10px; height: 10px; stroke-width: 3; }
+  .side-card li.done .n { background: var(--gold); box-shadow: none; color: var(--navy); }
+  .side-card li.cur .n {
+    background: var(--gold);
+    box-shadow: 0 0 0 4px rgba(255,186,0,0.22);
+    color: var(--navy);
+  }
+  .side-card li .lt {
+    font-family: var(--head);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--navy);
+    padding-top: 2px;
+  }
+  .side-card li .ls {
+    font-size: 14px;
+    color: var(--faint);
+    margin-top: 2px;
+    line-height: 1.45;
+  }
+  .side-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    padding: 4px 6px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--faint);
+  }
+  .side-note svg { width: 16px; height: 16px; stroke-width: 1.8; color: var(--gold-ink); flex: 0 0 auto; }
+  .side-note strong { color: var(--muted); font-weight: 600; }
+
+  /* ================= 9. footer ================= */
+  .foot {
+    margin-top: 26px;
+    padding: 20px 20px 28px;
+    border-top: 1px solid var(--edge-soft);
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--faint);
+    text-align: center;
+  }
+  .foot strong { font-family: var(--head); font-weight: 600; color: var(--muted); }
+
+  /* Fresh Air mobile (2026-07-13 design audit): drop the phone-frame gutters.
+     Comp staging used .stack padding + rounded .page; on a real phone that
+     wastes width and looks like a mock. Edge-to-edge under 760px; desktop card stays. */
+  @media (max-width: 759px) {
+    html, body { background: var(--page); }
+    .stack { padding: 0 0 calc(28px + env(safe-area-inset-bottom, 0px)); gap: 0; }
+    .page {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .state-label { display: none; }
+  }
+</style>
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=20260808d" />
+<link rel="stylesheet" href="/walk-v2/photos-unified.css" />
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body>
+<div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to upload photos. Photo upload is unavailable until it is turned on. Your saved answers remain on file. Turn it on and reload, or call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
+<div class="stack" id="stack">
+
+  <!-- ============ MAIN PAGE (mobile, interactive) ============ -->
+  <main class="page" id="mainPage" data-screen-label="Quote walk step 3 (interactive, mobile)">
+
+    <!-- 1. site header -->
+    <header class="site-head">
+      <a class="lockup" href="https://qa.backuppowerpro.com" aria-label="Backup Power Pro" style="text-decoration:none;">
+        <img src="/assets/images/logo-white-v2.png" alt="Backup Power Pro" style="height:28px;display:block;width:auto;" />
+      </a>
+    </header>
+
+    <!-- 2. progress band -->
+    <div class="prog qw-progress" data-qw-step="photos">
+      <div class="rail qw-progress-rail" role="img" aria-label="Step 4 of 4: Photos. Generator, Panel, and Distance complete.">
+        <div class="pstep done"><span class="dot"></span><span class="pl">Generator</span></div>
+        <div class="pstep done"><span class="dot"></span><span class="pl">Panel</span></div>
+        <div class="pstep done"><span class="dot"></span><span class="pl">Distance</span></div>
+        <div class="pstep on"><span class="dot"></span><span class="pl">Photos</span></div>
+      </div>
+    </div>
+
+    <button class="back-btn qw-back" type="button" data-back="" aria-label="Back">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5"></path></svg>
+    </button>
+
+    <div class="body-grid">
+      <div class="col-main">
+
+        <!-- 3. ask -->
+        <section class="ask rv" style="--rvd: 0ms;">
+          <h2 data-photo-heading="">Add photos or a short video.</h2>
+          <p class="helper" data-photo-helper="">Add at least one photo or short video before we prepare your range. The most useful views show every panel with the outer door open, the outdoor connection area, and the path back to the panel.</p>
+        </section>
+
+        <!-- One unlabeled multi-photo area. Customers can add photos in any order. -->
+        <section class="rv" style="--rvd: 90ms;">
+          <div class="photo-examples unified-examples" aria-label="Helpful photo examples">
+            <div class="photo-example">
+              <img src="/img/panel-example.jpg" alt="Electrical panel with its hinged outer door open" />
+              <span>Panels with outer doors open</span>
+            </div>
+            <div class="photo-example">
+              <img src="/assets/images/work-generator-plugged.jpg" alt="Wide outdoor view showing a generator, connection, and the surrounding route area" />
+              <span>Outdoor area and path back</span>
+            </div>
+          </div>
+          <div class="slots" data-slots=""></div>
+          <dialog class="photo-preview" data-photo-preview="" aria-label="Photo or video preview">
+            <button class="preview-close" type="button" data-preview-close="" aria-label="Close preview">×</button>
+            <img data-preview-image="" alt="Selected photo preview" />
+            <video data-preview-video="" controls playsinline hidden></video>
+            <button class="qw-secondary-action" type="button" data-preview-replace="">Replace</button>
+          </dialog>
+          <p class="slots-hint" data-hint="" aria-live="polite">Add at least one photo or short video to continue. You can add up to 10.</p>
+        </section>
+
+        <!-- Fresh Air (2026-07-13): gift lives on thank-you. No unlock-pressure banner here. -->
+
+        <!-- 6. primary actions: one saved item is required, away from home saves progress -->
+        <div class="photo-actions" style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+          <button class="cta" type="button" data-cta="" style="margin:0;" disabled>
+            <span data-cta-inner="">Add a photo or video to continue</span>
+            <svg data-cta-arrow="" viewBox="0 0 18 18"><path d="M3 9h11M10 4.5L14.5 9 10 13.5"></path></svg>
+          </button>
+          <button class="qw-secondary-action photo-later" type="button" data-photo-later="">I'm away from home</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 9. footer -->
+    <footer class="foot">
+      <div class="foot-identity"><strong>Licensed and insured</strong><span>SC Lic #2942 by Key Electric</span></div>
+      <span class="foot-area">Currently serving Greenville, Spartanburg,<br>and Pickens counties</span>
+      <span class="foot-process">Every project is reviewed and permitted by Key, completed with trusted local installation partners, and coordinated through final inspection.</span>
+    </footer>
+  </main>
+
+</div>
+
+<script src="/walk-v2/walk.js?v=20260816-save"></script>
+<script src="/walk-v2/photos-unified.js?v=20260816-required-media"></script>
+<script>
+
+(function () {
+  if (window.__BPP_UNIFIED_PHOTOS__) return;
+  var t = WALK.requireToken(); if (!t) return;
+  var fallbackMain = document.getElementById('mainPage');
+  var fallbackHint = fallbackMain.querySelector('[data-hint]');
+  var fallbackCta = fallbackMain.querySelector('[data-cta]');
+  var fallbackLater = fallbackMain.querySelector('[data-photo-later]');
+  var fallbackBack = fallbackMain.querySelector('[data-back]');
+  fallbackMain.querySelectorAll('.rv').forEach(function (section) {
+    section.classList.add('in');
+  });
+  fallbackHint.textContent = 'Photo upload is temporarily unavailable. Your saved answers are safe. Try reloading, or finish the photos later.';
+  fallbackHint.style.color = 'var(--red, #dc2626)';
+  fallbackCta.disabled = true;
+  fallbackLater.hidden = false;
+  fallbackLater.addEventListener('click', function () {
+    if (fallbackLater.disabled) return;
+    fallbackLater.disabled = true;
+    WALK.confirm(t, { photos_pending: true }).then(function () {
+      WALK.go('incomplete.html', t);
+    }).catch(function () {
+      fallbackLater.disabled = false;
+      fallbackHint.textContent = 'Your progress did not save. Try again.';
+    });
+  });
+  if (fallbackBack) fallbackBack.addEventListener('click', function () {
+    WALK.back('distance.html', t);
+  });
+  return;
+  WALK.ph('walk_v2_screen_view', { screen: 'photos' });
+
+  /* Self-correcting entry guard (best-effort): if a forwarded / hand-edited deep
+     link lands here with a PRIOR step unanswered (panel location or distance),
+     bounce to the first unanswered step so an incomplete walk can't finalize and
+     skip Key's "ready to price" ping. Only fires when a prior is missing, so the
+     normal forward flow and Back-nav stay untouched. A read failure is ignored:
+     the step works without it and must never strand a customer mid-walk. */
+  WALK.view(t).then(function (v) {
+    if (!v.confirmed_panel_room || !v.distance_band) WALK.routeFromState(t, v);
+  }).catch(function () {});
+
+  var main = document.getElementById('mainPage');
+  var slots = main.querySelector('[data-slots]');
+  var cta = main.querySelector('[data-cta]');
+  var ctaInner = main.querySelector('[data-cta-inner]');
+  var ctaArrow = main.querySelector('[data-cta-arrow]');
+  var hintEl = main.querySelector('[data-hint]');
+  var photoHeading = main.querySelector('[data-photo-heading]');
+  var photoHelper = main.querySelector('[data-photo-helper]');
+  var photoPicker = main.querySelector('[data-photo-picker]');
+  /* photos[i] = { idx, role, panelId, label, dataUrl, status } */
+  var photos = [];
+  var requirements = [];
+  var sending = false;
+
+  var file = document.createElement('input');
+  file.type = 'file';
+  file.accept = 'image/*';
+  file.multiple = true;
+  // No capture="environment": forcing the camera hid the Photo Library, which
+  // blocked the older customer who already took the panel photo (and is now
+  // filling this out on the couch, not standing at the panel) from picking it.
+  // Dropping it shows the native Take Photo / Photo Library sheet, so they can
+  // shoot fresh OR choose existing photos through the one approved picker.
+  file.style.display = 'none';
+  document.body.appendChild(file);
+
+  function requirementKey(role, panelId) {
+    return role + ':' + String(panelId || '');
+  }
+  function mediaKey(media) {
+    return requirementKey(media.role, media.panel_id);
+  }
+  function safePreviewHref(value) {
+    try {
+      var url = new URL(String(value || ''), window.location.origin);
+      return url.origin === window.location.origin
+        || url.origin === 'https://hfatblrcwytxvijjhpal.supabase.co'
+        ? url.href
+        : '';
+    } catch (_) { return ''; }
+  }
+  function escapeHtml(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (character) {
+      return {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[character];
+    });
+  }
+  function buildRequirements(v) {
+    var v2 = v && v.quote_walk_v2 || {};
+    var panels = Array.isArray(v2.panels) ? v2.panels : [];
+    if (!panels.length && v2.panel_location_status === 'resolved') {
+      panels = [{ id: null, stable_key: 'main-panel', label: 'Main panel' }];
+    }
+    var connectionReady = Array.isArray(v2.observed_connections) && v2.observed_connections.length > 0;
+    var panelReady = v2.panel_location_status === 'resolved';
+    requirements = [];
+    if (connectionReady) requirements.push({
+      idx: requirements.length + 1,
+      role: 'generator_connection',
+      panelId: null,
+      label: 'Generator connection'
+    });
+    if (panelReady) panels.forEach(function (panel, index) {
+      requirements.push({
+        idx: requirements.length + 1,
+        role: 'main_panel',
+        panelId: panel.id || null,
+        label: (panel.label || (index === 0 ? 'Main panel' : 'Panel ' + (index + 1))) + ' with hinged door open'
+      });
+    });
+    requirements.push({
+      idx: requirements.length + 1,
+      role: 'panel_context',
+      panelId: null,
+      label: 'Preferred outdoor connection location'
+    });
+    photoHeading.textContent = 'Show me your setup.';
+    photoHelper.textContent = panels.length > 1
+      ? 'Choose photos in this order: generator connection, each active panel with its hinged door open, then preferred outdoor connection location. Never remove panel screws or covers.'
+      : connectionReady && panelReady
+        ? 'Choose photos in this order: generator connection, main panel with its hinged door open, then preferred outdoor connection location. Never remove panel screws or covers.'
+        : 'Add the setup photos you can take now. Never remove panel screws or covers.';
+    var settled = Array.isArray(v2.media) ? v2.media : [];
+    settled.forEach(function (media) {
+      var requirement = requirements.find(function (item) { return requirementKey(item.role, item.panelId) === mediaKey(media); });
+      if (requirement) {
+        photos.push({
+          idx: requirement.idx,
+          role: requirement.role,
+          panelId: requirement.panelId,
+          label: requirement.label,
+          dataUrl: safePreviewHref(media.preview_href),
+          mediaId: media.id,
+          status: 'done'
+        });
+      }
+    });
+  }
+  function nextRequirement() {
+    return requirements.find(function (requirement) {
+      return !photos.some(function (photo) {
+        return requirementKey(photo.role, photo.panelId) === requirementKey(requirement.role, requirement.panelId)
+          && photo.status !== 'removed';
+      });
+    }) || null;
+  }
+  function render() {
+    var html = '';
+    photos.filter(function (photo) { return photo.status !== 'removed'; }).forEach(function (p) {
+      var requirement = requirements.find(function (item) {
+        return requirementKey(item.role, item.panelId) === requirementKey(p.role, p.panelId);
+      });
+      if (requirement) {
+        var background = p.dataUrl
+          ? ' style="background-image:url(' + p.dataUrl + ');background-size:cover;background-position:center;"'
+          : '';
+        html += '<div class="slot ' + escapeHtml(p.status) + '" data-photo="' + p.idx + '" data-upload-state="' + escapeHtml(p.status) + '">' +
+          '<div class="thumb"' + background + '>' +
+          (p.status === 'uploading'
+            ? '<span class="tag" role="status">Uploading photo...</span>'
+            : p.status === 'removing'
+              ? '<span class="tag">Removing</span>'
+              : (p.status === 'failed' ? '<span class="tag">Upload failed</span>' : (!p.dataUrl ? '<span class="tag">Photo received</span>' : ''))) +
+          '</div>' +
+          (p.status === 'failed'
+            ? '<div class="slot-actions"><button type="button" data-retry="' + p.idx + '">Retry</button><button type="button" data-remove="' + p.idx + '">Remove</button></div>'
+            : p.mediaId
+            ? '<button class="remove" type="button" data-remove="' + p.idx + '" aria-label="Remove ' + escapeHtml(requirement.label) + ' photo"><svg viewBox="0 0 12 12"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"></path></svg></button>'
+            : '') +
+          '<span class="role-label">' + escapeHtml(requirement.label) + '</span></div>';
+      }
+    });
+    slots.innerHTML = html;
+    var failedCount = photos.filter(function (p) { return p.status === 'failed'; }).length;
+    var uploadingCount = photos.filter(function (p) { return p.status === 'uploading'; }).length;
+    var missingCount = requirements.filter(function (requirement) {
+      return !photos.some(function (photo) {
+        return requirementKey(photo.role, photo.panelId) === requirementKey(requirement.role, requirement.panelId)
+          && photo.status === 'done';
+      });
+    }).length;
+    // Block finalize on a FAILED upload too, not just an in-flight one. Otherwise
+    // the customer advances to thank-you with a photo the server never received,
+    // and Key gets primed to price off fewer photos than the customer thinks.
+    cta.disabled = sending || missingCount > 0 || uploadingCount > 0 || failedCount > 0;
+    if (ctaInner) {
+      if (missingCount > 0) ctaInner.textContent = 'Add all required photos';
+      else if (uploadingCount > 0) ctaInner.textContent = 'Sending photo...';
+      else if (failedCount > 0) ctaInner.textContent = 'Fix photos to continue';
+      else ctaInner.textContent = 'See my project range';
+    }
+    if (hintEl) {
+      if (failedCount > 0) {
+        hintEl.textContent = failedCount === 1
+          ? "1 photo didn't upload. Retry or remove it to continue."
+          : failedCount + " photos didn't upload. Retry or remove them to continue.";
+        hintEl.style.color = 'var(--red, #dc2626)';
+      } else if (uploadingCount > 0) {
+        // Explain the disabled CTA during an in-flight upload (don't leave it
+        // reading "Tap to see your estimate" while greyed out on a slow connection).
+        hintEl.textContent = 'Sending your photo. On a slow connection this can take a moment...';
+        hintEl.style.color = '';
+      } else if (missingCount > 0) {
+        var next = nextRequirement();
+        hintEl.textContent = 'Next required photo: ' + (next ? next.label : 'setup photo') + '.';
+        hintEl.style.color = '';
+      } else {
+        hintEl.textContent = 'All ' + requirements.length + ' required photos received. Tap to see your project range.';
+        hintEl.style.color = '';
+      }
+    }
+  }
+
+  photoPicker.addEventListener('click', function () {
+    if (!sending) file.click();
+  });
+
+  slots.addEventListener('click', function (e) {
+    if (sending) return;
+    var retry = e.target.closest('[data-retry]');
+    if (retry) {
+      var retryIdx = parseInt(retry.getAttribute('data-retry'), 10);
+      var retryEntry = photos.find(function (p) { return p.idx === retryIdx; });
+      var retryRequirement = requirements.find(function (item) { return item.idx === retryIdx; });
+      if (!retryEntry || !retryRequirement || retryEntry.status !== 'failed') return;
+      retryEntry.status = 'uploading';
+      render();
+      sendEntry(retryEntry, retryRequirement);
+      return;
+    }
+    var rem = e.target.closest('[data-remove]');
+    if (rem) {
+      var idx = parseInt(rem.getAttribute('data-remove'), 10);
+      var existing = photos.find(function (p) { return p.idx === idx; });
+      if (!existing) return;
+      if (!existing.mediaId) {
+        photos = photos.filter(function (p) { return p.idx !== idx; });
+        render();
+        return;
+      }
+      existing.status = 'removing';
+      render();
+      WALK.stateAction(t, 'supersede_media', { media_id: existing.mediaId }).then(function () {
+        photos = photos.filter(function (p) { return p !== existing; });
+        render();
+      }).catch(function () {
+        existing.status = 'done';
+        render();
+        photoNote('That photo could not be removed. It is still saved. Try again.');
+      });
+    }
+  });
+
+  /* a non-blocking note in the existing hint line (cleared on the next render) */
+  function photoNote(msg) { if (hintEl) { hintEl.textContent = msg; hintEl.style.color = 'var(--red, #dc2626)'; } }
+
+  function sendEntry(entry, requirement) {
+    WALK.photo(t, entry.dataUrl, requirement.idx, {
+      role: requirement.role,
+      panel_id: requirement.panelId
+    }).then(function (value) {
+      entry.mediaId = value && value.quote_walk_v2 && value.quote_walk_v2.media_receipt_id || null;
+      entry.status = 'done';
+      WALK.ph('walk_v2_photo_uploaded', { idx: requirement.idx, role: requirement.role });
+      render();
+    }).catch(function () {
+      entry.status = 'failed';
+      WALK.ph('walk_v2_photo_upload_failed', { idx: requirement.idx, role: requirement.role });
+      render();
+    });
+  }
+
+  function uploadSelectedPhoto(f, requirement) {
+    if (!f || !requirement) return;
+    if (f.type && f.type.indexOf('image/') !== 0) { photoNote("That file isn't a photo. Please choose an image."); return; }
+    if (f.size > 40 * 1024 * 1024) { photoNote('That photo is unusually large. Try a smaller photo instead.'); return; }
+    WALK.resizeImage(f, 1600).then(function (dataUrl) {
+      var entry = {
+        idx: requirement.idx,
+        role: requirement.role,
+        panelId: requirement.panelId,
+        label: requirement.label,
+        dataUrl: dataUrl,
+        status: 'uploading'
+      };
+      photos.push(entry);
+      photos.sort(function (a, b) { return a.idx - b.idx; });
+      render();
+      sendEntry(entry, requirement);
+    }).catch(function () { photoNote("That photo wouldn't open. Try another, or take a fresh one."); WALK.ph('walk_v2_photo_unreadable', {}); });
+  }
+
+  file.addEventListener('change', function () {
+    var selected = Array.from(file.files || []);
+    file.value = '';
+    if (!selected.length) return;
+    var available = requirements.filter(function (requirement) {
+      return !photos.some(function (photo) {
+        return requirementKey(photo.role, photo.panelId) === requirementKey(requirement.role, requirement.panelId)
+          && photo.status !== 'removed';
+      });
+    });
+    selected.slice(0, available.length).forEach(function (selectedFile, index) {
+      uploadSelectedPhoto(selectedFile, available[index]);
+    });
+  });
+
+  cta.addEventListener('click', function () {
+    if (cta.disabled || sending) return;
+    // Defense-in-depth: re-read photo states at click time so a photo that
+    // flipped to failed/uploading between enable and click can never advance.
+    if (requirements.some(function (requirement) {
+      return !photos.some(function (photo) {
+        return requirementKey(photo.role, photo.panelId) === requirementKey(requirement.role, requirement.panelId)
+          && photo.status === 'done';
+      });
+    })) {
+      render();
+      return;
+    }
+    sending = true;
+    cta.classList.add('sending');
+    ctaArrow.style.display = 'none';
+    ctaInner.textContent = 'Your project range';
+    WALK.ph('walk_v2_photos_finalized', { count: photos.length, required_count: requirements.length });
+    WALK.view(t).then(function (latest) {
+      var state = latest.quote_walk_v2 || {};
+      if (Array.isArray(state.blockers) && state.blockers.length) WALK.go('incomplete.html', t);
+      else WALK.go('range.html', t);
+    }).catch(function () {
+      WALK.go('incomplete.html', t);
+    });
+  });
+
+  var backBtn = main.querySelector('[data-back]');
+  if (backBtn) backBtn.addEventListener('click', function () { WALK.ph('walk_v2_back_tap', { from: 'photos' }); WALK.back('distance.html', t); });
+
+  WALK.view(t).then(function (v) {
+    var v2 = v.quote_walk_v2 || {};
+    var connectionReady = Array.isArray(v2.observed_connections) && v2.observed_connections.length > 0;
+    var connectionPending = v.connection_status === 'pending_access';
+    var panelAnswerPresent = Boolean(v.confirmed_panel_room);
+    var distanceAnswerPresent = Boolean(v2.distance_band);
+    if ((!connectionReady && !connectionPending) || !panelAnswerPresent || !distanceAnswerPresent) {
+      WALK.routeFromState(t, v);
+      return;
+    }
+    buildRequirements(v);
+    render();
+  }).catch(function () {
+    hintEl.textContent = 'Your saved photo requirements could not be loaded. Try again.';
+    hintEl.style.color = 'var(--red, #dc2626)';
+    cta.disabled = true;
+  });
+
+  /* scroll reveal (comp behavior, unchanged) */
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var rvEls = main.querySelectorAll('.rv');
+  if (reduce || !('IntersectionObserver' in window)) {
+    rvEls.forEach(function (el) { el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.12 });
+    rvEls.forEach(function (el) { io.observe(el); });
+  }
+
+})();
+</script>
+</body>
+</html>

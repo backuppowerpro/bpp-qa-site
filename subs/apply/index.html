@@ -1,0 +1,1406 @@
+<!doctype html>
+<html lang="en">
+<head>
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Contractor setup</title>
+<meta name="robots" content="noindex" />
+<!-- Only the origin is ever sent as Referer cross-origin, so the ?token= in the
+     URL never reaches Google Fonts / PostHog via a Referer header. -->
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
+<!-- PostHog: anonymous, autocapture OFF, no session recording, and the query
+     string (which carries the sub's ?token= secret) is stripped from every
+     event so the access token never leaves the device. Mirrors sub/index.html. -->
+<script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_qoA51lePZqXYtPJYkrIpdA4U8iMDJ79L1kje7r4pD4O',{api_host:'https://us.i.posthog.com',person_profiles:'never',autocapture:false,disable_session_recording:true,capture_pageview:true,capture_pageleave:false,property_denylist:['$current_url','$initial_current_url','$referrer','$initial_referrer'],sanitize_properties:function(p){for(var k in p){if(typeof p[k]==='string'&&p[k].indexOf('token=')>-1){p[k]=p[k].split('?')[0];}}return p;}})</script>
+<style>
+  /* ============================================================
+     SUB ONBOARDING , tokenized setup link (de-branded, sub-facing)
+     For an already-vetted contractor, before we send jobs. Neutral
+     sub-facing treatment, no company wordmark or logo mark; the sub
+     works with Key personally. Navy #0b1f3b ink, ONE flat
+     gold #ffba00 primary per screen, Outfit display, Inter body,
+     off-white cards, soft navy shadows, small radius.
+     6 steps, one task per screen. Back on every step after 1. The
+     only gold control per screen is the forward/submit. Uploads,
+     add/remove, and Back are lower-weight verb-labelled controls.
+     Language is plain. This installs an INLET so a homeowner can plug
+     in a portable generator; never "generator install". No dashes.
+     ============================================================ */
+  :root {
+    --navy: #0b1f3b;
+    --navy-2: #12294a;
+    --gold: #ffba00;
+
+    --page: #eef1f6;
+    --card: #ffffff;
+    --field: #ffffff;
+    --line: #d9dfe9;
+    --line-soft: #e8ecf2;
+    --ink: #0b1f3b;
+    --muted: #4f5b6e;
+    --faint: #6d7889;
+
+    --green: #067a4e;
+    --green-bg: #e9f7f0;
+    --green-line: #b6e2ce;
+    --red: #c0271f;
+    --red-bg: #fdeeee;
+    --red-line: #f2c4c1;
+
+    --radius: 12px;
+    --radius-sm: 9px;
+    --shadow: 0 1px 2px rgba(11,31,59,.05), 0 8px 24px rgba(11,31,59,.07);
+    --display: 'Outfit', system-ui, sans-serif;
+    --body: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  * , *::before, *::after { box-sizing:border-box; }
+  [hidden] { display:none !important; }
+  html, body { margin:0; padding:0; background:var(--page); font-family:var(--body); color:var(--ink); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+  body { overflow-x:hidden; }
+
+  .app { max-width:560px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; }
+
+  /* top progress */
+  .topbar { position:sticky; top:0; z-index:20; background:var(--navy); color:#fff; padding:14px 20px 12px; padding-top:calc(14px + env(safe-area-inset-top)); }
+  .topbar .row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .brand { display:flex; align-items:center; gap:9px; font-family:var(--display); font-weight:700; font-size:15px; letter-spacing:-0.01em; }
+  .stepn { font-size:12.5px; font-weight:600; color:#aebbd0; letter-spacing:0.02em; }
+  .track { display:flex; gap:5px; margin-top:11px; }
+  .track .seg { flex:1 1 0; height:4px; border-radius:3px; background:rgba(255,255,255,.16); }
+  .track .seg.on { background:var(--gold); }
+  .track .seg.done { background:#7f93b3; }
+
+  /* step body , bottom-padding clears the fixed footer (~56px primary + gradient
+     + safe-area) so the last field is never hidden behind the sticky primary. */
+  .screen { flex:1 1 auto; padding:26px 20px calc(150px + env(safe-area-inset-bottom)); }
+  .screen[hidden] { display:none; }
+  .eyebrow { font-family:var(--body); font-size:12px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--faint); margin:0 0 10px; }
+  h1.title { font-family:var(--display); font-weight:700; font-size:26px; line-height:1.15; letter-spacing:-0.02em; margin:0 0 10px; color:var(--navy); text-wrap:balance; }
+  p.lede { font-size:16px; line-height:1.55; color:var(--muted); margin:0 0 22px; max-width:48ch; }
+
+  /* need list (step 1) */
+  .needlist { list-style:none; margin:0 0 22px; padding:0; background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
+  .needlist li { display:flex; align-items:flex-start; gap:13px; padding:14px 16px; border-top:1px solid var(--line-soft); font-size:16px; line-height:1.4; color:var(--ink); font-weight:500; }
+  .needlist li:first-child { border-top:0; }
+  .needlist li .bullet { flex:0 0 auto; width:26px; height:26px; border-radius:50%; background:#eef1f6; color:var(--navy); display:flex; align-items:center; justify-content:center; font-family:var(--display); font-weight:700; font-size:13px; }
+  .needlist li small { display:block; font-size:14px; font-weight:400; color:var(--faint); margin-top:2px; }
+
+  .reassure { display:flex; gap:10px; align-items:flex-start; font-size:15px; line-height:1.5; color:var(--muted); background:#eef3fb; border:1px solid #dce6f6; border-radius:var(--radius-sm); padding:12px 14px; margin:0 0 8px; }
+  /* orientation block: tells a cold or forwarded recipient who sent this + what the work is, so the de-branded link vouches for itself. Reuses the welcome-back info-box visual language. */
+  .orient { background:#f4f7fc; border:1px solid #dbe6f7; border-radius:14px; padding:16px 16px; margin:0 0 20px; }
+  .orient .ot { font-family:var(--display); font-weight:700; font-size:16px; color:var(--navy); margin:0 0 5px; letter-spacing:-0.01em; }
+  .orient .os { font-size:14px; color:var(--muted); line-height:1.5; margin:0; font-weight:500; }
+  .orient .os a { color:var(--navy); font-weight:700; white-space:nowrap; text-decoration:none; }
+  .reassure svg { flex:0 0 auto; width:17px; height:17px; margin-top:1px; fill:none; stroke:#2647a8; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* document blocks (step 2) */
+  .doc { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; margin-bottom:14px; }
+  .doc .req { display:flex; align-items:baseline; gap:8px; margin-bottom:12px; }
+  .doc .req .name { font-family:var(--display); font-weight:600; font-size:17px; color:var(--navy); }
+  .doc .req .must { font-size:12px; font-weight:600; color:var(--faint); }
+
+  .drop { display:flex; align-items:center; gap:12px; width:100%; min-height:56px; padding:12px 14px; border:1.5px dashed var(--line); border-radius:var(--radius-sm); background:#fbfcfe; cursor:pointer; text-align:left; font-family:var(--body); color:var(--navy); }
+  .drop .ic { flex:0 0 auto; width:34px; height:34px; border-radius:9px; background:#eef1f6; display:flex; align-items:center; justify-content:center; color:var(--navy); }
+  .drop .ic svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+  .drop .lab { min-width:0; }
+  .drop .lab .t { display:block; font-size:15px; font-weight:600; }
+  .drop .lab .h { display:block; font-size:13px; color:var(--faint); font-weight:400; margin-top:1px; }
+
+  /* filled state */
+  .filed { display:flex; align-items:center; gap:12px; width:100%; min-height:56px; padding:12px 14px; border:1.5px solid var(--green-line); border-radius:var(--radius-sm); background:var(--green-bg); }
+  .filed .ic { flex:0 0 auto; width:34px; height:34px; border-radius:9px; background:#fff; border:1px solid var(--green-line); display:flex; align-items:center; justify-content:center; color:var(--green); }
+  .filed .ic svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .filed .lab { min-width:0; flex:1 1 auto; }
+  .filed .lab .t { display:block; font-size:15px; font-weight:600; color:var(--navy); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .filed .lab .h { display:block; font-size:13px; color:var(--green); font-weight:600; margin-top:1px; }
+  .filed .acts { display:flex; gap:6px; flex:0 0 auto; }
+
+  /* upload error state */
+  .drop.err { border-color:var(--red-line); border-style:solid; background:var(--red-bg); }
+  .uperr { display:flex; align-items:flex-start; gap:7px; font-size:13px; font-weight:600; color:var(--red); margin:8px 2px 0; }
+  .uperr svg { flex:0 0 auto; width:15px; height:15px; margin-top:1px; fill:none; stroke:currentColor; stroke-width:2.1; stroke-linecap:round; stroke-linejoin:round; }
+  /* uploading (in-flight) state on the drop */
+  .drop.busy { opacity:.75; cursor:progress; }
+
+  /* expiration + field rows */
+  .field { margin-top:12px; }
+  .field label { display:block; font-size:14px; font-weight:700; color:var(--navy); margin-bottom:6px; }
+  .field label .opt { color:var(--faint); font-weight:500; }
+  /* .help is a quiet caption anywhere; the .field variant just adds row margin. (bare selector so section-level helper text renders small + faint, not as a full-size paragraph.) */
+  .help { font-size:13px; color:var(--faint); line-height:1.4; }
+  .field .help { margin:5px 0 0; }
+  input[type=text], input[type=tel], input[type=email], input[type=date], input[type=url] {
+    width:100%; min-height:50px; font-family:var(--body); font-size:16px; font-weight:500; color:var(--navy);
+    background:var(--field); border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:12px 14px; outline:none;
+  }
+  input::placeholder { color:#a4adbc; }
+  input:focus { border-color:var(--navy); box-shadow:0 0 0 3px rgba(11,31,59,.10); }
+  .field.invalid input { border-color:var(--red); box-shadow:0 0 0 3px rgba(192,39,31,.10); }
+  .field .errmsg { display:none; font-size:13px; font-weight:600; color:var(--red); margin:6px 0 0; }
+  .field.invalid .errmsg { display:block; }
+
+  /* stepper (installs per month) */
+  .stepper { display:flex; align-items:center; gap:0; border:1.5px solid var(--line); border-radius:var(--radius-sm); overflow:hidden; width:max-content; background:#fff; }
+  .stepper button { width:52px; height:52px; border:0; background:#fff; font-size:24px; font-weight:600; color:var(--navy); cursor:pointer; font-family:var(--body); line-height:1; }
+  .stepper button:disabled { color:#c3cbd6; cursor:not-allowed; }
+  .stepper .val { min-width:64px; text-align:center; font-family:var(--display); font-weight:700; font-size:22px; color:var(--navy); border-left:1.5px solid var(--line); border-right:1.5px solid var(--line); align-self:stretch; display:flex; align-items:center; justify-content:center; }
+
+  /* people blocks (people step) */
+  .person { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; margin-bottom:14px; }
+  .person .phead { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px; }
+  .person .phead .who { font-family:var(--display); font-weight:600; font-size:16px; color:var(--navy); }
+  .person .phead .badge { font-size:11px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#8a6a00; background:#fff5d6; border:1px solid #f2df9e; border-radius:100px; padding:3px 9px; }
+
+  /* lower-weight controls */
+  .ghost { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:48px; padding:0 16px; background:#fff; border:1.5px solid var(--line); border-radius:var(--radius-sm); font-family:var(--body); font-size:15px; font-weight:700; color:var(--navy); cursor:pointer; text-decoration:none; }
+  .ghost svg { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .ghost.small { min-height:44px; padding:0 12px; font-size:14px; }
+  .ghost.danger { color:var(--red); border-color:var(--red-line); }
+  .addbtn { width:100%; border-style:dashed; margin-bottom:8px; }
+
+  /* agreement panel (review step) */
+  .agreement { height:280px; overflow-y:auto; -webkit-overflow-scrolling:touch; background:#fbfcfe; border:1px solid var(--line); border-radius:var(--radius); padding:16px 16px; margin-bottom:8px; }
+  .agreement h3 { font-family:var(--display); font-weight:700; font-size:16px; color:var(--navy); margin:0 0 4px; }
+  .agreement h4 { font-family:var(--display); font-weight:600; font-size:14px; color:var(--navy); margin:16px 0 5px; }
+  .agreement p { font-size:14px; line-height:1.6; color:var(--muted); margin:0 0 10px; }
+  .agreement .signed-note { display:flex; align-items:flex-start; gap:8px; font-size:13px; font-weight:600; color:var(--green); background:var(--green-bg); border:1px solid var(--green-line); border-radius:var(--radius-sm); padding:10px 12px; margin:0 0 12px; }
+  .agreement .signed-note svg { flex:0 0 auto; width:16px; height:16px; margin-top:1px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .version { font-size:12.5px; color:var(--faint); margin:0 0 20px; }
+
+  /* sticky footer nav */
+  .navbar { position:fixed; left:0; right:0; bottom:0; z-index:30; background:linear-gradient(to top, var(--page) 78%, rgba(238,241,246,0)); padding:14px 20px calc(16px + env(safe-area-inset-bottom)); }
+  .navbar .inner { max-width:560px; margin:0 auto; display:flex; align-items:center; gap:12px; }
+  .primary { flex:1 1 auto; display:inline-flex; align-items:center; justify-content:center; gap:10px; min-height:56px; padding:0 24px; background:var(--gold); color:var(--navy); border:0; border-radius:100px; font-family:var(--display); font-weight:700; font-size:18px; letter-spacing:-0.01em; cursor:pointer; box-shadow:0 10px 26px rgba(255,186,0,.30); text-decoration:none; }
+  .primary svg { width:19px; height:19px; fill:none; stroke:var(--navy); stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
+  .primary:disabled { background:#e7d9ad; color:#9a8a5f; cursor:not-allowed; box-shadow:none; }
+  .backbtn { flex:0 0 auto; display:inline-flex; align-items:center; gap:7px; min-height:56px; padding:0 16px; background:transparent; border:0; font-family:var(--body); font-size:15px; font-weight:700; color:var(--navy); cursor:pointer; }
+  .backbtn svg { width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:2.3; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* honeypot */
+  .hp { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; opacity:0; }
+
+  /* success + invalid + loading screens */
+  .fullscreen { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 26px; }
+  .fullscreen[hidden] { display:none; }
+  /* .primary carries flex:1 1 auto so it fills the step FOOTER (a row). Inside
+     .fullscreen, which is a flex COLUMN, that same grow made the button stretch
+     to the full remaining height (measured 527px on a 390px phone) and render
+     as a giant yellow slab. Stop the grow in column context only; the footer
+     button is untouched. */
+  .fullscreen .primary { flex:0 0 auto; width:100%; max-width:22rem; }
+  /* The .phone wrapper sets navy, but the tel:/sms: anchor inside it fell back
+     to the browser default link blue with an underline. */
+  .fullscreen .phone a { color:inherit; text-decoration:none; }
+  .fullscreen .badge { width:74px; height:74px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:22px; }
+  .fullscreen .badge.ok { background:var(--green-bg); border:1px solid var(--green-line); }
+  .fullscreen .badge.ok svg { width:38px; height:38px; fill:none; stroke:var(--green); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+  .fullscreen .badge.bad { background:#fff; border:1px solid var(--red-line); }
+  .fullscreen .badge.bad svg { width:36px; height:36px; fill:none; stroke:var(--red); stroke-width:2.3; stroke-linecap:round; stroke-linejoin:round; }
+  .fullscreen h1 { font-family:var(--display); font-weight:700; font-size:27px; line-height:1.15; letter-spacing:-0.02em; color:var(--navy); margin:0 0 12px; max-width:20ch; }
+  .fullscreen p { font-size:16.5px; line-height:1.6; color:var(--muted); margin:0; max-width:40ch; }
+  .fullscreen .phone { font-family:var(--display); font-weight:700; font-size:22px; color:var(--navy); margin-top:18px; }
+
+  /* loading spinner */
+  .spin { width:34px; height:34px; border-radius:50%; border:3px solid #d9dfe9; border-top-color:var(--navy); animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  @media (min-width:600px) {
+    h1.title { font-size:30px; }
+  }
+  /* county toggle chips (areas step) */
+  .counties { display:flex; flex-direction:column; gap:12px; margin:6px 0 4px; }
+  .county-chip { display:flex; align-items:center; gap:14px; width:100%; min-height:60px; padding:14px 18px; background:#f4f6fa; border:2px solid var(--navy); border-radius:14px; cursor:pointer; font-family:var(--body); text-align:left; -webkit-tap-highlight-color:transparent; }
+  .county-chip .box { flex:0 0 auto; width:28px; height:28px; border-radius:8px; border:2px solid #b9c3d3; background:#fff; display:flex; align-items:center; justify-content:center; }
+  .county-chip .box svg { width:18px; height:18px; fill:none; stroke:#fff; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; opacity:0; }
+  .county-chip .nm { font-size:19px; font-weight:700; color:var(--navy); letter-spacing:-0.01em; }
+  .county-chip.on { background:var(--navy); border-color:var(--navy); }
+  .county-chip.on .box { background:#fff; border-color:#fff; }
+  .county-chip.on .box svg { opacity:1; stroke:var(--navy); }
+  .county-chip.on .nm { color:#fff; }
+  .areas-note { font-size:14px; color:var(--faint); margin:14px 2px 0; line-height:1.45; }
+
+  /* welcome-back resume banner (informational, not a primary) */
+  .welcome-back { display:flex; gap:12px; align-items:flex-start; background:#eef3fb; border:1px solid #d6e3f6; border-radius:14px; padding:15px 16px; margin:0 0 20px; }
+  .welcome-back .wb-ic { flex:0 0 auto; width:38px; height:38px; border-radius:10px; background:#fff; border:1px solid #d6e3f6; display:flex; align-items:center; justify-content:center; color:#2647a8; }
+  .welcome-back .wb-ic svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .welcome-back .wb-tx .wb-t { font-family:var(--display); font-weight:700; font-size:16px; color:var(--navy); letter-spacing:-0.01em; }
+  .welcome-back .wb-tx .wb-s { font-size:14px; color:var(--muted); font-weight:500; margin-top:2px; line-height:1.4; }
+
+  /* quiet autosave reassurance, near the form on every step */
+  .autosave { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; color:var(--faint); margin:22px 2px 0; }
+  .autosave svg { flex:0 0 auto; width:15px; height:15px; fill:none; stroke:var(--green); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+  .autosave.saving { color:var(--muted); }
+
+  /* inline save error toast (a failed save-as-you-go step) */
+  .save-toast { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(88px + env(safe-area-inset-bottom)); z-index:40; background:var(--red); color:#fff; font-size:14px; font-weight:600; padding:11px 18px; border-radius:100px; box-shadow:0 8px 24px rgba(192,39,31,.30); max-width:calc(100% - 40px); text-align:center; }
+
+  /* interim join path (docs live, binding IC text not yet attorney-final) */
+  .join-path { list-style:none; margin:0 0 18px; padding:0; background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
+  .join-path li { display:flex; gap:12px; align-items:flex-start; padding:14px 16px; border-top:1px solid var(--line-soft); font-size:15px; line-height:1.45; color:var(--ink); font-weight:500; }
+  .join-path li:first-child { border-top:0; }
+  .join-path .n { flex:0 0 auto; width:28px; height:28px; border-radius:50%; background:var(--navy); color:#fff; display:flex; align-items:center; justify-content:center; font-family:var(--display); font-weight:700; font-size:13px; }
+  .join-path small { display:block; font-size:13px; font-weight:400; color:var(--faint); margin-top:3px; }
+  .fullscreen .checklist { list-style:none; margin:18px 0 0; padding:0; text-align:left; max-width:22rem; width:100%; }
+  .fullscreen .checklist li { display:flex; gap:10px; align-items:flex-start; font-size:15px; line-height:1.45; color:var(--muted); margin:0 0 10px; font-weight:500; }
+  .fullscreen .checklist .tick { flex:0 0 auto; width:22px; height:22px; border-radius:50%; background:var(--green-bg); border:1px solid var(--green-line); color:var(--green); display:flex; align-items:center; justify-content:center; margin-top:1px; }
+  .fullscreen .checklist .tick svg { width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
+  .fullscreen .primary { margin-top:22px; width:100%; max-width:22rem; text-decoration:none; }
+</style>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body>
+
+  <!-- LOADING (initial token read) -->
+  <div class="fullscreen" id="loadingScreen">
+    <span class="spin" role="status" aria-label="Loading"></span>
+    <p style="margin-top:20px;color:var(--faint);font-size:15px;">Getting your setup ready...</p>
+  </div>
+
+  <!-- MAIN FLOW -->
+  <div class="app" id="app" hidden>
+    <div class="topbar">
+      <div class="row">
+        <span class="brand">Contractor setup</span>
+        <span class="stepn" id="stepn">Step 1 of 6</span>
+      </div>
+      <div class="track" id="track">
+        <span class="seg on"></span><span class="seg"></span><span class="seg"></span><span class="seg"></span><span class="seg"></span><span class="seg"></span>
+      </div>
+    </div>
+
+    <!-- STEP 1 . WELCOME -->
+    <section class="screen" data-step="1" data-screen-label="Step 1 Welcome">
+      <!-- resume banner, shown only when the sub returns with saved progress -->
+      <div class="welcome-back" id="welcomeBack" hidden>
+        <span class="wb-ic"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 4v4h4"/></svg></span>
+        <span class="wb-tx"><span class="wb-t">Welcome back. Pick up right where you left off.</span><span class="wb-s">Everything you entered is saved.</span></span>
+      </div>
+      <div class="orient">
+        <p class="ot">Key sent you this.</p>
+        <p class="os">He sends contractors like you paid work installing portable-generator inlets for homeowners across Greenville, Spartanburg, and Pickens counties, and ships you the parts to do it. Questions first? Call or text Key: <a href="tel:+18648637800">(864) 863-7800</a>.</p>
+      </div>
+      <p class="eyebrow">Contractor setup</p>
+      <h1 class="title">Welcome. Let's get you set up.</h1>
+      <p class="lede">You are already approved, so this is just setup, about ten minutes. Every job Key sends comes with a flat payout you see and lock in before you accept. Do the work as agreed and that is exactly what you are paid, no cutting it down after. When you are done, offers start coming to your phone by text.</p>
+
+      <p style="font-family:var(--display); font-weight:600; font-size:16px; color:var(--navy); margin:0 0 12px;">What you will need</p>
+      <ul class="needlist">
+        <li><span class="bullet">1</span><span>Your contractor license</span></li>
+        <li><span class="bullet">2</span><span>Your general liability insurance certificate<small>Also called a COI</small></span></li>
+        <li><span class="bullet">3</span><span>Workers comp coverage, or a signed sole-proprietor exemption</span></li>
+        <li><span class="bullet">4</span><span>A W-9</span></li>
+        <li><span class="bullet">5</span><span>A clear photo of your work truck or van</span></li>
+        <li id="needSignItem"><span class="bullet">6</span><span id="needSignTx">A few minutes to finish with Key this week<small>Upload docs here; he texts the contractor agreement when it is ready to sign</small></span></li>
+      </ul>
+
+      <div class="reassure">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        <span>No account, no password. This link is yours, stop and come back to it anytime, your progress saves as you go. A clear photo or a PDF works for any document, and nothing here is public.</span>
+      </div>
+    </section>
+
+    <!-- STEP 2 . DOCUMENTS (blocks injected from required_doc_types) -->
+    <section class="screen" data-step="2" data-screen-label="Step 2 Documents" hidden>
+      <p class="eyebrow">Step 2</p>
+      <h1 class="title">Your documents</h1>
+      <p class="lede">Add each one in order. A PDF or a clear photo both work.</p>
+      <p class="help" style="margin:-8px 0 16px;">This is the paperwork part, your office can handle it if that is easier. Everything saves as you go.</p>
+      <div id="docList"><!-- doc blocks injected here --></div>
+      <p class="errmsg" id="docsErr" style="display:none; font-size:13px; font-weight:600; color:var(--red); margin:12px 2px 0;">Add every required document, including a photo of your work vehicle or van, to continue.</p>
+    </section>
+
+    <!-- STEP 3 . COMPANY -->
+    <section class="screen" data-step="3" data-screen-label="Step 3 Company" hidden>
+      <p class="eyebrow">Step 3</p>
+      <h1 class="title">Your company</h1>
+      <p class="lede">A few details so we can ship your parts and match your pace.</p>
+
+      <div class="field" id="f-company">
+        <label for="company">Company name</label>
+        <input id="company" type="text" autocomplete="organization" />
+        <p class="errmsg">Please add your company name.</p>
+      </div>
+
+      <div class="field">
+        <label for="ship">Mailing address for materials</label>
+        <input id="ship" type="text" autocomplete="street-address" />
+        <p class="help">We ship your inlet, interlock, and cord here.</p>
+      </div>
+
+      <div class="field">
+        <label>Installs per month you want</label>
+        <div class="stepper" role="group" aria-label="Installs per month">
+          <button type="button" id="mDown" aria-label="Fewer">&minus;</button>
+          <span class="val" id="mVal" aria-live="polite">4</span>
+          <button type="button" id="mUp" aria-label="More">+</button>
+        </div>
+        <p class="help">Not sure? Leave it at 4, you can change this anytime. We step by 2, up to 10.</p>
+      </div>
+
+      <div class="field" id="f-website">
+        <label for="websiteUrl">Website <span class="opt">(optional)</span></label>
+        <input id="websiteUrl" type="url" inputmode="url" autocomplete="url" placeholder="yourcompany.com" />
+        <p class="errmsg">Use a normal web address (http or https).</p>
+      </div>
+
+      <div class="field" id="f-facebook">
+        <label for="facebookUrl">Facebook <span class="opt">(optional)</span></label>
+        <input id="facebookUrl" type="url" inputmode="url" autocomplete="url" placeholder="facebook.com/yourpage" />
+        <p class="errmsg">Use a normal Facebook or web address (http or https).</p>
+      </div>
+
+      <div class="field">
+        <label for="vehicleNote">Work vehicle note <span class="opt">(optional)</span></label>
+        <input id="vehicleNote" type="text" maxlength="300" placeholder="White Ford van, company name on the side" />
+        <p class="help">The photo goes on step 2. This note is just for Key if you want to add a detail.</p>
+      </div>
+    </section>
+
+    <!-- STEP 4 . AREAS -->
+    <section class="screen" data-step="4" data-screen-label="Step 4 Areas" hidden>
+      <p class="eyebrow">Step 4</p>
+      <h1 class="title">Which areas do you service?</h1>
+      <p class="lede">We serve these three Upstate counties. Tap the ones you can drive to.</p>
+
+      <div class="counties" id="counties" role="group" aria-label="Counties you service">
+        <button type="button" class="county-chip" data-county="Greenville" aria-pressed="false">
+          <span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4 4 10-10"/></svg></span>
+          <span class="nm">Greenville</span>
+        </button>
+        <button type="button" class="county-chip" data-county="Spartanburg" aria-pressed="false">
+          <span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4 4 10-10"/></svg></span>
+          <span class="nm">Spartanburg</span>
+        </button>
+        <button type="button" class="county-chip" data-county="Pickens" aria-pressed="false">
+          <span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4 4 10-10"/></svg></span>
+          <span class="nm">Pickens</span>
+        </button>
+      </div>
+      <p class="areas-note">Picking a county covers the cities inside it too. Not sure? Pick where you can drive today, you can change it anytime.</p>
+      <p class="errmsg" id="areasErr" style="display:none; font-size:13px; font-weight:600; color:var(--red); margin:12px 2px 0;">Tap at least one county to continue.</p>
+    </section>
+
+    <!-- STEP 5 . PEOPLE -->
+    <section class="screen" data-step="5" data-screen-label="Step 5 People" hidden>
+      <p class="eyebrow">Step 5</p>
+      <h1 class="title">Who should we contact?</h1>
+      <p class="lede">The first person is your primary contact for job offers.</p>
+
+      <div id="people"><!-- person blocks injected here --></div>
+
+      <button type="button" class="ghost addbtn" id="addPerson">
+        <svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg>
+        Add another person
+      </button>
+    </section>
+
+    <!-- STEP 6 . REVIEW AND SIGN (or interim finish-with-Key when IC text is not attorney-final) -->
+    <section class="screen" data-step="6" data-screen-label="Step 6 Review and finish" hidden>
+      <p class="eyebrow">Step 6</p>
+      <h1 class="title" id="step6Title">Finish with Key this week</h1>
+      <p class="lede" id="step6Lede">Docs upload here. The contractor agreement is not ready for an online signature yet, so you finish with a short text to Key. No fake sign button.</p>
+
+      <!-- Binding path: only shown when sub-agreement reports signable=true -->
+      <div id="signPath" hidden>
+        <div class="agreement" tabindex="0" aria-label="Master contractor agreement, scrollable" id="agreementBody">
+          <div class="signed-note" id="signedNote" hidden>
+            <svg viewBox="0 0 24 24"><path d="M4 12.5l5 5 11-12"/></svg>
+            <span id="signedNoteTx">Already signed.</span>
+          </div>
+          <div id="agreementLiveBody"></div>
+        </div>
+        <p class="version" id="agreementVersion">Agreement version pending</p>
+        <div class="reassure" style="margin-top:14px;">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+          <span>Signing this does not commit you to any job. You see the exact pay on every offer Key sends, and you can turn down any of them, no obligation.</span>
+        </div>
+      </div>
+
+      <!-- Interim path: honest join-this-week checklist (default while draft-0) -->
+      <div id="interimPath">
+        <ol class="join-path">
+          <li><span class="n">1</span><span>Upload your docs on step 2 (license, GL COI, WC or exemption, W-9, and a photo of your work truck or van).<small>Those uploads work now.</small></span></li>
+          <li><span class="n">2</span><span>Confirm company, counties, and who Key should text.</span></li>
+          <li><span class="n">3</span><span>Tap below to text Key. He sends the contractor agreement when legal text is final, then your first offer.<small>Takes about one reply from him.</small></span></li>
+        </ol>
+        <div class="reassure">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+          <span>Nothing you type here is a contract signature. Job pay still shows on every offer before you accept.</span>
+        </div>
+        <div class="agreement" tabindex="0" aria-label="What the contractor agreement will cover" style="height:auto; max-height:220px; margin-top:14px;">
+          <h3>What the agreement will cover</h3>
+          <p>Inlet + interlock work only. Offers by text with pay locked before accept. Current license and insurance. Code-quality work and inspection. Flat pay after QC. You stay an independent contractor. Either side can end the master relationship in writing.</p>
+        </div>
+      </div>
+
+      <div class="field" id="f-sign">
+        <label for="sign" id="signLabel">Your full name</label>
+        <input id="sign" type="text" autocomplete="name" placeholder="Full legal name" />
+        <p class="errmsg" id="signErr">Please type your full name.</p>
+      </div>
+
+      <!-- office -> owner handoff: same link, so they pick up right here. -->
+      <button type="button" class="ghost addbtn" id="handoffSign">
+        <svg viewBox="0 0 24 24"><path d="M4 12h13"/><path d="M13 6l6 6-6 6"/></svg>
+        <span id="handoffLabel">Not the decision maker? Send them this link</span>
+      </button>
+      <p class="help" id="handoffMsg" style="display:none; margin-top:8px;">Link ready to send. Whoever finishes picks up right here, and nothing is lost.</p>
+
+      <!-- honeypot: real people never see or fill this (NOT the optional Website field) -->
+      <div class="hp" aria-hidden="true">
+        <label for="hpCompany">Company URL</label>
+        <input id="hpCompany" name="hp_company" type="text" tabindex="-1" autocomplete="off" />
+      </div>
+    </section>
+  </div>
+
+  <!-- sticky footer: Back (non-gold) + ONE gold primary -->
+  <div class="navbar" id="navbar" hidden>
+    <div class="inner">
+      <button class="backbtn" id="backBtn" hidden>
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+        Back
+      </button>
+      <button class="primary" id="fwdBtn">
+        <span id="fwdLabel">Start</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true" id="fwdArrow"><path d="M5 12h13"/><path d="M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- SUCCESS (binding sign path) -->
+  <div class="fullscreen" id="successScreen" hidden>
+    <span class="badge ok"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5 11-12"/></svg></span>
+    <h1 id="successTitle">You are set up.</h1>
+    <p id="successBody">Key reviews your documents. Once everything checks out you will start getting job offers by text.</p>
+    <p id="successFoot" style="font-size:14px; color:var(--faint); margin-top:14px; max-width:22rem;">The agreement you signed stays on this link. Come back to it anytime to read it.</p>
+    <ul class="checklist" id="successChecklist" hidden>
+      <li><span class="tick"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5 11-12"/></svg></span><span>Profile saved on your setup link</span></li>
+      <li><span class="tick"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5 11-12"/></svg></span><span>Docs uploaded when you added them on step 2</span></li>
+      <li><span class="tick"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5 11-12"/></svg></span><span>Next: text Key so he can send the agreement</span></li>
+    </ul>
+    <a class="primary" id="successSms" hidden href="sms:+18648637800">Text Key now</a>
+  </div>
+
+  <!-- INVALID LINK -->
+  <div class="fullscreen" id="invalidScreen" hidden>
+    <span class="badge bad"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg></span>
+    <h1 id="invalidTitle">This link is not valid.</h1>
+    <p>Text Key and he will send you a fresh one.</p>
+    <p class="phone"><a href="tel:+18648637800">(864) 863-7800</a></p>
+    <a class="primary" href="sms:+18648637800" style="margin-top:18px; max-width:22rem;">Text Key now</a>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+
+  var FN = 'https://hfatblrcwytxvijjhpal.supabase.co/functions/v1';
+  // Publishable key (the sb_publishable_ value every other live page + the CRM
+  // use). The OLD legacy HS256 anon JWT here was disabled 2026-04-23 and now 401s
+  // at the gateway, which silently broke this onboarding page (verified 2026-07-21:
+  // sub-onboard 401s the legacy key, passes the publishable key to the token check).
+  // The sub functions are pinned verify_jwt=false; the token in the body/query is
+  // the real auth. Sent as apikey + Authorization on every call.
+  var ANON = 'sb_publishable_kBXthY-Han29JLqcT514RQ_RtwxXLZ-';
+
+  var params = new URLSearchParams(location.search);
+  var token = params.get('token') || '';
+  var TOKEN_RE = /^[A-Za-z0-9_-]{20,64}$/;
+
+  var els = {
+    loading: document.getElementById('loadingScreen'),
+    app: document.getElementById('app'),
+    navbar: document.getElementById('navbar'),
+    success: document.getElementById('successScreen'),
+    invalid: document.getElementById('invalidScreen'),
+    welcomeBack: document.getElementById('welcomeBack'),
+    docList: document.getElementById('docList'),
+    people: document.getElementById('people'),
+  };
+
+  // One honest dead-stop screen for both a bad token and an EXPIRED link. The
+  // backend returns 403 {expired:true} past the 7-day window (sub-onboard /
+  // sub-doc-upload / sub-agreement all share it); the front-end used to handle
+  // only 401, so an expired link silently restarted a blank form or showed a
+  // generic retry error (quality arc 2026-07-21, finding 3). Expired swaps the
+  // heading; the "text Key for a fresh one" subtext already fits both.
+  function showInvalid(expired) {
+    var t = document.getElementById('invalidTitle');
+    if (t) t.textContent = expired ? 'This link has expired.' : 'This link is not valid.';
+    els.loading.hidden = true;
+    els.app.hidden = true;
+    els.navbar.hidden = true;
+    els.success.hidden = true;
+    els.invalid.hidden = false;
+  }
+
+  // Token must be well-formed before we even call the server.
+  if (!TOKEN_RE.test(token)) { showInvalid(); return; }
+
+  // Office -> owner handoff on the sign step: copy this same link so whoever is
+  // authorized to sign picks up exactly here. No new send, same token.
+  (function () {
+    var handoffBtn = document.getElementById('handoffSign');
+    if (!handoffBtn) return;
+    handoffBtn.addEventListener('click', function () {
+      var url = location.href;
+      // Confirm what actually happened per path, so the office can verify before pasting.
+      var reveal = function (msg) { var m = document.getElementById('handoffMsg'); if (m) { if (msg) m.textContent = msg; m.style.display = 'block'; } };
+      if (navigator.share) {
+        navigator.share({ title: 'Contractor setup', text: agreementSignable ? 'Finish signing our contractor agreement here:' : 'Finish contractor setup here:', url: url })
+          .then(function () { reveal('Shared. Whoever finishes opens it and picks up right here, nothing is lost.'); })
+          .catch(function () {});
+      } else if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url)
+          .then(function () { reveal('Copied to your clipboard. Paste it to whoever finishes, they pick up right here, nothing is lost.'); })
+          .catch(function () { reveal(); });
+      } else {
+        reveal();
+      }
+    });
+  })();
+
+  var TOTAL = 6;
+  var step = 1;
+  var months = 4;
+  var resuming = false;           // set true when saved progress exists
+  var docTypes = [];              // required_doc_types config from the server
+  var docState = {};              // code -> { uploaded, file_name, expiration_date }
+  var agreementSigned = false;    // from the initial read
+  var agreementSignable = false;  // false while draft-0 / PLACEHOLDER (interim join path)
+  var agreementVersionLabel = 'Agreement pending';
+  // Which of the FULL arrays are safe to send: only after the sub has reached
+  // that step at least once. Sending an empty array before then would DELETE the
+  // saved rows on the server (the replace-on-write pattern), so we gate it.
+  var reached = { areas: false, people: false };
+
+  var app = els.app;
+  var navbar = els.navbar;
+  var screens = [].slice.call(document.querySelectorAll('.screen'));
+  var stepn = document.getElementById('stepn');
+  var track = document.getElementById('track').children;
+  var backBtn = document.getElementById('backBtn');
+  var fwdBtn = document.getElementById('fwdBtn');
+  var fwdLabel = document.getElementById('fwdLabel');
+  var fwdArrow = document.getElementById('fwdArrow');
+
+  // Forward-button label per step (one gold primary each screen). Step 1 becomes
+  // "Continue" when the sub is resuming with saved progress.
+  var LABELS = { 1:'Start', 2:'Next', 3:'Next', 4:'Next', 5:'Next', 6:'Text Key to finish' };
+
+  function interimSmsHref(name) {
+    var body = [
+      'Hi Key, this is ' + (name || 'a contractor') + '.',
+      'I finished contractor setup on my link.',
+      'Docs: license, GL COI, WC/exemption, W-9, work vehicle photo (uploaded in the portal when I could).',
+      'Ready for the contractor agreement when you have it, then a first offer.',
+    ].join(' ');
+    return 'sms:+18648637800?&body=' + encodeURIComponent(body);
+  }
+
+  function applyModeUI() {
+    var interim = !agreementSignable;
+    var signPath = document.getElementById('signPath');
+    var interimPath = document.getElementById('interimPath');
+    if (signPath) signPath.hidden = interim;
+    if (interimPath) interimPath.hidden = !interim;
+    var t6 = document.getElementById('step6Title');
+    var l6 = document.getElementById('step6Lede');
+    var sl = document.getElementById('signLabel');
+    var se = document.getElementById('signErr');
+    var hl = document.getElementById('handoffLabel');
+    var need = document.getElementById('needSignTx');
+    if (interim) {
+      if (t6) t6.textContent = 'Finish with Key this week';
+      if (l6) l6.textContent = 'Docs upload here. The contractor agreement is not ready for an online signature yet, so you finish with a short text to Key. No fake sign button.';
+      if (sl) sl.textContent = 'Your full name';
+      if (se) se.textContent = 'Please type your full name.';
+      if (hl) hl.textContent = 'Not the decision maker? Send them this link';
+      if (need) need.innerHTML = 'A few minutes to finish with Key this week<small>Upload docs here; he texts the contractor agreement when it is ready to sign</small>';
+      LABELS[6] = 'Text Key to finish';
+    } else {
+      if (t6) t6.textContent = 'Review and sign';
+      if (l6) l6.textContent = 'Read the agreement, then type your full name to sign.';
+      if (sl) sl.textContent = 'Type your full name to sign';
+      if (se) se.textContent = 'Please type your full name to sign.';
+      if (hl) hl.textContent = 'Not the person who signs? Send them this link';
+      if (need) need.innerHTML = 'A few minutes to read and sign our agreement';
+      LABELS[6] = 'Submit';
+    }
+    if (step === 6) {
+      fwdLabel.textContent = LABELS[6];
+      syncSign();
+    }
+  }
+
+  function showSuccess(mode, name) {
+    els.app.hidden = true; navbar.hidden = true;
+    els.success.hidden = false;
+    var title = document.getElementById('successTitle');
+    var body = document.getElementById('successBody');
+    var foot = document.getElementById('successFoot');
+    var list = document.getElementById('successChecklist');
+    var sms = document.getElementById('successSms');
+    if (mode === 'interim') {
+      if (title) title.textContent = 'You are on Key\'s list.';
+      if (body) body.textContent = 'Your profile is saved. Text Key now with the checklist below so he can send the contractor agreement and your first offer this week.';
+      if (foot) foot.hidden = true;
+      if (list) list.hidden = false;
+      if (sms) {
+        sms.hidden = false;
+        sms.href = interimSmsHref(name);
+      }
+    } else {
+      if (title) title.textContent = 'You are set up.';
+      if (body) body.textContent = 'Key reviews your documents. Once everything checks out you will start getting job offers by text.';
+      if (foot) { foot.hidden = false; foot.textContent = 'The agreement you signed stays on this link. Come back to it anytime to read it.'; }
+      if (list) list.hidden = true;
+      if (sms) sms.hidden = true;
+    }
+  }
+
+  // quiet autosave reassurance appended near the form on every step
+  var autosaveLines = [];
+  screens.forEach(function (s) {
+    var line = document.createElement('p');
+    line.className = 'autosave';
+    line.innerHTML = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4 4 10-10"/></svg> <span class="txt">Your progress saves automatically.</span>';
+    s.appendChild(line);
+    autosaveLines.push(line);
+  });
+  function setAutosave(text, saving) {
+    autosaveLines.forEach(function (l) {
+      l.classList.toggle('saving', !!saving);
+      var t = l.querySelector('.txt'); if (t) t.textContent = text;
+    });
+  }
+
+  function saveToast(msg) {
+    var old = document.querySelector('.save-toast'); if (old) old.remove();
+    var el = document.createElement('div');
+    el.className = 'save-toast';
+    el.setAttribute('role', 'alert');
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(function () { el.remove(); }, 4000);
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (ch) {
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[ch];
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // Backend calls
+  // ------------------------------------------------------------------
+  function authHeaders(json) {
+    var h = { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON };
+    if (json) h['Content-Type'] = 'application/json';
+    return h;
+  }
+
+  function readOnboard() {
+    return fetch(FN + '/sub-onboard?token=' + encodeURIComponent(token), {
+      method: 'GET', headers: authHeaders(false),
+    }).then(function (r) {
+      if (r.status === 401) return { __invalid: true };
+      if (r.status === 403) return { __expired: true };
+      if (!r.ok) throw new Error('read ' + r.status);
+      return r.json();
+    });
+  }
+
+  // Save one step's fields with partial:true (save-as-you-go). Resolves true on
+  // success, false on failure (caller decides whether to block advancing).
+  function saveStep(fields) {
+    var body = Object.assign({ token: token, hp_company: '', partial: true }, fields);
+    setAutosave('Saving...', true);
+    return fetch(FN + '/sub-onboard', {
+      method: 'POST', headers: authHeaders(true), body: JSON.stringify(body),
+    }).then(function (r) {
+      if (r.status === 401) { showInvalid(); return false; }
+      if (r.status === 403) { showInvalid(true); return false; }
+      if (!r.ok) throw new Error('save ' + r.status);
+      return r.json();
+    }).then(function (j) {
+      setAutosave('Your progress saves automatically.', false);
+      return !!(j && j.ok);
+    }).catch(function () {
+      setAutosave('Saved changes could not sync. We will retry.', false);
+      return false;
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // Doc blocks (step 2), built from required_doc_types config
+  // ------------------------------------------------------------------
+  var CT_FOR = { pdf:'application/pdf', png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg' };
+  function detectCT(file) {
+    if (file.type === 'application/pdf') return 'application/pdf';
+    if (file.type === 'image/png') return 'image/png';
+    if (file.type === 'image/jpeg') return 'image/jpeg';
+    // fall back on extension for stubborn mobile pickers
+    var ext = (file.name.split('.').pop() || '').toLowerCase();
+    return CT_FOR[ext] || null;
+  }
+  function fileToBase64(file) {
+    return new Promise(function (resolve, reject) {
+      var r = new FileReader();
+      r.onload = function () {
+        var s = String(r.result || ''); var i = s.indexOf(',');
+        resolve(i >= 0 ? s.slice(i + 1) : s);
+      };
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+  }
+
+  function renderDocs() {
+    els.docList.innerHTML = '';
+    if (!docTypes.length) {
+      // Config not seeded: fall back to the five standard requirements so the
+      // page still works. Codes match sub-doc-upload + sub_required_doc_types.
+      docTypes = [
+        { code:'license', label:'Contractor license', requires_expiration:true, is_required:true },
+        { code:'gl_coi', label:'General liability insurance', requires_expiration:true, is_required:true },
+        { code:'wc_coi', label:'Workers comp or exemption', requires_expiration:true, is_required:true },
+        { code:'w9', label:'W-9', requires_expiration:false, is_required:true },
+        { code:'work_vehicle', label:'Work vehicle or van photo', requires_expiration:false, is_required:true,
+          requirement_detail:'A clear photo of your work truck or van. Proves you have a real fleet vehicle for jobs.' },
+      ];
+    } else if (!docTypes.some(function (d) { return d.code === 'work_vehicle'; })) {
+      // Migration not applied yet: still show the van photo as required locally.
+      docTypes = docTypes.concat([{
+        code:'work_vehicle', label:'Work vehicle or van photo', requires_expiration:false, is_required:true,
+        requirement_detail:'A clear photo of your work truck or van. Proves you have a real fleet vehicle for jobs.',
+      }]);
+    }
+    docTypes.forEach(function (dt) {
+      var st = docState[dt.code] || {};
+      var block = document.createElement('div');
+      block.className = 'doc';
+      block.setAttribute('data-doc', dt.code);
+      var mustTxt = dt.is_required === false ? 'Optional' : 'Required';
+      var isVehicle = dt.code === 'work_vehicle';
+      var dropHint = isVehicle ? 'Clear photo of your truck or van' : 'PDF or clear photo';
+      var accept = isVehicle ? 'image/jpeg,image/png,image/*' : 'application/pdf,image/*';
+      var detail = dt.requirement_detail
+        ? '<p class="help" style="margin:0 0 10px;">' + esc(dt.requirement_detail) + '</p>'
+        : (isVehicle ? '<p class="help" style="margin:0 0 10px;">A clear photo of your work truck or van. Proves you have a real fleet vehicle for jobs.</p>' : '');
+      var expHtml = dt.requires_expiration ? (
+        '<div class="field">' +
+          '<label>Expiration date</label>' +
+          '<input type="date" data-exp' + (st.expiration_date ? ' value="' + esc(st.expiration_date) + '"' : '') + ' />' +
+        '</div>'
+      ) : '';
+      var filedHtml =
+        '<div class="filed" data-role="filed"' + (st.uploaded ? '' : ' hidden') + '>' +
+          '<span class="ic"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5 11-12"/></svg></span>' +
+          '<span class="lab"><span class="t" data-fname>' + esc(st.uploaded ? ('Added: ' + (st.file_name || 'your file')) : '') + '</span><span class="h">Looks good</span></span>' +
+          '<span class="acts"><button class="ghost small" type="button" data-replace>Replace</button></span>' +
+        '</div>';
+      var dropHtml =
+        '<label class="drop" data-role="drop"' + (st.uploaded ? ' hidden' : '') + '>' +
+          '<span class="ic"><svg viewBox="0 0 24 24"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></span>' +
+          '<span class="lab"><span class="t">' + (isVehicle ? 'Add photo' : 'Add file') + '</span><span class="h">' + dropHint + '</span></span>' +
+          '<input type="file" accept="' + accept + '" capture="environment" hidden data-file />' +
+        '</label>';
+      // capture=environment only helps on mobile cameras; harmless on desktop.
+      if (!isVehicle) {
+        dropHtml = dropHtml.replace(' capture="environment"', '');
+      }
+      block.innerHTML =
+        '<div class="req"><span class="name">' + esc(dt.label || dt.code) + '</span><span class="must">' + mustTxt + '</span></div>' +
+        detail +
+        filedHtml + dropHtml +
+        '<p class="uperr" data-role="uperr" hidden><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg> <span></span></p>' +
+        expHtml;
+      els.docList.appendChild(block);
+      wireDoc(block, dt);
+    });
+  }
+
+  function wireDoc(block, dt) {
+    var drop = block.querySelector('[data-role="drop"]');
+    var filed = block.querySelector('[data-role="filed"]');
+    var uperr = block.querySelector('[data-role="uperr"]');
+    var input = block.querySelector('[data-file]');
+    var expInput = block.querySelector('[data-exp]');
+
+    function showErr(msg) {
+      drop.classList.add('err'); drop.classList.remove('busy');
+      drop.hidden = false; filed.hidden = true;
+      var span = uperr.querySelector('span'); if (span) span.textContent = msg;
+      uperr.hidden = false;
+    }
+    function clearErr() { drop.classList.remove('err'); uperr.hidden = true; }
+
+    function doUpload(file) {
+      clearErr();
+      var ct = detectCT(file);
+      var isVehicle = dt.code === 'work_vehicle';
+      if (isVehicle && ct === 'application/pdf') { showErr('Use a clear photo (JPG or PNG), not a PDF.'); return; }
+      if (!ct) { showErr(isVehicle ? 'Use a JPG or PNG photo.' : 'Use a PDF, JPG or PNG.'); return; }
+      if (file.size > 15 * 1024 * 1024) { showErr('That file is over 15 MB. Try a smaller one. Nothing else you entered was lost.'); return; }
+      var exp = (expInput && /^\d{4}-\d{2}-\d{2}$/.test(expInput.value)) ? expInput.value : null;
+      drop.classList.add('busy');
+      var t0 = drop.querySelector('.lab .t'); var prev = t0 ? t0.textContent : '';
+      if (t0) t0.textContent = 'Uploading...';
+      fileToBase64(file).then(function (b64) {
+        return fetch(FN + '/sub-doc-upload', {
+          method: 'POST', headers: authHeaders(true),
+          body: JSON.stringify({
+            token: token, doc_type: dt.code, contentType: ct, dataBase64: b64,
+            fileName: file.name, expiration_date: exp,
+          }),
+        });
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, j: j, status: r.status }; });
+      }).then(function (res) {
+        drop.classList.remove('busy');
+        if (t0) t0.textContent = prev || 'Add file';
+        if (res.status === 401) { showInvalid(); return; }
+        if (res.status === 403) { showInvalid(true); return; }
+        if (res.status === 404 || (res.j && (res.j.code === 'NOT_FOUND' || /not found/i.test(String(res.j.message || ''))))) {
+          showErr('Document upload is not available right now. Text Key at (864) 863-7800.');
+          return;
+        }
+        if (!res.ok || !res.j.ok) {
+          showErr((res.j && res.j.error) ? String(res.j.error) : 'That file would not upload. Try again.');
+          return;
+        }
+        // Success: flip to the filled state (well under 100ms visual feedback).
+        docState[dt.code] = { uploaded: true, file_name: file.name, expiration_date: exp };
+        var fn = filed.querySelector('[data-fname]'); if (fn) fn.textContent = 'Added: ' + file.name;
+        filed.hidden = false; drop.hidden = true;
+        if (window.posthog) posthog.capture('sub_onboard_doc_uploaded', { doc_type: dt.code });
+        var docsErr = document.getElementById('docsErr');
+        if (docsErr && docsComplete()) docsErr.style.display = 'none';
+      }).catch(function () {
+        drop.classList.remove('busy');
+        if (t0) t0.textContent = prev || 'Add file';
+        showErr('That file would not upload. Check your connection and try again. Nothing else you entered was lost.');
+      });
+    }
+
+    if (input) input.addEventListener('change', function () {
+      if (!input.files || !input.files.length) return;
+      doUpload(input.files[0]);
+      input.value = '';
+    });
+    var replace = block.querySelector('[data-replace]');
+    if (replace) replace.addEventListener('click', function (e) {
+      e.preventDefault();
+      filed.hidden = true; drop.hidden = false; clearErr();
+      input.click();
+    });
+    // Expiration change on an already-uploaded doc: keep local state current so a
+    // Replace or re-upload carries the right date (the value is sent with uploads).
+    if (expInput) expInput.addEventListener('change', function () {
+      var st = docState[dt.code];
+      if (st && st.uploaded) { st.expiration_date = /^\d{4}-\d{2}-\d{2}$/.test(expInput.value) ? expInput.value : null; }
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // People blocks (step 5)
+  // ------------------------------------------------------------------
+  var pcount = 0;
+  function addPerson(primary, data) {
+    pcount++;
+    var idx = pcount;
+    data = data || {};
+    var block = document.createElement('div');
+    block.className = 'person';
+    block.innerHTML =
+      '<div class="phead"><span class="who">' + (primary ? 'Primary contact' : 'Person ' + idx) + '</span>' +
+      (primary ? '<span class="badge">Primary</span>' : '<button class="ghost small danger" type="button" data-rm>Remove</button>') + '</div>' +
+      '<div class="field"><label>Name</label><input type="text" data-p="name" autocomplete="name" value="' + esc(data.name || '') + '" /></div>' +
+      '<div class="field"><label>Phone</label><input type="tel" data-p="phone" inputmode="tel" autocomplete="tel" placeholder="(864) 010-0123" value="' + esc(data.phone || '') + '" /></div>' +
+      '<div class="field"><label>Email</label><input type="email" data-p="email" inputmode="email" autocomplete="email" value="' + esc(data.email || '') + '" /></div>' +
+      '<div class="field"><label>Role <span class="opt">(optional)</span></label><input type="text" data-p="role" placeholder="Owner, lead installer, office" value="' + esc(data.role || '') + '" /></div>';
+    els.people.appendChild(block);
+    if (primary) block.setAttribute('data-primary', '1');
+    if (!primary) block.querySelector('[data-rm]').addEventListener('click', function () { block.remove(); });
+  }
+  function collectPeople() {
+    var out = [];
+    var blocks = els.people.querySelectorAll('.person');
+    for (var i = 0; i < blocks.length; i++) {
+      var b = blocks[i];
+      var name = (b.querySelector('[data-p="name"]').value || '').trim();
+      if (!name) continue; // backend also skips nameless rows; keep in sync
+      out.push({
+        name: name,
+        phone: (b.querySelector('[data-p="phone"]').value || '').trim() || undefined,
+        email: (b.querySelector('[data-p="email"]').value || '').trim() || undefined,
+        role: (b.querySelector('[data-p="role"]').value || '').trim() || undefined,
+        is_primary: !!b.getAttribute('data-primary'),
+      });
+    }
+    return out;
+  }
+
+  // ------------------------------------------------------------------
+  // County chips (step 4)
+  // ------------------------------------------------------------------
+  var areasErr = document.getElementById('areasErr');
+  document.querySelectorAll('.county-chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      var on = chip.classList.toggle('on');
+      chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+      if (document.querySelector('.county-chip.on')) areasErr.style.display = 'none';
+    });
+  });
+  function selectedCounties() {
+    return [].slice.call(document.querySelectorAll('.county-chip.on')).map(function (c) { return c.dataset.county; });
+  }
+  function validateAreas() {
+    if (document.querySelector('.county-chip.on')) { areasErr.style.display = 'none'; return true; }
+    areasErr.style.display = 'block';
+    return false;
+  }
+
+  // ------------------------------------------------------------------
+  // Company step
+  // ------------------------------------------------------------------
+  var mVal = document.getElementById('mVal');
+  var mUp = document.getElementById('mUp');
+  var mDown = document.getElementById('mDown');
+  function syncStepper() { mVal.textContent = months; mDown.disabled = (months <= 2); mUp.disabled = (months >= 10); }
+  mUp.addEventListener('click', function () { if (months < 10) { months += 2; syncStepper(); } });
+  mDown.addEventListener('click', function () { if (months > 2) { months -= 2; syncStepper(); } });
+  function validateCompany() {
+    var f = document.getElementById('f-company');
+    var v = document.getElementById('company').value.trim();
+    if (!v) { f.classList.add('invalid'); document.getElementById('company').focus(); return false; }
+    f.classList.remove('invalid');
+    if (!validateOptionalUrl('websiteUrl', 'f-website')) return false;
+    if (!validateOptionalUrl('facebookUrl', 'f-facebook')) return false;
+    return true;
+  }
+  function normalizeOptionalUrl(raw) {
+    var s = String(raw || '').trim();
+    if (!s) return { ok: true, value: null };
+    if (/^[a-z][a-z0-9+.-]*:/i.test(s) && !/^https?:\/\//i.test(s)) return { ok: false };
+    var candidate = s;
+    if (!/^https?:\/\//i.test(candidate)) candidate = 'https://' + candidate;
+    try {
+      var u = new URL(candidate);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return { ok: false };
+      if (u.username || u.password) return { ok: false };
+      if (!u.hostname || u.hostname.indexOf('.') < 0) return { ok: false };
+      return { ok: true, value: u.toString() };
+    } catch (e) {
+      return { ok: false };
+    }
+  }
+  function validateOptionalUrl(inputId, fieldId) {
+    var el = document.getElementById(inputId);
+    var f = document.getElementById(fieldId);
+    if (!el || !f) return true;
+    var res = normalizeOptionalUrl(el.value);
+    if (!res.ok) { f.classList.add('invalid'); el.focus(); return false; }
+    f.classList.remove('invalid');
+    return true;
+  }
+  function companyPayload() {
+    var web = normalizeOptionalUrl(document.getElementById('websiteUrl').value);
+    var fb = normalizeOptionalUrl(document.getElementById('facebookUrl').value);
+    return {
+      business_name: document.getElementById('company').value.trim() || null,
+      mailing_address: document.getElementById('ship').value.trim() || null,
+      desired_jobs_per_month: months,
+      website_url: web.ok ? web.value : null,
+      facebook_url: fb.ok ? fb.value : null,
+      vehicle_note: document.getElementById('vehicleNote').value.trim() || null,
+    };
+  }
+  document.getElementById('company').addEventListener('input', function () {
+    if (this.value.trim()) document.getElementById('f-company').classList.remove('invalid');
+  });
+  ;['websiteUrl', 'facebookUrl'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', function () {
+      var fid = id === 'websiteUrl' ? 'f-website' : 'f-facebook';
+      if (normalizeOptionalUrl(el.value).ok) document.getElementById(fid).classList.remove('invalid');
+    });
+  });
+
+  function requiredDocCodes() {
+    var codes = docTypes.filter(function (d) { return d.is_required !== false; }).map(function (d) { return d.code; });
+    if (!codes.length) codes = ['license', 'gl_coi', 'wc_coi', 'w9', 'work_vehicle'];
+    return codes;
+  }
+  function docsComplete() {
+    return requiredDocCodes().every(function (c) { return !!(docState[c] && docState[c].uploaded); });
+  }
+  function validateDocs() {
+    var err = document.getElementById('docsErr');
+    if (docsComplete()) {
+      if (err) err.style.display = 'none';
+      return true;
+    }
+    if (err) {
+      err.textContent = docState.work_vehicle && docState.work_vehicle.uploaded
+        ? 'Add every required document to continue.'
+        : 'Add a photo of your work vehicle or van (and any other missing required docs) to continue.';
+      err.style.display = 'block';
+    }
+    var missing = requiredDocCodes().find(function (c) { return !(docState[c] && docState[c].uploaded); });
+    var block = missing ? document.querySelector('[data-doc="' + missing + '"]') : null;
+    if (block) {
+      try { block.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { /* ignore */ }
+    }
+    return false;
+  }
+
+  // ------------------------------------------------------------------
+  // Sign step
+  // ------------------------------------------------------------------
+  var signInput = document.getElementById('sign');
+  function syncSign() { fwdBtn.disabled = (signInput.value.trim().length < 2); }
+  signInput.addEventListener('input', function () {
+    if (this.value.trim()) document.getElementById('f-sign').classList.remove('invalid');
+    syncSign();
+  });
+
+  // ------------------------------------------------------------------
+  // Step nav
+  // ------------------------------------------------------------------
+  function render() {
+    screens.forEach(function (s) { s.hidden = (+s.dataset.step !== step); });
+    stepn.textContent = 'Step ' + step + ' of ' + TOTAL;
+    for (var i = 0; i < TOTAL; i++) {
+      track[i].className = 'seg' + (i + 1 < step ? ' done' : (i + 1 === step ? ' on' : ''));
+    }
+    backBtn.hidden = (step === 1);
+    fwdLabel.textContent = LABELS[step];
+    fwdArrow.style.display = (step === 6) ? 'none' : '';
+    if (step === 4) reached.areas = true;
+    if (step === 5) reached.people = true;
+    if (step === 6) { syncSign(); } else { fwdBtn.disabled = false; }
+    window.scrollTo(0, 0);
+  }
+
+  // On leaving a step forward, persist that step's fields (partial:true). Returns
+  // a promise; advancing does not wait on it (optimistic), but a failure toasts.
+  function persistStep(fromStep) {
+    if (fromStep === 3) {
+      return saveStep(companyPayload());
+    }
+    if (fromStep === 4) {
+      // Only send the FULL counties array once the step has been reached (it has,
+      // we are leaving it), never an empty array before that.
+      return saveStep({ service_counties: selectedCounties() });
+    }
+    if (fromStep === 5) {
+      return saveStep({ contacts: collectPeople() });
+    }
+    return Promise.resolve(true);
+  }
+
+  fwdBtn.addEventListener('click', function () {
+    if (step === 2 && !validateDocs()) return;
+    if (step === 3 && !validateCompany()) return;
+    if (step === 4 && !validateAreas()) return;
+    if (step === 6) { submit(); return; }
+    var from = step;
+    // Persist the step we are leaving (save-as-you-go), then advance. Advancing is
+    // optimistic; a failed save toasts but does not trap the sub on the step.
+    persistStep(from).then(function (ok) {
+      if (!ok && (from === 3 || from === 4 || from === 5)) {
+        saveToast('That did not save. Check your connection, it will retry.');
+      }
+    });
+    if (step < TOTAL) { step++; render(); }
+  });
+  backBtn.addEventListener('click', function () { if (step > 1) { step--; render(); } });
+
+  document.getElementById('addPerson').addEventListener('click', function () { addPerson(false); });
+
+  // ------------------------------------------------------------------
+  // Final submit: sign when attorney text is live; else finish profile +
+  // hand the sub a premium SMS path to Key (no fake "signed" claim).
+  // ------------------------------------------------------------------
+  function submit() {
+    var signer = signInput.value.trim();
+    if (signer.length < 2) { document.getElementById('f-sign').classList.add('invalid'); signInput.focus(); return; }
+    if (!validateDocs()) {
+      step = 2; render();
+      saveToast('Add your required documents, including a work vehicle photo, before finishing.');
+      return;
+    }
+    if (!validateCompany()) {
+      step = 3; render();
+      return;
+    }
+
+    fwdBtn.disabled = true; fwdLabel.textContent = agreementSignable ? 'Submitting...' : 'Saving...';
+
+    var signPromise;
+    if (!agreementSignable) {
+      // Interim: do not call sub-agreement. Profile completion still pings Key.
+      signPromise = Promise.resolve({ ok: true, interim: true });
+    } else if (agreementSigned) {
+      signPromise = Promise.resolve({ ok: true });
+    } else {
+      signPromise = fetch(FN + '/sub-agreement', {
+          method: 'POST', headers: authHeaders(true),
+          body: JSON.stringify({ token: token, signer_name: signer }),
+        }).then(function (r) {
+          return r.json().catch(function () { return {}; }).then(function (j) {
+            if (r.status === 403 || (j && j.expired)) { return { ok: false, error: 'expired' }; }
+            if (r.status === 404 || (j && (j.code === 'NOT_FOUND' || /not found/i.test(String(j.message || ''))))) {
+              return { ok: false, error: 'NOT_FOUND' };
+            }
+            if (r.status === 409 || j.code === 'AGREEMENT_PENDING' || j.error === 'agreement_not_ready') {
+              // Server says draft still current: flip to interim and continue without claiming a signature.
+              agreementSignable = false;
+              applyModeUI();
+              return { ok: true, interim: true };
+            }
+            return { ok: r.ok && j.ok, error: j.error || j.message || (r.ok ? null : 'sign failed') };
+          });
+        });
+    }
+
+    signPromise.then(function (sres) {
+      if (!sres.ok) throw new Error(sres.error || 'sign failed');
+      var usedInterim = !!sres.interim || !agreementSignable;
+      // Final completion write. NO partial flag, so the backend pings Key.
+      var body = Object.assign({ token: token, hp_company: '', name: signer }, companyPayload());
+      if (reached.people) body.contacts = collectPeople();
+      if (reached.areas) body.service_counties = selectedCounties();
+      return fetch(FN + '/sub-onboard', {
+        method: 'POST', headers: authHeaders(true), body: JSON.stringify(body),
+      }).then(function (r) {
+        if (r.status === 401) throw new Error('invalid');
+        if (r.status === 403) throw new Error('expired');
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          if (!r.ok || !j.ok) throw new Error(j.error || 'save failed');
+          return { j: j, interim: usedInterim };
+        });
+      });
+    }).then(function (res) {
+      if (window.posthog) posthog.capture(res.interim ? 'sub_onboard_interim_finish' : 'sub_onboard_completed');
+      showSuccess(res.interim ? 'interim' : 'signed', signer);
+      // One-more-thing: on phones, open SMS compose so the sub does not hunt for the number.
+      if (res.interim && /iPhone|Android/i.test(navigator.userAgent || '')) {
+        try { window.location.href = interimSmsHref(signer); } catch (e) { /* stay on success */ }
+      }
+    }).catch(function (e) {
+      fwdBtn.disabled = false; fwdLabel.textContent = LABELS[6];
+      if (String(e.message) === 'expired') { showInvalid(true); return; }
+      if (String(e.message) === 'invalid') { showInvalid(); return; }
+      var msg = String(e && e.message || '');
+      if (/work vehicle|required document|missing/i.test(msg)) {
+        step = 2; render();
+        saveToast(msg);
+        return;
+      }
+      if (/website_url|facebook_url|http or https/i.test(msg)) {
+        step = 3; render();
+        saveToast(msg);
+        return;
+      }
+      if (/NOT_FOUND|not found|Failed to fetch|sign failed|404/i.test(msg)
+          || (typeof msg === 'string' && msg === '')) {
+        saveToast('Setup signing is not available right now. Text Key at (864) 863-7800 and he will finish your setup.');
+        return;
+      }
+      saveToast('We could not finish that. Please try again.');
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // Boot: read saved state, prefill, resume at first incomplete step
+  // ------------------------------------------------------------------
+  function firstIncompleteStep(state) {
+    // Step 2 docs: incomplete if any required doc type has no uploaded doc.
+    var reqCodes = (state.required_doc_types || []).filter(function (d) { return d.is_required !== false; }).map(function (d) { return d.code; });
+    if (!reqCodes.length) reqCodes = ['license', 'gl_coi', 'wc_coi', 'w9', 'work_vehicle'];
+    var uploadedCodes = {};
+    (state.documents || []).forEach(function (d) { if (d.doc_type) uploadedCodes[d.doc_type] = true; });
+    var docsDone = reqCodes.every(function (c) { return uploadedCodes[c]; });
+    if (!docsDone) return 2;
+    // Step 3 company: name + mailing address + a chosen pace.
+    var p = state.profile || {};
+    if (!p.business_name || !p.mailing_address) return 3;
+    // Step 4 areas: at least one service county.
+    if (!(state.service_counties || []).length) return 4;
+    // Step 5 people: at least one contact.
+    if (!(state.contacts || []).length) return 5;
+    // Step 6 review + sign.
+    return 6;
+  }
+
+  function anyProgress(state) {
+    var p = state.profile || {};
+    return !!(
+      (state.documents && state.documents.length) ||
+      p.business_name || p.mailing_address ||
+      (state.service_counties && state.service_counties.length) ||
+      (state.contacts && state.contacts.length) ||
+      (state.agreement && state.agreement.signed)
+    );
+  }
+
+  function prefill(state) {
+    // Docs config + statuses
+    docTypes = (state.required_doc_types || []).slice();
+    docState = {};
+    (state.documents || []).forEach(function (d) {
+      if (!d.doc_type) return;
+      docState[d.doc_type] = { uploaded: true, file_name: d.file_name || null, expiration_date: d.expiration_date || null };
+    });
+    renderDocs();
+
+    // Company
+    var p = state.profile || {};
+    if (p.business_name) document.getElementById('company').value = p.business_name;
+    if (p.mailing_address) document.getElementById('ship').value = p.mailing_address;
+    if (p.website_url) document.getElementById('websiteUrl').value = p.website_url;
+    if (p.facebook_url) document.getElementById('facebookUrl').value = p.facebook_url;
+    if (p.vehicle_note) document.getElementById('vehicleNote').value = p.vehicle_note;
+    if (Number.isFinite(Number(p.desired_jobs_per_month)) && Number(p.desired_jobs_per_month) > 0) {
+      months = Math.max(2, Math.min(10, Math.round(Number(p.desired_jobs_per_month) / 2) * 2));
+    }
+    syncStepper();
+
+    // Counties
+    var chosen = {};
+    (state.service_counties || []).forEach(function (c) { chosen[c] = true; });
+    document.querySelectorAll('.county-chip').forEach(function (chip) {
+      var on = !!chosen[chip.dataset.county];
+      chip.classList.toggle('on', on);
+      chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+
+    // People: prefill from saved contacts, else one empty primary block.
+    els.people.innerHTML = ''; pcount = 0;
+    var contacts = (state.contacts || []).slice().sort(function (a, b) {
+      // primary first, then saved sort order
+      var byPrimary = (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0);
+      if (byPrimary) return byPrimary;
+      return (a.sort_order || 0) - (b.sort_order || 0);
+    });
+    if (contacts.length) {
+      contacts.forEach(function (c, i) { addPerson(i === 0, c); });
+    } else {
+      addPerson(true);
+    }
+
+    // Agreement mode: prefer live sub-agreement GET (signable flag). Fall back to
+    // draft-* version from onboard state so we never show a fake sign button.
+    var ag = state.agreement || {};
+    if (ag.version) {
+      agreementVersionLabel = 'Agreement version ' + ag.version;
+      var verEl = document.getElementById('agreementVersion');
+      if (verEl) verEl.textContent = agreementVersionLabel;
+      if (/^draft/i.test(String(ag.version))) agreementSignable = false;
+    }
+    if (ag.signed) {
+      agreementSigned = true;
+      var note = document.getElementById('signedNote');
+      var noteTx = document.getElementById('signedNoteTx');
+      if (noteTx) noteTx.textContent = 'You signed this' + (ag.signer_name ? ' as ' + ag.signer_name : '') + '. You can re-sign below.';
+      if (note) note.hidden = false;
+      if (ag.signer_name) signInput.value = ag.signer_name;
+    }
+
+    // Which arrays are already backed on the server (so a later partial save is
+    // allowed to send them without risking a premature-empty delete).
+    if ((state.service_counties || []).length) reached.areas = true;
+    if ((state.contacts || []).length) reached.people = true;
+  }
+
+  function probeAgreementSignable() {
+    return fetch(FN + '/sub-agreement?token=' + encodeURIComponent(token), {
+      method: 'GET', headers: authHeaders(false),
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        if (r.status === 404 || j.code === 'NOT_FOUND') {
+          // Function missing: stay interim (docs may still work).
+          agreementSignable = false;
+          return;
+        }
+        if (!r.ok) { agreementSignable = false; return; }
+        agreementSignable = j.signable === true;
+        if (j.version) {
+          agreementVersionLabel = 'Agreement version ' + j.version;
+          var verEl = document.getElementById('agreementVersion');
+          if (verEl) verEl.textContent = agreementVersionLabel;
+        }
+        if (j.already_signed) {
+          agreementSigned = true;
+          var note = document.getElementById('signedNote');
+          var noteTx = document.getElementById('signedNoteTx');
+          if (noteTx) noteTx.textContent = 'You signed this' + (j.signer_name ? ' as ' + j.signer_name : '') + '. You can re-sign below.';
+          if (note) note.hidden = false;
+          if (j.signer_name) signInput.value = j.signer_name;
+        }
+        if (agreementSignable && j.body) {
+          var live = document.getElementById('agreementLiveBody');
+          if (live) {
+            // Plain-text body from DB: escape and preserve paragraphs lightly.
+            var safe = String(j.body).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            live.innerHTML = '<h3>Master Contractor Agreement</h3><p style="white-space:pre-wrap;">' + safe + '</p>';
+          }
+        }
+      });
+    }).catch(function () {
+      agreementSignable = false;
+    });
+  }
+
+  readOnboard().then(function (state) {
+    if (state.__expired) { showInvalid(true); return; }
+    if (state.__invalid) { showInvalid(); return; }
+
+    prefill(state);
+
+    return probeAgreementSignable().then(function () {
+      applyModeUI();
+
+      resuming = anyProgress(state);
+      if (resuming) {
+        LABELS[1] = 'Continue';
+        els.welcomeBack.hidden = false;
+        step = firstIncompleteStep(state);
+      } else {
+        step = 1;
+      }
+
+      els.loading.hidden = true;
+      els.app.hidden = false;
+      els.navbar.hidden = false;
+      render();
+    });
+  }).catch(function () {
+    // A read failure is not a bad token; let the sub still start fresh rather than
+    // dead-ending. Render step 1 with empty defaults. Stay interim until probed.
+    agreementSignable = false;
+    applyModeUI();
+    renderDocs();
+    if (!els.people.children.length) addPerson(true);
+    syncStepper();
+    els.loading.hidden = true;
+    els.app.hidden = false;
+    els.navbar.hidden = false;
+    step = 1;
+    render();
+  });
+})();
+</script>
+</body>
+</html>

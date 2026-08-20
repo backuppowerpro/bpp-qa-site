@@ -1,0 +1,1045 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="referrer" content="strict-origin-when-cross-origin">
+
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co https://*.i.posthog.com; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'unsafe-inline' https://*.i.posthog.com https://us-assets.i.posthog.com" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<!-- Superseded by /walk-v2/ (the walk-v2 activation gate flipped 2026-06-15, per
+     docs/OPEN-DECISIONS.md). Kept live and untouched on purpose as a rollback
+     path; noindex only stops new crawl discovery, does not change behavior for
+     anyone who already has a link. -->
+<meta name="robots" content="noindex,nofollow" />
+<title>Backup Power Pro · Your pre-read</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --navy: #0b1f3b;
+    --navy-soft: #25395c;
+    --gold: #ffba00;
+    --gold-hover: #ffc519;
+    --gold-ink: #8a5a00;
+    --gold-tint: #fff7e0;
+    --bg: #faf8f4;
+    --card: #ffffff;
+    --warm: #f5f1e8;
+    --edge: #e9e4d8;
+    --text: #0b1f3b;
+    --muted: #5b6577;
+    --faint: #8b93a3;
+    --green: #059669;
+
+    --shadow: 0 10px 30px rgba(11,31,59,0.08), 0 2px 8px rgba(11,31,59,0.05);
+    --shadow-sm: 0 2px 10px rgba(11,31,59,0.06);
+
+    --r-lg: 20px;
+    --r-md: 14px;
+    --r-pill: 100px;
+
+    --head: 'Outfit', sans-serif;
+    --body: 'Inter', system-ui, sans-serif;
+
+    --dur: 200ms;
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  button {
+    font-family: var(--body);
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+
+  .wrap {
+    max-width: 430px;
+    margin: 0 auto;
+    padding: 24px 20px calc(32px + env(safe-area-inset-bottom));
+  }
+
+  /* wordmark */
+  .mark {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .mark .bolt {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: var(--navy);
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mark .bolt svg { width: 13px; height: 13px; stroke-width: 2.2; fill: var(--gold); stroke: none; }
+  .mark .wm {
+    font-family: var(--head);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--navy);
+  }
+
+  /* Key's note */
+  .note {
+    font-family: var(--head);
+    font-size: 23px;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    color: var(--navy);
+    margin: 0 0 14px;
+    text-wrap: pretty;
+  }
+  .sig {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .sig .face {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--warm);
+    border: 1px solid var(--edge);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--head);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--navy-soft);
+    flex: 0 0 auto;
+  }
+  .sig .who { font-size: 13px; line-height: 1.4; color: var(--muted); }
+  .sig .who b { color: var(--navy); font-weight: 600; display: block; }
+
+  /* range card */
+  .range-card {
+    background: var(--card);
+    border: 1px solid var(--edge);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    margin-bottom: 32px;
+  }
+  .range-card .lede {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--text);
+    margin: 0 0 16px;
+    text-wrap: pretty;
+  }
+  .range-card .lede .money { font-weight: 700; color: var(--navy); }
+  .setups { display: flex; gap: 10px; }
+  .setup {
+    flex: 1;
+    background: var(--warm);
+    border-radius: var(--r-md);
+    padding: 12px 14px;
+  }
+  .setup .amp {
+    font-family: var(--head);
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+  .setup .desc {
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* steps */
+  .step { margin-bottom: 32px; }
+  .step.lit {
+    border-radius: var(--r-lg);
+    box-shadow: 0 0 0 2px var(--gold), var(--shadow);
+    padding: 16px;
+    margin-left: -16px;
+    margin-right: -16px;
+    background: var(--card);
+  }
+  .step-tag {
+    font-family: var(--head);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold-ink);
+    margin: 0 0 4px;
+  }
+  .step h2 {
+    font-family: var(--head);
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 4px;
+    color: var(--navy);
+  }
+  .why {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--muted);
+    margin: 0 0 14px;
+    text-wrap: pretty;
+  }
+  .suggest {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--navy);
+    background: var(--gold-tint);
+    border-radius: var(--r-md);
+    padding: 10px 14px;
+    margin: 0 0 12px;
+  }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    min-height: 46px;
+    padding: 0 18px;
+    border-radius: var(--r-pill);
+    background: var(--card);
+    border: 1.5px solid var(--edge);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .chip:active { transform: scale(0.97); }
+  .chip.suggested { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+  .chip[aria-pressed="true"] {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .echo {
+    display: none;
+    align-items: center;
+    gap: 7px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--green);
+    margin: 12px 2px 0;
+  }
+  .echo.show { display: flex; }
+  .echo svg { width: 14px; height: 14px; stroke-width: 2.4; flex: 0 0 auto; }
+
+  /* satellite */
+  .sat {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    border: 1px solid var(--edge);
+    box-shadow: var(--shadow-sm);
+    cursor: crosshair;
+    background:
+      radial-gradient(circle at 72% 30%, rgba(160,170,140,0.5) 0 12%, transparent 13%),
+      radial-gradient(circle at 22% 70%, rgba(150,162,135,0.45) 0 16%, transparent 17%),
+      linear-gradient(118deg, #b9c2a8 0%, #a8b496 38%, #9fae90 62%, #b3bda1 100%);
+  }
+  /* CUST-04 a11y: a keyboard / switch user must SEE focus before Enter places
+     the pin. Reuses the brand gold; standard visible-focus treatment. */
+  .sat:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: 2px;
+  }
+  .sat::after {
+    content: "";
+    position: absolute;
+    left: 38%;
+    top: 26%;
+    width: 26%;
+    height: 32%;
+    background: rgba(225,221,210,0.85);
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(11,31,59,0.18);
+    transform: rotate(-7deg);
+  }
+  .sat-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .sat .road {
+    position: absolute;
+    left: -6%;
+    bottom: 12%;
+    width: 115%;
+    height: 9%;
+    background: rgba(186,184,176,0.9);
+    transform: rotate(-4deg);
+  }
+  .sat .tag {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(11,31,59,0.55);
+    background: rgba(255,255,255,0.78);
+    border-radius: 6px;
+    padding: 3px 8px;
+    pointer-events: none;
+  }
+  .pin {
+    position: absolute;
+    width: 34px;
+    height: 34px;
+    transform: translate(-50%, -92%);
+    display: none;
+    pointer-events: none;
+    filter: drop-shadow(0 3px 5px rgba(11,31,59,0.35));
+  }
+  .pin.show { display: block; }
+  .pin svg { width: 34px; height: 34px; }
+  .pin svg path { fill: var(--gold); stroke: var(--navy); stroke-width: 1.4; }
+  .pin svg circle { fill: var(--navy); stroke: none; }
+
+  .helper {
+    font-size: 13px;
+    color: var(--faint);
+    margin: 10px 2px 0;
+  }
+
+  /* photo ask */
+  .ask {
+    background: var(--navy);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow);
+    padding: 24px 20px;
+    margin-bottom: 14px;
+  }
+  .ask h2 {
+    font-family: var(--head);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    color: #fff;
+    margin: 0 0 16px;
+    text-wrap: pretty;
+  }
+  .sms-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    width: 100%;
+    min-height: 54px;
+    border-radius: var(--r-pill);
+    background: var(--gold);
+    color: var(--navy);
+    font-family: var(--head);
+    font-size: 16px;
+    font-weight: 700;
+    box-shadow: 0 4px 18px rgba(255,186,0,0.35);
+    transition: background var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .sms-btn:hover { background: var(--gold-hover); }
+  .sms-btn:active { transform: scale(0.98); }
+  .sms-btn svg { width: 17px; height: 17px; stroke-width: 2; }
+
+  .coach {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: var(--card);
+    border: 1px solid var(--edge);
+    border-radius: var(--r-md);
+    padding: 12px;
+    margin-bottom: 14px;
+  }
+  .coach .ex {
+    flex: 0 0 76px;
+    height: 76px;
+    border-radius: 10px;
+    background:
+      linear-gradient(160deg, #d8d4ca 0%, #c4c0b4 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .coach .ex::before {
+    content: "";
+    position: absolute;
+    inset: 14% 22%;
+    background: #8d897e;
+    border-radius: 3px;
+  }
+  .coach .ex::after {
+    content: "";
+    position: absolute;
+    inset: 20% 30% 24% 52%;
+    background: #6f6c63;
+    border-radius: 2px;
+  }
+  .coach p {
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--muted);
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  .later {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--faint);
+    margin: 0 4px 32px;
+    text-wrap: pretty;
+  }
+  .later b { color: var(--muted); font-weight: 600; }
+
+  /* welcome back banner */
+  .wb {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    background: var(--gold-tint);
+    border-radius: var(--r-md);
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--navy);
+  }
+  .wb svg { width: 16px; height: 16px; stroke-width: 2; color: var(--gold-ink); flex: 0 0 auto; }
+
+  /* terminal states */
+  .terminal {
+    text-align: center;
+    padding: 48px 8px 36px;
+  }
+  .terminal .big {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    background: var(--gold-tint);
+    color: var(--gold-ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .terminal .big svg { width: 28px; height: 28px; stroke-width: 2; }
+  .terminal h2 {
+    font-family: var(--head);
+    font-size: 23px;
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    margin: 0 0 8px;
+    color: var(--navy);
+    text-wrap: pretty;
+  }
+  .terminal p {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--muted);
+    margin: 0 auto;
+    max-width: 300px;
+    text-wrap: pretty;
+  }
+  .terminal .sms-btn { max-width: 300px; margin: 22px auto 0; }
+
+  /* hatch */
+  .hatch {
+    border-top: 1px solid var(--edge);
+    padding-top: 20px;
+    text-align: center;
+  }
+  .hatch .talk {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--muted);
+    margin: 0 0 4px;
+    text-wrap: pretty;
+  }
+  .hatch .talk a {
+    color: var(--navy);
+    font-weight: 700;
+    text-decoration: none;
+    border-bottom: 2px solid var(--gold);
+  }
+  .hatch .fine {
+    font-size: 12px;
+    color: var(--faint);
+    margin: 10px 0 0;
+    line-height: 1.5;
+  }
+</style>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body>
+
+<div class="wrap" id="app"></div>
+
+<script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_qoA51lePZqXYtPJYkrIpdA4U8iMDJ79L1kje7r4pD4O',{api_host:'https://us.i.posthog.com',property_denylist:['$current_url','$initial_current_url','$referrer','$initial_referrer'],sanitize_properties:function(p){for(var k in p){var v=p[k];if(typeof v==='string'&&v.indexOf('http')===0&&v.indexOf('?')>-1){try{var u=new URL(v);p[k]=u.origin+u.pathname;}catch(e){p[k]=v.split('?')[0];}}}return p;},person_profiles:'identified_only',session_recording:{recordCrossOriginIframes:false},capture_pageview:true,capture_pageleave:true,enable_heatmaps:true,capture_dead_clicks:true})</script>
+
+<script>
+/* Pre-Read page wiring (Flow C). The visual language is the approved
+   Claude Design comp (comps/pre-read-v1.html) verbatim; this script
+   replaces the comp's hardcoded sample data with the pre-read-view
+   payload and saves each tap through pre-read-confirm. No localStorage:
+   state lives server-side and the page re-fetches (the welcome-back
+   contract). */
+(function () {
+  var SMS = 'sms:+18648637800';
+  var TEL = '(864) 863-7800';
+  var API = 'https://hfatblrcwytxvijjhpal.supabase.co/functions/v1';
+  var PUB = 'sb_publishable_kBXthY-Han29JLqcT514RQ_RtwxXLZ-';
+  var MAPBOX_TOKEN = 'qa-mapbox-disabled';
+
+  var ROOM_ENUM = { 'Garage': 'garage', 'Basement': 'basement', 'Outside': 'outside', 'Closet': 'closet', 'Laundry room': 'laundry', 'Somewhere else': 'other', 'Not sure': 'not_sure' };
+  var ROOM_LABEL = {};
+  Object.keys(ROOM_ENUM).forEach(function (k) { ROOM_LABEL[ROOM_ENUM[k]] = k; });
+  var BUCKET_ENUM = { 'Under 10 ft': 'under_10', '10 to 25 ft': '10_25', '25 to 50 ft': '25_50', 'Over 50 ft': 'over_50', 'Not sure': 'not_sure' };
+  var FT_TO_BUCKET = { 8: '10 to 25 ft', 17: '10 to 25 ft', 37: '25 to 50 ft', 60: 'Over 50 ft' };
+  FT_TO_BUCKET[8] = 'Under 10 ft';
+
+  var TOKEN = (new URLSearchParams(location.search).get('t') || '').trim();
+  var D = null; // the pre-read-view payload
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function titleCase(s) {
+    return String(s || '').toLowerCase().replace(/\b[a-z]/g, function (c) { return c.toUpperCase(); });
+  }
+  function firstName() { return esc(D && D.first_name ? D.first_name : 'there'); }
+  function street() {
+    var a = D && D.address ? String(D.address).split(',')[0].trim() : '';
+    return esc(a || 'your place');
+  }
+  function money(c) { return '$' + Math.round((c || 0) / 100).toLocaleString('en-US'); }
+  function rangeText() {
+    if (!D || !D.range_low_cents) return '$1,200 and $1,700';
+    return money(D.range_low_cents) + ' and ' + money(D.range_high_cents);
+  }
+
+  function mark() {
+    return '<div class="mark"><span class="bolt"><svg viewBox="0 0 14 14"><path d="M7.8 1L3 8h3l-.8 5L10 6H7z"/></svg></span><span class="wm">Backup Power Pro</span></div>';
+  }
+  function hatch() {
+    return '<div class="hatch">' +
+      '<p class="talk">Stuck, or rather just talk it through? Text me: <a href="' + SMS + '">' + TEL + '</a>. It\'s me, not a bot.</p>' +
+      '<p class="fine">Key Goodson, Master Electrician, SC Lic #2942 · Serving Greenville, Spartanburg, and Pickens counties</p>' +
+      '</div>';
+  }
+  function sig() {
+    return '<div class="sig"><span class="face">KG</span><span class="who"><b>Key Goodson</b>Master Electrician, SC Lic #2942</span></div>';
+  }
+  function rangeCard() {
+    return '<div class="range-card">' +
+      '<p class="lede">Most installs land between <span class="money">' + rangeText() + '</span>. Two setups exist. Your panel and the wire run decide which one and where your number lands. That\'s exactly what these taps pin down.</p>' +
+      '<div class="setups">' +
+        '<div class="setup"><span class="amp">30 amp</span><p class="desc">Covers the essentials: fridge, lights, furnace, outlets.</p></div>' +
+        '<div class="setup"><span class="amp">50 amp</span><p class="desc">The bigger inlet. Adds central AC or a well pump.</p></div>' +
+      '</div></div>';
+  }
+
+  function step1(opts) {
+    var rooms = ['Garage', 'Basement', 'Outside', 'Closet', 'Laundry room', 'Somewhere else', 'Not sure'];
+    var chips = rooms.map(function (r) {
+      var cls = 'chip' + (opts.suggest === r && opts.selected !== r ? ' suggested' : '');
+      var sel = opts.selected === r;
+      return '<button class="' + cls + '" type="button" data-room="' + r + '" aria-pressed="' + sel + '">' + r + '</button>';
+    }).join('');
+    var suggestLine = '';
+    if (opts.suggest && !opts.selected) {
+      suggestLine = '<p class="suggest">Homes in ' + esc(titleCase(D.subdivision)) + ' usually have it in the ' + opts.suggest.toLowerCase() + '. Yours too?</p>';
+    }
+    return '<div class="step' + (opts.lit ? ' lit' : '') + '" id="step1">' +
+      '<p class="step-tag">Tap 1 of 3</p>' +
+      '<h2>Where does your panel live?</h2>' +
+      '<p class="why">Where your panel lives sets how the wire has to run.</p>' +
+      suggestLine +
+      '<div class="chips">' + chips + '</div>' +
+      '<p class="echo' + (opts.selected ? ' show' : '') + '" id="echo1">' +
+        '<svg viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7" /></svg>' +
+        '<span id="echo1t">' + (opts.selected ? echoRoom(opts.selected) : '') + '</span></p>' +
+      '</div>';
+  }
+  function echoRoom(label) {
+    return label === 'Not sure' ? 'No sweat, the photo will tell me.' : 'Got it, ' + label.toLowerCase() + '.';
+  }
+
+  function satInner(opts) {
+    var img = '';
+    if (D && D.lat != null && D.lng != null) {
+      img = '<img class="sat-img" alt="" src="https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/' +
+        D.lng + ',' + D.lat + ',19/640x640?access_token=' + MAPBOX_TOKEN + '" />';
+    } else {
+      img = '<span class="road"></span>';
+    }
+    return img +
+      '<span class="tag">Your lot on ' + street() + '</span>' +
+      '<span class="pin' + (opts.pinned ? ' show' : '') + '" id="pin" style="left:' + (opts.pinX || 58) + '%; top:' + (opts.pinY || 46) + '%;">' +
+        '<svg viewBox="0 0 34 34"><path d="M17 2C10.4 2 5 7.2 5 13.7 5 22.6 17 32 17 32s12-9.4 12-18.3C29 7.2 23.6 2 17 2z"/><circle cx="17" cy="13.5" r="4.2"/></svg>' +
+      '</span>';
+  }
+  function step2(opts) {
+    return '<div class="step' + (opts.lit ? ' lit' : '') + '" id="step2">' +
+      '<p class="step-tag">Tap 2 of 3</p>' +
+      '<h2>Where would the generator sit?</h2>' +
+      '<p class="why">Tap about where it would sit when it\'s running. The spot I usually recommend is just outside the garage wall.</p>' +
+      '<div class="sat" id="sat" role="button" tabindex="0" aria-label="Tap the map where the generator would sit">' +
+      satInner(opts) +
+      '</div>' +
+      '<p class="echo' + (opts.pinned ? ' show' : '') + '" id="echo2">' +
+        '<svg viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7" /></svg><span id="echo2t">Perfect.</span></p>' +
+      '</div>';
+  }
+
+  function step3(opts) {
+    var buckets = ['Under 10 ft', '10 to 25 ft', '25 to 50 ft', 'Over 50 ft', 'Not sure'];
+    var chips = buckets.map(function (b) {
+      var sel = opts.selected === b;
+      return '<button class="chip" type="button" data-run="' + b + '" aria-pressed="' + sel + '">' + b + '</button>';
+    }).join('');
+    var echoText = opts.selected === 'Not sure'
+      ? 'No problem. I\'ll work it out from your photo and confirm it with you before anything is locked.'
+      : 'Got it.';
+    return '<div class="step' + (opts.lit ? ' lit' : '') + '" id="step3">' +
+      '<p class="step-tag">Tap 3 of 3</p>' +
+      '<h2>Panel to that spot, about how far?</h2>' +
+      '<p class="why">Panel to that spot is the wire run, the biggest swing in your number.</p>' +
+      '<div class="chips">' + chips + '</div>' +
+      '<p class="helper">A guess is fine, walking steps work.</p>' +
+      '<p class="echo' + (opts.selected ? ' show' : '') + '" id="echo3">' +
+        '<svg viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7" /></svg>' +
+        '<span id="echo3t">' + (opts.selected ? echoText : '') + '</span></p>' +
+      '</div>';
+  }
+
+  function photoAsk(opts) {
+    opts = opts || {};
+    return '<div class="ask">' +
+      '<h2>' + (opts.heading || 'One photo of your panel with the door open is what locks your exact number.') + '</h2>' +
+      '<label class="sms-btn" for="photoInput" id="photoBtn" style="text-decoration:none; cursor:pointer;">' +
+        '<svg viewBox="0 0 18 18"><rect x="2" y="4" width="14" height="11" rx="2.5"/><circle cx="9" cy="9.5" r="3.2"/><path d="M6.5 4l1-2h3l1 2"/></svg>' +
+        '<span id="photoBtnText">Add the photo</span></label>' +
+      '<input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none;" />' +
+      '<p class="echo" id="echoP">' +
+        '<svg viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7" /></svg>' +
+        '<span id="echoPt"></span></p>' +
+      '</div>' +
+      '<div class="coach">' +
+        '<span class="ex" aria-hidden="true"></span>' +
+        '<p>Stand back about three feet, flash on. Nothing to unscrew, the door swings open.</p>' +
+      '</div>' +
+      (opts.skip ? '<p class="later"><a href="#" id="skipPhoto" style="color:inherit;"><b>Not in front of the panel?</b> Skip for now, finish the taps first.</a></p>' : '') +
+      '<p class="later">Or just <a href="' + SMS + '" style="color:inherit;"><b>text it to me</b></a> whenever you\'re in front of the panel.</p>' +
+      '<p class="later" style="margin-top:6px;"><a href="#" id="saveLater" style="color:inherit;"><b>Save for later</b></a>' +
+        '<span id="saveLaterEcho"></span></p>';
+  }
+
+  function noteBlock() {
+    var t;
+    var confident = D && (D.confidence === 'high' || D.confidence === 'medium') && D.subdivision;
+    if (!confident) {
+      t = 'Hi ' + firstName() + ', it\'s Key. Three quick taps and one photo, and I\'ll read your setup and lock your exact price.';
+    } else {
+      t = 'Hi ' + firstName() + ', it\'s Key. I pulled up your place on ' + street() + ', so I already have a head start on your setup. ' +
+          'Three quick taps and one photo, and I\'ll lock your exact price.';
+    }
+    return '<p class="note">' + t + '</p>' + sig();
+  }
+
+  function welcomeBanner() {
+    return '<div class="wb">' +
+      '<svg viewBox="0 0 16 16"><path d="M2 8a6 6 0 1 1 1.8 4.3"/><path d="M2 12.5V8.8h3.7"/></svg>' +
+      'Welcome back. Picking up right where you left off.</div>';
+  }
+
+  function backRow(label) {
+    return '<p class="later" style="margin:0 0 -4px; display:flex; justify-content:space-between;">' +
+      '<a href="#" id="backLink" style="color:inherit; text-decoration:none;">&#8592; Back</a>' +
+      '<span>' + esc(label || '') + '</span></p>';
+  }
+
+  function terminalExpired() {
+    return mark() +
+      '<div class="terminal">' +
+        '<div class="big"><svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11"/><path d="M14 8v6l4 3"/></svg></div>' +
+        '<h2>This link has expired.</h2>' +
+        '<p>Text me and I\'ll send you a fresh one.</p>' +
+        '<a class="sms-btn" href="' + SMS + '" style="text-decoration:none;">' +
+          '<svg viewBox="0 0 18 18"><rect x="2" y="3" width="14" height="10.5" rx="2.5"/><path d="M6 17l2-3.5h6"/></svg>' +
+          'Text Key</a>' +
+      '</div>' + hatch();
+  }
+
+  var app = document.getElementById('app');
+  var screen = 0;
+  var cameBack = false;
+
+  function saveFail(echoTextEl, echoEl) {
+    echoTextEl.textContent = 'That didn\'t save. Tap it once more, or just text me and I\'ll take it from there.';
+    echoEl.classList.add('show');
+  }
+  function confirm(body) {
+    body.token = TOKEN;
+    try { window.posthog && posthog.capture('pre_read_confirm_tap', { field: Object.keys(body).filter(function (k) { return k !== 'token'; })[0] }); } catch (_) {}
+    return fetch(API + '/pre-read-confirm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + PUB, 'apikey': PUB },
+      body: JSON.stringify(body),
+    }).then(function (r) { if (!r.ok) throw new Error('save failed'); return r.json(); });
+  }
+  function downscale(file) {
+    return new Promise(function (resolve, reject) {
+      var fr = new FileReader();
+      fr.onerror = function () { reject(new Error('read failed')); };
+      fr.onload = function () {
+        var img = new Image();
+        img.onerror = function () { reject(new Error('bad image')); };
+        img.onload = function () {
+          var max = 1600;
+          var scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+          var c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round(img.naturalWidth * scale));
+          c.height = Math.max(1, Math.round(img.naturalHeight * scale));
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          resolve(c.toDataURL('image/jpeg', 0.85));
+        };
+        img.src = fr.result;
+      };
+      fr.readAsDataURL(file);
+    });
+  }
+
+  function bucketLabelFromFt(ft) {
+    if (ft == null) return null;
+    var n = Number(ft);
+    if (n < 0) return 'Not sure';
+    if (n < 10) return 'Under 10 ft';
+    if (n <= 25) return '10 to 25 ft';
+    if (n <= 50) return '25 to 50 ft';
+    return 'Over 50 ft';
+  }
+
+  /* ── The chunked walk: one ask per screen (Key blueprint 2026-06-11,
+     "give a chunk at a time so they are not overwhelmed").
+     0 intro · 1 room · 2 photo · 3 spot · 4 distance · 5 finish.
+     Resume = first unanswered; every save advances after a short beat. ── */
+
+  function firstUnanswered() {
+    if (!D.confirmed_panel_room) return 1;
+    if (!D.photo_received) return 2;
+    if (!D.confirmed_generator_spot) return 3;
+    if (D.customer_run_ft_estimate == null) return 4;
+    return 5;
+  }
+  function anyAnswered() {
+    return !!(D.confirmed_panel_room || D.photo_received || D.confirmed_generator_spot || D.customer_run_ft_estimate != null);
+  }
+  function nextFrom(n) {
+    var missing = {
+      1: function () { return !D.confirmed_panel_room; },
+      2: function () { return !D.photo_received; },
+      3: function () { return !D.confirmed_generator_spot; },
+      4: function () { return D.customer_run_ft_estimate == null; },
+    };
+    for (var i = n + 1; i <= 4; i++) { if (missing[i]()) return i; }
+    // Nothing left ahead. An unanswered TAP behind pulls back to it; a
+    // missing photo alone falls through to the finish screen, whose
+    // photo-pending variant carries the ask (never loops back to 2).
+    if (missing[1]()) return 1;
+    if (missing[3]()) return 3;
+    if (missing[4]()) return 4;
+    return 5;
+  }
+  function advance(from, delayMs) {
+    setTimeout(function () {
+      if (screen !== from) return;
+      renderScreen(nextFrom(from));
+    }, delayMs);
+  }
+
+  function giftTease() {
+    return '<p class="later" style="margin-top:10px;"><b>Finish the taps and the photo</b> and my free storm-prep guide is yours, along with your locked price.</p>';
+  }
+
+  function introScreen() {
+    return mark() +
+      (cameBack ? welcomeBanner() : '') +
+      noteBlock() +
+      rangeCard() +
+      giftTease() +
+      '<div class="ask" style="text-align:center;">' +
+        '<a class="sms-btn" href="#" id="startWalk" style="text-decoration:none;">Start, it takes about a minute</a>' +
+      '</div>' + hatch();
+  }
+  function roomScreen() {
+    var roomSel = D.confirmed_panel_room ? ROOM_LABEL[D.confirmed_panel_room] : null;
+    var suggest = (D.confidence === 'high' && D.predicted_panel_room && ROOM_LABEL[D.predicted_panel_room]) ? ROOM_LABEL[D.predicted_panel_room] : null;
+    return mark() +
+      (cameBack ? welcomeBanner() : '') +
+      backRow('Tap 1 of 3') +
+      step1({ suggest: suggest, selected: roomSel, lit: true }) + hatch();
+  }
+  function photoScreen() {
+    return mark() +
+      (cameBack ? welcomeBanner() : '') +
+      backRow('The photo') +
+      photoAsk({ skip: true }) + hatch();
+  }
+  function spotScreen() {
+    var spot = D.confirmed_generator_spot;
+    return mark() +
+      backRow('Tap 2 of 3') +
+      step2({ pinned: !!spot, pinX: spot ? spot.x * 100 : undefined, pinY: spot ? spot.y * 100 : undefined, lit: true }) + hatch();
+  }
+  function distScreen() {
+    return mark() +
+      backRow('Tap 3 of 3') +
+      step3({ selected: bucketLabelFromFt(D.customer_run_ft_estimate), lit: true }) + hatch();
+  }
+  function finishScreen() {
+    if (D.photo_received) {
+      return mark() +
+        '<div class="terminal">' +
+          '<div class="big"><svg viewBox="0 0 28 28"><path d="M5 15l6.5 6.5L23 7"/></svg></div>' +
+          '<h2>That\'s everything, ' + firstName() + '.</h2>' +
+          '<p>Yours is in tonight\'s stack. Your locked number lands by text from me.</p>' +
+          '<a class="sms-btn" href="/free-guide/" style="text-decoration:none;">Get the free storm-prep guide</a>' +
+        '</div>' + hatch();
+    }
+    return mark() +
+      '<div class="terminal" style="padding-bottom:0;">' +
+        '<div class="big"><svg viewBox="0 0 28 28"><path d="M5 15l6.5 6.5L23 7"/></svg></div>' +
+        '<h2>Taps are in, ' + firstName() + '.</h2>' +
+      '</div>' +
+      photoAsk({ heading: 'One photo of your panel with the door open finishes it. That\'s what locks your exact number, and my free storm-prep guide comes with it.' }) +
+      hatch();
+  }
+
+  function renderScreen(n) {
+    screen = n;
+    try { window.posthog && posthog.capture('pre_read_screen_view', { screen: n }); } catch (_) {}
+    app.innerHTML = [introScreen, roomScreen, photoScreen, spotScreen, distScreen, finishScreen][n]();
+    cameBack = false;
+    window.scrollTo(0, 0);
+    wire();
+  }
+
+  function wire() {
+    var start = document.getElementById('startWalk');
+    if (start) {
+      start.addEventListener('click', function (e) { e.preventDefault(); renderScreen(firstUnanswered()); });
+    }
+    var back = document.getElementById('backLink');
+    if (back) {
+      back.addEventListener('click', function (e) {
+        e.preventDefault();
+        renderScreen(screen === 1 ? 0 : screen - 1);
+      });
+    }
+    var s1 = document.getElementById('step1');
+    if (s1) {
+      s1.querySelectorAll('.chip').forEach(function (c) {
+        c.addEventListener('click', function () {
+          var room = c.getAttribute('data-room');
+          confirm({ confirmed_panel_room: ROOM_ENUM[room] }).then(function () {
+            D.confirmed_panel_room = ROOM_ENUM[room];
+            s1.querySelectorAll('.chip').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); x.classList.remove('suggested'); });
+            c.setAttribute('aria-pressed', 'true');
+            document.getElementById('echo1t').textContent = echoRoom(room);
+            document.getElementById('echo1').classList.add('show');
+            advance(1, 600);
+          }).catch(function () {
+            saveFail(document.getElementById('echo1t'), document.getElementById('echo1'));
+          });
+        });
+      });
+    }
+    var skip = document.getElementById('skipPhoto');
+    if (skip) {
+      skip.addEventListener('click', function (e) {
+        e.preventDefault();
+        try { window.posthog && posthog.capture('pre_read_photo_skipped'); } catch (_) {}
+        renderScreen(nextFrom(2));
+      });
+    }
+    var pInput = document.getElementById('photoInput');
+    if (pInput) {
+      pInput.addEventListener('change', function () {
+        var f = pInput.files && pInput.files[0];
+        if (!f) return;
+        var btnText = document.getElementById('photoBtnText');
+        var echoP = document.getElementById('echoP');
+        var echoPt = document.getElementById('echoPt');
+        btnText.textContent = 'Sending your photo';
+        echoP.classList.remove('show');
+        var fromScreen = screen;
+        downscale(f).then(function (dataUrl) {
+          return fetch(API + '/pre-read-photo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + PUB, 'apikey': PUB },
+            body: JSON.stringify({ token: TOKEN, image: dataUrl }),
+          });
+        }).then(function (r) {
+          if (!r.ok) throw new Error('upload failed');
+          try { window.posthog && posthog.capture('pre_read_photo_uploaded'); } catch (_) {}
+          D.photo_received = true;
+          btnText.textContent = 'Photo received';
+          document.getElementById('photoBtn').style.opacity = '0.65';
+          document.getElementById('photoBtn').style.pointerEvents = 'none';
+          echoPt.textContent = 'Got it. That\'s the one I needed.';
+          echoP.classList.add('show');
+          advance(fromScreen, 900);
+        }).catch(function () {
+          btnText.textContent = 'Add the photo';
+          echoPt.textContent = 'That didn\'t go through. Tap it once more, or text it to me and I\'ll take it from there.';
+          echoP.classList.add('show');
+        });
+      });
+    }
+    var sl = document.getElementById('saveLater');
+    if (sl) {
+      sl.addEventListener('click', function (e) {
+        e.preventDefault();
+        try { window.posthog && posthog.capture('pre_read_save_later_tap'); } catch (_) {}
+        fetch(API + '/pre-read-save-later', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + PUB, 'apikey': PUB },
+          body: JSON.stringify({ token: TOKEN }),
+        }).then(function (r) { if (!r.ok) throw new Error('save failed'); return r.json(); }).then(function () {
+          sl.parentNode.innerHTML = '<b>Saved.</b> Pick it back up any time from this link, bookmark it or screenshot it.';
+        }).catch(function () {
+          document.getElementById('saveLaterEcho').textContent = ' Hmm, that did not stick. Bookmark this page and it works the same.';
+        });
+      });
+    }
+    var sat = document.getElementById('sat');
+    if (sat) {
+      // Shared so both pointer + keyboard place the pin the same way.
+      function placeSpot(fx, fy) {
+        confirm({ generator_spot: { x: fx, y: fy } }).then(function () {
+          D.confirmed_generator_spot = { x: fx, y: fy };
+          var pin = document.getElementById('pin');
+          pin.style.left = (fx * 100) + '%';
+          pin.style.top = (fy * 100) + '%';
+          pin.classList.add('show');
+          document.getElementById('echo2t').textContent = 'Perfect.';
+          document.getElementById('echo2').classList.add('show');
+          advance(3, 600);
+        }).catch(function () {
+          saveFail(document.getElementById('echo2t'), document.getElementById('echo2'));
+        });
+      }
+      sat.addEventListener('click', function (e) {
+        var r = sat.getBoundingClientRect();
+        placeSpot((e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
+      });
+      // CUST-04 a11y: the map is role="button" but was click-only, so a
+      // keyboard / switch / shaky-hand user could focus it yet not place the
+      // pin (it fails the old-person test on the one place-the-generator step).
+      // Enter/Space drops the pin at center, an honest "roughly here" the panel
+      // photo + distance confirm anyway, so the step is always completable.
+      sat.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          placeSpot(0.5, 0.5);
+        }
+      });
+    }
+    var s3 = document.getElementById('step3');
+    if (s3) {
+      s3.querySelectorAll('.chip').forEach(function (c) {
+        c.addEventListener('click', function () {
+          var run = c.getAttribute('data-run');
+          confirm({ run_bucket: BUCKET_ENUM[run] }).then(function (resp) {
+            D.customer_run_ft_estimate = resp.customer_run_ft_estimate != null ? resp.customer_run_ft_estimate : (run === 'Not sure' ? -1 : null);
+            if (run === 'Not sure') D.customer_run_ft_estimate = -1;
+            s3.querySelectorAll('.chip').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+            c.setAttribute('aria-pressed', 'true');
+            document.getElementById('echo3t').textContent = run === 'Not sure'
+              ? 'No problem. I\'ll work it out from your photo and confirm it with you before anything is locked.'
+              : 'Got it.';
+            document.getElementById('echo3').classList.add('show');
+            advance(4, run === 'Not sure' ? 1400 : 600);
+          }).catch(function () {
+            saveFail(document.getElementById('echo3t'), document.getElementById('echo3'));
+          });
+        });
+      });
+    }
+  }
+
+  function boot() {
+    if (!/^[a-f0-9]{32,64}$/i.test(TOKEN)) { app.innerHTML = terminalExpired(); return; }
+    fetch(API + '/pre-read-view?token=' + encodeURIComponent(TOKEN), {
+      headers: { 'Authorization': 'Bearer ' + PUB, 'apikey': PUB },
+    }).then(function (r) {
+      if (!r.ok) throw new Error('not found');
+      return r.json();
+    }).then(function (j) {
+      D = j;
+      try { window.posthog && posthog.capture('pre_read_viewed', { confidence: D.confidence, photo_received: !!D.photo_received }); } catch (_) {}
+      cameBack = anyAnswered();
+      renderScreen(cameBack ? firstUnanswered() : 0);
+      // Fresh-from-the-form arrivals can beat the enrichment engine by a few
+      // seconds; one quiet re-fetch upgrades the note + range in place.
+      if (!cameBack && (D.confidence === 'low' || !D.subdivision)) {
+        setTimeout(function () {
+          fetch(API + '/pre-read-view?token=' + encodeURIComponent(TOKEN), {
+            headers: { 'Authorization': 'Bearer ' + PUB, 'apikey': PUB },
+          }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j2) {
+            if (j2 && screen === 0 && (j2.confidence !== D.confidence || j2.subdivision !== D.subdivision)) {
+              D = j2;
+              renderScreen(0);
+            } else if (j2) { D = j2; }
+          }).catch(function () {});
+        }, 8000);
+      }
+    }).catch(function () {
+      app.innerHTML = terminalExpired();
+    });
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a.sms-btn');
+    if (a) { try { window.posthog && posthog.capture('pre_read_sms_tap'); } catch (_) {} }
+  }, true);
+  boot();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1858 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="Referrer-Policy" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://*.supabase.co; form-action 'self';">
+  <title>Your installation plan | Backup Power Pro</title>
+  <link rel="stylesheet" href="assets/css/bpp-money-fonts.css?v=20260808a">
+  <link rel="stylesheet" href="assets/css/bpp-ds.css?v=20260713a">
+  <style>
+    :root{
+      --bg:#f3f5f9;
+      --page-max:560px;
+      --plan-navy:#0b1f3b;
+      --plan-ink:#14233d;
+      --plan-muted:#657086;
+      --plan-line:#e5e9f0;
+      --plan-gold:#ffba00;
+      --plan-green:#087b57;
+      --plan-soft:#f5f7fa;
+      --plan-warm:#fff9e8;
+      --plan-shadow:0 14px 36px rgba(11,31,59,.09),0 2px 7px rgba(11,31,59,.04);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--plan-ink);font-family:Inter,system-ui,sans-serif}
+    body.booting .page,body.booting .sticky{visibility:hidden}
+    body:not(.booting) .proposal-loading{display:none}
+    button,input{font:inherit}
+    button,[role="button"],summary,label{touch-action:manipulation}
+    a{color:inherit}
+    .preview-flag{
+      position:fixed;z-index:99999;top:0;left:0;right:0;padding:8px 14px;background:#f59e0b;color:#1c1003;
+      text-align:center;font:800 12px/1.35 Outfit,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.18);
+      letter-spacing:.08em;text-transform:uppercase;
+    }
+    .preview-flag[hidden]{display:none}
+    .preview-watermark{position:fixed;inset:0;pointer-events:none;z-index:99998;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .preview-watermark[hidden]{display:none}
+    .preview-watermark span{font:900 clamp(60px,14vw,120px)/1 Outfit,sans-serif;color:rgba(11,31,59,.06);letter-spacing:.1em;text-transform:uppercase;transform:rotate(-35deg);white-space:nowrap;user-select:none}
+    body.preview-mode{padding-top:34px}
+    body.preview-mode .brand{top:34px}
+    body.preview-mode #approve,body.preview-mode .sticky,body.preview-mode a.state-action[href*="invoice"]{display:none!important}
+    .brand{
+      position:sticky;z-index:50;top:0;display:flex;align-items:center;justify-content:flex-start;
+      min-height:58px;padding:10px 34px;color:#fff;
+      background:var(--plan-navy);
+      border-bottom:1px solid rgba(255,255,255,.1);
+      box-shadow:0 8px 24px rgba(5,18,38,.13);
+    }
+    .brand-mark{display:block;overflow:hidden;width:30px;height:30px;flex:0 0 30px;border-radius:7px}
+    .brand-mark img{display:block;width:30px;height:30px;object-fit:cover;object-position:center}
+    .brand-logo{
+      position:absolute;left:34px;top:50%;display:block;width:auto;height:29px;
+      clip-path:inset(0 0 0 34px);transform:translateY(-50%);
+      transition:opacity 140ms cubic-bezier(.16,1,.3,1);
+    }
+    .brand-personal{
+      position:absolute;inset:0 34px 0 68px;display:flex;align-items:center;justify-content:flex-start;
+      visibility:hidden;opacity:0;pointer-events:none;
+      transition:opacity 140ms cubic-bezier(.16,1,.3,1);
+    }
+    .brand-personal strong{font:800 19px/.96 Outfit,sans-serif;letter-spacing:-.035em}
+    .brand.personal .brand-logo{visibility:hidden;opacity:0}
+    .brand.personal .brand-personal{visibility:visible;opacity:1}
+    .page{max-width:560px;margin:0 auto;padding:16px 14px 124px}
+    .hero{
+      position:relative;overflow:hidden;margin:0 0 14px;border:0;border-radius:22px;background:#fff;
+      color:#fff;box-shadow:var(--plan-shadow);isolation:isolate;
+    }
+    .hero-photo{
+      position:relative;height:205px;background:
+        linear-gradient(to bottom,rgba(11,31,59,.03) 35%,rgba(11,31,59,.24) 61%,#0b1f3b 100%),
+        var(--hero-image,linear-gradient(#27415f,#0b1f3b)) center 55%/cover no-repeat;
+    }
+    .hero-photo.no-photo{height:72px;background:var(--plan-navy)}
+    .hero-photo.no-photo::after{display:none}
+    .hero-photo::after{
+      content:"";position:absolute;inset:auto 0 0;height:74px;
+      background:linear-gradient(to bottom,rgba(11,31,59,0),var(--plan-navy));
+    }
+    .hero-address{
+      position:absolute;left:20px;right:20px;bottom:8px;z-index:2;display:flex;align-items:center;gap:6px;
+      color:rgba(255,255,255,.78);font-size:12px;line-height:1.4;
+    }
+    .hero-address-pin{
+      display:block;flex:0 0 14px;width:14px;height:14px;color:currentColor;
+      opacity:0;transform:translateY(-16px) scale(.82);
+      animation:address-pin-drop 520ms cubic-bezier(.2,.85,.28,1.2) 500ms both;
+      filter:drop-shadow(0 2px 3px rgba(5,18,38,.32));
+    }
+    @keyframes address-pin-drop{
+      0%{opacity:0;transform:translateY(-16px) scale(.82)}
+      62%{opacity:1;transform:translateY(2px) scale(1.04)}
+      82%{opacity:1;transform:translateY(-1px) scale(.99)}
+      100%{opacity:1;transform:none}
+    }
+    .hero-body{padding:12px 20px 18px;background:var(--plan-navy)}
+    .kicker{
+      margin-bottom:7px;color:var(--plan-gold);font:800 10px/1.3 Outfit,sans-serif;
+      letter-spacing:.13em;text-transform:uppercase;
+    }
+    .hero h1{margin:0;font:800 30px/1.02 Outfit,sans-serif;letter-spacing:-.035em}
+    .hero-recommendation{background:#fff;color:var(--plan-ink)}
+    .recommendation-head{
+      display:grid;grid-template-columns:82px minmax(0,1fr);gap:15px;align-items:center;
+      padding:20px 20px 10px;
+    }
+    .recommendation-head img{
+      width:82px;height:82px;border:4px solid #fff;border-radius:50%;object-fit:cover;
+      box-shadow:0 7px 22px rgba(11,31,59,.18);
+    }
+    .recommendation-byline strong{display:block;color:var(--plan-navy);font:800 14px/1.28 Outfit,sans-serif}
+    .good-through{
+      display:inline-flex;align-items:center;min-height:28px;margin-top:10px;padding:4px 11px;border-radius:999px;
+      background:#f1f3f6;color:var(--plan-navy);font:800 10px/1.3 Outfit,sans-serif;white-space:normal;
+      max-width:100%;overflow-wrap:anywhere;
+    }
+    .recommendation-copy{
+      margin:0 20px;padding:13px 0 15px;
+    }
+    .recommendation-copy p{margin:0;color:var(--plan-ink);font-size:14.5px;line-height:1.62}
+    .card{
+      overflow:hidden;margin:0 0 14px;border:1px solid rgba(11,31,59,.055);border-radius:19px;
+      background:#fff;box-shadow:var(--plan-shadow);scroll-margin-top:72px;
+    }
+    .card-pad{padding:21px 20px}
+    .section-label{
+      margin:0 0 7px;color:var(--plan-muted);font:800 10px/1.3 Outfit,sans-serif;
+      letter-spacing:.12em;text-transform:uppercase;
+    }
+    .section-title{margin:0;color:var(--plan-navy);font:800 21px/1.16 Outfit,sans-serif;letter-spacing:-.015em}
+    .key-signature{margin:13px 0 6px;color:var(--plan-navy);font:700 25px/1 Dancing Script,cursive}
+    .price-journey-card{overflow:hidden;background:#fff}
+    .price-card{background:var(--plan-navy);color:#fff}
+    .price-card .section-label{color:#ffd15a}
+    .price-card .section-title{color:#fff}
+    .price-total{
+      display:grid;grid-template-columns:1.15fr .9fr 1.1fr;align-items:end;gap:0;margin-top:18px;
+    }
+    .total-part{min-width:0;padding-right:10px}
+    .total-part span{
+      display:block;color:rgba(255,255,255,.62);font:700 10px/1.3 Outfit,sans-serif;
+      letter-spacing:.08em;text-transform:uppercase;
+    }
+    .total-part strong{display:block;margin-top:3px;color:#fff;font:800 39px/.98 Outfit,sans-serif;letter-spacing:-.04em}
+    .pay-part{
+      min-width:0;padding:1px 0 2px 12px;border-left:1px solid rgba(255,255,255,.14);
+    }
+    .pay-part span{display:block;color:rgba(255,255,255,.58);font-size:9.5px;line-height:1.25}
+    .pay-part strong{display:block;margin-top:4px;color:#fff;font:800 17px/1.1 Outfit,sans-serif}
+    .next-panel{border-top:1px solid var(--plan-line);background:#fff}
+    .journey{margin-top:18px;border-top:1px solid var(--plan-line)}
+    .journey-phase{
+      display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;padding:17px 0;
+      border-bottom:1px solid var(--plan-line);
+    }
+    .journey-phase:last-child{padding-bottom:2px;border-bottom:0}
+    .phase-icon{
+      display:grid;place-items:center;width:32px;height:32px;border-radius:10px;
+      background:#eef3fa;color:var(--plan-navy);font:800 12px/1 Outfit,sans-serif;
+    }
+    .journey-phase h3{margin:1px 0 5px;color:var(--plan-navy);font:800 15px/1.2 Outfit,sans-serif}
+    .journey-phase p{margin:0;color:var(--plan-muted);font-size:12.5px;line-height:1.5}
+    .value-card{padding:25px 22px 22px}
+    .project-scope{display:grid;gap:0;margin-top:18px}
+    .project-scope [hidden]{display:none!important}
+    .project-scope > :not([hidden]) ~ :not([hidden]){border-top:1px solid var(--plan-line)}
+    .project-item{
+      display:grid;grid-template-columns:62px minmax(0,1fr) auto;gap:14px;align-items:center;
+      min-width:0;min-height:92px;padding:14px 4px;
+    }
+    .project-media{
+      display:grid;place-items:center;width:62px;height:62px;overflow:hidden;border-radius:13px;
+      background:var(--plan-soft);box-shadow:0 4px 12px rgba(11,31,59,.07);
+    }
+    img.project-media{object-fit:contain}
+    img.project-media.installation-media{object-fit:cover}
+    img.project-media.custom-media{object-fit:cover}
+    .project-media svg{
+      width:30px;height:30px;fill:none;stroke:var(--plan-navy);stroke-width:1.8;
+      stroke-linecap:round;stroke-linejoin:round;
+    }
+    .project-copy{min-width:0}
+    .project-item .nm{color:var(--plan-navy);font:700 13px/1.3 Outfit,sans-serif}
+    .project-item .ds{margin-top:4px;color:var(--plan-muted);font-size:10.5px;line-height:1.42}
+    .project-item .pr{
+      justify-self:end;color:var(--plan-navy);font:800 14px/1.2 Outfit,sans-serif;white-space:nowrap;
+    }
+    .project-item .pr.included{
+      padding:6px 8px;border-radius:10px;background:#eaf9f3;color:var(--plan-green);
+      font-size:10px;text-transform:uppercase;letter-spacing:.03em;
+    }
+    .optional{
+      border:1px solid #f0dc93;background:linear-gradient(160deg,#fffdf6,#fff);
+    }
+    .optional-head{display:grid;grid-template-columns:64px minmax(0,1fr);gap:14px;align-items:center}
+    .optional-head img{width:64px;height:64px;border-radius:14px;object-fit:cover}
+    .optional h2{margin:0;color:var(--plan-navy);font:800 18px/1.15 Outfit,sans-serif}
+    .optional-price{margin-top:4px;color:#6c5513;font:700 12px/1.3 Outfit,sans-serif}
+    .optional-copy{margin:14px 0 0;color:var(--plan-muted);font-size:12.5px;line-height:1.55}
+    .optional-action{
+      display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:15px;
+      padding-top:14px;border-top:1px solid #efe5c5;
+    }
+    .optional-action span{color:var(--plan-muted);font-size:11px;line-height:1.4}
+    .add-option{
+      flex:0 0 auto;min-width:116px;min-height:46px;padding:0 15px;border:1.5px solid var(--plan-navy);
+      border-radius:24px;background:#fff;color:var(--plan-navy);font:800 12px/1 Outfit,sans-serif;cursor:pointer;
+    }
+    .add-option[aria-pressed="true"]{border-color:var(--plan-green);background:#eaf9f3;color:var(--plan-green)}
+    .roadmap{position:relative;margin-top:16px;padding-left:2px}
+    .roadmap-step{
+      position:relative;display:grid;grid-template-columns:30px minmax(0,1fr);gap:11px;min-height:76px;padding:0;
+    }
+    .roadmap-step:not(:last-child)::before{
+      content:"";position:absolute;left:14px;top:27px;bottom:0;width:2px;background:#dfe5ee;
+    }
+    .roadmap-step:last-child{min-height:0}
+    .roadmap-num{
+      position:relative;z-index:1;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;
+      background:var(--plan-navy);color:#fff;font:800 11px/1 Outfit,sans-serif;
+    }
+    .roadmap-step h3{margin:1px 0 3px;color:var(--plan-navy);font:800 13.5px/1.25 Outfit,sans-serif}
+    .roadmap-step p{margin:0;color:var(--plan-muted);font-size:11.5px;line-height:1.45}
+    .review{margin-top:16px;padding:0;border:0}
+    .review-stars{
+      color:var(--plan-gold);font:800 13px/1 Outfit,sans-serif;letter-spacing:.12em;
+    }
+    .review p{
+      max-width:34em;margin:8px 0 0;color:#263650;
+      font-size:13.5px;font-weight:500;line-height:1.55;font-style:italic;letter-spacing:-.008em;
+    }
+    .review span{
+      display:block;margin-top:7px;color:#748096;
+      font:600 10.5px/1.35 Outfit,sans-serif;letter-spacing:.01em;
+    }
+    .review span strong{color:#536078;font-weight:800}
+    .proof{padding:22px 20px 0}
+    .proof-evidence{margin-top:16px}
+    .proof-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:22px}
+    .proof-item{min-width:0;margin:0}
+    .proof-item img{display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px}
+    .proof-connect-image{object-position:center 40%}
+    .proof-item figcaption{
+      padding:7px 2px 0;color:var(--plan-navy);font:700 9.5px/1.25 Outfit,sans-serif;text-align:center;
+    }
+    .approval-panel{
+      margin:28px -20px 0;padding:20px 20px;border:0;background:#fff;scroll-margin-top:72px;
+    }
+    .approval-personal{
+      margin:14px 0 16px;color:var(--plan-muted);font-size:12.5px;line-height:1.52;
+    }
+    .ack{
+      position:relative;display:grid;grid-template-columns:24px minmax(0,1fr);gap:11px;align-items:start;
+      min-height:56px;margin-top:12px;padding:13px;border:1px solid var(--plan-line);
+      overflow:hidden;border-radius:12px;background:#fff;cursor:pointer;
+    }
+    .ack input{position:absolute;width:1px;height:1px;opacity:0}
+    .ack-box{
+      position:relative;isolation:isolate;display:grid;place-items:center;overflow:hidden;
+      width:23px;height:23px;border:2px solid #b9c2d0;border-radius:6px;
+      background:#fff;color:#fff;font-size:14px;font-weight:800;
+    }
+    .ack-box::after{
+      content:"";position:absolute;inset:-25% auto -25% -85%;width:72%;pointer-events:none;
+      background:linear-gradient(100deg,transparent,rgba(255,255,255,.92),rgba(255,186,0,.52),transparent);
+      opacity:0;transform:skewX(-16deg);
+    }
+    .ack.attention-cue .ack-box{
+      animation:ack-box-cue 1100ms cubic-bezier(.16,1,.3,1) 1;
+    }
+    .ack.attention-cue .ack-box::after{
+      animation:ack-box-glimmer 760ms 170ms cubic-bezier(.16,1,.3,1) 1;
+    }
+    .ack input:checked + .ack-box{border-color:var(--plan-green);background:var(--plan-green)}
+    .ack input:focus-visible + .ack-box{outline:2px solid #1d4ed8;outline-offset:2px}
+    .ack-copy{color:var(--plan-ink);font-size:13px;line-height:1.5}
+    .ack-copy small{display:block;margin-top:5px;color:var(--plan-muted);font-size:11.5px;line-height:1.45}
+    @keyframes ack-box-cue{
+      0%,100%{border-color:#b9c2d0;box-shadow:0 0 0 0 rgba(255,186,0,0)}
+      35%,68%{border-color:#d89e00;box-shadow:0 0 0 5px rgba(255,186,0,.18)}
+    }
+    @keyframes ack-box-glimmer{
+      0%{left:-85%;opacity:0}
+      22%{opacity:.95}
+      100%{left:125%;opacity:0}
+    }
+    .sig-input{
+      width:100%;min-height:68px;margin-top:15px;padding:9px 4px 7px;border:0;
+      border-bottom:1px dashed #bdc6d4;border-radius:0;background:transparent;color:var(--plan-navy);
+      text-align:center;font:700 31px/1.15 Dancing Script,cursive;outline:0;
+    }
+    .sig-input:focus{border-bottom-color:var(--plan-gold);background:#fffdf7}
+    .approve{
+      width:100%;min-height:56px;margin-top:18px;border:0;border-radius:28px;background:var(--plan-gold);
+      color:var(--plan-navy);font:800 16px/1 Outfit,sans-serif;box-shadow:0 8px 23px rgba(255,186,0,.32);
+      cursor:pointer;
+    }
+    .approve:disabled{background:#e5e9ef;color:#919aa9;box-shadow:none;cursor:not-allowed}
+    .policies{
+      display:flex;align-items:center;justify-content:center;gap:2px;flex-wrap:wrap;
+      margin-top:10px;text-align:center;color:var(--plan-muted);font-size:10px;line-height:1.4;
+    }
+    .policies a{
+      display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:0 7px;
+      color:#385b91;
+    }
+    .ack-link{
+      display:inline;padding:13px 0;margin:-13px 0;color:#28589b;
+      font:inherit;text-decoration:underline;text-underline-offset:2px;
+      -webkit-box-decoration-break:clone;box-decoration-break:clone;
+    }
+    .info-overlay{
+      position:fixed;z-index:120;inset:0;display:grid;place-items:center;padding:max(18px,env(safe-area-inset-top)) 18px max(18px,env(safe-area-inset-bottom));
+      background:rgba(5,18,38,.58);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+    }
+    .info-overlay[hidden]{display:none}
+    .info-dialog{
+      display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;width:min(100%,430px);max-height:min(78vh,680px);
+      overflow:hidden;padding:19px;border-radius:18px;
+      background:#fff;box-shadow:0 22px 65px rgba(5,18,38,.32);
+    }
+    .info-head{display:flex;align-items:center;justify-content:space-between;gap:14px}
+    .info-head h2{margin:0;color:var(--plan-navy);font:800 22px/1.12 Outfit,sans-serif}
+    .info-close{
+      display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;border:0;border-radius:22px;
+      background:var(--plan-soft);color:var(--plan-navy);font-size:22px;cursor:pointer;
+    }
+    .info-intro{margin:9px 0 0;color:var(--plan-muted);font-size:12px;line-height:1.5}
+    .info-list{display:grid;gap:9px;margin-top:15px;overflow:auto}
+    .info-item{padding:12px 13px;border-radius:12px;background:var(--plan-soft)}
+    .info-item strong{display:block;color:var(--plan-navy);font:700 13px/1.3 Outfit,sans-serif}
+    .info-item span{display:block;margin-top:4px;color:#526078;font-size:11px;line-height:1.48}
+    .info-actions{display:grid;gap:8px;margin-top:16px}
+    .info-download,.info-done{
+      display:flex;align-items:center;justify-content:center;min-height:48px;padding:0 16px;border-radius:24px;
+      font:800 13px/1 Outfit,sans-serif;cursor:pointer;
+    }
+    .info-download{background:var(--plan-navy);color:#fff;text-decoration:none}
+    .info-download[hidden]{display:none}
+    .info-done{border:1px solid var(--plan-line);background:#fff;color:var(--plan-navy)}
+    .sticky{
+      position:fixed;z-index:50;left:14px;right:14px;bottom:calc(10px + env(safe-area-inset-bottom));
+      display:grid;grid-template-columns:1fr 1.45fr;gap:10px;align-items:center;max-width:532px;
+      margin:0 auto;padding:8px 8px 8px 14px;border:1px solid rgba(11,31,59,.07);border-radius:18px;
+      background:rgba(255,255,255,.94);box-shadow:0 11px 30px rgba(11,31,59,.18);
+      backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+      opacity:0;transform:translateY(calc(100% + 30px));pointer-events:none;
+      transition:opacity 180ms cubic-bezier(.16,1,.3,1),transform 240ms cubic-bezier(.16,1,.3,1);
+    }
+    .sticky.shown{opacity:1;transform:none;pointer-events:auto}
+    .sticky span{display:block;color:var(--plan-muted);font-size:9px;line-height:1.2}
+    .sticky strong{display:block;margin-top:2px;color:var(--plan-navy);font:800 18px/1.1 Outfit,sans-serif}
+    .sticky button{
+      min-height:48px;border:0;border-radius:24px;background:var(--plan-gold);color:var(--plan-navy);
+      font:800 13px/1 Outfit,sans-serif;cursor:pointer;
+    }
+    @media (prefers-reduced-motion:reduce){.sticky{transition:none}}
+    .toast{
+      position:fixed;z-index:100;left:50%;bottom:104px;max-width:340px;width:calc(100% - 40px);
+      padding:12px 16px;border-radius:13px;background:var(--plan-navy);color:#fff;text-align:center;
+      font-size:12px;line-height:1.45;box-shadow:0 12px 32px rgba(11,31,59,.28);
+      opacity:0;transform:translate(-50%,12px);pointer-events:none;
+      transition:opacity 180ms cubic-bezier(.16,1,.3,1),transform 180ms cubic-bezier(.16,1,.3,1);
+    }
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+    .approval-error{min-height:20px;margin-top:10px;color:#9b1c1c;font-size:12px;line-height:1.45;text-align:center}
+    .state-card{margin:28px auto;padding:42px 24px;text-align:center}
+    .state-card h1{margin:0;color:var(--plan-navy);font:800 24px/1.15 Outfit,sans-serif}
+    .state-card p{max-width:420px;margin:12px auto 0;color:var(--plan-muted);font-size:14px;line-height:1.6}
+    .proposal-loading{max-width:var(--page-max)}
+    .state-spin{width:34px;height:34px;margin:0 auto 16px;border:3px solid var(--plan-line);border-top-color:var(--plan-navy);border-radius:50%;animation:state-spin .7s linear infinite}
+    @keyframes state-spin{to{transform:rotate(360deg)}}
+    .state-action{display:flex;align-items:center;justify-content:center;min-height:52px;margin:20px auto 0;padding:0 22px;border:0;border-radius:26px;background:var(--plan-gold);color:var(--plan-navy);font:800 14px/1 Outfit,sans-serif;text-decoration:none;cursor:pointer}
+    @media (min-width:600px){
+      .page{padding-top:22px}
+      .hero-photo{height:245px}
+      .hero h1{font-size:34px}
+    }
+    @media (max-width:460px){
+      .recommendation-head{grid-template-columns:76px minmax(0,1fr);gap:13px;padding:18px 18px 8px}
+      .recommendation-head img{width:70px;height:70px}
+      .recommendation-byline strong{font-size:clamp(11px,3.35vw,13px);letter-spacing:-.015em;white-space:nowrap}
+      .recommendation-copy{margin:0 18px;padding:12px 0 14px}
+      .value-card{padding:23px 18px}
+      .project-item{grid-template-columns:54px minmax(0,1fr) auto;gap:10px;min-height:84px;padding:12px 3px}
+      .project-media{width:54px;height:54px;border-radius:11px}
+      .project-media svg{width:26px;height:26px}
+      .project-item .nm{font-size:12px}
+      .project-item .ds{font-size:11px;line-height:1.42}
+      .project-item .pr{font-size:12.5px}
+      .project-item .pr.included{padding:5px 7px;font-size:9px}
+    }
+    @media (max-width:370px){
+      .hero h1{font-size:27px}
+      .price-total{grid-template-columns:1.08fr .86fr 1.06fr}
+      .total-part{padding-right:6px}
+      .total-part strong{font-size:31px}
+      .pay-part{padding-left:7px}
+      .pay-part span{font-size:8.5px}
+      .pay-part strong{font-size:14px;letter-spacing:-.025em}
+      .sticky{grid-template-columns:1fr 1.25fr}
+    }
+    @media (prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      *,*::before,*::after{transition:none!important}
+      .state-spin{animation:none}
+      .hero-address-pin{opacity:1;transform:none;animation:none}
+      .ack.attention-cue .ack-box{
+        animation:none;border-color:#d89e00;background:var(--plan-warm);
+        box-shadow:0 0 0 5px rgba(255,186,0,.18);
+      }
+      .ack.attention-cue .ack-box::after{animation:none}
+    }
+  </style>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body class="booting">
+<noscript><div class="preview-flag" data-preview-banner="true">Preview unavailable, JavaScript is off, no customer action can occur</div><div class="preview-watermark" data-preview-watermark="true" aria-hidden="true"><span>Preview unavailable</span></div><div style="max-width:620px;margin:70px auto 24px;padding:18px;border:1px solid #ffba00;border-radius:14px;background:#fff8e6;color:#0b1f3b;text-align:center;font:600 16px/1.55 system-ui,sans-serif;">This proposal did not load. Turn on JavaScript and reload, or call (864) 863-7800.</div></noscript>
+  <div class="preview-flag" id="previewFlag" data-preview-banner="true" hidden>Preview mode, not sent to client, read only</div>
+  <div class="preview-watermark" id="previewWatermark" data-preview-watermark="true" aria-hidden="true" hidden><span>Preview</span></div>
+  <header class="brand" id="proposalHeader">
+    <span class="brand-mark" aria-hidden="true"><img src="assets/images/apple-touch-icon.jpg" alt=""></span>
+    <img class="brand-logo" src="assets/images/logo-white-v2.png" alt="Backup Power Pro">
+    <div class="brand-personal" id="brandPersonal" aria-hidden="true">
+      <strong id="compactProposalTitle">Sample's proposal</strong>
+    </div>
+  </header>
+
+  <section class="card state-card proposal-loading" aria-live="polite">
+    <div class="state-spin" aria-hidden="true"></div>
+    <h1>Loading your proposal...</h1>
+    <p>This can take a moment on a slower connection.</p>
+  </section>
+
+  <main class="page">
+    <section class="hero" id="plan">
+      <div class="hero-photo">
+        <div class="hero-address">
+          <svg class="hero-address-pin" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.3 7 13 7 13s7-7.7 7-13a7 7 0 0 0-7-7Z"></path>
+            <circle cx="12" cy="9" r="2.6" fill="#0b1f3b"></circle>
+          </svg>
+          <span id="customerAddress">123 Example Lane, Greenville, SC</span>
+        </div>
+      </div>
+      <div class="hero-body">
+        <div class="kicker">Installation proposal for</div>
+        <h1 id="customerName">Sample Homeowner</h1>
+      </div>
+      <div class="hero-recommendation">
+        <div class="recommendation-head">
+          <img src="assets/images/key-headshot.jpg" alt="Key Goodson">
+          <div class="recommendation-byline">
+            <strong>Prepared personally by Key Goodson</strong>
+            <span class="good-through">Valid through Aug 7</span>
+          </div>
+        </div>
+        <div class="recommendation-copy">
+          <p id="personalNoteText">Sample, here is everything we talked through for your install, priced and ready. Approve it right from your phone and I will take it from there.</p>
+          <div class="key-signature">Key Goodson</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card card-pad value-card" id="value" aria-labelledby="handledHeading">
+      <div class="section-label">Your complete project</div>
+      <h2 class="section-title" id="handledHeading">Installed, tested, permitted, and ready.</h2>
+      <div class="project-scope" id="projectScope"></div>
+    </section>
+
+    <section class="card price-journey-card" id="price" aria-label="Project price and next steps">
+      <div class="price-card card-pad" id="pricePanel" aria-labelledby="priceHeading">
+        <div class="section-label">Exact project price</div>
+        <h2 class="section-title" id="priceHeading">One number, start to finish.</h2>
+        <div class="price-total">
+          <div class="total-part">
+            <span>Your total</span>
+            <strong id="allInTotal">$1,497</strong>
+          </div>
+          <div class="pay-part">
+            <span>Deposit to begin</span>
+            <strong id="sTotal">$374</strong>
+          </div>
+          <div class="pay-part">
+            <span>Remainder after install</span>
+            <strong id="balanceTotal">$1,123</strong>
+          </div>
+        </div>
+      </div>
+      <div class="next-panel card-pad" id="next" aria-labelledby="nextHeading">
+        <div class="section-label">After approval</div>
+        <h2 class="section-title" id="nextHeading">I will take it from there.</h2>
+        <div class="roadmap">
+          <div class="roadmap-step">
+            <div class="roadmap-num">1</div>
+            <div><h3>Permit and schedule</h3><p>I file the permit and coordinate your installation date.</p></div>
+          </div>
+          <div class="roadmap-step">
+            <div class="roadmap-num">2</div>
+            <div><h3>Install and walk through</h3><p>We install, test, clean up, and show you how to use the system.</p></div>
+          </div>
+          <div class="roadmap-step">
+            <div class="roadmap-num">3</div>
+            <div><h3>Inspection and closeout</h3><p>I coordinate the inspection and close out the project.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card optional card-pad" id="pom" aria-labelledby="optionalHeading">
+      <div class="section-label">Optional upgrade</div>
+      <div class="optional-head">
+        <img src="assets/product-images/surge-protector.jpg" alt="Whole-home surge protector">
+        <div>
+          <h2 id="optionalHeading">Whole-home surge protection</h2>
+          <div class="optional-price">$447 added to your project</div>
+        </div>
+      </div>
+      <p class="optional-copy">Helps protect connected equipment from certain electrical surges. It is not required for your generator connection.</p>
+      <div class="optional-action">
+        <span>Your base installation stays complete without this upgrade.</span>
+        <button class="add-option" id="pomToggle" type="button" aria-pressed="false">Add upgrade</button>
+      </div>
+    </section>
+
+    <section class="card proof" id="proof" aria-labelledby="proofHeading">
+      <div class="section-label">The finished result</div>
+      <h2 class="section-title" id="proofHeading">One connection outside. Choose what you power inside.</h2>
+      <div class="proof-evidence">
+        <div class="review">
+          <div class="review-stars" aria-label="5 out of 5 stars">★★★★★</div>
+          <p>"Outstanding service, competent, on time, quick response, professional installation, clean, organized, safety a priority. Highly recommend! Will use again."</p>
+          <span><strong>Mark M.</strong> · Google review</span>
+        </div>
+        <div class="proof-strip" aria-label="Examples of the finished system">
+          <figure class="proof-item">
+            <img src="assets/images/work-inlet-lightbrick.jpg" alt="Weather-rated metal connection box installed on a brick exterior wall">
+            <figcaption>Always ready</figcaption>
+          </figure>
+          <figure class="proof-item">
+            <img class="proof-connect-image" src="assets/images/work-generator-plugged.jpg" alt="Portable generator connected to the outdoor connection box">
+            <figcaption>Connect outside</figcaption>
+          </figure>
+          <figure class="proof-item">
+            <img src="assets/images/work-full-install.jpg" alt="Generator connection equipment and safety interlock installed at an electrical panel">
+            <figcaption>Power your panel</figcaption>
+          </figure>
+        </div>
+      </div>
+      <div class="approval-panel" id="approve" role="region" aria-labelledby="approveHeading">
+        <div class="section-label">Your next step</div>
+        <h2 class="section-title" id="approveHeading">Approve the plan to begin.</h2>
+        <p class="approval-personal">Thank you for trusting me with your home. I’ll make sure your installation is handled carefully, explained clearly, and ready to make the next outage stress free.</p>
+
+        <label class="ack">
+          <input type="checkbox" id="agreementAck">
+          <span class="ack-box">✓</span>
+          <span class="ack-copy">I understand the <a class="ack-link" href="#safety" data-info="safety">Generator Safety &amp; Compatibility</a>. I authorize <span id="agreementMoney">the $299 deposit today, saving this payment method, and a one-time $1,198 charge after installation. Key personally reviews that charge before it runs, and I can cancel this authorization before installation</span>.<small>This is not a subscription or recurring payment.</small></span>
+        </label>
+
+        <input class="sig-input" id="signature" type="text" autocomplete="name" value="Sample Homeowner" aria-label="Signature. Tap to edit.">
+        <button class="approve" id="approveButton" type="button" disabled>Approve and pay $299</button>
+        <div class="approval-error" id="approvalError" role="alert" aria-live="polite"></div>
+        <div class="policies"><a href="#deposit-policy" data-info="deposit">Deposit and rescheduling policy</a><a href="#terms" data-info="terms">Terms</a><a href="#privacy" data-info="privacy">Privacy</a></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="info-overlay" id="infoOverlay" hidden>
+    <section class="info-dialog" role="dialog" aria-modal="true" aria-labelledby="infoTitle" tabindex="-1">
+      <div class="info-head">
+        <h2 id="infoTitle">Details</h2>
+        <button class="info-close" id="infoClose" type="button" aria-label="Close">×</button>
+      </div>
+      <p class="info-intro" id="infoIntro"></p>
+      <div class="info-list" id="infoBody"></div>
+      <div class="info-actions">
+        <a class="info-download" id="infoDownload" href="assets/docs/generator-safety-instructions.pdf" download>Download full safety guide PDF</a>
+        <button class="info-done" id="infoDone" type="button">Done</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="sticky" aria-hidden="true" inert>
+    <div><span id="stickyLabel">Deposit today</span><strong id="stickyDeposit">$299</strong></div>
+    <button id="reviewButton" type="button">Review and approve</button>
+  </div>
+  <div class="toast" id="toast" role="status">Preview only. Nothing was approved or charged.</div>
+
+  <script>
+    (function(){
+      var POM_PRICE=447;
+      var SYSTEM_ORDER=['installation','transfer','inlet','cord','wire','walkthrough','panelGuide','permit','workmanship'];
+      var fixture={
+        customerName:'Sample Homeowner',
+        customerAddress:'123 Example Lane, Greenville, South Carolina 29601, United States',
+        amp:'50',
+        total:1497,
+        requireDeposit:true,
+        depositRate:.20,
+        pomOffered:false,
+        aiSummary:'Customer owns a 50A-capable portable generator and shared the panel and planned outdoor connection location.',
+        notes:'based on your portable generator and the panel location you shared, I recommend the plan below. It gives you a permanent outdoor connection point and lets you choose any breaker in your panel within the generator\'s capacity. The complete price includes installation, permit, and inspection.',
+        systemItems:{
+          installation:{id:'installation',included:true,title:'50A generator connection installation',description:'Panel-matched installation, breaker wiring, testing, and cleanup.',amount:919,image:'assets/images/work-full-install.jpg',showItem:true,showPrice:true},
+          transfer:{id:'transfer',included:true,title:'Panel-matched power transfer system',description:'A panel-matched safety interlock prevents utility and generator power from feeding the panel at the same time.',amount:0,image:'assets/images/work-panel-interlock.jpg',showItem:true,showPrice:false},
+          inlet:{id:'inlet',included:true,title:'50A metal outdoor connection box',description:'Durable metal housing and a weather-rated cover provide a permanent outdoor place to connect your portable generator.',amount:179,image:'assets/product-images/inlet-50amp.jpg',showItem:true,showPrice:false},
+          cord:{id:'cord',included:true,title:'Heavy-duty compatible cord',description:'A complete factory-manufactured cord assembly, matched to your portable generator and connection box.',amount:249,image:'assets/product-images/cord-50amp.jpg',showItem:true,showPrice:false},
+          walkthrough:{id:'walkthrough',included:true,title:'System walkthrough',description:'You see the finished system work and learn how to connect your portable generator and select circuits safely.',amount:0,image:'assets/product-images/system-walkthrough.jpg',showItem:true,showPrice:false},
+          panelGuide:{id:'panelGuide',included:true,title:'Step-by-step panel guide',description:'A durable instruction label stays inside your panel for quick reference during an outage.',amount:0,image:'assets/product-images/panel-operating-guide.jpg',showItem:true,showPrice:false},
+          permit:{id:'permit',included:true,title:'Permit and required inspection',description:'Required for local code compliance. We handle the application, permit fee, inspection scheduling, and follow-through.',amount:150,image:'assets/product-images/permit-inspection-photo.jpg',showItem:true,showPrice:true},
+          workmanship:{id:'workmanship',included:true,title:'One-year workmanship support',description:'If an issue comes from our installation work during the first year, we return and correct it at no charge.',amount:0,image:'assets/product-images/workmanship-support.jpg',showItem:true,showPrice:false},
+          wire:{id:'wire',included:false,title:'Extended wire run',description:'Additional wiring required for your installation.',amount:0,image:'assets/product-images/wire-run.jpg',showItem:true,showPrice:false}
+        },
+        lineItems:[],
+        systemSubtotals:{50:1497},
+        baseDisplayByAmp:{50:1347}
+      };
+      var pomSelected=false;
+      var toastTimer=null;
+      var infoReturnFocus=null;
+      var infoBackground=[];
+      var approvalCueTimer=null;
+      var proposal=null;
+      var submitting=false;
+      var signStatusUncertain=false;
+      var depositCancellationUnconfirmed=true;
+      var depositAuthorizationWasReset=false;
+      var params=new URLSearchParams(window.location.search);
+      var isPreview=params.get('preview')==='1';
+      function previewModeActive(){return isPreview||new URLSearchParams(window.location.search).get('preview')==='1';}
+      if(isPreview){
+        document.body.classList.add('preview-mode');
+        document.getElementById('previewFlag').hidden=false;
+        document.getElementById('previewWatermark').hidden=false;
+      }
+      var isLocalFixture=(location.hostname==='127.0.0.1'||location.hostname==='localhost')&&!params.get('token');
+      var SUPABASE_URL='https://hfatblrcwytxvijjhpal.supabase.co';
+      var SUPABASE_KEY='sb_publishable_kBXthY-Han29JLqcT514RQ_RtwxXLZ-';
+      var AUTH_VERSION='mandate-v1-2026-06-08';
+      var AUTHORIZATION_GATE_TIMEOUT_MS=4000;
+      var authorizationGateState=isPreview?'preview':'pending';
+      var authorizationGateInFlight=null;
+      var authorizationGateToken='';
+      var authorizationFactsRendered=false;
+      var authorizationFullRedoPending=false;
+      document.body.dataset.authorizationGate=authorizationGateState;
+      function authorizationGateReady(){return authorizationGateState==='ready';}
+      function setAuthorizationGateState(state){
+        authorizationGateState=state;
+        depositCancellationUnconfirmed=state!=='ready';
+        document.body.dataset.authorizationGate=state;
+        syncAuthorizationGateUI();
+      }
+      function setAuthorizationControlLocked(control,locked){
+        if(locked){
+          if(!control.hasAttribute('data-authorization-gate-locked')){
+            control.setAttribute('data-authorization-gate-locked','true');
+            control.setAttribute('data-authorization-was-disabled',control.disabled?'true':'false');
+            control.setAttribute('data-authorization-tabindex',control.getAttribute('tabindex')||'');
+            if(control.tagName==='A'&&control.hasAttribute('href'))control.setAttribute('data-authorization-href',control.getAttribute('href'));
+          }
+          if('disabled' in control)control.disabled=true;
+          control.setAttribute('aria-disabled','true');
+          if(control.tagName==='A')control.removeAttribute('href');
+          control.setAttribute('tabindex','-1');
+          return;
+        }
+        if(!control.hasAttribute('data-authorization-gate-locked'))return;
+        if('disabled' in control)control.disabled=control.getAttribute('data-authorization-was-disabled')==='true';
+        if(control.hasAttribute('data-authorization-href'))control.setAttribute('href',control.getAttribute('data-authorization-href'));
+        var priorTabIndex=control.getAttribute('data-authorization-tabindex');
+        if(priorTabIndex)control.setAttribute('tabindex',priorTabIndex);else control.removeAttribute('tabindex');
+        control.removeAttribute('aria-disabled');
+        control.removeAttribute('data-authorization-gate-locked');
+        control.removeAttribute('data-authorization-was-disabled');
+        control.removeAttribute('data-authorization-tabindex');
+        control.removeAttribute('data-authorization-href');
+      }
+      function syncAuthorizationGateNotice(target){
+        var notice=document.querySelector('[data-authorization-gate-status]');
+        if(authorizationGateState==='ready'||authorizationGateState==='preview'||!target){if(notice)notice.remove();return;}
+        if(!notice){
+          notice=document.createElement('section');notice.className='card';notice.setAttribute('data-authorization-gate-status','true');
+          notice.style.cssText='text-align:center;padding:18px 20px;margin-bottom:14px';target.parentNode.insertBefore(notice,target);
+        }
+        if(notice.getAttribute('data-authorization-gate-state')===authorizationGateState)return;
+        notice.setAttribute('data-authorization-gate-state',authorizationGateState);notice.innerHTML='';
+        var message=document.createElement('p');message.style.margin='0';
+        message.textContent=authorizationGateState==='failed'
+          ? 'We could not confirm that this proposal is ready for a new acceptance. No approval or payment was submitted. Tap Retry to check again.'
+          : 'Confirming that this proposal is ready for a new acceptance.';
+        notice.appendChild(message);
+        if(authorizationGateState==='failed'){
+          var retry=document.createElement('button');retry.type='button';retry.className='state-action';retry.setAttribute('data-authorization-gate-retry','true');
+          retry.textContent='Retry authorization check';retry.addEventListener('click',function(){beginAuthorizationGate(authorizationGateToken);});notice.appendChild(retry);
+        }
+      }
+      function syncAuthorizationGateUI(){
+        var locked=!authorizationGateReady();document.body.dataset.authorizationGate=authorizationGateState;
+        var panel=document.getElementById('approve');
+        if(panel){
+          if(locked){
+            if(!panel.hasAttribute('data-authorization-gate-inert'))panel.setAttribute('data-authorization-gate-inert',panel.hasAttribute('inert')?'true':'false');
+            panel.setAttribute('inert','');if(authorizationGateState==='pending')panel.setAttribute('aria-busy','true');else panel.removeAttribute('aria-busy');
+          }else if(panel.hasAttribute('data-authorization-gate-inert')){
+            if(panel.getAttribute('data-authorization-gate-inert')==='false')panel.removeAttribute('inert');
+            panel.removeAttribute('data-authorization-gate-inert');panel.removeAttribute('aria-busy');
+          }
+        }
+        var selector='#approveButton,#resumeCheckout,#checkPaymentTruth,#checkPaymentStatus,[data-authorization-action="payment"]';
+        Array.prototype.forEach.call(document.querySelectorAll(selector),function(control){setAuthorizationControlLocked(control,locked);});
+        var action=document.querySelector(selector);syncAuthorizationGateNotice(panel||(action&&action.closest('.state-card'))||action);
+        if(!locked&&document.getElementById('approveButton'))syncApproval();
+      }
+      var infoContent={
+        safety:{
+          title:'Before using your generator',
+          intro:'',
+          download:true,
+          items:[
+            ['Carbon monoxide','Operate outdoors only, at least 20 feet from the home, with exhaust pointed away from windows, doors, and vents. Keep working carbon monoxide alarms on every level.'],
+            ['Use the installed connection','Never power the home through a wall outlet. Use only the installed connection box and transfer or interlock equipment, keep the generator dry, and stay within its rated capacity.'],
+            ['Your generator setup','Our system requires a floating-neutral, or nonbonded, generator. Many are already set up this way. If not, manufacturer instructions or an authorized generator service dealer can usually resolve it. Confirm your exact model before connecting it. Generator compatibility, maintenance, and modification are not included in our work.']
+          ]
+        },
+        deposit:{
+          title:'Deposit and rescheduling',
+          intro:'A simple summary of how the project deposit works.',
+          items:[
+            ['Applied to your project','Your deposit is part of the project total, not an added fee. The remaining balance will be charged after installation.'],
+            ['Rescheduling','You may reschedule at no charge. Your deposit and any filed permit carry over to the new date.'],
+            ['Cancellation','Cancel at least 48 hours before installation and we refund your deposit, less any nonrecoverable permit fee already paid. Cancellations within 48 hours may forfeit the deposit. Rescheduling preserves it.'],
+            ['If we cancel','If Backup Power Pro cannot complete the project, we refund your full deposit, including any amount retained for the permit.']
+          ]
+        },
+        terms:{
+          title:'Project terms',
+          intro:'The practical terms attached to this proposal.',
+          items:[
+            ['Scope and price','The approved price covers the work listed in this proposal. Any requested or unforeseen scope change is discussed and approved before added work begins.'],
+            ['Access and scheduling','You provide safe access to the panel and connection location. We coordinate the permit, installation date, and required inspection.'],
+            ['Workmanship','The installed work includes a one-year workmanship warranty. Generator maintenance, misuse, pre-existing conditions, and later modifications are not covered.'],
+            ['Payment authorization','Your payment method is saved by our payment provider. You authorize one charge for the remaining balance shown in this proposal after installation. This authorization applies only to this project. This is not a subscription or recurring payment. Key personally reviews the charge before it runs, and you may cancel this authorization before installation.'],
+            ['Electronic approval','Checking the acknowledgment, confirming your name, and completing the payment step records your electronic acceptance of this proposal.']
+          ]
+        },
+        privacy:{
+          title:'Privacy',
+          intro:'How the information attached to this proposal is used.',
+          items:[
+            ['Project use only','Your contact, property, generator, and panel information is used to prepare, schedule, and complete your project.'],
+            ['Payments','Payment information is processed and saved by our payment provider for the remaining project balance. Backup Power Pro does not store your full card number.'],
+            ['No sale of your information','Your personal information and mobile opt-in data are not sold or shared with other companies for their own marketing.']
+          ]
+        }
+      };
+
+      function money(value){
+        var rounded=Math.round(Number(value)||0);
+        return (rounded<0?'−$':'$')+Math.abs(rounded).toLocaleString('en-US');
+      }
+      function escapeHtml(value){
+        return String(value==null?'':value)
+          .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+          .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+      }
+      function compactAddress(value){
+        var street=String(value||'').split(',')[0].trim();
+        return street
+          .replace(/\bStreet\b/gi,'St')
+          .replace(/\bRoad\b/gi,'Rd')
+          .replace(/\bAvenue\b/gi,'Ave')
+          .replace(/\bBoulevard\b/gi,'Blvd')
+          .replace(/\bDrive\b/gi,'Dr')
+          .replace(/\bLane\b/gi,'Ln')
+          .replace(/\bCourt\b/gi,'Ct')
+          .replace(/\bCircle\b/gi,'Cir')
+          .replace(/\bParkway\b/gi,'Pkwy')
+          .replace(/\bHighway\b/gi,'Hwy')
+          .replace(/\s+/g,' ')
+          .trim();
+      }
+      function localAmpTitle(value){
+        return String(value||'').replace(/^(30|50)A\b/,fixture.amp+'A');
+      }
+      function positiveSubtotal(){
+        var total=Number((fixture.systemSubtotals||{})[fixture.amp])||0;
+        (fixture.lineItems||[]).forEach(function(item){
+          if(item&&item.kind!=='discount') total+=Number(item.amount)||0;
+        });
+        return Math.max(0,total);
+      }
+      function discountAmount(item){
+        if(!item||item.kind!=='discount') return 0;
+        return item.discountType==='percent'
+          ? Math.round(positiveSubtotal()*(Number(item.amount)||0)/100)
+          : Number(item.amount)||0;
+      }
+      function total(){
+        return Math.max(0,(Number(fixture.total)||0)+(pomSelected?POM_PRICE:0));
+      }
+      function deposit(){
+        if(fixture.requireDeposit===false) return 0;
+        return Math.round(total()*(Number(fixture.depositRate)||0));
+      }
+      function displayCustomItems(){
+        var items=[];
+        (fixture.lineItems||[]).forEach(function(item){
+          if(!item||item.showItem===false) return;
+          var isDiscount=item.kind==='discount';
+          var amount=isDiscount?-discountAmount(item):(Number(item.amount)||0);
+          var showsPrice=item.showPrice!==false&&amount!==0;
+          items.push({
+            id:item.id||'custom',
+            image:item.image||'assets/images/work-panel-interlock.jpg',
+            title:item.title||item.name||(isDiscount?'Project savings':'Additional work'),
+            description:item.description||(isDiscount?'Applied to this plan.':'Work tailored to this installation.'),
+            price:showsPrice?money(amount):'Included',
+            included:!showsPrice
+          });
+        });
+        return items;
+      }
+      function visibleSystemItem(item,key){
+        if(key==='installation') return true;
+        return Boolean(item&&item.included!==false&&item.showItem!==false);
+      }
+      function projectMediaHtml(item,key){
+        var image=item.image||'assets/images/work-panel-interlock.jpg';
+        var mediaClass=key==='installation'?' installation-media':(/^li_/.test(key)?' custom-media':'');
+        return '<img class="project-media'+mediaClass+'" src="'+escapeHtml(image)+'" alt="">';
+      }
+      function projectItemHtml(item){
+        return '<div class="project-item" data-scope-id="'+escapeHtml(item.id)+'">'
+          +projectMediaHtml(item,item.id)
+          +'<div class="project-copy"><div class="nm">'+escapeHtml(item.title)+'</div><div class="ds">'+escapeHtml(item.description)+'</div></div>'
+          +'<div class="pr'+(item.included?' included':'')+'" data-scope-price>'+escapeHtml(item.price)+'</div>'
+          +'</div>';
+      }
+      function standardProjectItems(){
+        var system=fixture.systemItems||{};
+        var mainPrice=Number((fixture.baseDisplayByAmp||{})[fixture.amp]);
+        var main=system.installation||{};
+        if(!Number.isFinite(mainPrice)) mainPrice=Number(main.amount)||Number(fixture.total)||0;
+        return SYSTEM_ORDER.map(function(key){
+          var item=system[key];
+          if(key==='installation'&&!item){
+            item={
+              id:'installation',title:fixture.amp+'A generator connection installation',
+              description:'Panel-matched installation, breaker wiring, testing, and cleanup.',
+              image:'assets/images/work-full-install.jpg',showPrice:true
+            };
+          }
+          if(!visibleSystemItem(item,key)) return null;
+          var amount=key==='installation'?mainPrice:(Number(item.amount)||0);
+          var showsPrice=key==='installation'||(item.showPrice===true&&amount!==0);
+          return {
+            id:key,
+            image:item.image,
+            title:localAmpTitle(item.title||'Included project item'),
+            description:item.description||'Included with this installation.',
+            price:showsPrice?money(amount):'Included',
+            included:!showsPrice
+          };
+        }).filter(Boolean);
+      }
+      function renderScope(){
+        var items=standardProjectItems().concat(displayCustomItems());
+        document.getElementById('projectScope').innerHTML=items.map(projectItemHtml).join('');
+      }
+      function renderNote(){
+        var note=String(fixture.notes||'').trim();
+        var prefix=String(fixture.customerName||'Sample Homeowner').trim().split(/\s+/)[0]||'Sample';
+        if(!note){
+          note='Based on your portable generator and the panel location you shared, I recommend the plan below. It gives you a permanent outdoor connection point and lets you choose any breaker in your panel within the generator\'s capacity. The complete price includes installation';
+          if(fixture.systemItems&&fixture.systemItems.permit&&fixture.systemItems.permit.included!==false) note+=', permit, and inspection';
+          note+='.';
+        }
+        note=note.charAt(0).toLowerCase()+note.slice(1);
+        document.getElementById('personalNoteText').textContent=prefix+', '+note;
+      }
+      function renderIdentity(){
+        var name=String(fixture.customerName||'Sample Homeowner').trim()||'Sample Homeowner';
+        document.getElementById('customerName').textContent=name;
+        document.getElementById('customerAddress').textContent=compactAddress(fixture.customerAddress);
+        document.getElementById('compactProposalTitle').textContent=(name.split(/\s+/)[0]||'Your')+"'s proposal";
+        var signature=document.getElementById('signature');
+        if(signature.dataset.edited!=='true') signature.value=name;
+        if(proposal){
+          var prepared=proposal.sent_at||proposal.created_at;
+          var expires=proposal.expires_at?new Date(proposal.expires_at):(prepared?new Date(new Date(prepared).getTime()+14*86400000):null);
+          var valid=document.querySelector('.good-through');
+          if(valid){
+            var validParts=[];
+            if(expires&&!isNaN(expires.getTime())) validParts.push('Valid through '+expires.toLocaleDateString('en-US',{month:'short',day:'numeric'}));
+            if(validParts.length) valid.textContent=validParts.join(' · ');
+          }
+        }
+      }
+      function renderMoney(){
+        var projectTotal=total();
+        var due=deposit();
+        var later=projectTotal-due;
+        var paymentRequired=fixture.requireDeposit!==false&&due>0;
+        document.getElementById('allInTotal').textContent=money(projectTotal);
+        document.getElementById('sTotal').textContent=money(due);
+        document.getElementById('balanceTotal').textContent=money(later);
+        document.getElementById('agreementMoney').textContent=fixture.requireDeposit===false
+          ? 'saving this payment method and a one-time '+money(projectTotal)+' charge after installation. Key personally reviews that charge before it runs, and I can cancel this authorization before installation'
+          : 'the '+money(due)+' deposit today, saving this payment method, and a one-time '+money(later)+' charge after installation. Key personally reviews that charge before it runs, and I can cancel this authorization before installation';
+        document.getElementById('stickyDeposit').textContent=money(due);
+        document.getElementById('stickyLabel').textContent=fixture.requireDeposit===false?'Due today':'Deposit today';
+        document.getElementById('approveButton').textContent=paymentRequired
+          ? 'Approve and pay '+money(due)
+          : 'Approve this plan';
+        document.getElementById('toast').textContent=paymentRequired
+          ? 'Preview only. Secure payment would open next. Nothing was approved or charged.'
+          : 'Preview only. Nothing was approved.';
+      }
+      function render(){
+        document.querySelectorAll('[data-amp]').forEach(function(node){node.textContent=fixture.amp;});
+        document.getElementById('pom').style.display=fixture.pomOffered===false?'none':'';
+        renderIdentity();
+        renderNote();
+        renderScope();
+        renderMoney();
+        syncApproval();
+        document.body.classList.remove('booting');
+        syncAuthorizationGateUI();
+      }
+      function approvalReady(){
+        return document.getElementById('agreementAck').checked
+          && document.getElementById('signature').value.trim().length>=3
+          && !submitting
+          && authorizationGateReady()
+          && !depositCancellationUnconfirmed;
+      }
+      function syncApproval(){
+        document.getElementById('approveButton').disabled=!approvalReady();
+      }
+      function syncPom(){
+        var button=document.getElementById('pomToggle');
+        button.setAttribute('aria-pressed',pomSelected?'true':'false');
+        button.textContent=pomSelected?'Added to plan':'Add upgrade';
+        renderMoney();
+      }
+      function showToast(){
+        var toast=document.getElementById('toast');
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer=setTimeout(function(){toast.classList.remove('show');},2200);
+      }
+      function openInfo(key,trigger){
+        var content=infoContent[key];
+        if(!content) return;
+        infoReturnFocus=trigger||document.activeElement;
+        document.getElementById('infoTitle').textContent=content.title;
+        var intro=document.getElementById('infoIntro');
+        intro.textContent=content.intro||'';
+        intro.hidden=!content.intro;
+        document.getElementById('infoBody').innerHTML=content.items.map(function(item){
+          return '<div class="info-item"><strong>'+escapeHtml(item[0])+'</strong><span>'+escapeHtml(item[1])+'</span></div>';
+        }).join('');
+        document.getElementById('infoDownload').hidden=!content.download;
+        var overlay=document.getElementById('infoOverlay');
+        infoBackground=[];
+        Array.prototype.forEach.call(document.body.children,function(node){
+          if(node===overlay||node.tagName==='SCRIPT') return;
+          infoBackground.push({node:node,wasInert:node.hasAttribute('inert')});
+          node.setAttribute('inert','');
+        });
+        overlay.hidden=false;
+        document.body.style.overflow='hidden';
+        document.getElementById('infoClose').focus();
+      }
+      function closeInfo(){
+        document.getElementById('infoOverlay').hidden=true;
+        infoBackground.forEach(function(item){if(!item.wasInert)item.node.removeAttribute('inert');});
+        infoBackground=[];
+        document.body.style.overflow='';
+        if(infoReturnFocus&&infoReturnFocus.focus) infoReturnFocus.focus();
+      }
+      var syncSticky=(function(){
+        var priceCard=document.getElementById('pricePanel');
+        var approvalCard=document.getElementById('approve');
+        var sticky=document.querySelector('.sticky');
+        if(!priceCard||!approvalCard||!sticky){
+          var unavailable=function(){};
+          unavailable.onResize=function(){};
+          return unavailable;
+        }
+        var shown=false;
+        var candidate=null;
+        var candidateTimer=0;
+        var frame=0;
+        var resizeTimer=0;
+        var resizeQuietUntil=0;
+        var DWELL_MS=180;
+
+        function setShown(next){
+          shown=!!next;
+          sticky.classList.toggle('shown',shown);
+          sticky.setAttribute('aria-hidden',shown?'false':'true');
+          if(shown)sticky.removeAttribute('inert');
+          else sticky.setAttribute('inert','');
+        }
+        function cancelCandidate(){
+          candidate=null;
+          if(candidateTimer){clearTimeout(candidateTimer);candidateTimer=0;}
+        }
+        function viewportHeight(){
+          return document.documentElement.clientHeight||window.innerHeight||0;
+        }
+        function qualifies(next){
+          var priceBottom=priceCard.getBoundingClientRect().bottom;
+          var approvalTop=approvalCard.getBoundingClientRect().top;
+          var viewport=viewportHeight();
+          if(next)return priceBottom<=96&&approvalTop>=viewport-24;
+          return priceBottom>=144||approvalTop<=viewport-120;
+        }
+        function settle(next){
+          if(candidate===next)return;
+          cancelCandidate();
+          candidate=next;
+          candidateTimer=setTimeout(function(){
+            candidateTimer=0;
+            if(performance.now()<resizeQuietUntil||!qualifies(next)){
+              candidate=null;
+              return;
+            }
+            setShown(next);
+            candidate=null;
+          },DWELL_MS);
+        }
+        function measure(reason){
+          frame=0;
+          if(reason==='resize'||performance.now()<resizeQuietUntil){
+            cancelCandidate();
+            return;
+          }
+          if(shown){
+            if(qualifies(false))settle(false);
+            else cancelCandidate();
+          }else if(qualifies(true))settle(true);
+          else cancelCandidate();
+        }
+        function schedule(reason){
+          if(frame)return;
+          frame=requestAnimationFrame(function(){measure(reason);});
+        }
+        schedule.onResize=function(){
+          resizeQuietUntil=performance.now()+260;
+          cancelCandidate();
+          if(resizeTimer)clearTimeout(resizeTimer);
+          resizeTimer=setTimeout(function(){
+            resizeTimer=0;
+            schedule('resize-settled');
+          },280);
+          schedule('resize');
+        };
+        setShown(false);
+        return schedule;
+      })();
+      function syncPersonalHeader(){
+        var header=document.getElementById('proposalHeader');
+        var name=document.getElementById('customerName');
+        if(!header||!name)return;
+        var personal=name.getBoundingClientRect().bottom<=header.getBoundingClientRect().bottom;
+        header.classList.toggle('personal',personal);
+        document.getElementById('brandPersonal').setAttribute('aria-hidden',personal?'false':'true');
+        document.querySelector('.brand-logo').setAttribute('aria-hidden',personal?'true':'false');
+      }
+      function armApprovalCue(){
+        var ack=document.querySelector('.ack');
+        var checkbox=document.getElementById('agreementAck');
+        if(!('IntersectionObserver' in window)) return;
+        var observer=new IntersectionObserver(function(entries){
+          clearTimeout(approvalCueTimer);
+          if(checkbox.checked){
+            observer.disconnect();
+            return;
+          }
+          if(!entries[0].isIntersecting) return;
+          approvalCueTimer=setTimeout(function(){
+            if(checkbox.checked) return;
+            var rect=ack.getBoundingClientRect();
+            if(rect.bottom<=0||rect.top>=window.innerHeight) return;
+            ack.dataset.cued='true';
+            ack.classList.add('attention-cue');
+            setTimeout(function(){ack.classList.remove('attention-cue');},1250);
+            observer.disconnect();
+          },3500);
+        },{threshold:.65});
+        observer.observe(ack);
+        checkbox.addEventListener('change',function(){
+          if(!checkbox.checked) return;
+          clearTimeout(approvalCueTimer);
+          observer.disconnect();
+          ack.classList.remove('attention-cue');
+        });
+      }
+
+      function structuredBase(row){
+        var amp=String(row.selected_amp||row.amp_type)==='30'?'30':'50';
+        var base=amp==='30'?1197:1497;
+        var perFt=amp==='30'?12:14;
+        var cordOff=amp==='30'?129:249;
+        var inletOff=amp==='30'?129:179;
+        var length=Math.max(5,Number(row.length_ft||row.run_ft||5));
+        return base+Math.max(0,length-5)*perFt
+          -(row.include_cord===false?cordOff:0)
+          -(row.include_inlet===false?inletOff:0)
+          -(row.include_permit===false?125:0);
+      }
+      function proposalFixture(row){
+        var amp=String(row.selected_amp||row.amp_type)==='30'?'30':'50';
+        var standard=structuredBase(row);
+        var permitAllocation=row.include_permit===false?0:Math.min(150,standard);
+        var extras=Array.isArray(row.extra_line_items)?row.extra_line_items.filter(function(item){return item&&item.checked!==false;}):[];
+        var lines=extras.map(function(item){
+          return {
+            id:String(item.id||'li_'+Math.random().toString(36).slice(2,8)),kind:'item',
+            title:String(item.name||'Additional work'),description:String(item.description||'Work tailored to this installation.'),
+            amount:Number(item.amount)||0,image:String(item.image||'assets/images/work-panel-interlock.jpg'),
+            showItem:item.show_item!==false,showPrice:item.show_price!==false
+          };
+        });
+        if(row.discount_type&&Number(row.discount_value)>0){
+          lines.push({id:'discount',kind:'discount',title:'Project savings',description:'Applied to this plan.',
+            amount:Number(row.discount_value),discountType:row.discount_type==='percent'?'percent':'dollar',showItem:true,showPrice:true});
+        } else if(Number(row.discount_amount)>0){
+          lines.push({id:'discount',kind:'discount',title:'Project savings',description:'Applied to this plan.',
+            amount:Number(row.discount_amount),discountType:'dollar',showItem:true,showPrice:true});
+        }
+        return {
+          customerName:String(row.contact_name||'Homeowner'),customerAddress:String(row.contact_address||''),amp:amp,
+          document_number:row.document_number||null,
+          total:Number(row.signed_total!=null?row.signed_total:row.total)||0,requireDeposit:row.require_deposit!==false,
+          depositRate:Number(row.deposit_rate!=null?row.deposit_rate:.20),pomOffered:row.pom_offered!==false,
+          aiSummary:'',notes:String(row.notes||''),lineItems:lines,systemSubtotals:(function(){var x={};x[amp]=standard;return x;})(),
+          baseDisplayByAmp:(function(){var x={};x[amp]=Math.max(0,standard-permitAllocation);return x;})(),
+          systemItems:{
+            installation:{id:'installation',included:true,title:amp+'A generator connection installation',description:'Panel-matched installation, breaker wiring, testing, and cleanup.',amount:Math.max(0,standard-permitAllocation),image:'assets/images/work-full-install.jpg',showItem:true,showPrice:true},
+            transfer:{id:'transfer',included:true,title:'Panel-matched power transfer system',description:'A panel-matched safety interlock prevents utility and generator power from feeding the panel at the same time.',amount:0,image:'assets/images/work-panel-interlock.jpg',showItem:true,showPrice:false},
+            inlet:{id:'inlet',included:row.include_inlet!==false,title:amp+'A metal outdoor connection box',description:'Durable metal housing and a weather-rated cover provide a permanent outdoor place to connect your portable generator.',amount:amp==='30'?129:179,image:'assets/product-images/inlet-'+amp+'amp.jpg',showItem:true,showPrice:false},
+            cord:{id:'cord',included:row.include_cord!==false,title:'Heavy-duty compatible cord',description:'A complete factory-manufactured cord assembly, matched to your portable generator and connection box.',amount:amp==='30'?129:249,image:'assets/product-images/cord-'+amp+'amp.jpg',showItem:true,showPrice:false},
+            walkthrough:{id:'walkthrough',included:true,title:'System walkthrough',description:'You see the finished system work and learn how to connect your portable generator and select circuits safely.',amount:0,image:'assets/product-images/system-walkthrough.jpg',showItem:true,showPrice:false},
+            panelGuide:{id:'panelGuide',included:true,title:'Step-by-step panel guide',description:'A durable instruction label stays inside your panel for quick reference during an outage.',amount:0,image:'assets/product-images/panel-operating-guide.jpg',showItem:true,showPrice:false},
+            permit:{id:'permit',included:row.include_permit!==false,title:'Permit and required inspection',description:'Required for local code compliance. We handle the application, permit fee, inspection scheduling, and follow-through.',amount:permitAllocation,image:'assets/product-images/permit-inspection-photo.jpg',showItem:true,showPrice:permitAllocation>0},
+            workmanship:{id:'workmanship',included:true,title:'One-year workmanship support',description:'If an issue comes from our installation work during the first year, we return and correct it at no charge.',amount:0,image:'assets/product-images/workmanship-support.jpg',showItem:true,showPrice:false},
+            wire:{id:'wire',included:Number(row.length_ft||row.run_ft||5)>5,title:'Extended wire run',description:'Additional wiring required for your installation.',amount:Math.max(0,Number(row.length_ft||row.run_ft||5)-5)*(amp==='30'?12:14),image:'assets/product-images/wire-run.jpg',showItem:true,showPrice:false}
+          }
+        };
+      }
+      function canonicalAuthorization(projectTotal){
+        var rounded=Math.round(Number(projectTotal)||0);
+        var due=fixture.requireDeposit===false?0:Math.round(rounded*Number(fixture.depositRate||0));
+        var balance=rounded-due;
+        if(fixture.requireDeposit!==false){
+          return 'I authorize Key Electric LLC (dba Backup Power Pro) to save my card and charge the remaining balance of '+money(balance)+' one time after my installation is complete. I understand this is a single post-install charge, not a subscription or recurring payment, that Key personally reviews every charge before it runs, and that I can cancel this authorization any time before my install by calling (864) 863-7800.';
+        }
+        return 'I authorize Key Electric LLC (dba Backup Power Pro) to save my card and charge '+money(rounded)+' one time after my installation is complete. I understand I pay $0 today, that this is a single post-install charge and not a subscription or recurring payment, that Key personally reviews every charge before it runs, and that I can cancel this authorization any time before my install by calling (864) 863-7800.';
+      }
+      function safeStripeUrl(raw){
+        try{
+          var url=new URL(raw);
+          if(url.protocol==='https:'&&(url.hostname==='checkout.stripe.com'||url.hostname.endsWith('.stripe.com'))) return url.href;
+        }catch(_){ }
+        return null;
+      }
+      function setApprovalError(message){document.getElementById('approvalError').textContent=message||'';}
+      function stateView(title,message,actionHtml){
+        document.body.classList.remove('booting');
+        document.querySelector('.sticky').style.display='none';
+        document.querySelector('.page').innerHTML='<section class="card state-card"><h1>'+escapeHtml(title)+'</h1><p>'+escapeHtml(message)+'</p>'+(actionHtml||'')+'</section>';
+        syncAuthorizationGateUI();
+      }
+      function checkout(button,acceptanceAttemptId){
+        if(previewModeActive()||!authorizationGateReady()) return Promise.reject(new Error('Authorization check is not ready.'));
+        if(!proposal) return Promise.reject(new Error('Proposal is unavailable.'));
+        if(button) button.disabled=true;
+        if(acceptanceAttemptId)rememberPendingDepositAcceptance(proposal.token,acceptanceAttemptId);
+        return fetch(SUPABASE_URL+'/functions/v1/proposal-deposit-checkout',{
+          method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},
+          body:JSON.stringify({proposal_token:proposal.token,pay_full:false,acceptance_attempt_id:acceptanceAttemptId||undefined})
+        }).then(function(response){return response.json().catch(function(){return {};}).then(function(data){if(!response.ok) throw new Error(data.error||'Could not start secure checkout.');return data;});})
+          .then(function(data){var target=safeStripeUrl(data.url);if(!target) throw new Error('Payment setup returned an invalid destination.');window.location.href=target;})
+          .catch(function(error){
+            if(!acceptanceAttemptId)throw error;
+            return terminatePendingDepositAcceptance(proposal.token,acceptanceAttemptId).then(function(result){
+              if(result.accepted===true){window.location.reload();return new Promise(function(){});}
+              error.depositCancellationConfirmed=true;
+              throw error;
+            },function(cancelError){
+              cancelError.acceptanceCancellationUnconfirmed=true;
+              throw cancelError;
+            });
+          });
+      }
+      function readAuthoritativeProposal(){
+        var controller=new AbortController();
+        var timer=setTimeout(function(){controller.abort();},6000);
+        return fetch(SUPABASE_URL+'/functions/v1/proposal-view?token='+encodeURIComponent(proposal.token),{
+          headers:{'Authorization':'Bearer '+SUPABASE_KEY},cache:'no-store',signal:controller.signal
+        }).then(function(response){
+          return response.json().catch(function(){return {};}).then(function(data){
+            if(response.status===410) return {__superseded:true,latest_token:data.latest_token||null};
+            if(!response.ok||!data.proposal) throw new Error('status unavailable');
+            return data.proposal;
+          });
+        }).finally(function(){clearTimeout(timer);});
+      }
+      function hasCheckoutReturnHint(){
+        return /[?&](deposit_paid|card_saved|payment_check|acceptance_cancel)=1(?:&|$)/.test(window.location.search);
+      }
+      var ACCEPTANCE_ATTEMPT_RE=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      function pendingDepositStorageKey(token){return 'bpp:pending-deposit-acceptance:'+token;}
+      function rememberPendingDepositAcceptance(token,attemptId){
+        if(!token||!ACCEPTANCE_ATTEMPT_RE.test(String(attemptId||'')))return;
+        try{sessionStorage.setItem(pendingDepositStorageKey(token),String(attemptId));}catch(_){}
+      }
+      function storedPendingDepositAcceptance(token){
+        try{var value=sessionStorage.getItem(pendingDepositStorageKey(token))||'';return ACCEPTANCE_ATTEMPT_RE.test(value)?value:null;}catch(_){return null;}
+      }
+      function forgetPendingDepositAcceptance(token,attemptId){
+        try{var key=pendingDepositStorageKey(token);var current=sessionStorage.getItem(key);if(!attemptId||current===String(attemptId))sessionStorage.removeItem(key);}catch(_){}
+      }
+      function terminatePendingDepositAcceptance(token,attemptId,signal){
+        if(!token||!ACCEPTANCE_ATTEMPT_RE.test(String(attemptId||'')))return Promise.reject(new Error('invalid acceptance attempt'));
+        depositCancellationUnconfirmed=true;
+        syncApproval();
+        return fetch(SUPABASE_URL+'/functions/v1/proposal-deposit-checkout',{
+          method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},
+          body:JSON.stringify({action:'cancel_pending_acceptance',proposal_token:token,acceptance_attempt_id:attemptId}),signal:signal
+        }).then(function(response){
+          return response.json().catch(function(){return {};}).then(function(result){
+            var finalizationPending=result&&(result.acceptance_pending===true||result.payment_confirmed===true||result.reconciliation_required===true);
+            if(!response.ok||!result||result.ok!==true||(result.accepted!==true&&result.authorization_reset_required!==true&&!finalizationPending))throw new Error(result&&result.error?result.error:'acceptance cancellation was not confirmed');
+            if(finalizationPending&&result.accepted!==true){depositCancellationUnconfirmed=true;throw new Error('payment finalization is pending');}
+            forgetPendingDepositAcceptance(token,attemptId);
+            depositCancellationUnconfirmed=false;
+            return result;
+          });
+        });
+      }
+      function terminateActivePendingDepositAcceptance(token,signal){
+        depositCancellationUnconfirmed=true;
+        syncApproval();
+        return fetch(SUPABASE_URL+'/functions/v1/proposal-deposit-checkout',{
+          method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},
+          body:JSON.stringify({action:'cancel_active_pending_acceptance',proposal_token:token}),signal:signal
+        }).then(function(response){
+          return response.json().catch(function(){return {};}).then(function(result){
+            var finalizationPending=result&&(result.acceptance_pending===true||result.payment_confirmed===true||result.reconciliation_required===true);
+            if(!response.ok||!result||result.ok!==true||(result.active===true&&result.accepted!==true&&result.authorization_reset_required!==true&&!finalizationPending))throw new Error(result&&result.error?result.error:'active acceptance status was not confirmed');
+            if(finalizationPending&&result.accepted!==true){depositCancellationUnconfirmed=true;throw new Error('payment finalization is pending');}
+            depositCancellationUnconfirmed=false;
+            if(result.authorization_reset_required===true)depositAuthorizationWasReset=true;
+            return result;
+          });
+        });
+      }
+      function checkPendingDepositAcceptance(token,attemptId){
+        if(!token||!ACCEPTANCE_ATTEMPT_RE.test(String(attemptId||'')))return Promise.reject(new Error('acceptance attempt status is unavailable'));
+        return fetch(SUPABASE_URL+'/functions/v1/proposal-deposit-checkout',{
+          method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},
+          body:JSON.stringify({action:'check_pending_acceptance',proposal_token:token,acceptance_attempt_id:attemptId})
+        }).then(function(response){
+          return response.json().catch(function(){return {};}).then(function(result){
+            if(!response.ok||!result||result.ok!==true)throw new Error(result&&result.error?result.error:'acceptance status was not confirmed');
+            return result;
+          });
+        });
+      }
+      function settlePendingDepositAcceptanceBeforeLoad(token,signal){
+        if(previewModeActive())return Promise.resolve(null);
+        var current=new URLSearchParams(window.location.search);
+        var queryAttempt=current.get('acceptance_attempt_id')||'';
+        var validQueryAttempt=ACCEPTANCE_ATTEMPT_RE.test(queryAttempt)?queryAttempt:null;
+        var paidReturn=current.get('deposit_paid')==='1'||current.get('payment_check')==='1';
+        if(paidReturn){if(validQueryAttempt)rememberPendingDepositAcceptance(token,validQueryAttempt);return Promise.resolve(null);}
+        var cancelReturn=current.get('acceptance_cancel')==='1';
+        if(cancelReturn&&!validQueryAttempt)return Promise.reject(new Error('missing acceptance attempt'));
+        var attemptId=validQueryAttempt||storedPendingDepositAcceptance(token);
+        if(!attemptId)return terminateActivePendingDepositAcceptance(token,signal);
+        return terminatePendingDepositAcceptance(token,attemptId,signal).then(function(result){if(result.authorization_reset_required===true)depositAuthorizationWasReset=true;scrubCheckoutReturnHints(false);return result;});
+      }
+      function runAuthorizationGate(token){
+        var controller=new AbortController();var timer=setTimeout(function(){controller.abort();},AUTHORIZATION_GATE_TIMEOUT_MS);
+        return settlePendingDepositAcceptanceBeforeLoad(token,controller.signal).finally(function(){clearTimeout(timer);});
+      }
+      function beginAuthorizationGate(token){
+        authorizationGateToken=token||authorizationGateToken;
+        if(previewModeActive()){setAuthorizationGateState('preview');return Promise.resolve(null);}
+        if(!authorizationGateToken||authorizationGateInFlight)return authorizationGateInFlight||Promise.resolve(null);
+        var gateParams=new URLSearchParams(window.location.search);
+        var gatePaidReturn=gateParams.get('deposit_paid')==='1'||gateParams.get('payment_check')==='1';
+        var gateAttempt=gateParams.get('acceptance_attempt_id')||storedPendingDepositAcceptance(authorizationGateToken);
+        if(!gatePaidReturn&&(gateParams.get('acceptance_cancel')==='1'||ACCEPTANCE_ATTEMPT_RE.test(String(gateAttempt||''))))authorizationFullRedoPending=true;
+        setAuthorizationGateState('pending');
+        var attempt=runAuthorizationGate(authorizationGateToken).then(function(result){
+          if(result&&result.accepted===true){window.location.reload();return result;}
+          if(result&&result.authorization_reset_required===true&&authorizationFactsRendered&&proposal&&document.getElementById('approveButton')){
+            depositAuthorizationWasReset=false;
+            resetDepositAcceptanceAuthorization('Payment was not confirmed, so this proposal was not accepted. Review it, check the acknowledgment, enter your name, and accept again.');
+          }
+          setAuthorizationGateState('ready');return result;
+        }).catch(function(){setAuthorizationGateState('failed');return null;}).finally(function(){if(authorizationGateInFlight===attempt)authorizationGateInFlight=null;});
+        authorizationGateInFlight=attempt;return attempt;
+      }
+      function currentProposalUrl(token){
+        var next=new URLSearchParams(window.location.search);
+        next.set('token',token);
+        next.delete('deposit_paid');
+        next.delete('card_saved');
+        next.delete('payment_check');
+        next.delete('acceptance_cancel');
+        next.delete('acceptance_attempt_id');
+        if(isPreview)next.set('preview','1');else next.delete('preview');
+        var query=next.toString();
+        return '/proposal.html'+(query?'?'+query:'');
+      }
+      function scrubCheckoutReturnHints(keepChecking){
+        var next=new URLSearchParams(window.location.search);
+        next.delete('deposit_paid');
+        next.delete('card_saved');
+        next.delete('acceptance_cancel');
+        next.delete('acceptance_attempt_id');
+        if(keepChecking)next.set('payment_check','1');else next.delete('payment_check');
+        var query=next.toString();
+        history.replaceState(null,'',window.location.pathname+(query?'?'+query:''));
+      }
+      function depositAcceptanceRetryUrl(token){
+        var next=new URLSearchParams(window.location.search);
+        next.set('token',token);
+        next.delete('deposit_paid');
+        next.delete('card_saved');
+        next.delete('payment_check');
+        next.delete('acceptance_cancel');
+        next.delete('acceptance_attempt_id');
+        next.set('acceptance_retry','1');
+        return window.location.pathname+'?'+next.toString();
+      }
+      function consumeDepositAcceptanceRetry(){
+        var next=new URLSearchParams(window.location.search);
+        if(next.get('acceptance_retry')!=='1')return false;
+        next.delete('acceptance_retry');
+        var query=next.toString();
+        history.replaceState(null,'',window.location.pathname+(query?'?'+query:''));
+        return true;
+      }
+      function approvedPaymentTruthConfirmed(row){
+        var state=row&&row.payment_state;
+        if(!state||typeof state!=='object')return false;
+        if(row.require_deposit===false)return state.kind==='setup'&&state.status==='card_saved';
+        if(state.kind==='full_payment')return state.status==='paid'&&state.paid_in_full===true&&state.invoice_paid_in_full===true&&Number(state.project_remaining)===0;
+        return state.kind==='deposit'&&state.status==='paid'&&state.invoice_paid_in_full===true;
+      }
+      function showPaymentTruthUnconfirmed(row){
+        proposal=row;
+        if(hasCheckoutReturnHint())scrubCheckoutReturnHints(true);
+        stateView('Payment status needs confirmation','Your proposal approval is recorded, but the payment ledger is not available or does not agree yet. No payment or saved card is being claimed until the server confirms it.','<button class="state-action" id="checkPaymentTruth" type="button">Check payment status</button>');
+        var button=document.getElementById('checkPaymentTruth');
+        if(button)button.addEventListener('click',function(){reconcileCheckoutReturn(proposal);});
+      }
+      function showCheckoutReturnPending(row){
+        var status=String(row&&row.status||'').toLowerCase();
+        if(row&&row.require_deposit!==false&&['sent','viewed','copied'].indexOf(status)>-1){
+          var token=row.token||proposal.token;
+          var current=new URLSearchParams(window.location.search);
+          var attemptId=current.get('acceptance_attempt_id')||storedPendingDepositAcceptance(token);
+          checkPendingDepositAcceptance(token,attemptId).then(function(result){
+            if(result.accepted===true)window.location.reload();
+            else if(result.authorization_reset_required===true){forgetPendingDepositAcceptance(token,attemptId);window.location.replace(depositAcceptanceRetryUrl(token));}
+            else{
+              scrubCheckoutReturnHints(true);
+              stateView(result.payment_confirmed===true?'Final approval is still processing':'Payment status needs confirmation',
+                result.payment_confirmed===true
+                  ?'The secure payment provider reports this payment completed, but the proposal is not accepted until the server finishes the approval record. Check again in a moment or call Key if this remains.'
+                  :'The server has not confirmed a completed payment or proposal acceptance. This proposal is not accepted. Check again in a moment or call Key if this remains.',
+                '<button class="state-action" id="checkPaymentStatus" type="button">Check payment status</button>');
+              var checkButton=document.getElementById('checkPaymentStatus');
+              if(checkButton)checkButton.addEventListener('click',function(){reconcileCheckoutReturn(proposal);});
+            }
+          }).catch(function(){
+            scrubCheckoutReturnHints(true);
+            depositCancellationUnconfirmed=true;
+            stateView('Payment status needs confirmation','We could not safely confirm the previous payment attempt. This proposal is not accepted, and a new acceptance is blocked to prevent a duplicate payment. Refresh to check again, or call Key at (864) 863-7800.','<button class="state-action" id="checkPaymentStatus" type="button">Check payment status</button>');
+            var checkButton=document.getElementById('checkPaymentStatus');
+            if(checkButton)checkButton.addEventListener('click',function(){reconcileCheckoutReturn(proposal);});
+          });
+          return;
+        }
+        scrubCheckoutReturnHints(true);
+        proposal=row;
+        stateView('Checking payment status','The secure payment page returned here, but the server has not confirmed the result yet. No payment or saved card is being claimed until that confirmation arrives.','<button class="state-action" id="checkPaymentStatus" type="button">Check payment status</button>');
+        var button=document.getElementById('checkPaymentStatus');
+        if(button)button.addEventListener('click',function(){reconcileCheckoutReturn(proposal);});
+      }
+      function reconcileCheckoutReturn(initialRow){
+        proposal=initialRow||proposal;
+        stateView('Checking payment status','The secure payment page returned here. We are checking the server before showing any payment or saved-card result.');
+        var delays=[0,300,900,1800];
+        var attempt=0;
+        function check(){
+          if(attempt>=delays.length){showCheckoutReturnPending(proposal);return;}
+          var delay=delays[attempt++];
+          setTimeout(function(){
+            readAuthoritativeProposal().then(function(row){
+              if(row&&row.__superseded){
+                scrubCheckoutReturnHints(false);
+                var latest=row.latest_token;
+                var action=latest&&/^[a-zA-Z0-9-]{8,64}$/.test(latest)
+                  ? '<a class="state-action" href="'+escapeHtml(currentProposalUrl(latest))+'">View your current quote</a>'
+                  : '';
+                stateView('This quote was updated','A newer version of this quote is available. Review that version before continuing.',action);
+                return;
+              }
+              var token=proposal.token;
+              proposal=Object.assign({},row,{token:row.token||token});
+              var status=String(proposal.status||'').toLowerCase();
+              if(status==='approved'&&approvedPaymentTruthConfirmed(proposal)){scrubCheckoutReturnHints(false);routeProposal(proposal);return;}
+              if(terminalProposalStatus(status)){scrubCheckoutReturnHints(false);routeProposal(proposal);return;}
+              if(status==='signed'&&proposal.payment_state&&proposal.payment_state.status==='partial'){scrubCheckoutReturnHints(false);routeProposal(proposal);return;}
+              check();
+            }).catch(check);
+          },delay);
+        }
+        check();
+      }
+      function proposalRevision(row){
+        var value=Number(row&&row.signature_revision);
+        return Number.isFinite(value)?value:null;
+      }
+      function terminalProposalStatus(status){
+        return ['cancelled','canceled','declined','expired','superseded'].indexOf(status)>-1;
+      }
+      function resetAuthorizationForRevisedContract(row){
+        submitting=false;
+        signStatusUncertain=false;
+        proposal=row;
+        fixture=proposalFixture(row);
+        pomSelected=row.selected_pom===true&&row.pom_offered!==false;
+        var acknowledgment=document.getElementById('agreementAck');
+        if(acknowledgment)acknowledgment.checked=false;
+        var signature=document.getElementById('signature');
+        if(signature){signature.value='';signature.dataset.edited='false';}
+        render();
+        syncPom();
+        syncSticky();
+        syncPersonalHeader();
+        loadHero(row);
+        if(signature)signature.value='';
+        syncApproval();
+        var button=document.getElementById('approveButton');
+        if(button){button.disabled=true;button.textContent='Review revised proposal';}
+        setApprovalError('This proposal changed. Review the current scope and price, then acknowledge and sign the revised proposal.');
+      }
+      function resetDepositAcceptanceAuthorization(message){
+        submitting=false;
+        signStatusUncertain=false;
+        var acknowledgment=document.getElementById('agreementAck');
+        if(acknowledgment)acknowledgment.checked=false;
+        var signature=document.getElementById('signature');
+        if(signature){signature.value='';signature.dataset.edited='false';}
+        renderMoney();
+        syncApproval();
+        var button=document.getElementById('approveButton');
+        if(button){button.disabled=true;button.textContent=fixture.requireDeposit===false?'Approve this plan':'Approve and pay '+money(Math.round(total()*fixture.depositRate));}
+        setApprovalError(message||'Payment was not confirmed. Review the proposal, check each acknowledgment, enter your name, and accept again.');
+      }
+      function reconcileSignFailure(button){
+        button.disabled=true;
+        button.textContent='Checking signing status...';
+        return readAuthoritativeProposal().then(function(row){
+          if(row&&row.__superseded){
+            submitting=false;
+            signStatusUncertain=false;
+            var latest=row.latest_token;
+            var action=latest&&/^[a-zA-Z0-9-]{8,64}$/.test(latest)
+              ? '<a class="state-action" href="'+escapeHtml(currentProposalUrl(latest))+'">View your current quote</a>'
+              : '';
+            stateView('This quote was updated','A newer version of this quote is available. Review that version before signing.',action);
+            return;
+          }
+          var token=proposal.token;
+          var priorRevision=proposalRevision(proposal);
+          // Keep authoritative proposal revisions isolated from client-derived
+          // fixture fields. Missing optional fields in the reread mean absent,
+          // not "reuse the old revision's displayed value."
+          proposal=Object.assign({},row,{token:row.token||token});
+          var status=String(proposal.status||'').toLowerCase();
+          signStatusUncertain=false;
+          submitting=false;
+          if(status==='approved'){
+            routeProposal(proposal);
+            return;
+          }
+          if(status==='signed'){
+            if(proposal.require_deposit!==false){routeProposal(proposal);return;}
+            if(priorRevision!==proposalRevision(proposal)){
+              routeProposal(proposal);
+              return;
+            }
+            renderMoney();
+            syncApproval();
+            button.disabled=false;
+            button.textContent='Try secure payment again';
+            setApprovalError('Your proposal is signed. Continue with the secure payment step.');
+            return;
+          }
+          if(terminalProposalStatus(status)){
+            routeProposal(proposal);
+            return;
+          }
+          if(priorRevision!==proposalRevision(proposal)){
+            resetAuthorizationForRevisedContract(proposal);
+            return;
+          }
+          renderMoney();
+          syncApproval();
+          setApprovalError('We confirmed your signature was not saved. Your entries are still here, and you can try again.');
+        }).catch(function(){
+          signStatusUncertain=true;
+          submitting=false;
+          renderMoney();
+          syncApproval();
+          button.disabled=false;
+          button.textContent='Check signing status';
+          setApprovalError('We could not confirm whether your signature was saved. Check its status before trying again, or call (864) 863-7800.');
+        });
+      }
+      function retrySignedCheckout(button){
+        if(previewModeActive()){setApprovalError('Preview mode is read only. Nothing can be approved or charged.');return;}
+        if(!authorizationGateReady()){setApprovalError('Complete the authorization check before opening secure payment.');return;}
+        if(submitting||!proposal) return;
+        if(proposal.require_deposit!==false){
+          resetDepositAcceptanceAuthorization('Payment was not confirmed, so this proposal is not accepted. Review the current proposal and accept again.');
+          return;
+        }
+        submitting=true;
+        syncApproval();
+        setApprovalError('');
+        button.textContent='Opening secure payment...';
+        checkout(button).catch(function(){
+          submitting=false;
+          renderMoney();
+          syncApproval();
+          button.disabled=false;
+          button.textContent='Try secure payment again';
+          setApprovalError('Your proposal is signed. Secure payment did not open. Try the payment step again or call (864) 863-7800.');
+        });
+      }
+      function approveProposal(){
+        if(previewModeActive()){setApprovalError('Preview mode is read only. Nothing can be approved or charged.');return;}
+        if(submitting||!proposal) return;
+        var button=document.getElementById('approveButton');
+        if(!authorizationGateReady()||depositCancellationUnconfirmed){
+          setApprovalError('The previous payment attempt must be confirmed before you can accept again. Use the authorization retry above, or call (864) 863-7800.');
+          return;
+        }
+        if(signStatusUncertain){
+          submitting=true;
+          setApprovalError('');
+          reconcileSignFailure(button);
+          return;
+        }
+        if(String(proposal.status||'').toLowerCase()==='signed'){
+          if(proposal.require_deposit===false){retrySignedCheckout(document.getElementById('approveButton'));return;}
+          resetDepositAcceptanceAuthorization('Payment was not confirmed, so this proposal is not accepted. Review and accept again after the proposal is refreshed. If this message remains, call (864) 863-7800.');
+          return;
+        }
+        if(!approvalReady()){setApprovalError('Please review the acknowledgment and confirm your name.');return;}
+        submitting=true;syncApproval();setApprovalError('');
+        button.textContent='Submitting securely...';
+        var projectTotal=total();
+        var signer=document.getElementById('signature').value.trim();
+        var authorization=canonicalAuthorization(projectTotal);
+        var depositRequired=proposal.require_deposit!==false;
+        var acceptanceRequestKey=crypto.randomUUID();
+        var snapshot=JSON.stringify({
+          proposal_id:proposal.id,proposal_token:proposal.token,contact_name:proposal.contact_name,contact_address:proposal.contact_address,
+          selected_amp:fixture.amp,selected_pom:pomSelected,selected_surge:false,total:projectTotal,scope_acknowledged:true,
+          safety_acknowledged:true,charge_authorized:true,charge_authorization_text:authorization,
+          charge_authorization_version:AUTH_VERSION,signer_name:signer,signed_at:new Date().toISOString(),user_agent:navigator.userAgent
+        });
+        fetch(SUPABASE_URL+'/functions/v1/proposal-mutate',{
+          method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},
+          body:JSON.stringify({token:proposal.token,action:'sign',proposal_revision:Number(proposal.signature_revision),signer_name:signer,
+            selected_amp:fixture.amp,selected_surge:false,selected_pom:pomSelected,safety_ack:true,signed_total:projectTotal,
+            approved_terms_snapshot:snapshot,charge_authorized:true,charge_authorization_text:authorization,
+            charge_authorization_version:AUTH_VERSION,acceptance_request_key:acceptanceRequestKey,pay_full:false})
+        }).then(function(response){return response.json().catch(function(){return {};}).then(function(data){if(!response.ok) throw new Error(data.error||'Could not approve this proposal.');return data;});})
+          .then(function(data){
+            if(depositRequired){
+              var attemptId=String(data&&data.acceptance_attempt_id||'');
+              if(data.pending_payment!==true||!/^[0-9a-f-]{36}$/i.test(attemptId))throw new Error('Pending acceptance was not confirmed.');
+              button.textContent='Opening secure payment...';
+              return checkout(button,attemptId);
+            }
+            proposal.status='Signed';proposal.signed_total=projectTotal;button.textContent='Opening secure payment...';return checkout(button);
+          })
+          .catch(function(error){
+            if(depositRequired){
+              if(error&&error.acceptanceCancellationUnconfirmed){
+                resetDepositAcceptanceAuthorization('We could not safely close the previous payment attempt. Refresh to try again, or call (864) 863-7800. This proposal has not been accepted.');
+                depositCancellationUnconfirmed=true;
+                syncApproval();
+                return;
+              }
+              return terminateActivePendingDepositAcceptance(proposal.token).then(function(termination){
+                if(termination.accepted===true){window.location.reload();return new Promise(function(){});}
+                return readAuthoritativeProposal();
+              }).then(function(row){
+                if(row&&row.__superseded){
+                  submitting=false;
+                  signStatusUncertain=false;
+                  var latest=row.latest_token;
+                  var action=latest&&/^[a-zA-Z0-9-]{8,64}$/.test(latest)
+                    ? '<a class="state-action" href="'+escapeHtml(currentProposalUrl(latest))+'">View your current quote</a>'
+                    : '';
+                  stateView('This quote was updated','A newer version of this quote is available. Review that version before accepting.',action);
+                  return;
+                }
+                var token=proposal.token;
+                var priorRevision=proposalRevision(proposal);
+                proposal=Object.assign({},row,{token:row.token||token});
+                if(String(proposal.status||'').toLowerCase()==='approved'&&approvedPaymentTruthConfirmed(proposal)){routeProposal(proposal);return;}
+                if(terminalProposalStatus(String(proposal.status||'').toLowerCase())){routeProposal(proposal);return;}
+                if(priorRevision!==proposalRevision(proposal)){resetAuthorizationForRevisedContract(proposal);return;}
+                resetDepositAcceptanceAuthorization();
+              }).catch(function(){
+                resetDepositAcceptanceAuthorization('We could not safely close the previous payment attempt. Refresh to try again, or call (864) 863-7800. This proposal has not been accepted.');
+                depositCancellationUnconfirmed=true;
+                syncApproval();
+              });
+            }
+            submitting=false;
+            renderMoney();
+            syncApproval();
+            if(String(proposal.status||'').toLowerCase()==='signed'){
+              button.disabled=false;
+              button.textContent='Try secure payment again';
+              setApprovalError('Your proposal is signed. Secure payment did not open. Try the payment step again or call (864) 863-7800.');
+            }else{
+              return reconcileSignFailure(button);
+            }
+          });
+      }
+      function loadHero(row){
+        var photo=document.querySelector('.hero-photo');
+        if(!photo) return;
+        if(isLocalFixture){photo.classList.remove('no-photo');photo.style.setProperty('--hero-image','url("assets/images/sample-home.jpg")');return;}
+        photo.classList.add('no-photo');
+        fetch(SUPABASE_URL+'/functions/v1/streetview-hero?t='+encodeURIComponent(row.token),{headers:{'Authorization':'Bearer '+SUPABASE_KEY}})
+          .then(function(response){
+            var contentType=response.headers.get('content-type')||'';
+            if(!response.ok||!contentType.startsWith('image/')) throw new Error('image unavailable');
+            return response.blob();
+          }).then(function(blob){
+            var src=URL.createObjectURL(blob);var image=new Image();
+            image.onload=function(){photo.style.setProperty('--hero-image','url("'+src+'")');photo.classList.remove('no-photo');};
+            image.onerror=function(){URL.revokeObjectURL(src);};
+            image.src=src;
+          }).catch(function(){});
+      }
+      function bootProposal(row){
+        proposal=row;POM_PRICE=Number(row.pom_price!=null?row.pom_price:447);
+        fixture=proposalFixture(row);pomSelected=row.selected_pom===true&&row.pom_offered!==false;
+        if(isPreview){document.getElementById('previewFlag').hidden=false;document.getElementById('previewWatermark').hidden=false;}
+        render();syncPom();syncSticky();syncPersonalHeader();loadHero(row);armApprovalCue();
+        authorizationFactsRendered=true;
+        syncAuthorizationGateUI();
+      }
+      function routeProposal(row){
+        var status=String(row.status||'').toLowerCase();
+        if(terminalProposalStatus(status)){if(hasCheckoutReturnHint())scrubCheckoutReturnHints(false);return stateView(status==='expired'?'This quote has expired':'This proposal is closed',status==='expired'?'This proposal cannot be signed. Call Key for a refreshed proposal.':'This proposal is no longer active. Call Key at (864) 863-7800 if you have questions.','<a class="state-action" href="tel:+18648637800">Call Key</a>');}
+        if(status==='approved'){
+          if(hasCheckoutReturnHint())scrubCheckoutReturnHints(false);
+          if(row.approval_source==='operator_recorded')return stateView('Approval recorded','Key recorded your approval from '+String(row.approval_channel||'your conversation').replace('_',' ')+'. No electronic signature or card authorization was created. Key will contact you to confirm the next step.');
+          if(!isPreview&&row.payment_action&&row.payment_action.kind==='invoice'&&row.payment_action.href){
+            var approvedKind=row.payment_state&&row.payment_state.kind==='full_payment'?'project payment':'deposit';
+            var approvedFallback=approvedKind==='project payment'?'Open secure payment invoice':'Open secure deposit invoice';
+            var approvedAction='<a class="state-action" data-authorization-action="payment" href="'+escapeHtml(row.payment_action.href)+'">'+escapeHtml(row.payment_action.label||approvedFallback)+'</a>';
+            return stateView('One payment step remains',(row.payment_state&&row.payment_state.status==='partial'?'Part of this '+approvedKind+' is already recorded. ':'')+'Use the secure invoice for the exact remaining balance.',approvedAction);
+          }
+          if(!approvedPaymentTruthConfirmed(row))return showPaymentTruthUnconfirmed(row);
+          return stateView('You are all set','Your proposal is approved. Key will contact you to confirm the next project step.');
+        }
+        if(status==='signed'){
+          proposal=row;fixture=proposalFixture(row);
+          if(fixture.requireDeposit!==false){
+            if(hasCheckoutReturnHint())scrubCheckoutReturnHints(false);
+            return stateView('Proposal not accepted','Payment was not confirmed, so this proposal was not accepted. Ask Key for a refreshed proposal, then review it, check the acknowledgment, enter your name, and accept again.','<a class="state-action" href="tel:+18648637800">Call Key</a>');
+          }
+          if(isPreview) return stateView('Payment step preview','This proposal is signed, but preview mode cannot open a real payment or card setup.');
+          if(!authorizationFullRedoPending&&hasCheckoutReturnHint()) return reconcileCheckoutReturn(row);
+          if(row.approval_source==='operator_recorded'){
+            var action=row.payment_action;
+            var actionHTML=action&&action.kind==='invoice'&&action.href
+              ? '<a class="state-action" data-authorization-action="payment" href="'+escapeHtml(action.href)+'">'+escapeHtml(action.label||'Open secure deposit invoice')+'</a>'
+              : '';
+            return stateView('Approval recorded','Key recorded your approval from '+String(row.approval_channel||'your conversation').replace('_',' ')+'. No electronic signature or card authorization was created. '+(actionHTML?'Use the separate secure invoice below for the deposit.':'Key will contact you with the secure deposit step.'),actionHTML);
+          }
+          if(row.payment_action&&row.payment_action.kind==='invoice'&&row.payment_action.href){
+            var paymentKind=row.payment_state&&row.payment_state.kind==='full_payment'?'project payment':'deposit';
+            var fallbackLabel=paymentKind==='project payment'?'Open secure payment invoice':'Open secure deposit invoice';
+            var partialAction='<a class="state-action" data-authorization-action="payment" href="'+escapeHtml(row.payment_action.href)+'">'+escapeHtml(row.payment_action.label||fallbackLabel)+'</a>';
+            return stateView('One payment step remains',(row.payment_state&&row.payment_state.status==='partial'?'Part of this '+paymentKind+' is already recorded. ':'')+'Use the secure invoice for the exact remaining balance.',partialAction);
+          }
+          if(!row.payment_state||row.payment_state.status!=='not_started')return showPaymentTruthUnconfirmed(row);
+          var due=fixture.requireDeposit===false?0:Math.round(Number(row.signed_total||row.total||0)*Number(fixture.depositRate||0));
+          var label=fixture.requireDeposit===false?'Save my card':'Pay '+money(due)+' deposit';
+          var signedCopy=row.approval_source==='operator_recorded'
+            ? (fixture.requireDeposit===false?'Key recorded your approval. Save a card securely to finish the payment setup.':'Key recorded your approval. Complete the deposit to move the project forward. No electronic signature or card authorization was created by the approval record.')
+            : (fixture.requireDeposit===false?'Your proposal is signed. Save a card securely to finish your approval.':'Your proposal is signed. Complete the deposit to finish your approval.');
+          stateView('One quick step left',signedCopy,'<button class="state-action" id="resumeCheckout" type="button">'+escapeHtml(label)+'</button>');
+          document.getElementById('resumeCheckout').addEventListener('click',function(){var button=this;button.textContent='Opening secure payment...';checkout(button).catch(function(){button.disabled=false;button.textContent='Try again';});});
+          return;
+        }
+        if(!isPreview&&!authorizationFullRedoPending&&row.require_deposit!==false&&hasCheckoutReturnHint()
+            &&['sent','viewed','copied'].indexOf(status)>-1)return reconcileCheckoutReturn(row);
+        if(!isPreview&&['sent','viewed','copied'].indexOf(status)===-1) return stateView('Proposal not available','This proposal has not been issued. Please use the latest link from Key, or call (864) 863-7800.','<a class="state-action" href="tel:+18648637800">Call Key</a>');
+        var prepared=row.sent_at||row.created_at;
+        var expires=row.expires_at?new Date(row.expires_at):(prepared?new Date(new Date(prepared).getTime()+14*86400000):null);
+        if(expires&&!isNaN(expires.getTime())&&expires.getTime()<Date.now()&&!row.signed_at) return stateView('This quote has expired','Text or call Key for a refreshed proposal. It only takes a few minutes.','<a class="state-action" href="sms:+18648637800">Text Key</a>');
+        bootProposal(row);
+        if(authorizationFullRedoPending)resetDepositAcceptanceAuthorization('Closing the previous payment attempt. This proposal has not been accepted.');
+        var acceptanceRetry=consumeDepositAcceptanceRetry();
+        if(depositAuthorizationWasReset||acceptanceRetry){depositAuthorizationWasReset=false;resetDepositAcceptanceAuthorization('Payment was not confirmed, so this proposal was not accepted. Review it, check the acknowledgment, enter your name, and accept again.');}
+      }
+      function loadLiveProposal(){
+        var token=params.get('token')||'';
+        if(!/^[a-zA-Z0-9-]{8,64}$/.test(token)){stateView('Proposal link not found','Use the personal proposal link Key sent you, or call (864) 863-7800 for a fresh link.','<a class="state-action" href="tel:+18648637800">Call Key</a>');return;}
+        setAuthorizationGateState(isPreview?'preview':'pending');
+        var controller=new AbortController();var timer=setTimeout(function(){controller.abort();},10000);
+        var proposalPromise=fetch(SUPABASE_URL+'/functions/v1/proposal-view?token='+encodeURIComponent(token),{headers:{'Authorization':'Bearer '+SUPABASE_KEY},cache:'no-store',signal:controller.signal});
+        beginAuthorizationGate(token);
+        proposalPromise
+          .then(function(response){return response.json().catch(function(){return {};}).then(function(data){return {status:response.status,data:data};});})
+          .then(function(result){
+            clearTimeout(timer);
+            if(result.status===410&&result.data&&result.data.latest_token){window.location.replace(currentProposalUrl(result.data.latest_token));return;}
+            if(!result.data||!result.data.proposal) throw new Error(result.status===404?'not found':'load failed');
+            var row=result.data.proposal;row.token=row.token||token;
+            if(row.creator_version!=='v4'){window.location.replace('/proposal.html'+window.location.search);return;}
+            var rowStatus=String(row.status||'').toLowerCase();
+            if(!isPreview&&['sent','viewed','copied'].indexOf(rowStatus)>-1){fetch(SUPABASE_URL+'/functions/v1/proposal-mutate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},body:JSON.stringify({token:row.token,action:'track_view'})}).catch(function(){});}
+            routeProposal(row);
+          }).catch(function(error){
+            clearTimeout(timer);
+            stateView(error&&error.name==='AbortError'?'This is taking too long':'Proposal not available','Please refresh, or call Key at (864) 863-7800 if the problem continues.','<a class="state-action" href="tel:+18648637800">Call Key</a>');
+          });
+      }
+
+      document.getElementById('pomToggle').addEventListener('click',function(){
+        pomSelected=!pomSelected;
+        syncPom();
+      });
+      document.getElementById('agreementAck').addEventListener('change',syncApproval);
+      document.getElementById('signature').addEventListener('input',function(event){
+        event.target.dataset.edited='true';
+        syncApproval();
+      });
+      document.querySelectorAll('[data-info]').forEach(function(link){
+        link.addEventListener('click',function(event){
+          event.preventDefault();
+          event.stopPropagation();
+          openInfo(link.dataset.info,link);
+        });
+      });
+      document.getElementById('infoClose').addEventListener('click',closeInfo);
+      document.getElementById('infoDone').addEventListener('click',closeInfo);
+      document.getElementById('infoOverlay').addEventListener('click',function(event){
+        if(event.target===event.currentTarget) closeInfo();
+      });
+      document.addEventListener('keydown',function(event){
+        var overlay=document.getElementById('infoOverlay');
+        if(overlay.hidden) return;
+        if(event.key==='Escape'){closeInfo();return;}
+        if(event.key==='Tab'){
+          var focusable=Array.prototype.filter.call(
+            overlay.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'),
+            function(node){return !node.disabled&&!node.hidden&&node.offsetParent!==null;});
+          if(!focusable.length){event.preventDefault();document.querySelector('.info-dialog').focus();return;}
+          var first=focusable[0],last=focusable[focusable.length-1];
+          if(!overlay.contains(document.activeElement)){event.preventDefault();first.focus();}
+          else if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+          else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+        }
+      });
+      document.getElementById('reviewButton').addEventListener('click',function(){
+        document.getElementById('approve').scrollIntoView({behavior:'smooth',block:'start'});
+      });
+      document.getElementById('approveButton').addEventListener('click',approveProposal);
+      window.addEventListener('scroll',function(){
+        syncSticky('scroll');
+        syncPersonalHeader();
+      },{passive:true});
+      window.addEventListener('resize',function(){
+        syncSticky.onResize();
+        syncPersonalHeader();
+      });
+      if(window.visualViewport){
+        window.visualViewport.addEventListener('resize',function(){syncSticky.onResize();},{passive:true});
+      }
+
+      window.addEventListener('message',function(event){
+        if(!isLocalFixture) return;
+        if(event.origin!==window.location.origin) return;
+        if(!event.data||event.data.type!=='bpp-proposal-fixture-update') return;
+        var payload=event.data.payload||{};
+        fixture={
+          customerName:String(payload.customerName||'Sample Homeowner'),
+          customerAddress:String(payload.customerAddress||''),
+          amp:String(payload.amp)==='30'?'30':'50',
+          total:Math.max(0,Number(payload.total)||0),
+          requireDeposit:payload.requireDeposit!==false,
+          depositRate:Math.max(0,Math.min(1,Number(payload.depositRate)||0)),
+          pomOffered:payload.pomOffered!==false,
+          aiSummary:String(payload.aiSummary||''),
+          notes:String(payload.notes||''),
+          systemItems:payload.systemItems||null,
+          lineItems:Array.isArray(payload.lineItems)?payload.lineItems:[],
+          systemSubtotals:payload.systemSubtotals||{},
+          baseDisplayByAmp:payload.baseDisplayByAmp||{}
+        };
+        pomSelected=false;
+        syncPom();
+        render();
+      });
+
+      window.addEventListener('pageshow',function(event){
+        if(!event.persisted||previewModeActive()||isLocalFixture)return;
+        var token=new URLSearchParams(window.location.search).get('token');
+        if(!token||/[?&](deposit_paid|payment_check)=1(?:&|$)/.test(window.location.search))return;
+        if(proposal)resetDepositAcceptanceAuthorization('Closing the previous payment attempt. This proposal has not been accepted.');
+        beginAuthorizationGate(token);
+      });
+
+      if(isLocalFixture){
+        document.getElementById('previewFlag').hidden=false;
+        render();syncApproval();syncSticky();syncPersonalHeader();armApprovalCue();loadHero({});
+        window.parent.postMessage({type:'bpp-proposal-fixture-ready'},window.location.origin);
+      } else {
+        loadLiveProposal();
+      }
+    })();
+  </script>
+</body>
+</html>

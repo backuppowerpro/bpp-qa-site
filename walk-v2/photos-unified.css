@@ -1,0 +1,233 @@
+.unified-examples {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+  margin-bottom: 20px !important;
+}
+
+.unified-examples .photo-example {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 158px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border-radius: 12px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.unified-examples .photo-example img {
+  width: 100% !important;
+  height: 116px !important;
+  object-fit: cover !important;
+  object-position: center 48% !important;
+  border-radius: 0 !important;
+  display: block !important;
+}
+
+.unified-examples .photo-example:first-child img {
+  object-position: center 42% !important;
+}
+
+.unified-examples .photo-example:last-child img {
+  object-position: center 46% !important;
+}
+
+.unified-examples .photo-example span {
+  position: static !important;
+  inset: auto !important;
+  display: flex !important;
+  min-height: 42px !important;
+  align-items: center !important;
+  padding: 6px 9px !important;
+  background: var(--navy) !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+}
+
+.unified-photo-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.unified-photo {
+  position: relative;
+  width: auto !important;
+  min-width: 0;
+  aspect-ratio: 1;
+  overflow: visible;
+}
+
+.unified-photo .thumb,
+.add-photo-tile {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  background: #eef1f6;
+  box-shadow: var(--shadow-sm);
+}
+
+.unified-photo .thumb img,
+.unified-photo .thumb video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.unified-photo .video-badge {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(11, 32, 58, 0.78);
+  color: #fff;
+  font-family: var(--head);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.unified-photo .video-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--shadow-sm);
+}
+
+.unified-photo .video-mark::after {
+  content: "";
+  display: block;
+  width: 0;
+  height: 0;
+  margin: 8px 0 0 11px;
+  border-style: solid;
+  border-width: 6px 0 6px 9px;
+  border-color: transparent transparent transparent var(--navy);
+}
+
+.unified-photo .remove {
+  top: 0;
+  right: 0;
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.unified-photo .remove::after {
+  content: "×";
+  display: flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--navy);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.unified-photo .tag {
+  right: 5px;
+  bottom: 5px;
+  left: 5px;
+  max-width: none;
+  text-align: center;
+}
+
+.unified-photo.failed .tag {
+  top: 5px;
+  bottom: auto;
+}
+
+.unified-photo .retry {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  left: 6px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--gold);
+  color: var(--navy);
+  font-family: var(--head);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.add-photo-tile {
+  display: flex;
+  height: auto;
+  aspect-ratio: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: var(--navy);
+  background: #fff;
+  border: 2px dashed rgba(11,31,59,.2);
+  font-family: var(--head);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.add-photo-tile span:first-child {
+  color: var(--gold-ink);
+  font-size: 20px;
+}
+
+.photo-preview {
+  width: min(330px, calc(100vw - 32px));
+  padding: 14px;
+  border: 0;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 22px 60px rgba(11,31,59,.3);
+}
+
+.photo-preview::backdrop {
+  background: rgba(11,31,59,.68);
+}
+
+.photo-preview img,
+.photo-preview video {
+  display: block;
+  width: 100%;
+  max-height: 58vh;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #eef1f6;
+}
+
+.preview-close {
+  display: flex;
+  width: 44px;
+  height: 44px;
+  margin: -8px -8px 4px auto;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--navy);
+  font-size: 28px;
+}
+
+.photo-later {
+  margin: 0 auto !important;
+}
+
+@media (max-width: 340px) {
+  .unified-examples .photo-example img {
+    height: 104px !important;
+  }
+}

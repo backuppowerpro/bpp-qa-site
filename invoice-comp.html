@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<!-- connect-src so the live invoice-view + checkout calls are allowed; img/style/font kept open for the DS + logo -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://api.stripe.com; form-action 'self';">
+<script>document.documentElement.className += ' js'</script>
+<title>Invoice | Backup Power Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+<!-- BPP design system: single source of truth. Invoice consumes it like the proposal does. -->
+<link rel="stylesheet" href="assets/css/bpp-ds.css?v=20260713a">
+<style>
+/* tokens, reset, .page/.card/.pad, .eyebrow/.sec, .badge, .status, .btn-gold, .brand-bar, .signature,
+   motion + comp-flag all come from bpp-ds.css. Only invoice-specific layout lives here. */
+:root{ --bg:#f4f6f9; }  /* neutral page, an on-brand variation (proposal uses cool grey, landing warm) */
+
+/* invoice header: title row + meta */
+.inv-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.inv-meta{display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--text3);line-height:1.5}
+.inv-meta b{color:var(--text);font-weight:700}
+.inv-to{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--text2);line-height:1.55}
+.inv-to .lbl{font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.inv-to b{color:var(--text);font-weight:700;font-size:14px}
+.invoice-home{display:none;margin-top:14px;border-radius:var(--r-sm);overflow:hidden;background:var(--navy);aspect-ratio:16/7}
+.invoice-home.ready{display:block}
+.invoice-home img{display:block;width:100%;height:100%;object-fit:cover}
+
+/* amount-due hero */
+.due-lbl{font-family:var(--font-display);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.due-amt{font-family:var(--font-display);font-size:48px;font-weight:900;color:var(--navy);letter-spacing:-.02em;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums}
+.due-when{font-size:12.5px;color:var(--text2);margin-top:8px}
+.due-when b{color:var(--text);font-weight:700}
+.pay-cta{margin-top:18px}
+.pay-sub{text-align:center;font-size:12px;color:var(--text3);margin-top:10px}
+
+/* line items */
+.li{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+.li:last-of-type{border-bottom:none}
+.li-name{color:var(--text);line-height:1.4;flex:1 1 auto;min-width:0}
+.li-name .sub{display:block;font-size:11.5px;color:var(--text3);margin-top:2px}
+.li-amt{font-family:var(--font-display);font-weight:700;color:var(--text);white-space:nowrap;font-variant-numeric:tabular-nums;flex:0 0 auto}
+.li-amt.credit{color:var(--green)}
+.li.total{margin-top:4px;padding-top:13px;border-top:2px solid var(--navy);border-bottom:none}
+.li.total .li-name{font-family:var(--font-display);font-weight:800;color:var(--navy);font-size:15px}
+.li.total .li-amt{font-size:20px;font-weight:900;color:var(--navy)}
+
+/* note + signature */
+.inv-note{font-size:13px;color:var(--text2);line-height:1.6}
+.inv-sign{margin-top:6px}
+
+.policy-links{text-align:center;margin-top:8px;font-size:12px}
+.policy-links a{color:var(--blue);text-decoration:none;font-weight:600;display:inline-flex;align-items:center;min-height:44px;padding:0 6px}
+.policy-sep{color:var(--text3);margin:0 8px}
+.inv-foot{text-align:center;font-size:12px;color:var(--text3);line-height:1.8;padding:8px 16px 0}
+.inv-foot b{color:var(--navy)}
+
+/* state surfaces (loading / not-found), styled with DS tokens, no new visual language */
+.state-wrap{text-align:center;padding:56px 24px}
+.state-wrap h2{font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px}
+.state-wrap p{font-size:13.5px;color:var(--text3);line-height:1.55;max-width:340px;margin:0 auto}
+.state-spin{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.state-spin{animation:none}}
+@media (max-width:480px){
+  .brand-bar{flex-wrap:wrap;padding-left:12px;padding-right:12px;gap:8px}
+  .brand-bar img{max-width:100%;height:auto;max-height:25px;object-fit:contain;object-position:left}
+  .brand-bar .badge{max-width:100%;margin-left:auto;font-size:9px;padding-left:8px;padding-right:8px;white-space:normal;overflow-wrap:anywhere;text-align:right}
+}
+.paid-banner{background:var(--green);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:30px 24px;text-align:center;color:#fff;margin-bottom:var(--card-gap)}
+.paid-banner .paid-check{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.paid-banner h2{font-family:var(--font-display);font-size:22px;font-weight:800;margin-bottom:6px}
+.paid-banner p{font-size:13.5px;opacity:.9;line-height:1.5}
+.preview-bar{position:fixed;top:0;left:0;right:0;z-index:99999;background:#f59e0b;color:#1c1003;font-family:var(--font-display);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-align:center;padding:8px 16px;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+.preview-bar[hidden],.preview-watermark[hidden]{display:none}
+.preview-watermark{position:fixed;inset:0;pointer-events:none;z-index:99998;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.preview-watermark span{font-family:var(--font-display);font-size:clamp(60px,14vw,120px);font-weight:900;color:rgba(11,31,59,.06);letter-spacing:.1em;text-transform:uppercase;transform:rotate(-35deg);white-space:nowrap;user-select:none}
+body.preview-mode{padding-top:34px}
+body.preview-mode #pay-btn{display:none!important}
+</style>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
+</head>
+<body>
+<div class="preview-bar" id="preview-bar" data-preview-banner="true" hidden>Preview mode, not sent to client, read only</div>
+<div class="preview-watermark" id="preview-watermark" data-preview-watermark="true" aria-hidden="true" hidden><span>Preview</span></div>
+<noscript><div class="preview-bar" data-preview-banner="true">Preview unavailable, JavaScript is off, no customer action can occur</div><div class="preview-watermark" data-preview-watermark="true" aria-hidden="true"><span>Preview unavailable</span></div><div style="max-width:620px;margin:70px auto 24px;padding:18px;border:1px solid #ffba00;border-radius:14px;background:#fff8e6;color:#0b1f3b;text-align:center;font:600 16px/1.55 system-ui,sans-serif;">This invoice did not load. Turn on JavaScript and reload, or call (864) 863-7800.</div></noscript>
+
+<div class="brand-bar">
+  <img src="assets/images/logo-white-v2.png" alt="Backup Power Pro">
+  <span class="badge" id="inv-num-badge" style="background:rgba(255,255,255,.1);color:#fff">Invoice</span>
+</div>
+
+<div class="page" id="page">
+
+  <!-- Loading state, replaced on load -->
+  <div class="card pad" id="loading-card">
+    <div class="state-wrap">
+      <div class="state-spin"></div>
+      <p>Loading your invoice...</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── CONFIG (mirrors invoice.html exactly) ───────────────────────────
+var SUPABASE_URL = 'https://hfatblrcwytxvijjhpal.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_kBXthY-Han29JLqcT514RQ_RtwxXLZ-';
+
+var INV = null;            // invoice record
+var LINKED_PROPOSAL = null;// linked proposal (if any)
+var PAYMENTS = [];         // whitelisted payment rows (card/bank, discount, refund) from invoice-view
+var IS_PREVIEW = new URLSearchParams(window.location.search).get('preview')==='1';
+
+// ── HELPERS ─────────────────────────────────────────────────────────
+function esc(s){ if(s===null||s===undefined) return ''; var d=document.createElement('div'); d.textContent=String(s); return d.innerHTML; }
+function fmt(n){ return '$' + Number(n||0).toLocaleString('en-US'); }
+function fmtDate(v){
+  if(!v) return '';
+  try{ return new Date(v).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}); }
+  catch(e){ return ''; }
+}
+
+var _toast=null,_toastTimer=null;
+function showToast(msg){
+  if(!_toast){ _toast=document.createElement('div'); _toast.className='toast'; document.body.appendChild(_toast); }
+  _toast.textContent=msg;
+  clearTimeout(_toastTimer);
+  requestAnimationFrame(function(){ _toast.classList.add('show'); _toastTimer=setTimeout(function(){ _toast.classList.remove('show'); },4000); });
+}
+
+function showState(title,msg){
+  var page=document.getElementById('page');
+  page.innerHTML='';
+  var card=document.createElement('div'); card.className='card pad';
+  var wrap=document.createElement('div'); wrap.className='state-wrap';
+  var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  wrap.innerHTML='<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#9aa7bd" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px;display:block"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+  var h2=document.createElement('h2'); h2.textContent=String(title||'');
+  var p=document.createElement('p'); p.textContent=String(msg||'');
+  wrap.appendChild(h2); wrap.appendChild(p);
+  card.appendChild(wrap); page.appendChild(card);
+  requestAnimationFrame(function(){ card.classList.add('in'); });
+}
+
+// ── INIT ────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', function(){
+  if(IS_PREVIEW){
+    document.body.classList.add('preview-mode');
+    document.getElementById('preview-bar').hidden=false;
+    document.getElementById('preview-watermark').hidden=false;
+  }
+  var token = new URLSearchParams(window.location.search).get('token');
+  if(!token){ showState('Invoice not found.','This link is missing an invoice token. Please use the link we texted you, or contact (864) 863-7800.'); return; }
+  loadInvoice(token);
+});
+
+async function loadInvoice(token){
+  // Reads go through the invoice-view edge function (service role internally),
+  // same call invoice.html uses. Hard 10s timeout so a hung edge fn / network
+  // blip cannot leave the customer staring at "Loading..." forever.
+  var data=null, errorReason=null;
+  try{
+    var ctrl=new AbortController();
+    var timer=setTimeout(function(){ ctrl.abort(); }, 10000);
+    var preview=IS_PREVIEW?'&preview=1':'';
+    var res=await fetch(SUPABASE_URL+'/functions/v1/invoice-view?token='+encodeURIComponent(token)+preview,{
+      headers:{ 'Authorization':'Bearer '+SUPABASE_KEY },
+      signal:ctrl.signal,
+      cache:'no-store',
+    });
+    clearTimeout(timer);
+    if(res.ok){
+      var j=await res.json();
+      data=(j && j.invoice) || null;
+      if(j && j.proposal) LINKED_PROPOSAL=j.proposal;
+      if(j && Array.isArray(j.payments)) PAYMENTS=j.payments;
+    } else if(res.status===410){
+      errorReason='This invoice was replaced by a newer one. Please use the latest link or contact (864) 863-7800.';
+    } else if(res.status===404 || res.status===400){
+      errorReason='This link may be invalid or expired. Please contact (864) 863-7800 if you need help.';
+    } else {
+      errorReason='Could not load this invoice right now (server returned '+res.status+'). Please try again or contact (864) 863-7800.';
+    }
+  } catch(e){
+    if(e && e.name==='AbortError'){
+      errorReason='This is taking longer than expected. Please refresh, or contact (864) 863-7800 if it keeps failing.';
+    } else {
+      errorReason='Network issue loading this invoice. Please refresh, or contact (864) 863-7800.';
+    }
+  }
+
+  if(!data){ showState('Invoice not available.', errorReason || 'This link may be invalid or has been removed. Please contact (864) 863-7800.'); return; }
+
+  INV=data;
+
+  // invoice number badge in the brand bar
+  var badge=document.getElementById('inv-num-badge');
+  if(badge){
+    var num = INV.id ? String(INV.id).slice(0,8) : (new URLSearchParams(window.location.search).get('token')||'').slice(0,8);
+    badge.textContent = num ? 'Invoice #'+num : 'Invoice';
+  }
+
+  var invoiceStatus=String(INV.status||'').toLowerCase();
+  var payableStatuses=['sent','unpaid','viewed','overdue','open','partial'];
+  if(invoiceStatus==='refunded'){
+    showState('Invoice refunded.','Payments on this invoice were refunded. No payment is due. Please contact (864) 863-7800 if you have questions.');
+  } else if(invoiceStatus==='voided'||invoiceStatus==='void'){
+    showState('Invoice voided.','This invoice was voided. No payment is due on it. Please contact (864) 863-7800 if you have questions.');
+  } else if(invoiceStatus==='cancelled'||invoiceStatus==='declined'){
+    showState('Invoice cancelled.','This invoice has been cancelled and is no longer available for payment. Please contact (864) 863-7800 if you have questions.');
+  } else if(invoiceStatus==='paid'){
+    renderPaid();
+  } else if(payableStatuses.indexOf(invoiceStatus)>-1 || IS_PREVIEW){
+    var remaining=invoiceRemaining();
+    var paid=Number(INV.amount_paid);
+    if(!Number.isFinite(remaining)||remaining<=0||!Number.isFinite(paid)||paid<0){
+      showState('Invoice not available.','The current balance could not be verified. Please refresh, or contact (864) 863-7800.');
+      return;
+    }
+    renderPayable();
+  } else {
+    showState('Invoice not available.','This invoice has not been issued for payment. Please use the latest link from Key, or contact (864) 863-7800.');
+  }
+}
+
+// ── LINE ITEMS (shared) ─────────────────────────────────────────────
+function lineItemsHtml(){
+  var items=(INV.line_items||[]);
+  var rows='';
+  items.forEach(function(li){
+    var amt=Number(li.amount||0);
+    var credit=amt<0;
+    var amtTxt=(credit?'−':'')+fmt(Math.abs(amt));
+    var sub=li.sub ? '<span class="sub">'+esc(li.sub)+'</span>' : '';
+    rows+='<div class="li"><div class="li-name">'+esc(li.name)+sub+'</div>'+
+          '<div class="li-amt'+(credit?' credit':'')+'">'+amtTxt+'</div></div>';
+  });
+  return rows;
+}
+function invoiceTotal(){
+  var items=(INV.line_items||[]);
+  if(INV.total!==null && INV.total!==undefined && INV.total!=='') return Number(INV.total);
+  return items.reduce(function(s,li){ return s+Number(li.amount||0); },0);
+}
+function invoiceRemaining(){
+  var remaining=Number(INV.amount_remaining);
+  return Number.isFinite(remaining) ? Math.max(0,remaining) : NaN;
+}
+function isPayableInvoice(inv){
+  var status=String((inv&&inv.status)||'').toLowerCase();
+  return ['sent','unpaid','viewed','overdue','open','partial'].indexOf(status)>-1 && invoiceRemaining()>0;
+}
+function homeImageHtml(){
+  return INV.contact_address?'<div class="invoice-home" id="invoice-home"><img id="invoice-home-img" alt="Home at the service address"></div>':'';
+}
+function loadHomeImage(){
+  var wrap=document.getElementById('invoice-home');
+  var img=document.getElementById('invoice-home-img');
+  var token=new URLSearchParams(window.location.search).get('token');
+  if(!wrap||!img||!token) return;
+  img.addEventListener('load',function(){wrap.classList.add('ready');},{once:true});
+  img.addEventListener('error',function(){wrap.remove();},{once:true});
+  img.src=SUPABASE_URL+'/functions/v1/streetview-hero?i='+encodeURIComponent(token);
+}
+
+// ── ORIGINAL AGREEMENT (from linked approved proposal) ──────────────
+function agreementHtml(){
+  if(!LINKED_PROPOSAL || LINKED_PROPOSAL.status!=='Approved') return '';
+  var LP=LINKED_PROPOSAL;
+  var signedTime = LP.signed_at
+    ? (function(){ try{ return new Date(LP.signed_at).toLocaleString('en-US',{month:'long',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true}); }catch(e){ return ''; } })()
+    : '';
+  var terms='';
+  if(LP.approved_terms_snapshot){
+    try{
+      var t = (typeof LP.approved_terms_snapshot==='string') ? JSON.parse(LP.approved_terms_snapshot) : LP.approved_terms_snapshot;
+      terms = esc(t.contact_name||LP.contact_name||'')+' approved a '+esc(t.selected_amp||'30')+' Amp Connection System '+
+              (t.selected_surge?'with whole-home surge protection':'without surge protection')+
+              ' for a total of '+fmt(t.total!==undefined?t.total:(LP.total||0))+'.';
+    } catch(e){ terms = esc(String(LP.approved_terms_snapshot).slice(0,300)); }
+  }
+  return '<div class="card pad">'+
+    '<h2 class="sec">Original agreement</h2>'+
+    (terms?'<div class="inv-note" style="margin-bottom:12px">'+terms+'</div>':'')+
+    '<div class="li"><div class="li-name">Signed by</div><div class="li-amt" style="font-weight:700;color:var(--navy)">'+esc(LP.signer_name||'')+'</div></div>'+
+    (signedTime?'<div class="li"><div class="li-name">Date and time</div><div class="li-amt" style="font-weight:600;font-size:13px">'+esc(signedTime)+'</div></div>':'')+
+    '<div class="li"><div class="li-name">Safety instructions</div><div class="li-amt" style="font-weight:600;font-size:13px">'+(LP.safety_ack?'Acknowledged':'Not acknowledged')+'</div></div>'+
+    '<div class="inv-foot" style="text-align:left;padding:12px 0 0;font-style:italic">Electronically signed under the ESIGN Act. This constitutes a binding agreement between the parties.</div>'+
+  '</div>';
+}
+
+// ── RENDER PAYABLE (unpaid / balance due) ───────────────────────────
+function renderPayable(){
+  var total=invoiceTotal();
+  var remaining=invoiceRemaining();
+  var paid=Math.max(0,Number(INV.amount_paid)||0);
+  var hasPriorPayment=paid>0.005||remaining<total-0.005;
+  var page=document.getElementById('page');
+  var name=INV.contact_name||'';
+  var firstName=(name.trim().split(/\s+/)[0])||'';
+  var addr=INV.contact_address||'';
+  var issued=fmtDate(INV.created_at);
+
+  var note = INV.notes && INV.notes!=='deposit'
+    ? esc(INV.notes)
+    : (firstName?esc(firstName)+', ':'')+'this is the balance on the install we agreed to, no surprises and nothing added. Thank you for trusting me with your home.';
+
+  page.innerHTML =
+    // HEADER
+    '<div class="card pad">'+
+      '<div class="inv-top">'+
+        '<div class="eyebrow" style="margin-bottom:0">Invoice</div>'+
+        '<span class="status warn">Balance due</span>'+
+      '</div>'+
+      '<div class="inv-meta">'+
+        (issued?'<span>Issued <b>'+esc(issued)+'</b></span>':'')+
+      '</div>'+
+      '<div class="inv-to">'+
+        '<div class="lbl">Billed to</div>'+
+        '<b>'+esc(name)+'</b>'+(addr?'<br>'+esc(addr):'')+
+        (INV.contact_phone?'<br>'+esc(INV.contact_phone):'')+
+        (INV.contact_email?'<br>'+esc(INV.contact_email):'')+
+      '</div>'+homeImageHtml()+
+    '</div>'+
+
+    // AMOUNT DUE
+    '<div class="card pad">'+
+      '<div class="due-lbl">Amount due</div>'+
+      '<div class="due-amt">'+fmt(remaining)+'</div>'+
+      '<div class="due-when">Balance for your completed install. Due on completion day, after your system is installed and working.</div>'+
+      '<button class="btn-gold pay-cta" id="pay-btn" type="button" data-amount="'+fmt(remaining)+'">Pay '+fmt(remaining)+'</button>'+
+      '<div class="pay-sub">Secure payment by bank transfer or card. Once it clears, your receipt is ready on this same link, and Key can email it to you.</div>'+
+    '</div>'+
+
+    // LINE ITEMS
+    '<div class="card pad">'+
+      '<h2 class="sec">What this covers</h2>'+
+      lineItemsHtml()+
+      '<div class="li total"><div class="li-name">Invoice total</div><div class="li-amt">'+fmt(total)+'</div></div>'+
+      (hasPriorPayment?'<div class="li"><div class="li-name">Payments received</div><div class="li-amt credit">-'+fmt(paid)+'</div></div>':'')+
+      '<div class="li total"><div class="li-name">Balance due</div><div class="li-amt">'+fmt(remaining)+'</div></div>'+
+    '</div>'+
+
+    // NOTE FROM KEY
+    '<div class="card pad">'+
+      '<div class="inv-note">'+note+'</div>'+
+      '<div class="signature sig-pen inv-sign">Key Goodson</div>'+
+    '</div>'+
+
+    agreementHtml()+
+
+    '<div class="inv-foot">Backup Power Pro by Key Electric &middot; Greenville, Spartanburg &amp; Pickens counties<br>Questions on this invoice? Text Key at <b>(864) 863-7800</b></div>';
+
+  var btn=document.getElementById('pay-btn');
+  if(btn) btn.addEventListener('click', payOnline);
+
+  loadHomeImage();
+  revealCards();
+}
+
+// ── RENDER PAID (receipt) ───────────────────────────────────────────
+function renderPaid(){
+  var total=invoiceTotal();
+  var page=document.getElementById('page');
+  var name=INV.contact_name||'';
+  var addr=INV.contact_address||'';
+  var issued=fmtDate(INV.created_at);
+  var paid=INV.paid_at?fmtDate(INV.paid_at):'';
+  var isDeposit = INV.notes==='deposit';
+  // What the customer ACTUALLY paid (cash) + any bank-transfer discount they earned.
+  // For a card payment cashPaid === total (no discount); for a bank payment the cash is
+  // less than the list total by the discount, so we show the cash paid AND the discount
+  // as a savings. Framing is always list price minus a bank discount, never a surcharge.
+  var _paid = (Array.isArray(PAYMENTS)?PAYMENTS:[]).filter(function(p){ return String(p.status||'').toLowerCase()==='completed'; });
+  var bankDiscount = _paid.reduce(function(s,p){ return s + (Number(p.discount_amount)||0); }, 0);
+  var cashPaid = _paid.length ? _paid.reduce(function(s,p){ return s + (Number(p.amount)||0); }, 0) : total;
+  // Refund honesty (S6): the charge.refunded webhook records payments.refunded_amount
+  // while the invoice stays status=paid, so the payments array is the refund truth.
+  // A refunded customer must never see celebratory paid copy + forward promises.
+  var refunded = (Array.isArray(PAYMENTS)?PAYMENTS:[]).reduce(function(s,p){ return s + (Number(p.refunded_amount)||0); }, 0);
+  refunded = Math.round(refunded*100)/100;
+  var isRefund = refunded > 0 && refunded >= cashPaid - 0.005;
+  var isPartialRefund = refunded > 0 && !isRefund;
+  var netPaid = Math.max(0, Math.round((cashPaid - refunded)*100)/100);
+
+  page.innerHTML =
+    // PAID / REFUND BANNER
+    (isRefund
+    ? '<div class="paid-banner">'+
+        '<div class="paid-check"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>'+
+        '<h2>Your refund has been issued</h2>'+
+        '<p>Your payment of '+fmt(refunded)+' was refunded. Depending on your bank, it can take 5 to 10 business days to appear back on your statement. Questions? Text Key at (864) 863-7800.</p>'+
+      '</div>'
+    : '<div class="paid-banner">'+
+        '<div class="paid-check"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>'+
+        '<h2>Thank you for choosing Backup Power Pro</h2>'+
+        '<p>'+(isDeposit?'Your deposit has been received. Key will text you within 24 hours to confirm your installation date.':'Your Outage-Ready Connection System has been professionally installed, permitted, and inspected.')+'</p>'+
+      '</div>')+
+
+    // HEADER
+    '<div class="card pad">'+
+      '<div class="inv-top">'+
+        '<div class="eyebrow" style="margin-bottom:0">Receipt</div>'+
+        (isRefund?'<span class="status">Refunded</span>':(isPartialRefund?'<span class="status ok">Paid, partial refund</span>':'<span class="status ok">Paid</span>'))+
+      '</div>'+
+      '<div class="inv-meta">'+
+        (issued?'<span>Issued <b>'+esc(issued)+'</b></span>':'')+
+        (paid?'<span>Paid <b>'+esc(paid)+'</b></span>':'')+
+      '</div>'+
+      '<div class="inv-to">'+
+        '<div class="lbl">Billed to</div>'+
+        '<b>'+esc(name)+'</b>'+(addr?'<br>'+esc(addr):'')+
+        (INV.contact_phone?'<br>'+esc(INV.contact_phone):'')+
+        (INV.contact_email?'<br>'+esc(INV.contact_email):'')+
+      '</div>'+homeImageHtml()+
+    '</div>'+
+
+    // PAYMENT DETAILS
+    '<div class="card pad">'+
+      '<h2 class="sec">Payment details</h2>'+
+      '<div class="li"><div class="li-name">Amount paid</div><div class="li-amt">'+fmt(cashPaid)+'</div></div>'+
+      (bankDiscount>0?'<div class="li"><div class="li-name">Bank transfer discount</div><div class="li-amt" style="font-weight:600;font-size:13px;color:#16a34a">-'+fmt(bankDiscount)+'</div></div>':'')+
+      (refunded>0?'<div class="li"><div class="li-name">Refunded</div><div class="li-amt" style="font-weight:600;font-size:13px;color:#8a5a00">-'+fmt(refunded)+'</div></div>':'')+
+      (refunded>0?'<div class="li"><div class="li-name">Net paid</div><div class="li-amt" style="font-weight:700;font-size:13px">'+fmt(netPaid)+'</div></div>':'')+
+      (paid?'<div class="li"><div class="li-name">Date paid</div><div class="li-amt" style="font-weight:600;font-size:13px">'+esc(paid)+'</div></div>':'')+
+      (INV.payment_method?'<div class="li"><div class="li-name">Payment method</div><div class="li-amt" style="font-weight:600;font-size:13px">'+esc(INV.payment_method)+'</div></div>':'')+
+    '</div>'+
+
+    // LINE ITEMS
+    '<div class="card pad">'+
+      '<h2 class="sec">What this covers</h2>'+
+      lineItemsHtml()+
+      '<div class="li total"><div class="li-name">Total</div><div class="li-amt">'+fmt(total)+'</div></div>'+
+    '</div>'+
+
+    agreementHtml()+
+
+    '<div class="inv-foot">Keep this '+(isRefund?'for your records':('receipt for your records'+(isDeposit?'':' and your insurance company')))+'.<br>Backup Power Pro by Key Electric &middot; Questions? Text Key at <b>(864) 863-7800</b></div>';
+
+  loadHomeImage();
+  revealCards();
+}
+
+// ── PAY FLOW (hosted Stripe checkout redirect) ──────────────────────
+// Same endpoint + body shape invoice.html uses for its checkout call. We
+// omit `embedded` so create-checkout-session returns { url } (hosted
+// session) instead of a clientSecret, then redirect to Stripe.
+var STRIPE_CHECKOUT_HOSTS = ['checkout.stripe.com'];
+
+async function payOnline(){
+  if(IS_PREVIEW||new URLSearchParams(window.location.search).get('preview')==='1'){ showToast('Preview mode, payment is disabled.'); return; }
+  if(!isPayableInvoice(INV)){
+    showToast('This invoice is not available for payment. Call or text (864) 863-7800.');
+    return;
+  }
+  var btn=document.getElementById('pay-btn');
+  var token=new URLSearchParams(window.location.search).get('token');
+  if(!token){ showToast('Payment unavailable right now, call or text (864) 863-7800.'); return; }
+
+  var original = btn ? btn.textContent : '';
+  if(btn){ btn.disabled=true; btn.textContent='Opening checkout...'; }
+
+  try{
+    var ctrl=new AbortController();
+    var timer=setTimeout(function(){ ctrl.abort(); }, 10000);
+    var res=await fetch(SUPABASE_URL+'/functions/v1/create-checkout-session',{
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'apikey':SUPABASE_KEY, 'Authorization':'Bearer '+SUPABASE_KEY },
+      body:JSON.stringify({ token: token, prefer_ach: true }),
+      signal:ctrl.signal,
+    });
+    clearTimeout(timer);
+    var data=await res.json().catch(function(){ return {}; });
+    if(!res.ok || !data || !data.url) throw new Error((data && data.error) || 'Failed to start checkout');
+
+    // Validate the redirect target is a Stripe checkout host before navigating.
+    var dest=new URL(data.url);
+    if(dest.protocol!=='https:' || STRIPE_CHECKOUT_HOSTS.indexOf(dest.hostname)===-1){
+      throw new Error('Unexpected checkout destination');
+    }
+    window.location.href=dest.href;
+  } catch(err){
+    if(btn){ btn.disabled=false; btn.textContent=original||('Pay '+(btn.getAttribute('data-amount')||'')); }
+    showToast('Payment unavailable right now, call or text (864) 863-7800.');
+  }
+}
+
+// ── REVEAL (same calm motion as the DS) ─────────────────────────────
+function revealCards(){
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var sig=document.querySelector('.signature.sig-pen');
+  function reveal(t){ t.classList.add('in'); if(!reduce && sig && t.contains(sig)) sig.classList.add('writing'); }
+  var els=document.querySelectorAll('.card, .paid-banner');
+  if(reduce || !('IntersectionObserver' in window)){ els.forEach(reveal); return; }
+  var io=new IntersectionObserver(function(en){ en.forEach(function(e){ if(e.isIntersecting){ reveal(e.target); io.unobserve(e.target); } }); },{threshold:0,rootMargin:'0px 0px -15% 0px'});
+  els.forEach(function(e){ io.observe(e); });
+  // Failsafe (proposal-comp scroll-reveal scar): reveal anything already in or
+  // above the viewport on first paint, so above-the-fold content never waits on
+  // the observer's async first callback. Below-fold cards stay observed.
+  requestAnimationFrame(function(){
+    els.forEach(function(e){ if(e.getBoundingClientRect().top < window.innerHeight){ reveal(e); io.unobserve(e); } });
+  });
+}
+</script>
+</body>
+</html>
