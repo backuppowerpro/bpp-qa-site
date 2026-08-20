@@ -65,18 +65,43 @@
     }
   }
 
-  function replaceMapboxImage(image) {
-    if (!(image instanceof HTMLImageElement)) return;
+  function safeImageSource(value) {
     try {
-      const url = new URL(image.src, window.location.href);
+      const url = new URL(String(value || ''), window.location.href);
       const isMapbox = url.hostname === 'api.mapbox.com';
       const isQaStreetview = url.hostname === `${qaProject}.supabase.co`
         && url.pathname.includes('/functions/v1/streetview-hero');
       if (isMapbox || isQaStreetview) {
-        image.src = '/assets/images/sample-home.jpg';
-        image.dataset.bppQaMock = isMapbox ? 'mapbox-static-image' : 'streetview-hero';
+        return {
+          source: '/assets/images/sample-home.jpg',
+          mock: isMapbox ? 'mapbox-static-image' : 'streetview-hero',
+        };
       }
     } catch (_error) {}
+    return null;
+  }
+
+  const imageSourceDescriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
+  if (imageSourceDescriptor?.get && imageSourceDescriptor?.set) {
+    Object.defineProperty(HTMLImageElement.prototype, 'src', {
+      configurable: imageSourceDescriptor.configurable,
+      enumerable: imageSourceDescriptor.enumerable,
+      get: imageSourceDescriptor.get,
+      set(value) {
+        const replacement = safeImageSource(value);
+        if (replacement) this.dataset.bppQaMock = replacement.mock;
+        imageSourceDescriptor.set.call(this, replacement?.source || value);
+      },
+    });
+  }
+
+  function replaceMapboxImage(image) {
+    if (!(image instanceof HTMLImageElement)) return;
+    const replacement = safeImageSource(image.src);
+    if (replacement) {
+      image.dataset.bppQaMock = replacement.mock;
+      image.src = replacement.source;
+    }
   }
 
   function installQaMarker() {
