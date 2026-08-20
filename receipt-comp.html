@@ -9,7 +9,7 @@
 <meta name="color-scheme" content="light only">
 <meta name="supported-color-schemes" content="light only">
 <!-- connect-src so the live invoice-view fetch is allowed; img/style/font kept open for the DS + logo. This is a VIEW page (no checkout, no Stripe), so no api.stripe.com is needed. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'sha256-GNKC+4zJL3odn+IPVz2IBzIDTDv24XtcCE2/DYtLqCk='; style-src 'self' https://fonts.googleapis.com 'unsafe-inline' 'sha256-06oLOfryae6iZdOF0l+cWFlhfBwRGQuZpxdj3EmpDAM=' 'sha256-+wQ5yPJX04bweQ7/+xPW/Fke8k9QfoSG5b25utLDjvg='; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co;">
 <!-- resolve relative asset paths to the live domain so the logo renders in any viewer/preview panel -->
 <base href="https://qa.backuppowerpro.com/">
 <title>Paid in full, your receipt | Backup Power Pro</title>
