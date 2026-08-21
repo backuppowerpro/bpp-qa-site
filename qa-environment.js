@@ -148,6 +148,23 @@
 
   function installQaMarker() {
     if (document.querySelector('[data-bpp-qa-marker]')) return;
+    if (!document.querySelector('[data-bpp-qa-marker-print-style]')) {
+      const printStyle = document.createElement('style');
+      printStyle.dataset.bppQaMarkerPrintStyle = 'true';
+      printStyle.textContent = [
+        '@media print {',
+        '  [data-bpp-qa-marker] {',
+        '    position: fixed !important;',
+        '    top: 2px !important;',
+        '    left: 50% !important;',
+        '    right: auto !important;',
+        '    margin: 0 !important;',
+        '    transform: translateX(-50%) !important;',
+        '  }',
+        '}',
+      ].join('\n');
+      document.head.appendChild(printStyle);
+    }
     const marker = document.createElement('div');
     marker.dataset.bppQaMarker = 'true';
     marker.setAttribute('role', 'status');
