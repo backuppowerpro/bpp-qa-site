@@ -635,6 +635,8 @@
       var signStatusUncertain=false;
       var signatureDeliberate=false;
       var signatureTypedCharacters=0;
+      var signatureSelectionPrepared=false;
+      var signaturePointerActive=false;
       var historyAuthorizationResetPending=false;
       var depositCancellationUnconfirmed=true;
       var depositAuthorizationWasReset=false;
@@ -901,6 +903,8 @@
         signature.dataset.edited='false';
         signatureDeliberate=false;
         signatureTypedCharacters=0;
+        signatureSelectionPrepared=false;
+        signaturePointerActive=false;
       }
       function renderIdentity(){
         var name=String(fixture.customerName||'Sample Homeowner').trim()||'Sample Homeowner';
@@ -1846,6 +1850,25 @@
         syncPom();
       });
       document.getElementById('agreementAck').addEventListener('change',syncApproval);
+      document.getElementById('signature').addEventListener('pointerdown',function(){
+        signaturePointerActive=true;
+      });
+      document.getElementById('signature').addEventListener('focus',function(event){
+        if(!signaturePointerActive&&!signatureSelectionPrepared&&event.target.dataset.edited!=='true'){
+          event.target.select();
+          signatureSelectionPrepared=true;
+        }
+      });
+      document.getElementById('signature').addEventListener('click',function(event){
+        if(!signatureSelectionPrepared&&event.target.dataset.edited!=='true'){
+          event.target.select();
+          signatureSelectionPrepared=true;
+        }
+        signaturePointerActive=false;
+      });
+      document.getElementById('signature').addEventListener('blur',function(){
+        signaturePointerActive=false;
+      });
       document.getElementById('signature').addEventListener('beforeinput',function(event){
         if(event.isTrusted&&event.inputType==='insertText'&&typeof event.data==='string'&&event.data.length===1){
           signatureTypedCharacters+=1;
