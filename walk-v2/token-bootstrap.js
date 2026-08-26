@@ -37,6 +37,8 @@
   var stored = valid(supplied) ? store(supplied) : readStored();
   var canRemoveSupplied = !valid(supplied) || stored === supplied;
 
+  window.__BPP_CAPABILITY_ENTRY = Boolean(valid(supplied) || stored);
+
   if (current.searchParams.has('t') && canRemoveSupplied) {
     current.searchParams.delete('t');
     try {

@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="robots" content="noindex,nofollow">
@@ -310,10 +312,11 @@
       color:#385b91;
     }
     .ack-link{
-      display:inline;padding:13px 0;margin:-13px 0;color:#28589b;
+      display:inline-flex;align-items:center;min-height:44px;padding:0;margin:-11px 0;color:#28589b;
       font:inherit;text-decoration:underline;text-underline-offset:2px;
       -webkit-box-decoration-break:clone;box-decoration-break:clone;
     }
+    .ack-link:focus{outline:2px solid #1d4ed8;outline-offset:2px;border-radius:4px}
     .info-overlay{
       position:fixed;z-index:120;inset:0;display:grid;place-items:center;padding:max(18px,env(safe-area-inset-top)) 18px max(18px,env(safe-area-inset-bottom));
       background:rgba(5,18,38,.58);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
@@ -376,6 +379,8 @@
     .state-spin{width:34px;height:34px;margin:0 auto 16px;border:3px solid var(--plan-line);border-top-color:var(--plan-navy);border-radius:50%;animation:state-spin .7s linear infinite}
     @keyframes state-spin{to{transform:rotate(360deg)}}
     .state-action{display:flex;align-items:center;justify-content:center;min-height:52px;margin:20px auto 0;padding:0 22px;border:0;border-radius:26px;background:var(--plan-gold);color:var(--plan-navy);font:800 14px/1 Outfit,sans-serif;text-decoration:none;cursor:pointer}
+    .state-action + .state-action{margin-top:10px}
+    .state-action-secondary{background:#fff;color:var(--plan-navy);box-shadow:inset 0 0 0 1.5px rgba(11,31,59,.22)}
     @media (min-width:600px){
       .page{padding-top:22px}
       .hero-photo{height:245px}
@@ -417,8 +422,6 @@
       .ack.attention-cue .ack-box::after{animation:none}
     }
   </style>
-<meta name="robots" content="noindex,nofollow,noarchive">
-<script src="/qa-environment.js"></script>
 </head>
 <body class="booting">
 <noscript><div class="preview-flag" data-preview-banner="true">Preview unavailable, JavaScript is off, no customer action can occur</div><div class="preview-watermark" data-preview-watermark="true" aria-hidden="true"><span>Preview unavailable</span></div><div style="max-width:620px;margin:70px auto 24px;padding:18px;border:1px solid #ffba00;border-radius:14px;background:#fff8e6;color:#0b1f3b;text-align:center;font:600 16px/1.55 system-ui,sans-serif;">This proposal did not load. Turn on JavaScript and reload, or call (864) 863-7800.</div></noscript>
@@ -518,11 +521,11 @@
       <div class="optional-head">
         <img src="assets/product-images/surge-protector.jpg" alt="Whole-home surge protector">
         <div>
-          <h2 id="optionalHeading">Whole-home surge protection</h2>
+          <h2 id="optionalHeading">Peace of Mind Protection Package</h2>
           <div class="optional-price">$447 added to your project</div>
         </div>
       </div>
-      <p class="optional-copy">Helps protect connected equipment from certain electrical surges. It is not required for your generator connection.</p>
+      <p class="optional-copy">Includes whole-home surge protection with a $75,000 manufacturer's connected-equipment warranty, a 20-point panel safety inspection, a customized safety and wattage guide, and priority scheduling. It is not required for your generator connection.</p>
       <div class="optional-action">
         <span>Your base installation stays complete without this upgrade.</span>
         <button class="add-option" id="pomToggle" type="button" aria-pressed="false">Add upgrade</button>
@@ -564,7 +567,7 @@
           <span class="ack-copy">I understand the <a class="ack-link" href="#safety" data-info="safety">Generator Safety &amp; Compatibility</a>. I authorize <span id="agreementMoney">the $299 deposit today, saving this payment method, and a one-time $1,198 charge after installation. Key personally reviews that charge before it runs, and I can cancel this authorization before installation</span>.<small>This is not a subscription or recurring payment.</small></span>
         </label>
 
-        <input class="sig-input" id="signature" type="text" autocomplete="name" value="Sample Homeowner" aria-label="Signature. Tap to edit.">
+        <input class="sig-input" id="signature" type="text" autocomplete="off" data-lpignore="true" data-1p-ignore="true" value="" placeholder="Type your full name" aria-label="Electronic signature. Type your full name.">
         <button class="approve" id="approveButton" type="button" disabled>Approve and pay $299</button>
         <div class="approval-error" id="approvalError" role="alert" aria-live="polite"></div>
         <div class="policies"><a href="#deposit-policy" data-info="deposit">Deposit and rescheduling policy</a><a href="#terms" data-info="terms">Terms</a><a href="#privacy" data-info="privacy">Privacy</a></div>
@@ -630,6 +633,9 @@
       var proposal=null;
       var submitting=false;
       var signStatusUncertain=false;
+      var signatureDeliberate=false;
+      var signatureTypedCharacters=0;
+      var historyAuthorizationResetPending=false;
       var depositCancellationUnconfirmed=true;
       var depositAuthorizationWasReset=false;
       var params=new URLSearchParams(window.location.search);
@@ -650,6 +656,7 @@
       var authorizationGateToken='';
       var authorizationFactsRendered=false;
       var authorizationFullRedoPending=false;
+      var acceptedSettlementInFlight=null;
       document.body.dataset.authorizationGate=authorizationGateState;
       function authorizationGateReady(){return authorizationGateState==='ready';}
       function setAuthorizationGateState(state){
@@ -886,13 +893,21 @@
         note=note.charAt(0).toLowerCase()+note.slice(1);
         document.getElementById('personalNoteText').textContent=prefix+', '+note;
       }
+      function prefillSignatureName(){
+        var signature=document.getElementById('signature');
+        if(!signature)return;
+        var name=String(fixture.customerName||'').trim();
+        signature.value=name;
+        signature.dataset.edited='false';
+        signatureDeliberate=false;
+        signatureTypedCharacters=0;
+      }
       function renderIdentity(){
         var name=String(fixture.customerName||'Sample Homeowner').trim()||'Sample Homeowner';
         document.getElementById('customerName').textContent=name;
         document.getElementById('customerAddress').textContent=compactAddress(fixture.customerAddress);
         document.getElementById('compactProposalTitle').textContent=(name.split(/\s+/)[0]||'Your')+"'s proposal";
-        var signature=document.getElementById('signature');
-        if(signature.dataset.edited!=='true') signature.value=name;
+        prefillSignatureName();
         if(proposal){
           var prepared=proposal.sent_at||proposal.created_at;
           var expires=proposal.expires_at?new Date(proposal.expires_at):(prepared?new Date(new Date(prepared).getTime()+14*86400000):null);
@@ -935,9 +950,14 @@
         document.body.classList.remove('booting');
         syncAuthorizationGateUI();
       }
+      function signatureIdentityReady(){
+        var entered=document.getElementById('signature').value.trim();
+        var proposalName=String(fixture.customerName||'').trim();
+        return entered.length>=3&&(entered===proposalName||signatureDeliberate);
+      }
       function approvalReady(){
         return document.getElementById('agreementAck').checked
-          && document.getElementById('signature').value.trim().length>=3
+          && signatureIdentityReady()
           && !submitting
           && authorizationGateReady()
           && !depositCancellationUnconfirmed;
@@ -1107,6 +1127,10 @@
         });
       }
 
+      function proposalPermitFee(row){
+        var cents=Number(row&&row.permit_fee_cents);
+        return Number.isFinite(cents)&&cents>=0?cents/100:125;
+      }
       function structuredBase(row){
         var amp=String(row.selected_amp||row.amp_type)==='30'?'30':'50';
         var base=amp==='30'?1197:1497;
@@ -1117,12 +1141,12 @@
         return base+Math.max(0,length-5)*perFt
           -(row.include_cord===false?cordOff:0)
           -(row.include_inlet===false?inletOff:0)
-          -(row.include_permit===false?125:0);
+          -(row.include_permit===false?proposalPermitFee(row):0);
       }
       function proposalFixture(row){
         var amp=String(row.selected_amp||row.amp_type)==='30'?'30':'50';
         var standard=structuredBase(row);
-        var permitAllocation=row.include_permit===false?0:Math.min(150,standard);
+        var permitAllocation=row.include_permit===false?0:Math.min(proposalPermitFee(row),standard);
         var extras=Array.isArray(row.extra_line_items)?row.extra_line_items.filter(function(item){return item&&item.checked!==false;}):[];
         var lines=extras.map(function(item){
           return {
@@ -1176,6 +1200,10 @@
         return null;
       }
       function setApprovalError(message){document.getElementById('approvalError').textContent=message||'';}
+      function recoveryActionsHtml(){
+        return '<a class="state-action" href="sms:+18648637800">Text Key for a fresh link</a>'+
+          '<a class="state-action state-action-secondary" href="tel:+18648637800">Call Key</a>';
+      }
       function stateView(title,message,actionHtml){
         document.body.classList.remove('booting');
         document.querySelector('.sticky').style.display='none';
@@ -1195,7 +1223,7 @@
           .catch(function(error){
             if(!acceptanceAttemptId)throw error;
             return terminatePendingDepositAcceptance(proposal.token,acceptanceAttemptId).then(function(result){
-              if(result.accepted===true){window.location.reload();return new Promise(function(){});}
+              if(result.accepted===true)return settleAcceptedAuthorizationTruth();
               error.depositCancellationConfirmed=true;
               throw error;
             },function(cancelError){
@@ -1216,6 +1244,47 @@
             return data.proposal;
           });
         }).finally(function(){clearTimeout(timer);});
+      }
+      function settleAcceptedAuthorizationTruth(){
+        if(acceptedSettlementInFlight)return acceptedSettlementInFlight;
+        var delays=[0,250,750,1500];
+        var index=0;
+        function check(){
+          if(index>=delays.length){
+            setAuthorizationGateState('ready');
+            stateView('Final approval is still processing','Your acceptance is recorded, but the final proposal status is still updating. Nothing needs to be signed again. Check the status once more, or call Key if this remains.','<button class="state-action" id="checkApprovalStatus" type="button">Check approval status</button>');
+            var retry=document.getElementById('checkApprovalStatus');
+            if(retry)retry.addEventListener('click',function(){settleAcceptedAuthorizationTruth();});
+            return Promise.resolve(false);
+          }
+          var delay=delays[index++];
+          return new Promise(function(resolve){setTimeout(resolve,delay);}).then(function(){
+            return readAuthoritativeProposal();
+          }).then(function(row){
+            if(row&&row.__superseded){
+              setAuthorizationGateState('ready');
+              var latest=row.latest_token;
+              var action=latest&&/^[a-zA-Z0-9-]{8,64}$/.test(latest)
+                ? '<a class="state-action" href="'+escapeHtml(currentProposalUrl(latest))+'">View your current quote</a>'
+                : '';
+              stateView('This quote was updated','A newer version of this quote is available. Review that version before continuing.',action);
+              return true;
+            }
+            var token=proposal&&proposal.token;
+            proposal=Object.assign({},row,{token:row.token||token});
+            var status=String(proposal.status||'').toLowerCase();
+            if(status==='approved'||terminalProposalStatus(status)){
+              scrubCheckoutReturnHints(false);
+              setAuthorizationGateState('ready');
+              routeProposal(proposal);
+              return true;
+            }
+            return check();
+          }).catch(function(){return check();});
+        }
+        var settlement=check().finally(function(){if(acceptedSettlementInFlight===settlement)acceptedSettlementInFlight=null;});
+        acceptedSettlementInFlight=settlement;
+        return settlement;
       }
       function hasCheckoutReturnHint(){
         return /[?&](deposit_paid|card_saved|payment_check|acceptance_cancel)=1(?:&|$)/.test(window.location.search);
@@ -1299,6 +1368,8 @@
       function beginAuthorizationGate(token){
         authorizationGateToken=token||authorizationGateToken;
         if(previewModeActive()){setAuthorizationGateState('preview');return Promise.resolve(null);}
+        var loadedStatus=String(proposal&&proposal.status||'').toLowerCase();
+        if(loadedStatus==='approved'||terminalProposalStatus(loadedStatus)){setAuthorizationGateState('ready');return Promise.resolve(null);}
         if(!authorizationGateToken||authorizationGateInFlight)return authorizationGateInFlight||Promise.resolve(null);
         var gateParams=new URLSearchParams(window.location.search);
         var gatePaidReturn=gateParams.get('deposit_paid')==='1'||gateParams.get('payment_check')==='1';
@@ -1306,7 +1377,7 @@
         if(!gatePaidReturn&&(gateParams.get('acceptance_cancel')==='1'||ACCEPTANCE_ATTEMPT_RE.test(String(gateAttempt||''))))authorizationFullRedoPending=true;
         setAuthorizationGateState('pending');
         var attempt=runAuthorizationGate(authorizationGateToken).then(function(result){
-          if(result&&result.accepted===true){window.location.reload();return result;}
+          if(result&&result.accepted===true)return settleAcceptedAuthorizationTruth();
           if(result&&result.authorization_reset_required===true&&authorizationFactsRendered&&proposal&&document.getElementById('approveButton')){
             depositAuthorizationWasReset=false;
             resetDepositAcceptanceAuthorization('Payment was not confirmed, so this proposal was not accepted. Review it, check the acknowledgment, enter your name, and accept again.');
@@ -1377,7 +1448,7 @@
           var current=new URLSearchParams(window.location.search);
           var attemptId=current.get('acceptance_attempt_id')||storedPendingDepositAcceptance(token);
           checkPendingDepositAcceptance(token,attemptId).then(function(result){
-            if(result.accepted===true)window.location.reload();
+            if(result.accepted===true)return settleAcceptedAuthorizationTruth();
             else if(result.authorization_reset_required===true){forgetPendingDepositAcceptance(token,attemptId);window.location.replace(depositAcceptanceRetryUrl(token));}
             else{
               scrubCheckoutReturnHints(true);
@@ -1445,19 +1516,20 @@
       function resetAuthorizationForRevisedContract(row){
         submitting=false;
         signStatusUncertain=false;
+        signatureDeliberate=false;
+        signatureTypedCharacters=0;
         proposal=row;
         fixture=proposalFixture(row);
         pomSelected=row.selected_pom===true&&row.pom_offered!==false;
         var acknowledgment=document.getElementById('agreementAck');
         if(acknowledgment)acknowledgment.checked=false;
         var signature=document.getElementById('signature');
-        if(signature){signature.value='';signature.dataset.edited='false';}
+        prefillSignatureName();
         render();
         syncPom();
         syncSticky();
         syncPersonalHeader();
         loadHero(row);
-        if(signature)signature.value='';
         syncApproval();
         var button=document.getElementById('approveButton');
         if(button){button.disabled=true;button.textContent='Review revised proposal';}
@@ -1466,10 +1538,11 @@
       function resetDepositAcceptanceAuthorization(message){
         submitting=false;
         signStatusUncertain=false;
+        signatureDeliberate=false;
+        signatureTypedCharacters=0;
         var acknowledgment=document.getElementById('agreementAck');
         if(acknowledgment)acknowledgment.checked=false;
-        var signature=document.getElementById('signature');
-        if(signature){signature.value='';signature.dataset.edited='false';}
+        prefillSignatureName();
         renderMoney();
         syncApproval();
         var button=document.getElementById('approveButton');
@@ -1616,7 +1689,7 @@
                 return;
               }
               return terminateActivePendingDepositAcceptance(proposal.token).then(function(termination){
-                if(termination.accepted===true){window.location.reload();return new Promise(function(){});}
+                if(termination.accepted===true)return settleAcceptedAuthorizationTruth();
                 return readAuthoritativeProposal();
               }).then(function(row){
                 if(row&&row.__superseded){
@@ -1681,6 +1754,8 @@
       }
       function routeProposal(row){
         var status=String(row.status||'').toLowerCase();
+        var resetAfterHistoryRestore=historyAuthorizationResetPending&&['sent','viewed','copied'].indexOf(status)>-1;
+        if(historyAuthorizationResetPending&&!resetAfterHistoryRestore)historyAuthorizationResetPending=false;
         if(terminalProposalStatus(status)){if(hasCheckoutReturnHint())scrubCheckoutReturnHints(false);return stateView(status==='expired'?'This quote has expired':'This proposal is closed',status==='expired'?'This proposal cannot be signed. Call Key for a refreshed proposal.':'This proposal is no longer active. Call Key at (864) 863-7800 if you have questions.','<a class="state-action" href="tel:+18648637800">Call Key</a>');}
         if(status==='approved'){
           if(hasCheckoutReturnHint())scrubCheckoutReturnHints(false);
@@ -1727,22 +1802,25 @@
         }
         if(!isPreview&&!authorizationFullRedoPending&&row.require_deposit!==false&&hasCheckoutReturnHint()
             &&['sent','viewed','copied'].indexOf(status)>-1)return reconcileCheckoutReturn(row);
-        if(!isPreview&&['sent','viewed','copied'].indexOf(status)===-1) return stateView('Proposal not available','This proposal has not been issued. Please use the latest link from Key, or call (864) 863-7800.','<a class="state-action" href="tel:+18648637800">Call Key</a>');
+        if(!isPreview&&['sent','viewed','copied'].indexOf(status)===-1) return stateView('Proposal not available','This proposal has not been issued. Ask Key for the latest personal link.',recoveryActionsHtml());
         var prepared=row.sent_at||row.created_at;
         var expires=row.expires_at?new Date(row.expires_at):(prepared?new Date(new Date(prepared).getTime()+14*86400000):null);
-        if(expires&&!isNaN(expires.getTime())&&expires.getTime()<Date.now()&&!row.signed_at) return stateView('This quote has expired','Text or call Key for a refreshed proposal. It only takes a few minutes.','<a class="state-action" href="sms:+18648637800">Text Key</a>');
+        if(expires&&!isNaN(expires.getTime())&&expires.getTime()<Date.now()&&!row.signed_at) return stateView('This quote has expired','Text or call Key for a refreshed proposal. It only takes a few minutes.',recoveryActionsHtml());
         bootProposal(row);
+        if(resetAfterHistoryRestore){
+          historyAuthorizationResetPending=false;
+          resetDepositAcceptanceAuthorization('Closing the previous payment attempt. This proposal has not been accepted.');
+        }
         if(authorizationFullRedoPending)resetDepositAcceptanceAuthorization('Closing the previous payment attempt. This proposal has not been accepted.');
         var acceptanceRetry=consumeDepositAcceptanceRetry();
         if(depositAuthorizationWasReset||acceptanceRetry){depositAuthorizationWasReset=false;resetDepositAcceptanceAuthorization('Payment was not confirmed, so this proposal was not accepted. Review it, check the acknowledgment, enter your name, and accept again.');}
       }
       function loadLiveProposal(){
         var token=params.get('token')||'';
-        if(!/^[a-zA-Z0-9-]{8,64}$/.test(token)){stateView('Proposal link not found','Use the personal proposal link Key sent you, or call (864) 863-7800 for a fresh link.','<a class="state-action" href="tel:+18648637800">Call Key</a>');return;}
+        if(!/^[a-zA-Z0-9-]{8,64}$/.test(token)){stateView('Proposal link not found','Use the personal proposal link Key sent you, or ask Key for a fresh link.',recoveryActionsHtml());return;}
         setAuthorizationGateState(isPreview?'preview':'pending');
         var controller=new AbortController();var timer=setTimeout(function(){controller.abort();},10000);
         var proposalPromise=fetch(SUPABASE_URL+'/functions/v1/proposal-view?token='+encodeURIComponent(token),{headers:{'Authorization':'Bearer '+SUPABASE_KEY},cache:'no-store',signal:controller.signal});
-        beginAuthorizationGate(token);
         proposalPromise
           .then(function(response){return response.json().catch(function(){return {};}).then(function(data){return {status:response.status,data:data};});})
           .then(function(result){
@@ -1752,11 +1830,14 @@
             var row=result.data.proposal;row.token=row.token||token;
             if(row.creator_version!=='v4'){window.location.replace('/proposal.html'+window.location.search);return;}
             var rowStatus=String(row.status||'').toLowerCase();
+            proposal=row;
+            if(rowStatus==='approved'||terminalProposalStatus(rowStatus))setAuthorizationGateState('ready');
+            else beginAuthorizationGate(token);
             if(!isPreview&&['sent','viewed','copied'].indexOf(rowStatus)>-1){fetch(SUPABASE_URL+'/functions/v1/proposal-mutate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},body:JSON.stringify({token:row.token,action:'track_view'})}).catch(function(){});}
             routeProposal(row);
           }).catch(function(error){
             clearTimeout(timer);
-            stateView(error&&error.name==='AbortError'?'This is taking too long':'Proposal not available','Please refresh, or call Key at (864) 863-7800 if the problem continues.','<a class="state-action" href="tel:+18648637800">Call Key</a>');
+            stateView(error&&error.name==='AbortError'?'This is taking too long':'Proposal not available','Please refresh, or ask Key for a fresh link if the problem continues.',recoveryActionsHtml());
           });
       }
 
@@ -1765,8 +1846,15 @@
         syncPom();
       });
       document.getElementById('agreementAck').addEventListener('change',syncApproval);
+      document.getElementById('signature').addEventListener('beforeinput',function(event){
+        if(event.isTrusted&&event.inputType==='insertText'&&typeof event.data==='string'&&event.data.length===1){
+          signatureTypedCharacters+=1;
+        }
+      });
       document.getElementById('signature').addEventListener('input',function(event){
-        event.target.dataset.edited='true';
+        if(!event.target.value)signatureTypedCharacters=0;
+        signatureDeliberate=event.isTrusted&&signatureTypedCharacters>=3&&event.target.value.trim().length>=3;
+        event.target.dataset.edited=signatureDeliberate?'true':'false';
         syncApproval();
       });
       document.querySelectorAll('[data-info]').forEach(function(link){
@@ -1838,11 +1926,30 @@
       });
 
       window.addEventListener('pageshow',function(event){
-        if(!event.persisted||previewModeActive()||isLocalFixture)return;
-        var token=new URLSearchParams(window.location.search).get('token');
-        if(!token||/[?&](deposit_paid|payment_check)=1(?:&|$)/.test(window.location.search))return;
-        if(proposal)resetDepositAcceptanceAuthorization('Closing the previous payment attempt. This proposal has not been accepted.');
-        beginAuthorizationGate(token);
+        var navigation=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];
+        var historyRestore=event.persisted||(navigation&&navigation.type==='back_forward');
+        if(!historyRestore||previewModeActive()||isLocalFixture)return;
+        requestAnimationFrame(function(){requestAnimationFrame(function(){
+          var token=new URLSearchParams(window.location.search).get('token');
+          if(!token||/[?&](deposit_paid|payment_check)=1(?:&|$)/.test(window.location.search))return;
+          var status=String(proposal&&proposal.status||'').toLowerCase();
+          if(status==='approved'||terminalProposalStatus(status)){
+            historyAuthorizationResetPending=false;
+            setAuthorizationGateState('ready');
+            routeProposal(proposal);
+            return;
+          }
+          historyAuthorizationResetPending=true;
+          signatureDeliberate=false;
+          signatureTypedCharacters=0;
+          var acknowledgment=document.getElementById('agreementAck');
+          if(acknowledgment)acknowledgment.checked=false;
+          prefillSignatureName();
+          var button=document.getElementById('approveButton');
+          if(button)button.disabled=true;
+          setAuthorizationGateState('pending');
+          beginAuthorizationGate(token);
+        });});
       });
 
       if(isLocalFixture){

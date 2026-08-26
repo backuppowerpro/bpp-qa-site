@@ -1,4 +1,9 @@
 /*
+  BPP-ROLE: CANONICAL-SOURCE
+  BPP-LIVE-URL: https://qa.backuppowerpro.com/walk-v2/mobile-canvas.css
+  BPP-DEPLOYMENT: PENDING-PUBLICATION
+  BPP-LAST-VERIFIED: 2026-08-25
+
   Accepted customer canvas.
   Keep every Quote Walk page at the same compact mobile-first width on desktop.
   Real phone viewports continue to fill the available screen.
@@ -1406,8 +1411,9 @@ body.qw-template-document .page > .foot {
   }
 
   .page[data-screen-label="Landing page (interactive, mobile)"] .proof-slide {
-    flex-basis: calc((100% - 36px) / 3.18);
-    height: 242px;
+    flex-basis: calc((100% - 18px) / 2.18);
+    height: 230px;
+    scroll-snap-align: none;
   }
 
   .page[data-screen-label="Landing page (interactive, mobile)"] .proof-review {
@@ -1652,5 +1658,95 @@ body.qw-template-document .page > .foot {
     padding: 0 !important;
     background: transparent !important;
     box-shadow: none !important;
+  }
+}
+
+/* Restored accepted desktop contract. The landing page keeps its wide hero
+   composition. Every continuation screen keeps one centered reading column. */
+@media (min-width: 1024px) {
+  .page[data-screen-label]:not([data-screen-label="Landing page (interactive, mobile)"]) {
+    width: min(760px, calc(100vw - 64px)) !important;
+    max-width: 760px !important;
+  }
+
+  .page[data-screen-label="Quote walk: generator connection"] [data-question],
+  .page[data-screen-label="Quote walk: generator needed"] [data-education]:not([hidden]) {
+    display: block;
+  }
+
+  .page[data-screen-label="Quote walk step 1 (interactive, mobile)"] .col-main,
+  .page[data-screen-label="Quote walk step 3 (interactive, mobile)"] .col-main,
+  .page[data-screen-label="Quote walk thank you (interactive, mobile)"] .col-main,
+  .page[data-screen-label="Quote walk incomplete"] .tasks {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    align-items: stretch;
+    gap: 22px;
+  }
+
+  .page[data-screen-label="Quote walk step 1 (interactive, mobile)"] .rooms {
+    grid-column: auto;
+    grid-row: auto;
+    align-self: stretch;
+  }
+
+  .page[data-screen-label="Quote walk step 2 (interactive, mobile)"] > .body {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 24px;
+  }
+
+  .page[data-screen-label].qw-range-page,
+  .page[data-screen-label].qw-final-page,
+  .page[data-screen-label="Quote walk incomplete"] {
+    display: flex !important;
+  }
+
+  .page[data-screen-label].qw-range-page > .qw-range-hero,
+  .page[data-screen-label].qw-final-page > .qw-final-hero,
+  .page[data-screen-label].qw-range-page > #rangePage,
+  .page[data-screen-label].qw-final-page > .body-grid,
+  .page[data-screen-label].qw-range-page > .qw-range-proof-carousel {
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+  }
+
+  .page[data-screen-label].qw-range-page > .qw-range-hero,
+  .page[data-screen-label].qw-final-page > .qw-final-hero {
+    min-height: 0 !important;
+    padding: 32px 34px !important;
+  }
+
+  .page[data-screen-label].qw-range-page > #rangePage,
+  .page[data-screen-label].qw-final-page > .body-grid {
+    display: block !important;
+    margin: 18px 0 0 !important;
+    padding: 30px !important;
+    border-radius: 20px;
+    background: #fff !important;
+    box-shadow: 0 8px 24px rgba(11,31,59,.07), inset 0 0 0 1px rgba(11,31,59,.07) !important;
+  }
+
+  .page[data-screen-label].qw-range-page > .qw-range-proof-carousel {
+    margin-top: 18px !important;
+  }
+
+  .page[data-screen-label].qw-range-page > .qw-range-proof-carousel .proof-track {
+    gap: 14px !important;
+    padding: 0 24px !important;
+    scroll-padding-inline: 24px !important;
+  }
+
+  .page[data-screen-label].qw-range-page > .qw-range-proof-carousel .proof-slide {
+    flex-basis: calc((100% - 28px) / 3) !important;
+    height: 210px !important;
+  }
+
+  .page[data-screen-label].qw-final-page > .body-grid .col-main,
+  .page[data-screen-label].qw-final-page > .body-grid .price {
+    height: auto !important;
   }
 }

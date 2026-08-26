@@ -1,8 +1,11 @@
 <!doctype html>
 <html lang="en" class="no-js qw-template-document-root">
 <head>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-6mwsRyANfr8IftJzvi0gP+lKuUDOsVssfUNkn7goJSU='; script-src-attr 'none'; style-src 'self' 'sha256-oy8BBmKR81N7mZJF/Mlkt18/mt1YBTZQMPYdlXc+IIY='; style-src-elem 'self' 'sha256-oy8BBmKR81N7mZJF/Mlkt18/mt1YBTZQMPYdlXc+IIY='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-SImJDOelUcX+iP3jnf9pA1aoUT6E+zA6cs0mUWgkynI='; script-src-attr 'none'; style-src 'self' 'sha256-oy8BBmKR81N7mZJF/Mlkt18/mt1YBTZQMPYdlXc+IIY='; style-src-elem 'self' 'sha256-oy8BBmKR81N7mZJF/Mlkt18/mt1YBTZQMPYdlXc+IIY='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/assets/js/bpp-analytics.js?v=20260825-scope3"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
@@ -139,10 +142,8 @@
     main { padding: 34px 40px 48px; }
   }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=20260808d" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=775a15192cad" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
-<meta name="robots" content="noindex,nofollow,noarchive">
-<script src="/qa-environment.js"></script>
 </head>
 <body class="qw-template-document">
 <div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to review your current range. Your saved answers remain on file. Turn it on and reload, or call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
@@ -284,7 +285,7 @@
     <span class="foot-process">Every project is reviewed and permitted by Key, completed with trusted local installation partners, and coordinated through final inspection.</span>
   </footer>
 </div>
-<script src="/walk-v2/walk.js?v=20260816-save"></script>
+<script src="/walk-v2/walk.js?v=608192bed14a"></script>
 <script src="/walk-v2/range-proof-carousel.js"></script>
 <script>
 (function () {
@@ -348,6 +349,22 @@
   function formatPhone(value) {
     var digits = phoneDigits(value);
     return digits.length === 10 ? '(' + digits.slice(0, 3) + ') ' + digits.slice(3, 6) + '-' + digits.slice(6) : digits;
+  }
+  function clearStaleRange(currentState) {
+    if (currentState) view = currentState;
+    var state = v2();
+    state.current_range_snapshot = null;
+    state.current_range_snapshot_id = null;
+    show(rangeCard, false);
+    show(scope, false);
+    show(proofCarousel, false);
+    show(fitCard, false);
+    show(options, false);
+    document.querySelectorAll('[data-accept], [data-accept-bottom], [data-no]').forEach(function (button) {
+      button.disabled = true;
+      button.hidden = true;
+      button.classList.add('hidden');
+    });
   }
   function phoneIsValid(value) { return /^[2-9][0-9]{2}[2-9][0-9]{6}$/.test(phoneDigits(value)); }
   function renderDelivery() {
@@ -540,10 +557,12 @@
       loading.classList.add('hidden');
       var code = cause && (cause.code || cause.body && cause.body.error);
       if (code === 'stale_customer_authorization') {
-        if (cause.currentState) view = cause.currentState;
+        clearStaleRange(cause.currentState);
         if (action === 'handoff') handoffReviewRequired = true;
-        render();
-        fail('Your saved setup changed. Review the current range, then tap the action again.');
+        fail('Your saved setup changed. The old range is no longer available while the current setup is checked.');
+        ensureRange().catch(function () {
+          if (view) WALK.routeRecoveryFromState(t, view);
+        });
         throw cause;
       }
       if (!localErrorOnly) {
@@ -558,8 +577,7 @@
     return refresh().then(function () {
       var readiness = v2().readiness || {};
       if (!readiness.inputs_ready) {
-        var blockers = Array.isArray(readiness.input_blockers) ? readiness.input_blockers : [];
-        WALK.go('incomplete.html', t);
+        WALK.routeRecoveryFromState(t, view);
         throw new Error('readiness_incomplete');
       }
       if (!v2().current_range_snapshot || v2().current_range_snapshot.status !== 'available') return stateAction('create_range', {});

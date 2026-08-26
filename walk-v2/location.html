@@ -1,12 +1,15 @@
 <!doctype html>
 <html lang="en" class="no-js">
 <head>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
 <meta name="referrer" content="strict-origin-when-cross-origin">
 
 
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-dbc+cQFTeFXYLAHyKLG0yqfE9xcbdW5bH/a2J/kl3z0='; script-src-attr 'none'; style-src 'self' 'sha256-MrmhzpkHukIm0k9SqZ9up/8dFOQd/BtFVpwQCG7swsw='; style-src-elem 'self' https://fonts.googleapis.com 'sha256-MrmhzpkHukIm0k9SqZ9up/8dFOQd/BtFVpwQCG7swsw='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-HrPrKIFyDCIcyh15AuH0n6WTGf1LQ+j3CBkrt45DNq0='; script-src-attr 'none'; style-src 'self' 'sha256-MrmhzpkHukIm0k9SqZ9up/8dFOQd/BtFVpwQCG7swsw='; style-src-elem 'self' https://fonts.googleapis.com 'sha256-MrmhzpkHukIm0k9SqZ9up/8dFOQd/BtFVpwQCG7swsw='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/assets/js/bpp-analytics.js?v=20260825-scope3"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
@@ -638,10 +641,8 @@
     .state-label { display: none; }
   }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=20260808d" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=775a15192cad" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
-<meta name="robots" content="noindex,nofollow,noarchive">
-<script src="/qa-environment.js"></script>
 </head>
 <body>
 <div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to continue this Quote Walk. Your saved answers remain on file. Turn it on and reload, or call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
@@ -750,7 +751,7 @@
 
 </div>
 
-<script src="/walk-v2/walk.js?v=20260816-save"></script>
+<script src="/walk-v2/walk.js?v=608192bed14a"></script>
 <script>
 
 (function () {
@@ -767,6 +768,7 @@
   var ROOM_API = { 'Garage': 'garage', 'Basement': 'basement', 'Outside': 'outside', 'Closet': 'closet', 'Utility area': 'laundry', 'Somewhere else': 'other', 'More than one panel': 'more_than_one_panel', 'Not sure': 'not_sure' };
   var API_ROOM = {}; Object.keys(ROOM_API).forEach(function (k) { API_ROOM[ROOM_API[k]] = k; });
   var selectedRoom = null, saving = false;
+  var answerHydration = WALK.hydrationGuard();
 
   function paint(room, echoLine) {
     selectedRoom = room || null;
@@ -791,7 +793,9 @@
   }
 
   /* welcome back: preselect their earlier answer (never re-ask) */
+  var hydrationVersion = answerHydration.begin();
   WALK.view(t).then(function (v) {
+    if (!answerHydration.accepts(hydrationVersion)) return;
     var params = new URLSearchParams(window.location.search);
     var editMode = params.get('edit') === '1';
     var recoveryMode = params.get('recovery') === '1';
@@ -804,6 +808,7 @@
   main.querySelectorAll('[data-room]').forEach(function (card) {
     card.addEventListener('click', function () {
       if (saving) return;
+      answerHydration.touch();
       var room = card.getAttribute('data-room');
       paint(room, true);
       WALK.ph('walk_v2_confirm_tap', { field: 'panel_room', value: ROOM_API[room] });
@@ -811,17 +816,20 @@
   });
 
   main.querySelector('[data-change]').addEventListener('click', function () {
+    answerHydration.touch();
     paint(null, false);
     echo.classList.remove('show');
     main.querySelector('[data-room]').focus();
   });
 
   main.querySelector('[data-found]').addEventListener('click', function () {
+    answerHydration.touch();
     paint(null, false);
     main.querySelector('[data-room]').focus();
   });
 
   main.querySelector('[data-later]').addEventListener('click', function () {
+    answerHydration.touch();
     saveAndContinue('Not sure', true);
   });
 

@@ -1,0 +1,72 @@
+/proposal.html
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+
+/proposal
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+
+/proposal-customer-mvp.html
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+
+/proposal-customer-mvp
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+
+/proposal-comp.html
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+
+/proposal-comp
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+
+/invoice.html
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+
+/invoice
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+
+/invoice-v4.html
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+
+/invoice-v4
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+
+/invoice-comp.html
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+
+/invoice-comp
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+
+/receipt.html
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+
+/receipt
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+
+/w/*
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+
+/walk-v2/*
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+
+/*
+  Content-Security-Policy: default-src 'none'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'none'; child-src 'none'; frame-src https://js.stripe.com https://hooks.stripe.com; media-src 'self' blob:; form-action 'self'; frame-ancestors 'none'; sandbox allow-scripts allow-same-origin allow-forms allow-modals allow-downloads
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(self), microphone=(), geolocation=(), payment=()

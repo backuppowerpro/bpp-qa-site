@@ -2258,7 +2258,7 @@ function snoozedUntil(contactId) {
 // When v1 changes, mirror here.
 const QB_C = {
   inlet30: 55, inlet50: 85, interlock: 25,
-  permitActual: 75, permitCustomer: 125, licenseAmortized: 25,
+  permitActual: 75, permitCustomer: 150, licenseAmortized: 25,
   surgeProtector: 85, cord30Cost: 60, cord50Cost: 125,
   adCost: 150, minProfit: 500,
 };
@@ -2267,7 +2267,7 @@ const QB_S = {
   longRun30perFt: 12, longRun50perFt: 14,
   surge: 446, pom: 447,
   cordValue30: 129, cordValue50: 198,
-  permitCustomer: 125,
+  permitCustomer: 150,
 };
 // Tier upgrades (additive, applied after base+addons). Standard is the floor.
 const TIER_META = {
@@ -2350,7 +2350,7 @@ const V3_PRICING = {
   // total stays at $1,497 for 50A all-included.
   cordOff:   { 30: 129,  50: 249  }, // discount when cord toggled off
   inletOff:  { 30: 129,  50: 179  }, // discount when inlet toggled off
-  permitOff: 125,                     // discount when permit toggled off
+  permitOff: 150,                     // discount when permit toggled off
   pom:       447,                     // peace-of-mind add-on (not in total)
   // Quick-add adders, Key's calculator design (2026-05-09). These are NOT
   // baked into the base, they're optional one-click line items that get

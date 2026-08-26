@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co; form-action 'self';">
+<script src="/assets/js/bpp-analytics.js?v=20260825-scope3"></script>
 <script>document.documentElement.className += ' js'</script>
 <title>Proposal | Backup Power Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -265,8 +268,6 @@ body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.appr
 /* .comp-flag now lives in bpp-ds.css (shared by every *-comp.html) */
 
 </style>
-<meta name="robots" content="noindex,nofollow,noarchive">
-<script src="/qa-environment.js"></script>
 </head>
 <body class="booting">
 <div class="boot-spin"><div class="dot"></div></div>
@@ -353,7 +354,7 @@ body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.appr
         <div class="line" style="border-bottom:none">
           <img class="line-thumb" src="assets/product-images/permit-inspection.jpg" alt="">
           <div class="mid"><div class="nm">Permit + county inspection</div><div class="ds">Filed and coordinated by us</div></div>
-          <div class="pr">$125</div>
+          <div class="pr">$150</div>
         </div>
       </div>
     </details>
@@ -688,6 +689,10 @@ function installPreviewChrome(){
 }
 function money(n){return '$'+Number(n||0).toLocaleString('en-US')}
 function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function proposalPermitFee(row){
+  var cents=Number(row&&row.permit_fee_cents);
+  return Number.isFinite(cents)&&cents>=0?cents/100:125;
+}
 function titleCase(s){return String(s||'').replace(/\w\S*/g,function(t){return t.charAt(0).toUpperCase()+t.substr(1).toLowerCase();});}
 
 // Read one amp's pricing object off the proposal row, mirroring proposal.html's getPrice().
@@ -705,7 +710,7 @@ function ampPricing(row,amp){
 function applyV3Normalization(row){
   if(row.creator_version==='v3' && !row.pricing_30){
     var V3P={ base:{30:1197,50:1497}, perFt:{30:12,50:14},
-      cordOff:{30:129,50:249}, inletOff:{30:129,50:179}, permitOff:125 };
+      cordOff:{30:129,50:249}, inletOff:{30:129,50:179}, permitOff:proposalPermitFee(row) };
     var lengthFt=Number(row.length_ft||row.run_ft||5);
     var extraFt=Math.max(0,lengthFt-5);
     var includeCord=row.include_cord!==false;
@@ -743,7 +748,7 @@ function buildAmpConfig(row){
   ['30','50'].forEach(function(amp){
     var pr=ampPricing(row,amp);
     var total = pr ? Number(pr.total!=null?pr.total:pr.base) : Number((amp===String(row.selected_amp)? (row.total||row.price_base) : (row.total||row.price_base))||0);
-    var box   = pr && pr.base!=null ? Number(pr.base) : Number(row.price_base|| (total? total-125 : 0));
+    var box   = pr && pr.base!=null ? Number(pr.base) : Number(row.price_base|| (total? total-proposalPermitFee(row) : 0));
     var is50  = amp==='50';
     out[amp]={
       box:box,
@@ -767,7 +772,7 @@ function renderScopeLines(){
   var a=AMP[chosenAmp],items=[];
   if(SCOPE.cord.included)    items.push({img:a.cordImg,name:a.cordName,desc:'Plugs into your connection box',price:'Included',inc:true});
   if(SCOPE.wireRun.included) items.push({img:'assets/product-images/wire-run.jpg',name:'Extended wire run',desc:'Extra wire length included, already in your quote',price:'Included',inc:true});
-  if(SCOPE.permit.included)  items.push({img:'assets/product-images/permit-inspection.jpg',name:'Permit + county inspection',desc:'Filed and coordinated by us',price:'$125',inc:false});
+  if(SCOPE.permit.included)  items.push({img:'assets/product-images/permit-inspection.jpg',name:'Permit + county inspection',desc:'Filed and coordinated by us',price:money(proposalPermitFee(P)),inc:false});
   // Extra line items Key added in the quote builder. They are part of the
   // total (customAdder), so they MUST be visible: no invisible money.
   CUSTOM_ITEMS.forEach(function(ci){

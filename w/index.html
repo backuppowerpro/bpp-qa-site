@@ -1,13 +1,15 @@
 <!doctype html>
 <html lang="en">
 <head>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="robots" content="noindex, nofollow" />
+<meta name="referrer" content="no-referrer" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self' 'sha256-HiwXUWS3jcHMAW2f4geAAfJ5MYyxBUQrfSfNvwQjCnI='; style-src 'self' 'sha256-uythJlsO9eQ5sY4hiKPFvh2WM8ypbCp4OGwb5TxakGM='; font-src 'self'; img-src 'self'; connect-src https://hfatblrcwytxvijjhpal.supabase.co" />
 <title>Backup Power Pro · Opening your quote</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="/assets/css/bpp-money-fonts.css" rel="stylesheet" integrity="sha384-NmPRtynqfaEkuTkw+YhyxU4ryJIyb5TjGnjs6wi4v0gnjH79bJeYMFWvLgN69rE3" crossorigin="anonymous" />
 <style>
   :root {
     --navy: #0b1f3b;
@@ -16,6 +18,7 @@
     --body: 'Inter', system-ui, -apple-system, sans-serif;
   }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html, body {
     margin: 0; padding: 0; min-height: 100vh;
     background: var(--navy); color: #fff;
@@ -45,14 +48,13 @@
     min-height: 52px; padding: 0 26px; margin-top: 8px;
     font-family: var(--head); font-size: 16px; font-weight: 700; color: var(--navy);
     background: var(--gold); border-radius: 100px; text-decoration: none;
+    border: 0; cursor: pointer;
     box-shadow: 0 6px 24px rgba(255,186,0,0.30);
   }
   body.is-error .loading { display: none; }
   body.is-error .err { display: flex; flex-direction: column; align-items: center; gap: 14px; }
   .foot { font-size: 12.5px; color: var(--gold); font-family: var(--head); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; margin-top: 6px; }
 </style>
-<meta name="robots" content="noindex,nofollow,noarchive">
-<script src="/qa-environment.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -62,10 +64,12 @@
       <h1>Opening your quote…</h1>
       <p>One second while I pull up your saved walk.</p>
     </div>
-    <div class="err">
-      <h1>This link has expired.</h1>
-      <p>No problem, you can pick your quote back up right here.</p>
-      <a class="btn" href="https://qa.backuppowerpro.com/walk-v2/?src=w">Start your quote</a>
+    <div class="err" data-return-recovery>
+      <h1 data-recovery-title>Your saved Quote Walk could not be opened.</h1>
+      <p data-recovery-copy>Your saved answers are unchanged.</p>
+      <button class="btn" type="button" data-retry>Try again</button>
+      <a class="btn" href="/walk-v2/?src=w" data-start-over>Start a new Quote Walk</a>
+      <a href="tel:+18648637800">Call or text Key</a>
       <span class="foot">Key Goodson · Backup Power Pro</span>
     </div>
   </div>
@@ -73,28 +77,71 @@
 <script>
 (function () {
   var BASE = 'https://hfatblrcwytxvijjhpal.supabase.co/functions/v1';
-  function fail() { document.body.classList.add('is-error'); }
-  try {
+  var title = document.querySelector('[data-recovery-title]');
+  var copy = document.querySelector('[data-recovery-copy]');
+  var retry = document.querySelector('[data-retry]');
+  var attempt = 0;
+  function fail(kind) {
+    var temporary = kind === 'temporary';
+    title.textContent = temporary
+      ? 'Your saved Quote Walk could not be confirmed.'
+      : kind === 'expired'
+        ? 'This saved link has expired.'
+        : 'This saved link is not available.';
+    copy.textContent = temporary
+      ? 'Your answers are unchanged. Check your connection and try again.'
+      : 'No Quote Walk was marked complete from this link. You can start again or contact Key.';
+    retry.hidden = !temporary;
+    document.body.classList.add('is-error');
+  }
+  function openSavedWalk() {
+    var currentAttempt = ++attempt;
+    document.body.classList.remove('is-error');
     var code = (new URLSearchParams(location.search).get('c') || '').toLowerCase();
-    if (!/^[0-9a-z]{12}$/.test(code)) { fail(); return; }
-    var done = false;
-    // hard timeout so a hung network never spins forever
-    var t = setTimeout(function () { if (!done) fail(); }, 8000);
-    fetch(BASE + '/pre-read-view?c=' + encodeURIComponent(code))
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (d) {
-        done = true; clearTimeout(t);
-        var token = d && d.token;
-        var resumePath = d && d.resume_path;
+    if (!/^[0-9a-z]{12}$/.test(code)) { fail('missing'); return; }
+    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var settled = false;
+    var timer = setTimeout(function () {
+      if (settled || currentAttempt !== attempt) return;
+      settled = true;
+      if (controller) controller.abort();
+      fail('temporary');
+    }, 8000);
+    fetch(BASE + '/pre-read-view?c=' + encodeURIComponent(code), controller ? { signal: controller.signal } : {})
+      .then(function (response) {
+        if (settled || currentAttempt !== attempt) return null;
+        if (response.ok) return response.json();
+        settled = true;
+        clearTimeout(timer);
+        fail(response.status === 404 ? 'missing' : response.status === 410 ? 'expired' : 'temporary');
+        return null;
+      })
+      .then(function (data) {
+        if (!data || settled || currentAttempt !== attempt) return;
+        settled = true;
+        clearTimeout(timer);
+        var token = data.token;
+        var resumePath = data.resume_path;
         if (token && /^[a-f0-9]{32,64}$/i.test(token)
             && typeof resumePath === 'string'
             && /^\/walk-v2\/(?:[a-z0-9-]+\.html)?\?t=[a-f0-9]{32,64}$/i.test(resumePath)
             && resumePath.endsWith(token)) {
           location.replace(resumePath);
-        } else { fail(); }
+        } else {
+          fail('missing');
+        }
       })
-      .catch(function () { done = true; clearTimeout(t); fail(); });
-  } catch (e) { fail(); }
+      .catch(function () {
+        if (settled || currentAttempt !== attempt) return;
+        settled = true;
+        clearTimeout(timer);
+        fail('temporary');
+      });
+  }
+  retry.addEventListener('click', openSavedWalk);
+  try {
+    openSavedWalk();
+  } catch (e) { fail('temporary'); }
 })();
 </script>
 </body>

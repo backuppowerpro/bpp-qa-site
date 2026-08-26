@@ -5,20 +5,41 @@
   const qaProject = 'hfatblrcwytxvijjhpal';
   const qaHost = 'qa.backuppowerpro.com';
 
-  function blockedUrl(value) {
+  function allowedQaRequest(value) {
     try {
       const url = new URL(String(value), window.location.href);
-      return url.hostname === `${productionProject}.supabase.co`
-        || (url.hostname.endsWith('.backuppowerpro.com') && url.hostname !== qaHost)
-        || url.hostname === 'backuppowerpro.com';
+      if (url.protocol === 'data:' || url.protocol === 'blob:') return true;
+      return url.origin === window.location.origin
+        || url.hostname === qaHost
+        || url.hostname === `${qaProject}.supabase.co`;
     } catch (_error) {
       return false;
     }
   }
 
-  function stopProductionRequest(value) {
+  function blockedUrl(value) {
+    try {
+      const url = new URL(String(value), window.location.href);
+      return url.hostname === `${productionProject}.supabase.co`
+        || !allowedQaRequest(url);
+    } catch (_error) {
+      return true;
+    }
+  }
+
+  function stopExternalRequest(value) {
     if (blockedUrl(value)) {
-      throw new Error('QA safety guard blocked a production request.');
+      throw new Error('QA safety guard blocked an external request.');
+    }
+  }
+
+  function server_owned_sandbox_payment_handoff(value) {
+    try {
+      const url = new URL(String(value), window.location.href);
+      return url.origin === `https://${qaProject}.supabase.co`
+        && /^\/functions\/v1\/(?:create-checkout-session|proposal-deposit-checkout)$/.test(url.pathname);
+    } catch (_error) {
+      return false;
     }
   }
 
@@ -119,6 +140,12 @@
           mock: isMapbox ? 'mapbox-static-image' : 'streetview-hero',
         };
       }
+      if (!allowedQaRequest(url)) {
+        return {
+          source: '/assets/images/sample-home.jpg',
+          mock: 'external-image-blocked',
+        };
+      }
     } catch (_error) {}
     return null;
   }
@@ -209,13 +236,13 @@
     if (mapboxResponse) return Promise.resolve(mapboxResponse);
     const openMapResponse = qaOpenMapResponse(value);
     if (openMapResponse) return Promise.resolve(openMapResponse);
-    stopProductionRequest(value);
+    stopExternalRequest(value);
     return originalFetch(input, init);
   };
 
   const originalXhrOpen = XMLHttpRequest.prototype.open;
   XMLHttpRequest.prototype.open = function (method, url) {
-    stopProductionRequest(url);
+    stopExternalRequest(url);
     if (externalMapProvider(url)) {
       throw new Error('QA safety guard blocked an external map-provider request.');
     }
@@ -225,9 +252,64 @@
   const originalSendBeacon = navigator.sendBeacon?.bind(navigator);
   if (originalSendBeacon) {
     navigator.sendBeacon = function (url, data) {
-      stopProductionRequest(url);
+      stopExternalRequest(url);
       return originalSendBeacon(url, data);
     };
+  }
+
+  const originalFormSubmit = HTMLFormElement.prototype.submit;
+  HTMLFormElement.prototype.submit = function () {
+    stopExternalRequest(this.action || window.location.href);
+    return originalFormSubmit.apply(this, arguments);
+  };
+  const originalFormRequestSubmit = HTMLFormElement.prototype.requestSubmit;
+  if (originalFormRequestSubmit) {
+    HTMLFormElement.prototype.requestSubmit = function () {
+      stopExternalRequest(this.action || window.location.href);
+      return originalFormRequestSubmit.apply(this, arguments);
+    };
+  }
+
+  const originalWindowOpen = window.open.bind(window);
+  window.open = function (value) {
+    const resolved = value || 'about:blank';
+    if (blockedUrl(resolved) && !server_owned_sandbox_payment_handoff(resolved)) {
+      throw new Error('QA safety guard blocked external programmatic navigation.');
+    }
+    return originalWindowOpen.apply(window, arguments);
+  };
+
+  function guardElementUrl(prototype, property) {
+    const descriptor = Object.getOwnPropertyDescriptor(prototype, property);
+    if (!descriptor?.get || !descriptor?.set) return;
+    Object.defineProperty(prototype, property, {
+      configurable: descriptor.configurable,
+      enumerable: descriptor.enumerable,
+      get: descriptor.get,
+      set(value) {
+        stopExternalRequest(value);
+        descriptor.set.call(this, value);
+      },
+    });
+  }
+  guardElementUrl(HTMLIFrameElement.prototype, 'src');
+  guardElementUrl(HTMLMediaElement.prototype, 'src');
+
+  const NativeWorker = window.Worker;
+  window.Worker = function (value) {
+    stopExternalRequest(value);
+    return Reflect.construct(NativeWorker, arguments, new.target || NativeWorker);
+  };
+  window.Worker.prototype = NativeWorker.prototype;
+
+  for (const constructorName of ['WebSocket', 'EventSource']) {
+    const NativeConstructor = window[constructorName];
+    if (!NativeConstructor) continue;
+    window[constructorName] = function (value) {
+      stopExternalRequest(value);
+      return Reflect.construct(NativeConstructor, arguments, new.target || NativeConstructor);
+    };
+    window[constructorName].prototype = NativeConstructor.prototype;
   }
 
   document.addEventListener('click', function (event) {

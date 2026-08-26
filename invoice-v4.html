@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -60,6 +62,9 @@
 .state-wrap{text-align:center;padding:56px 24px}
 .state-wrap h2{font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px}
 .state-wrap p{font-size:13.5px;color:var(--text3);line-height:1.55;max-width:340px;margin:0 auto}
+.state-recovery-actions{width:100%;max-width:340px;margin:20px auto 0}
+.state-recovery-actions .btn-navy,.state-recovery-actions .btn-ghost{box-sizing:border-box;margin:0}
+.state-recovery-actions .btn-ghost{margin-top:10px}
 .state-spin{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 16px}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.state-spin{animation:none}}
@@ -83,8 +88,6 @@
 body.preview-mode{padding-top:34px}
 body.preview-mode #pay-btn{display:none!important}
 </style>
-<meta name="robots" content="noindex,nofollow,noarchive">
-<script src="/qa-environment.js"></script>
 </head>
 <body>
 <noscript><div class="preview-bar" data-preview-banner="true">Preview unavailable, JavaScript is off, no customer action can occur</div><div class="preview-watermark" data-preview-watermark="true" aria-hidden="true"><span>Preview unavailable</span></div><div style="max-width:620px;margin:70px auto 24px;padding:18px;border:1px solid #ffba00;border-radius:14px;background:#fff8e6;color:#0b1f3b;text-align:center;font:600 16px/1.55 system-ui,sans-serif;">This invoice did not load. Turn on JavaScript and reload, or call (864) 863-7800.</div></noscript>
@@ -223,6 +226,15 @@ function isPayableInvoice(inv){
   return ['sent','unpaid','viewed','overdue','partial'].indexOf(status)>-1 && invoiceRemaining()>0;
 }
 
+function trustedCompletionReceiptURL(value){
+  try{
+    var target=new URL(String(value||''),window.location.origin);
+    if(target.origin!==window.location.origin||target.pathname!=='/receipt.html'||target.hash) return null;
+    if(target.searchParams.getAll('receipt').length!==1||target.searchParams.size!==1) return null;
+    return target.toString();
+  }catch(e){ return null; }
+}
+
 function showState(title,msg){
   var page=document.getElementById('page');
   page.innerHTML='';
@@ -233,8 +245,24 @@ function showState(title,msg){
   var h2=document.createElement('h2'); h2.textContent=String(title||'');
   var p=document.createElement('p'); p.textContent=String(msg||'');
   wrap.appendChild(h2); wrap.appendChild(p);
+  var actions=document.createElement('div'); actions.className='state-recovery-actions';
+  var text=document.createElement('a'); text.className='btn-navy'; text.href='sms:+18648637800'; text.textContent='Text Key for a fresh link';
+  var call=document.createElement('a'); call.className='btn-ghost'; call.href='tel:+18648637800'; call.textContent='Call Key';
+  actions.appendChild(text); actions.appendChild(call); wrap.appendChild(actions);
   card.appendChild(wrap); page.appendChild(card);
   requestAnimationFrame(function(){ card.classList.add('in'); });
+}
+
+function appendStateReceiptLink(receiptURL){
+  var wrap=document.querySelector('#page .state-wrap');
+  if(!wrap||!receiptURL) return;
+  var link=document.createElement('a');
+  link.className='btn-gold';
+  link.href=receiptURL;
+  link.textContent='View payment receipt';
+  link.style.marginTop='20px';
+  link.style.display='inline-flex';
+  wrap.appendChild(link);
 }
 
 // ── INIT ────────────────────────────────────────────────────────────
@@ -259,7 +287,8 @@ async function loadInvoice(token){
     var ctrl=new AbortController();
     var timer=setTimeout(function(){ ctrl.abort(); }, 10000);
     var preview=IS_PREVIEW?'&preview=1':'';
-    var res=await fetch(SUPABASE_URL+'/functions/v1/invoice-view?token='+encodeURIComponent(token)+preview,{
+    var reconcile=!IS_PREVIEW&&new URLSearchParams(window.location.search).get('paid')==='1'?'&reconcile=1':'';
+    var res=await fetch(SUPABASE_URL+'/functions/v1/invoice-view?token='+encodeURIComponent(token)+preview+reconcile,{
       headers:{ 'Authorization':'Bearer '+SUPABASE_KEY },
       signal:ctrl.signal,
       cache:'no-store',
@@ -309,11 +338,19 @@ async function loadInvoice(token){
   // fully payable (2026-06-09 walkthrough finding, double-charge path; the
   // checkout fn now also refuses these server-side).
   var invoiceStatus=String(INV.status||'').toLowerCase();
+  var completionReceiptURL=trustedCompletionReceiptURL(INV.completion_receipt_url);
+  if(!IS_PREVIEW&&completionReceiptURL&&invoiceStatus==='paid'){
+    window.location.replace(completionReceiptURL);
+    return;
+  }
   var _payable=['sent','unpaid','viewed','overdue','partial'];
   if(isClosedInvoice(INV)){
     if(invoiceStatus==='refunded') showState('Invoice refunded.','Payments on this invoice were refunded. No payment is due. Please contact (864) 863-7800 if you have questions.');
     else if(invoiceStatus==='voided'||invoiceStatus==='void') renderVoided();
     else showState('Invoice cancelled.','This invoice has been cancelled and is no longer available for payment. Please contact (864) 863-7800 if you have questions.');
+  } else if(INV.payment_state==='received_under_review'){
+    showState('Payment received.','Your payment was received and this invoice cannot be paid again. Key is reviewing the payment record. Please refresh later or contact (864) 863-7800 if you need help.');
+    appendStateReceiptLink(completionReceiptURL);
   } else if(invoiceStatus==='paid'){
     renderPaid();
   } else if(_payable.indexOf(invoiceStatus)>-1 || IS_PREVIEW){

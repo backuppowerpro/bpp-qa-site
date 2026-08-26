@@ -3705,7 +3705,7 @@ const QQ_V3_OFFS = () => ({
   base:        window.V3_PRICING?.base          || { 30: 1197, 50: 1497 },
   cord:        window.V3_PRICING?.cordOff       || { 30: 129, 50: 249 },
   inlet:       window.V3_PRICING?.inletOff      || { 30: 129, 50: 179 },
-  permit:      window.V3_PRICING?.permitOff     || 125,
+  permit:      window.V3_PRICING?.permitOff     || 150,
   pom:         window.V3_PRICING?.pom           || 447,
   // 2026-05-09: surge bumped 375→446 to match Key's quote-calculator design.
   // Surge gets −$25 when PoM is also active (combo discount).

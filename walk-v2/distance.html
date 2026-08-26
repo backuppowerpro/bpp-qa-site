@@ -1,10 +1,13 @@
 <!doctype html>
 <html lang="en" class="no-js">
 <head>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
 <meta name="referrer" content="strict-origin-when-cross-origin">
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-lFNV6Yu188q+pFIURGrh2u1NROLxdp4hNocmMtxYHdw='; script-src-attr 'none'; style-src 'self' 'sha256-79EA0Z7tOgJx/57ELeHbp0LMplLGf3/Fv468aggOIt4='; style-src-elem 'self' https://fonts.googleapis.com 'sha256-79EA0Z7tOgJx/57ELeHbp0LMplLGf3/Fv468aggOIt4='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-GMsCHlRs72eojbKU90wE+SXfWkgaIl9bjemCsCzZJsE='; script-src-attr 'none'; style-src 'self' 'sha256-79EA0Z7tOgJx/57ELeHbp0LMplLGf3/Fv468aggOIt4='; style-src-elem 'self' https://fonts.googleapis.com 'sha256-79EA0Z7tOgJx/57ELeHbp0LMplLGf3/Fv468aggOIt4='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/assets/js/bpp-analytics.js?v=20260825-scope3"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
@@ -514,10 +517,8 @@
     .state-label { display: none; }
   }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=20260808d" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=775a15192cad" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
-<meta name="robots" content="noindex,nofollow,noarchive">
-<script src="/qa-environment.js"></script>
 </head>
 <body>
 <div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to continue this Quote Walk. Your saved answers remain on file. Turn it on and reload, or call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
@@ -636,7 +637,7 @@
 
 </div>
 
-<script src="/walk-v2/walk.js?v=20260816-save"></script>
+<script src="/walk-v2/walk.js?v=608192bed14a"></script>
 <script>
 
 (function () {
@@ -656,6 +657,7 @@
   var DISTANCE_ORDER = { about_5: 1, '5_10': 2, '10_20': 3, '20_40': 4, over_40: 5 };
   var selectedLabel = null, saving = false, navigated = false;
   var priorDistanceBand = null, revisingCurrentRange = false;
+  var answerHydration = WALK.hydrationGuard();
 
   function paint(label, echoLine) {
     selectedLabel = label || null;
@@ -676,7 +678,9 @@
     confirmation.classList.toggle('show', confirmable);
   }
 
+  var hydrationVersion = answerHydration.begin();
   WALK.view(t).then(function (v) {
+    if (!answerHydration.accepts(hydrationVersion)) return;
     var params = new URLSearchParams(window.location.search);
     var sequentialEntry = params.get('sequence') === '1';
     /* Self-correcting entry guard: only fires when a PRIOR step is unanswered
@@ -707,6 +711,7 @@
   main.querySelectorAll('[data-dist]').forEach(function (card) {
     card.addEventListener('click', function () {
       if (navigated || saving) return;
+      answerHydration.touch();
       var label = card.getAttribute('data-dist');
       paint(label, true);
       WALK.ph('walk_v2_confirm_tap', { field: 'distance_band', value: BAND_API[label] });
@@ -714,6 +719,7 @@
   });
 
   main.querySelector('[data-change]').addEventListener('click', function () {
+    answerHydration.touch();
     paint(null, false);
     echo.classList.remove('show');
     main.querySelector('[data-dist]').focus();

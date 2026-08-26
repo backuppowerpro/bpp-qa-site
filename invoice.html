@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://js.stripe.com 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://api.stripe.com https://maps.googleapis.com; frame-src https://js.stripe.com;">
+<script src="/assets/js/bpp-analytics.js?v=20260825-scope3"></script>
 <title>Invoice | Backup Power Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -94,6 +97,9 @@ body.checkout-open{overflow:hidden}
 .state-wrap{text-align:center;padding:60px 24px}
 .state-wrap h2{font-family:'Outfit',sans-serif;font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px}
 .state-wrap p{font-size:14px;color:var(--text3)}
+.state-recovery-actions{width:100%;max-width:340px;margin:20px auto 0}
+.state-recovery-actions .dl-btn{box-sizing:border-box;min-height:52px;margin:0;text-decoration:none}
+.state-recovery-actions .dl-btn + .dl-btn{margin-top:10px}
 .spinner-large{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 16px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -186,81 +192,8 @@ body.checkout-open{overflow:hidden}
 body.preview-mode{padding-top:34px}
 body.preview-mode .btn-pay,body.preview-mode .btn-pay-card,body.preview-mode .checkout-overlay{display:none!important}
 </style>
-<!-- PostHog, customer-facing invoice / deposit checkout tracking. Closes
-     the bottom of the ad→lead→quote→deposit funnel. Pairs with
-     stripe-webhook's deposit_paid capture so we can see abandon rate at
-     the checkout modal (did they open it and bail? did they pay?). -->
-<script>window.__BPP_MONEY_PREVIEW__=new URLSearchParams(window.location.search).get('preview')==='1';if(!window.__BPP_MONEY_PREVIEW__){!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_qoA51lePZqXYtPJYkrIpdA4U8iMDJ79L1kje7r4pD4O',{api_host:'https://us.i.posthog.com',person_profiles:'identified_only',session_recording:{recordCrossOriginIframes:false,maskAllInputs:true},capture_pageview:true,capture_pageleave:true,enable_heatmaps:true,capture_dead_clicks:true});}</script>
-<script>
-  // Tag pageview with invoice context so PostHog groups all events from
-  // this checkout session together.
-  (function() {
-    if (window.__BPP_MONEY_PREVIEW__ || typeof posthog === 'undefined') return;
-    var token = new URLSearchParams(window.location.search).get('token') || '';
-    posthog.register({ page_type: 'invoice', invoice_token: token.slice(0, 8) });
-    // Time-on-page milestones, if customer sits on invoice > 60s without
-    // clicking Pay, they're likely hesitating on price or payment method.
-    var timeMilestones = [10, 30, 60, 120, 300];
-    timeMilestones.forEach(function(t) {
-      setTimeout(function() {
-        posthog.capture('invoice_time_on_page', { seconds: t });
-      }, t * 1000);
-    });
-    // Scroll-to-bottom, means they read the full invoice incl. terms.
-    var bottomSeen = false;
-    window.addEventListener('scroll', function() {
-      if (bottomSeen) return;
-      var h = document.documentElement;
-      if ((h.scrollTop + h.clientHeight) / h.scrollHeight > 0.9) {
-        bottomSeen = true;
-        posthog.capture('invoice_scrolled_to_bottom');
-      }
-    }, { passive: true });
-    // Delegated click tracking, capture Pay buttons regardless of which
-    // payment method they pick (ACH vs card). The data-amount attribute
-    // on the ACH button gives us amount context when available.
-    document.addEventListener('click', function(ev) {
-      var el = ev.target.closest('button, a');
-      if (!el) return;
-      var text = (el.textContent || '').trim().toLowerCase();
-      if (/pay \$|pay by bank|pay by card|pay by (credit|debit)|checkout|continue to stripe/.test(text)) {
-        var amount = el.getAttribute('data-amount') || '';
-        var method = /bank/.test(text) ? 'ach' : /card|credit|debit/.test(text) ? 'card' : 'unknown';
-        posthog.capture('invoice_checkout_clicked', { label: text.slice(0, 50), amount: amount, method: method });
-      }
-    }, { capture: true });
-    // Watch the checkout overlay, when it opens and when it closes. If
-    // the customer opens checkout but closes without paying, that's a
-    // high-intent abandon event we need to know about.
-    var checkoutOpenAt = 0;
-    var obs = new MutationObserver(function() {
-      var ov = document.getElementById('checkout-overlay');
-      if (!ov) return;
-      var active = ov.classList.contains('active');
-      if (active && !checkoutOpenAt) {
-        checkoutOpenAt = Date.now();
-        posthog.capture('invoice_checkout_opened');
-      } else if (!active && checkoutOpenAt) {
-        var duration = Math.round((Date.now() - checkoutOpenAt) / 1000);
-        posthog.capture('invoice_checkout_closed', { seconds_open: duration });
-        checkoutOpenAt = 0;
-      }
-    });
-    // Wait for DOM to be ready before observing.
-    if (document.getElementById('checkout-overlay')) {
-      obs.observe(document.getElementById('checkout-overlay'), { attributes: true, attributeFilter: ['class'] });
-    } else {
-      document.addEventListener('DOMContentLoaded', function() {
-        var ov = document.getElementById('checkout-overlay');
-        if (ov) obs.observe(ov, { attributes: true, attributeFilter: ['class'] });
-      });
-    }
-  })();
-</script>
 <link rel="icon" href="/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.jpg">
-<meta name="robots" content="noindex,nofollow,noarchive">
-<script src="/qa-environment.js"></script>
 </head>
 <body>
 <div class="preview-bar" id="preview-bar" data-preview-banner="true" hidden>Preview mode, not sent to client, read only</div>
@@ -352,7 +285,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     // preview=1 passthrough: invoice-view skips the viewed_at/view_count bump
     // for Key's own CRM preview, so "Viewed" always means the customer.
     const previewParam = new URLSearchParams(window.location.search).get('preview') === '1' ? '&preview=1' : '';
-    const res = await fetch(`${SUPABASE_URL}/functions/v1/invoice-view?token=${encodeURIComponent(token)}${previewParam}`, {
+    const reconcileParam = !previewParam && new URLSearchParams(window.location.search).get('paid') === '1' ? '&reconcile=1' : '';
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/invoice-view?token=${encodeURIComponent(token)}${previewParam}${reconcileParam}`, {
       headers: { 'Authorization': `Bearer ${SUPABASE_KEY}` },
       signal: ctrl.signal,
     });
@@ -440,6 +374,16 @@ function showError(title, msg) {
   const h2 = document.createElement('h2'); h2.textContent = String(title || '');
   const p  = document.createElement('p');  p.textContent  = String(msg || '');
   wrap.appendChild(h2); wrap.appendChild(p);
+  const actions = document.createElement('div'); actions.className = 'state-recovery-actions';
+  const text = document.createElement('a');
+  text.className = 'dl-btn';
+  text.href = 'sms:+18648637800';
+  text.textContent = 'Text Key for a fresh link';
+  const call = document.createElement('a');
+  call.className = 'dl-btn';
+  call.href = 'tel:+18648637800';
+  call.textContent = 'Call Key';
+  actions.appendChild(text); actions.appendChild(call); wrap.appendChild(actions);
   main.appendChild(wrap);
 }
 

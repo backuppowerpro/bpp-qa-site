@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://js.stripe.com 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://api.stripe.com https://maps.googleapis.com https://*.google.com; frame-src https://js.stripe.com https://www.google.com;">
+<script src="/assets/js/bpp-analytics.js?v=20260825-scope3"></script>
 <title>Proposal | Backup Power Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
@@ -233,10 +236,12 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
 .ack-row{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:#f8f9fb;border-radius:10px;margin-bottom:12px;cursor:pointer;transition:box-shadow .15s,background .15s;user-select:none;-webkit-user-select:none;min-height:48px;box-shadow:0 1px 6px rgba(11,31,59,.07)}
 .ack-row:hover{background:#f1f4f9;box-shadow:0 2px 10px rgba(11,31,59,.1)}
 .ack-row.checked{background:#f0fdf4;box-shadow:0 2px 10px rgba(5,150,105,.12)}
+.ack-row:focus{outline:2px solid var(--blue);outline-offset:2px}
 .ack-box{width:28px;height:28px;border-radius:7px;border:2px solid #cbd5e1;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:0;transition:all .15s}
 .ack-row.checked .ack-box{background:var(--green);border-color:var(--green)}
 .ack-text{font-size:14px;color:var(--text);line-height:1.5}
-.ack-text a{color:var(--navy);font-weight:600;text-decoration:underline;padding:4px 2px;display:inline-block}
+.ack-text a{color:var(--navy);font-weight:600;text-decoration:underline;display:inline-flex;align-items:center;min-height:44px;padding:0 2px;margin:-11px 0}
+.ack-text a:focus{outline:2px solid var(--blue);outline-offset:2px;border-radius:4px}
 .form-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:7px;letter-spacing:.03em;display:block}
 .form-label .req{color:var(--red)}
 .name-input{width:100%;padding:12px 14px;border:none;border-radius:8px;font-size:16px;font-family:'Inter',sans-serif;color:var(--text);outline:none;transition:box-shadow .15s;background:#f8f9fb;box-shadow:0 1px 6px rgba(11,31,59,.07)}
@@ -281,6 +286,9 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
 .state-wrap svg{width:48px;height:48px;opacity:.25;margin-bottom:14px}
 .state-wrap h2{font-family:'Outfit',sans-serif;font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px}
 .state-wrap p{font-size:14px;color:var(--text3)}
+.state-recovery-actions{width:100%;max-width:340px;margin:20px auto 0}
+.state-recovery-actions .approve-btn,.state-recovery-actions .dl-btn{box-sizing:border-box;min-height:52px;margin:0;text-decoration:none}
+.state-recovery-actions .dl-btn{margin-top:10px}
 .spinner-large{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 16px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -373,55 +381,8 @@ body.preview-mode a.approve-btn[href],body.preview-mode button[onclick^="payDepo
   window.history.replaceState(null,'',window.location.pathname+(query?'?'+query:'')+window.location.hash);
 })();
 </script>
-<!-- PostHog, customer-facing proposal view tracking. Closes the growth
-     loop: we can see how long customers spend on their quote, whether they
-     click the Pay Deposit button, whether they bounce. Combined with
-     proposals.view_count + stripe-webhook capture('deposit_paid') we get
-     the full funnel from ad click → quote viewed → deposit paid. -->
-<script>window.__BPP_MONEY_PREVIEW__=new URLSearchParams(window.location.search).get('preview')==='1';if(!window.__BPP_MONEY_PREVIEW__){!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_qoA51lePZqXYtPJYkrIpdA4U8iMDJ79L1kje7r4pD4O',{api_host:'https://us.i.posthog.com',person_profiles:'identified_only',session_recording:{recordCrossOriginIframes:false,maskAllInputs:true},capture_pageview:true,capture_pageleave:true,enable_heatmaps:true,capture_dead_clicks:true});}</script>
-<script>
-  // Tag this pageview with proposal context so PostHog can group all events
-  // from this customer's quote session together.
-  (function() {
-    if (window.__BPP_MONEY_PREVIEW__ || typeof posthog === 'undefined') return;
-    var token = new URLSearchParams(window.location.search).get('token') || '';
-    posthog.register({ page_type: 'proposal', proposal_token: token.slice(0, 8) });
-    // Track time-on-page milestones, helps us spot where customers stall
-    // reading the quote (pricing? terms? deposit button?).
-    var timeMilestones = [10, 30, 60, 120, 300]; // seconds
-    timeMilestones.forEach(function(t) {
-      setTimeout(function() {
-        posthog.capture('proposal_time_on_page', { seconds: t });
-      }, t * 1000);
-    });
-    // Mark when customer hits bottom of proposal, strong intent signal.
-    var bottomSeen = false;
-    window.addEventListener('scroll', function() {
-      if (bottomSeen) return;
-      var h = document.documentElement;
-      if ((h.scrollTop + h.clientHeight) / h.scrollHeight > 0.9) {
-        bottomSeen = true;
-        posthog.capture('proposal_scrolled_to_bottom');
-      }
-    }, { passive: true });
-    // Delegate click tracking on Pay / Approve / Decline buttons, don't
-    // have to wire up every button individually; match by text content.
-    document.addEventListener('click', function(ev) {
-      var el = ev.target.closest('button, a');
-      if (!el) return;
-      var text = (el.textContent || '').trim().toLowerCase();
-      if (/pay (deposit|full|now)|lock in|pay \$|approve|accept/.test(text)) {
-        posthog.capture('proposal_payment_cta_clicked', { label: text.slice(0, 50) });
-      } else if (/decline|reject|not interested/.test(text)) {
-        posthog.capture('proposal_declined_cta', { label: text.slice(0, 50) });
-      }
-    }, { capture: true });
-  })();
-</script>
 <link rel="icon" href="/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.jpg">
-<meta name="robots" content="noindex,nofollow,noarchive">
-<script src="/qa-environment.js"></script>
 </head>
 <body>
 <noscript><div class="preview-bar" data-preview-banner="true">Preview unavailable, JavaScript is off, no customer action can occur</div><div class="preview-watermark" data-preview-watermark="true" aria-hidden="true"><span>Preview unavailable</span></div><div style="max-width:620px;margin:70px auto 24px;padding:18px;border:1px solid #ffba00;border-radius:14px;background:#fff8e6;color:#0b1f3b;text-align:center;font:600 16px/1.55 system-ui,sans-serif;">This proposal did not load. Turn on JavaScript and reload, or call (864) 863-7800.</div></noscript>
@@ -457,6 +418,9 @@ let pomOn = false;
 let customItemsOn = [];
 let ackScope = false;
 let ackSafety = false;
+let signerIdentityConfirmed = false;
+let signerIdentityTypedCharacters = 0;
+let historyAuthorizationResetPending = false;
 let isPreview = false;
 let selectedPayFull = false;
 let signStatusUncertain = false;
@@ -469,6 +433,7 @@ let authorizationGateInFlight = null;
 let authorizationGateToken = '';
 let authorizationFactsRendered = false;
 let authorizationFullRedoPending = false;
+let acceptedSettlementInFlight = null;
 function previewModeActive() {
   return isPreview || new URLSearchParams(window.location.search).get('preview') === '1';
 }
@@ -624,7 +589,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     signal: ctrl.signal,
   }).then(r => r.ok ? r.json() : null).catch(() => null);
   const ctxDeadline = new Promise(resolve => setTimeout(() => resolve(null), 2000));
-  beginAuthorizationGate(token);
   const proposalRes = await proposalPromise;
   // Race context against a 2s deadline. Don't block the render past that.
   const ctxRes = await Promise.race([
@@ -693,6 +657,12 @@ window.addEventListener('DOMContentLoaded', async () => {
       window.location.replace('/proposal-comp.html' + window.location.search);
       return;
     }
+  }
+  const loadedStatus = String(P.status || '').toLowerCase();
+  if (loadedStatus === 'approved' || terminalProposalStatus(loadedStatus)) {
+    setAuthorizationGateState('ready');
+  } else {
+    beginAuthorizationGate(token);
   }
   window.__bpp_ctx = ctxRes || {}; // exposed for downstream reads
   if (!isPreview) trackView(token);
@@ -770,6 +740,10 @@ function calcTotal(amp) {
 }
 
 function fmt(n) { return '$' + Number(n).toLocaleString('en-US'); }
+function proposalPermitFee(row) {
+  const cents = Number(row?.permit_fee_cents);
+  return Number.isFinite(cents) && cents >= 0 ? cents / 100 : 125;
+}
 
 // ── PROPERTY PHOTO BANNER ────────────────────────────────────
 async function renderPropertyBanner() {
@@ -928,13 +902,13 @@ function animateStats() {}
 // Math contract: pricing.base IS the consolidated total. The renderer's
 // main "Installation" row computes `base - cord - permit - longRun - mb - tq`
 // to derive a clean "installation labor" subtotal. Cord/permit show as
-// separate line items at their list price ($129/$249 for cord, $125 for
+// separate line items at their list price ($129/$249 for cord, $150 for
 // permit). Toggling cord/inlet/permit OFF in the creator removes both the
 // line item AND its discount from the base, so total stays constant.
 function applyV3Normalization() {
   if (P.creator_version === 'v3' && !P.pricing_30) {
     const V3P = { base:{30:1197,50:1497}, perFt:{30:12,50:14},
-      cordOff:{30:129,50:249}, inletOff:{30:129,50:179}, permitOff:125 };
+      cordOff:{30:129,50:249}, inletOff:{30:129,50:179}, permitOff:proposalPermitFee(P) };
     const lengthFt = Number(P.length_ft || P.run_ft || 5);
     const extraFt  = Math.max(0, lengthFt - 5);
     const includeCord   = P.include_cord   !== false;
@@ -1301,13 +1275,13 @@ function renderProposal() {
         <p>${requireDeposit ? 'Check the two items below, choose payment, and type your name. Your payment confirms the spot; I pull the permit and book your date.' : 'Check the two items below and type your name. Once confirmed, I pull the permit and text you to schedule. Price stays locked. No payment until the job is done.'}</p>
       </div>
       <div class="sign-card-body">
-        <div class="ack-row" id="ack-row-scope">
+        <div class="ack-row" id="ack-row-scope" role="checkbox" tabindex="0" aria-checked="false">
           <div class="ack-box" id="ack-box-scope">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polyline points="2,6 5,9 10,3"/></svg>
           </div>
           <span class="ack-text">I've reviewed the scope and pricing and I'm ready to move forward.</span>
         </div>
-        <div class="ack-row" id="ack-row-safety">
+        <div class="ack-row" id="ack-row-safety" role="checkbox" tabindex="0" aria-checked="false">
           <div class="ack-box" id="ack-box-safety">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polyline points="2,6 5,9 10,3"/></svg>
           </div>
@@ -1323,7 +1297,7 @@ function renderProposal() {
                 <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:13px;color:var(--navy);margin-bottom:8px">Deposit &amp; Refund Policy</div>
                 <ul style="margin:0;padding-left:14px;display:flex;flex-direction:column;gap:5px">
                   <li><strong>Rescheduling:</strong> Free anytime. Deposit carries over.</li>
-                  <li><strong>Cancel 48+ hrs before install:</strong> Full deposit refunded, minus $125 permit fee (non-refundable once filed).</li>
+                  <li><strong>Cancel 48+ hrs before install:</strong> Full deposit refunded, minus ${fmt(proposalPermitFee(P))} permit fee (non-refundable once filed).</li>
                   <li><strong>Cancel under 48 hrs:</strong> Deposit forfeited. You may reschedule instead to keep it.</li>
                   <li><strong>If we cancel:</strong> Full refund including permit fee.</li>
                 </ul>
@@ -1352,7 +1326,7 @@ function renderProposal() {
         <div style="margin-top:22px;padding-top:18px;border-top:1px solid var(--border)">
           <label class="form-label" for="signer-name" style="font-size:13px;margin-bottom:6px;letter-spacing:0;text-transform:none;font-weight:600;color:var(--navy)">Your full name <span class="req">*</span></label>
           <p style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.5" id="signer-hint">Typing your name confirms this proposal.</p>
-          <input class="name-input" id="signer-name" type="text" placeholder="Full name" autocomplete="name" value="" oninput="validateForm();updateSigPreview()" aria-required="true" aria-describedby="signer-hint">
+          <input class="name-input" id="signer-name" type="text" placeholder="Full name" autocomplete="off" data-lpignore="true" data-1p-ignore="true" value="" onbeforeinput="recordSignerKeystroke(event)" oninput="confirmSignerIdentity(event)" aria-required="true" aria-describedby="signer-hint">
           <div class="sig-preview" id="sig-preview"></div>
           <div class="name-hint" style="text-align:center">Legally binding electronic signature under the ESIGN Act.</div>
         </div>
@@ -1394,12 +1368,20 @@ function renderProposal() {
 // ── ACK ROW WIRING ───────────────────────────────────────────
 function wireAckRow(rowId, boxId, key) {
   const row = document.getElementById(rowId);
-  row.addEventListener('click', function(e) {
-    if (e.target.tagName === 'A') return;
+  const toggle = function() {
     if (key === 'scope') ackScope = !ackScope;
     else ackSafety = !ackSafety;
     updateAckVisual(rowId, boxId, key === 'scope' ? ackScope : ackSafety);
     validateForm();
+  };
+  row.addEventListener('click', function(e) {
+    if (e.target.tagName === 'A') return;
+    toggle();
+  });
+  row.addEventListener('keydown', function(e) {
+    if (e.target !== row || (e.key !== ' ' && e.key !== 'Enter')) return;
+    e.preventDefault();
+    toggle();
   });
 }
 
@@ -1407,6 +1389,7 @@ function updateAckVisual(rowId, boxId, checked) {
   const row = document.getElementById(rowId);
   const box = document.getElementById(boxId);
   const svg = box.querySelector('svg');
+  row.setAttribute('aria-checked', checked ? 'true' : 'false');
   if (checked) { row.classList.add('checked'); svg.style.display = ''; }
   else { row.classList.remove('checked'); svg.style.display = 'none'; }
 }
@@ -1423,7 +1406,7 @@ function renderPricing() {
     const mb = pr.mainBreaker || 0;
     const tq = pr.twinQuad || 0;
     const cord = pr.cord || 0;
-    const permit = pr.permitInspection || 125;
+    const permit = pr.permitInspection || proposalPermitFee(P);
     const _pi = (chosenAmp === '50' ? '50' : '30');
     const is50 = chosenAmp === '50';
     rows += priceRow(
@@ -1597,12 +1580,26 @@ function updateSigPreview() {
   if (preview) preview.textContent = name;
 }
 
+function recordSignerKeystroke(event) {
+  if (event?.isTrusted && event.inputType === 'insertText' && typeof event.data === 'string' && event.data.length === 1) {
+    signerIdentityTypedCharacters += 1;
+  }
+}
+
+function confirmSignerIdentity(event) {
+  const name = (event?.target?.value || '').trim();
+  if (!event?.target?.value) signerIdentityTypedCharacters = 0;
+  signerIdentityConfirmed = Boolean(event?.isTrusted && signerIdentityTypedCharacters >= 3 && name.length >= 3);
+  updateSigPreview();
+  validateForm();
+}
+
 function validateForm() {
   const name = (document.getElementById('signer-name')?.value || '').trim();
   const btn = document.getElementById('approve-btn');
   if (btn) {
     if (btn.dataset.expired === '1') { btn.disabled = true; return; }
-    btn.disabled = !authorizationGateReady() || depositCancellationUnconfirmed || !(name.length >= 2 && ackScope && ackSafety);
+    btn.disabled = !authorizationGateReady() || depositCancellationUnconfirmed || !(name.length >= 2 && signerIdentityConfirmed && ackScope && ackSafety);
   }
 }
 
@@ -1720,6 +1717,8 @@ function resetUnsignedApprovalButton(btn) {
 function resetDepositAcceptanceAuthorization(message) {
   approving = false;
   signStatusUncertain = false;
+  signerIdentityConfirmed = false;
+  signerIdentityTypedCharacters = 0;
   selectedPayFull = false;
   ackScope = false;
   ackSafety = false;
@@ -1866,6 +1865,56 @@ async function terminatePendingDepositAcceptance(token, attemptId, signal) {
   depositCancellationUnconfirmed = false;
   return result;
 }
+
+async function settleAcceptedAuthorizationTruth() {
+  if (acceptedSettlementInFlight) return acceptedSettlementInFlight;
+  const settlement = (async () => {
+    const delays = [0, 250, 750, 1500];
+    for (const delay of delays) {
+      if (delay) await new Promise((resolve) => window.setTimeout(resolve, delay));
+      try {
+        const row = await readAuthoritativeProposal();
+        if (row?.__superseded) {
+          const latest = row.latest_token;
+          const action = latest && /^[a-zA-Z0-9-]{8,64}$/.test(latest)
+            ? { label: 'View your current quote', href: proposalUrlForToken(latest) }
+            : null;
+          setAuthorizationGateState('ready');
+          showError('This quote was updated', 'A newer version of this quote is available. Review that version before continuing.', action);
+          return true;
+        }
+        const token = P?.token;
+        P = { ...row, token: row.token || token };
+        const status = String(P.status || '').toLowerCase();
+        if (status === 'approved') {
+          scrubCheckoutReturnHints(false);
+          setAuthorizationGateState('ready');
+          renderApproved();
+          return true;
+        }
+        if (terminalProposalStatus(status)) {
+          scrubCheckoutReturnHints(false);
+          setAuthorizationGateState('ready');
+          showClosedProposal(P);
+          return true;
+        }
+      } catch (_) {}
+    }
+    setAuthorizationGateState('ready');
+    showError(
+      'Final approval is still processing',
+      'Your acceptance is recorded, but the final proposal status is still updating. Nothing needs to be signed again. Check the status once more, or call Key if this remains.',
+      { label: 'Check approval status', onClick: () => settleAcceptedAuthorizationTruth() }
+    );
+    return false;
+  })();
+  acceptedSettlementInFlight = settlement;
+  try {
+    return await settlement;
+  } finally {
+    if (acceptedSettlementInFlight === settlement) acceptedSettlementInFlight = null;
+  }
+}
 async function terminateActivePendingDepositAcceptance(token, signal) {
   depositCancellationUnconfirmed = true;
   validateForm();
@@ -1949,6 +1998,11 @@ function beginAuthorizationGate(token) {
     setAuthorizationGateState('preview');
     return Promise.resolve(null);
   }
+  const loadedStatus = String(P?.status || '').toLowerCase();
+  if (loadedStatus === 'approved' || terminalProposalStatus(loadedStatus)) {
+    setAuthorizationGateState('ready');
+    return Promise.resolve(null);
+  }
   if (!authorizationGateToken || authorizationGateInFlight) return authorizationGateInFlight || Promise.resolve(null);
   const gateParams = new URLSearchParams(window.location.search);
   const gatePaidReturn = gateParams.get('deposit_paid') === '1' || gateParams.get('payment_check') === '1';
@@ -1959,8 +2013,7 @@ function beginAuthorizationGate(token) {
   setAuthorizationGateState('pending');
   const attempt = runAuthorizationGate(authorizationGateToken).then((result) => {
     if (result?.accepted === true) {
-      window.location.reload();
-      return result;
+      return settleAcceptedAuthorizationTruth();
     }
     if (result?.authorization_reset_required === true && authorizationFactsRendered && P && document.getElementById('approve-btn')) {
       depositAuthorizationWasReset = false;
@@ -2050,7 +2103,7 @@ async function showCheckoutReturnPending() {
         throw new Error('acceptance attempt status is unavailable');
       }
       const result = await checkPendingDepositAcceptance(P.token, attemptId);
-      if (result.accepted === true) { window.location.reload(); return; }
+      if (result.accepted === true) { await settleAcceptedAuthorizationTruth(); return; }
       if (result.authorization_reset_required === true) {
         forgetPendingDepositAcceptance(P.token, attemptId);
         window.location.replace(depositAcceptanceRetryUrl(P.token));
@@ -2142,6 +2195,8 @@ function showClosedProposal(row) {
 function resetAuthorizationForRevisedContract(row) {
   approving = false;
   signStatusUncertain = false;
+  signerIdentityConfirmed = false;
+  signerIdentityTypedCharacters = 0;
   P = row;
   selectedPayFull = false;
   ackScope = false;
@@ -2251,7 +2306,7 @@ async function approveProposal() {
     return;
   }
   const name = document.getElementById('signer-name').value.trim();
-  if (!name || !ackScope || !ackSafety) { err.textContent = 'Please complete all fields above.'; return; }
+  if (!name || !signerIdentityConfirmed || !ackScope || !ackSafety) { err.textContent = 'Please complete all fields above.'; return; }
   approving = true;
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner-large" style="width:20px;height:20px;border-width:2.5px;margin:0"></div> Submitting...';
@@ -2260,7 +2315,15 @@ async function approveProposal() {
   // edge function, the old client-side ipify fetch was trivially
   // spoofable and corrupted the legal signing record. The terms snapshot
   // omits ip_address here; the authoritative IP is on the row.
-  const termsSnapshot = JSON.stringify({ proposal_id: P.id, proposal_token: P.token, contact_name: P.contact_name, contact_address: P.contact_address, selected_amp: chosenAmp, selected_surge: surgeOn, surge_price: surgeOn ? (P.surge_price || 446) : 0, pricing: getPrice(chosenAmp), total, scope_acknowledged: true, safety_acknowledged: true, signer_name: name, signed_at: new Date().toISOString(), user_agent: navigator.userAgent });
+  const pomPackage = pomOn ? {
+    scope_version: 'peace-of-mind-v1-2026-08-23',
+    whole_home_surge_protection: true,
+    manufacturer_connected_equipment_warranty_cents: 7500000,
+    panel_safety_inspection_points: 20,
+    customized_safety_and_wattage_guide: true,
+    priority_scheduling: true,
+  } : null;
+  const termsSnapshot = JSON.stringify({ proposal_id: P.id, proposal_token: P.token, contact_name: P.contact_name, contact_address: P.contact_address, selected_amp: chosenAmp, selected_surge: surgeOn, surge_price: surgeOn ? (P.surge_price || 446) : 0, selected_pom: !!pomOn, pom_price: pomOn ? Number(P.pom_price || 447) : 0, peace_of_mind_package: pomPackage, pricing: getPrice(chosenAmp), total, scope_acknowledged: true, safety_acknowledged: true, signer_name: name, signed_at: new Date().toISOString(), user_agent: navigator.userAgent });
   let signErrMsg = null;
   let signResult = null;
   const depositRequired = P.require_deposit !== false;
@@ -2296,7 +2359,7 @@ async function approveProposal() {
     if (depositRequired) {
       try {
         const termination = await terminateActivePendingDepositAcceptance(P.token);
-        if (termination.accepted === true) { window.location.reload(); return; }
+        if (termination.accepted === true) { await settleAcceptedAuthorizationTruth(); return; }
         const row = await readAuthoritativeProposal();
         if (row?.__superseded) {
           approving = false;
@@ -2352,7 +2415,7 @@ async function approveProposal() {
     } catch (_) {
       try {
         const result = await terminatePendingDepositAcceptance(P.token, attemptId);
-        if (result.accepted === true) { window.location.reload(); return; }
+        if (result.accepted === true) { await settleAcceptedAuthorizationTruth(); return; }
         resetDepositAcceptanceAuthorization();
       } catch (_) {
         resetDepositAcceptanceAuthorization('We could not safely close the previous payment attempt. Refresh to try again, or call (864) 863-7800. This proposal has not been accepted.');
@@ -2459,10 +2522,10 @@ function renderApproved() {
   if (P.pricing_30 || P.pricing_50) {
     // For v3 the synthesizer sets permitInspection=0 when permit is toggled
     // off in the creator (don't fall back to 125 in that case). The legacy
-    // path defaults to 125 since v2 always includes permit.
+    // path defaults to 150 since v2 always includes permit.
     const isV3Approved = P.creator_version === 'v3';
     const base = pr.base || 0; const longRun = pr.longRun || 0; const mb = pr.mainBreaker || 0; const tq = pr.twinQuad || 0; const cord = pr.cord || 0;
-    const permit = isV3Approved ? (pr.permitInspection || 0) : (pr.permitInspection || 125);
+    const permit = isV3Approved ? (pr.permitInspection || 0) : (pr.permitInspection || proposalPermitFee(P));
     // chosenAmp is set inside renderProposal but may be null when the page
     // loads directly into renderApproved, pull from the approved proposal's
     // own selected_amp / amp_type fields.
@@ -2664,7 +2727,7 @@ function renderApproved() {
       </summary>
       <div style="padding:0 16px 14px;font-size:12px;color:var(--text2);line-height:1.65">
         <div style="margin-bottom:8px"><strong>Rescheduling:</strong> Free anytime, text Key at <a href="sms:8648637800" style="color:var(--navy);font-weight:600">(864) 863-7800</a>. Your deposit carries over.</div>
-        <div style="margin-bottom:8px"><strong>Cancel 48+ hrs before install:</strong> Full deposit refunded, minus the $125 permit fee (non-refundable once filed, typically within 1 business day of deposit).</div>
+        <div style="margin-bottom:8px"><strong>Cancel 48+ hrs before install:</strong> Full deposit refunded, minus the ${fmt(proposalPermitFee(P))} permit fee (non-refundable once filed, typically within 1 business day of deposit).</div>
         <div style="margin-bottom:8px"><strong>Cancel under 48 hrs:</strong> Deposit is forfeited. You may reschedule instead to keep it.</div>
         <div><strong>If we cancel for any reason:</strong> Full refund including permit fee. No questions asked.</div>
         <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">Full policy: <a href="/terms" target="_blank" style="color:var(--navy);font-weight:600" rel="noopener noreferrer">Terms &amp; Conditions</a></div>
@@ -2698,7 +2761,7 @@ async function downloadPDF() {
   if (P.pricing_30 || P.pricing_50) {
     const isV3Approved = P.creator_version === 'v3';
     const base = pr.base || 0; const longRun = pr.longRun || 0; const mb = pr.mainBreaker || 0; const tq = pr.twinQuad || 0; const cord = pr.cord || 0;
-    const permit = isV3Approved ? (pr.permitInspection || 0) : (pr.permitInspection || 125);
+    const permit = isV3Approved ? (pr.permitInspection || 0) : (pr.permitInspection || proposalPermitFee(P));
     pricingRows += `<tr><td style="padding:6px 0">Installation</td><td style="padding:6px 0;text-align:right;font-weight:600">${fmt(Math.max(0, base - longRun - mb - tq - cord - permit))}</td></tr>`;
     if (longRun) pricingRows += `<tr><td style="padding:6px 0">Extended wire run</td><td style="padding:6px 0;text-align:right;font-weight:600;color:#059669">✓ Included</td></tr>`;
     if (permit) pricingRows += `<tr><td style="padding:6px 0">Permit & inspection</td><td style="padding:6px 0;text-align:right;font-weight:600">${fmt(permit)}</td></tr>`;
@@ -2819,18 +2882,43 @@ function showError(title, msg, action) {
     }
     control.textContent = String(action.label);
     wrap.appendChild(control);
+  } else {
+    const actions = document.createElement('div'); actions.className = 'state-recovery-actions';
+    const text = document.createElement('a');
+    text.className = 'approve-btn';
+    text.href = 'sms:+18648637800';
+    text.textContent = 'Text Key for a fresh link';
+    const call = document.createElement('a');
+    call.className = 'dl-btn';
+    call.href = 'tel:+18648637800';
+    call.textContent = 'Call Key';
+    actions.appendChild(text); actions.appendChild(call); wrap.appendChild(actions);
   }
   main.appendChild(wrap);
   syncAuthorizationGateUI();
 }
 
 window.addEventListener('pageshow', (event) => {
-  if (!event.persisted || previewModeActive()) return;
-  const token = new URLSearchParams(window.location.search).get('token');
-  const attemptId = token && storedPendingDepositAcceptance(token);
-  if (!token || !attemptId || /[?&](deposit_paid|payment_check)=1(?:&|$)/.test(window.location.search)) return;
-  if (P) resetDepositAcceptanceAuthorization('Closing the previous payment attempt. This proposal has not been accepted.');
-  beginAuthorizationGate(token);
+  const navigation = performance.getEntriesByType?.('navigation')?.[0];
+  const historyRestore = event.persisted || navigation?.type === 'back_forward';
+  if (!historyRestore || previewModeActive()) return;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const token = new URLSearchParams(window.location.search).get('token');
+    if (!token || /[?&](deposit_paid|payment_check)=1(?:&|$)/.test(window.location.search)) return;
+    const status = String(P?.status || '').toLowerCase();
+    if (status === 'approved') {
+      setAuthorizationGateState('ready');
+      renderApproved();
+      return;
+    }
+    if (terminalProposalStatus(status)) {
+      setAuthorizationGateState('ready');
+      showClosedProposal(P);
+      return;
+    }
+    if (P) resetDepositAcceptanceAuthorization('Closing the previous payment attempt. This proposal is not accepted.');
+    beginAuthorizationGate(token);
+  }));
 });
 
 function esc(s) {

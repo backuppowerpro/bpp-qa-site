@@ -1,10 +1,13 @@
 <!doctype html>
 <html lang="en" class="no-js">
 <head>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<script src="/qa-environment.js"></script>
 <meta name="referrer" content="strict-origin-when-cross-origin">
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-5V0i3duCeK56PWKnEGRixbV+nARhJewv2lZ3TGm4piw='; script-src-attr 'none'; style-src 'self' 'sha256-vJTGL1d96TSIuABuUIQ8TUdUz5v/h9tVLGK35mlVJQ0='; style-src-elem 'self' 'sha256-vJTGL1d96TSIuABuUIQ8TUdUz5v/h9tVLGK35mlVJQ0='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-ZXU70hPTo8KpJ4rlHHrurC/zWIwLOiNjIRM9BSa6NiU='; script-src-attr 'none'; style-src 'self' 'sha256-vJTGL1d96TSIuABuUIQ8TUdUz5v/h9tVLGK35mlVJQ0='; style-src-elem 'self' 'sha256-vJTGL1d96TSIuABuUIQ8TUdUz5v/h9tVLGK35mlVJQ0='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/assets/js/bpp-analytics.js?v=20260825-scope3"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
@@ -589,9 +592,7 @@
     .state-label { display: none; }
   }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=20260808d" />
-<meta name="robots" content="noindex,nofollow,noarchive">
-<script src="/qa-environment.js"></script>
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=775a15192cad" />
 </head>
 <body>
 <div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to load the current Quote Walk result. Your saved answers remain on file. Turn it on and reload, or call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
@@ -664,7 +665,7 @@
 
 </div>
 
-<script src="/walk-v2/walk.js?v=20260816-save"></script>
+<script src="/walk-v2/walk.js?v=608192bed14a"></script>
 <script>
 
 (function () {
@@ -806,7 +807,12 @@
       WALK.ph('walk_v2_price_shown', { state: 'working', has_range: false });
     }
 
-  }).catch(function () { /* a read failure must NOT bounce them off the thank-you page; keep the honest no-number state */ if (kick) kick.textContent = 'Your quote'; num.style.display = 'none'; hideFollow(); line.textContent = 'Your setup is saved. The current range could not be loaded.'; });
+  }).catch(function (cause) {
+    if (kick) kick.textContent = 'Quote Walk not confirmed';
+    num.style.display = 'none';
+    hideFollow();
+    WALK.renderRecovery(line, cause);
+  });
 
   /* scroll reveal (comp behavior, unchanged) */
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

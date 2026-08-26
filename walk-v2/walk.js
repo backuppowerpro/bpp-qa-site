@@ -8,6 +8,7 @@
   var BASE = window.BPP_QUOTE_WALK_FUNCTIONS_BASE
     || 'https://hfatblrcwytxvijjhpal.supabase.co/functions/v1';
   var TOKEN_STORAGE_KEY = 'bpp:qwv2:bearer';
+  var AUTHORIZED_SERVICE_COUNTIES = ['Greenville', 'Spartanburg', 'Pickens'];
 
   function setToken(value) {
     var next = /^[a-zA-Z0-9_-]{32,160}$/.test(String(value || '')) ? String(value) : '';
@@ -29,7 +30,12 @@
     return /^[a-zA-Z0-9_-]{32,160}$/.test(t) ? t : '';
   }
   var insideWalkNav = false;
+  var pendingUploadReconciliationCancels = [];
+  function cancelPendingUploadReconciliations() {
+    pendingUploadReconciliationCancels.slice().forEach(function (cancel) { cancel(); });
+  }
   function go(page, t, extra) {
+    cancelPendingUploadReconciliations();
     insideWalkNav = true;
     var retained = setToken(t);
     var params = new URLSearchParams();
@@ -56,7 +62,81 @@
     go('', t);
   }
   function ph(event, props) {
-    try { window.posthog && posthog.capture(event, Object.assign({ funnel: 'walkv2' }, props || {})); } catch (_) {}
+    try {
+      window.dispatchEvent(new CustomEvent('bpp:walk-event', {
+        detail: Object.assign({ event: event, funnel: 'walkv2' }, props || {})
+      }));
+    } catch (_) {}
+  }
+  function durationBucket(milliseconds) {
+    if (milliseconds < 250) return 'under_250ms';
+    if (milliseconds < 1000) return '250_to_999ms';
+    if (milliseconds < 3000) return '1_to_2999ms';
+    return '3s_or_more';
+  }
+  function hydrationGuard() {
+    var revision = 0;
+    return {
+      begin: function () { return revision; },
+      touch: function () { revision += 1; return revision; },
+      accepts: function (startedAt) { return startedAt === revision; }
+    };
+  }
+  function classifyRecoveryError(cause) {
+    var code = String(cause && (cause.code || cause.body && cause.body.error || cause.message) || '');
+    var status = Number(cause && cause.status || 0);
+    if (status === 410 || /expired|retired|invalid_or_expired_return/.test(code)) return 'expired';
+    if (status === 404 || /missing|not_found|not found|invalid token/.test(code)) return 'missing';
+    if (/already_complete|completed/.test(code)) return 'complete';
+    return 'temporary';
+  }
+  function renderRecovery(container, cause, options) {
+    if (!container) return null;
+    var config = options || {};
+    var state = classifyRecoveryError(cause);
+    var copy = {
+      expired: 'This saved link has expired. Your saved record is still protected.',
+      missing: 'This saved link is not available. No Quote Walk was marked complete.',
+      complete: 'This Quote Walk is already complete.',
+      temporary: 'Your saved Quote Walk could not be confirmed. Your answers and saved link are unchanged.'
+    };
+    container.replaceChildren();
+    container.setAttribute('data-return-recovery', state);
+    container.appendChild(document.createTextNode(config.message || copy[state]));
+    var actions = document.createElement('span');
+    actions.className = 'qw-recovery-actions';
+    if (state === 'temporary' || config.allowRetry === true) {
+      var retry = document.createElement('button');
+      retry.type = 'button';
+      retry.className = 'qw-secondary-action';
+      retry.setAttribute('data-retry-saved-link', '');
+      retry.textContent = 'Try again';
+      retry.addEventListener('click', function () {
+        if (typeof config.onRetry === 'function') config.onRetry();
+        else window.location.reload();
+      });
+      actions.appendChild(retry);
+    }
+    if (state !== 'complete') {
+      var startOver = document.createElement('button');
+      startOver.type = 'button';
+      startOver.className = 'qw-secondary-action';
+      startOver.setAttribute('data-start-over', '');
+      startOver.textContent = 'Start a new Quote Walk';
+      startOver.addEventListener('click', function () {
+        setToken('');
+        window.location.replace('/walk-v2/');
+      });
+      actions.appendChild(startOver);
+    }
+    var help = document.createElement('a');
+    help.className = 'qw-secondary-action';
+    help.href = 'tel:+18648637800';
+    help.textContent = 'Call or text Key';
+    actions.appendChild(help);
+    container.appendChild(actions);
+    container.style.display = '';
+    return state;
   }
   function fingerprint(value) {
     var text = JSON.stringify(value || {});
@@ -253,8 +333,8 @@
       });
     });
   }
-  function getJson(url, timeoutMs) {
-    return fetchWithTimeout(url, {}, timeoutMs || 12000).then(function (r) {
+  function getJson(url, timeoutMs, options) {
+    return fetchWithTimeout(url, options || {}, timeoutMs || 12000).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (body) {
         if (!r.ok) {
           var error = new Error(body && body.error || 'http_' + r.status);
@@ -284,18 +364,195 @@
     });
   }
 
+  function reconcilePendingUploads(t, value, options) {
+    var config = options || {};
+    var state = value && value.quote_walk_v2 || {};
+    var pending = Array.isArray(state.pending_media_uploads)
+      ? state.pending_media_uploads.slice(0, 10)
+      : [];
+    var valid = pending.filter(function (upload) {
+      return upload
+        && /^[a-f0-9-]{36}$/i.test(String(upload.reservation_id || ''))
+        && /^[a-f0-9-]{36}$/i.test(String(upload.lease_id || ''))
+        && upload.status === 'uploading';
+    });
+    if (!valid.length) return Promise.resolve({ state: value, results: [] });
+    var cancelled = false;
+    var retryTimer = null;
+    var retryWaitCancel = null;
+    var startedAt = Date.now();
+    var maxAttempts = 120;
+    var maxTransientFailures = 4;
+    var maxElapsedMs = 6 * 60 * 1000;
+    function emit(status) {
+      if (typeof config.onStatus === 'function') {
+        try { config.onStatus(status); } catch (_) {}
+      }
+    }
+    function cancel() {
+      cancelled = true;
+      if (retryTimer != null) {
+        clearTimeout(retryTimer);
+        retryTimer = null;
+      }
+      if (retryWaitCancel) retryWaitCancel();
+    }
+    function removeCancel() {
+      var index = pendingUploadReconciliationCancels.indexOf(cancel);
+      if (index !== -1) pendingUploadReconciliationCancels.splice(index, 1);
+      window.removeEventListener('pagehide', cancel);
+      window.removeEventListener('beforeunload', cancel);
+      if (config.signal && typeof config.signal.removeEventListener === 'function') {
+        config.signal.removeEventListener('abort', cancel);
+      }
+    }
+    pendingUploadReconciliationCancels.push(cancel);
+    window.addEventListener('pagehide', cancel, { once: true });
+    window.addEventListener('beforeunload', cancel, { once: true });
+    if (config.signal && typeof config.signal.addEventListener === 'function') {
+      if (config.signal.aborted) cancel();
+      else config.signal.addEventListener('abort', cancel, { once: true });
+    }
+    function retrySeconds(input) {
+      var numeric = Math.ceil(Number(input || 3));
+      return Math.max(1, Math.min(30, Number.isFinite(numeric) ? numeric : 3));
+    }
+    function waitToRetry(upload, seconds, attempt, reason) {
+      var remaining = retrySeconds(seconds);
+      return new Promise(function (resolve) {
+        function finish(value) {
+          if (retryTimer != null) clearTimeout(retryTimer);
+          retryTimer = null;
+          retryWaitCancel = null;
+          resolve(value);
+        }
+        retryWaitCancel = function () { finish(false); };
+        function tick() {
+          if (cancelled) { finish(false); return; }
+          emit({
+            type: 'waiting',
+            upload: upload,
+            attempt: attempt,
+            reason: reason,
+            retry_in_seconds: remaining
+          });
+          if (remaining === 0) { finish(true); return; }
+          retryTimer = setTimeout(function () {
+            remaining -= 1;
+            tick();
+          }, 1000);
+        }
+        tick();
+      });
+    }
+    function cancelledResult(upload, attempts) {
+      emit({ type: 'cancelled', upload: upload, attempt: attempts });
+      return { ok: false, cancelled: true, reservation_id: upload.reservation_id, attempts: attempts };
+    }
+    function actionableResult(upload, attempts, code) {
+      emit({ type: 'action_required', upload: upload, attempt: attempts, error: code });
+      return {
+        ok: false,
+        action_required: true,
+        reservation_id: upload.reservation_id,
+        attempts: attempts,
+        error: code
+      };
+    }
+    function recoverUpload(upload) {
+      var attempts = 0;
+      var transientFailures = 0;
+      function attempt() {
+        if (cancelled) return Promise.resolve(cancelledResult(upload, attempts));
+        if (attempts >= maxAttempts || Date.now() - startedAt >= maxElapsedMs) {
+          return Promise.resolve(actionableResult(upload, attempts, 'media_recovery_timeout'));
+        }
+        attempts += 1;
+        emit({ type: 'checking', upload: upload, attempt: attempts });
+        return postJson(BASE + '/pre-read-photo', {
+          token: t,
+          mode: 'recover',
+          reservation_id: upload.reservation_id,
+          lease_id: upload.lease_id
+        }, 30000).then(function (recovery) {
+          if (cancelled) return cancelledResult(upload, attempts);
+          if (recovery && recovery.receipt_settled === true) {
+            emit({ type: 'finalized', upload: upload, attempt: attempts });
+            return {
+              ok: true,
+              terminal: 'finalized',
+              reservation_id: upload.reservation_id,
+              attempts: attempts,
+              recovery: recovery
+            };
+          }
+          if (recovery && recovery.retry_ready === true) {
+            emit({ type: 'retry_ready', upload: upload, attempt: attempts });
+            return {
+              ok: true,
+              terminal: 'retry_ready',
+              retry_ready: true,
+              reservation_id: upload.reservation_id,
+              attempts: attempts,
+              recovery: recovery
+            };
+          }
+          if (recovery && recovery.status === 'uploading') {
+            transientFailures = 0;
+            return waitToRetry(upload, recovery.retry_after_seconds, attempts, 'uploading').then(function (continueRetry) {
+              return continueRetry ? attempt() : cancelledResult(upload, attempts);
+            });
+          }
+          return actionableResult(upload, attempts, 'media_recovery_unexpected');
+        }).catch(function (error) {
+          if (cancelled) return cancelledResult(upload, attempts);
+          var kind = classifyRecoveryError(error);
+          if (kind !== 'temporary') return actionableResult(upload, attempts, kind);
+          transientFailures += 1;
+          if (transientFailures >= maxTransientFailures) {
+            return actionableResult(upload, attempts, 'media_recovery_unavailable');
+          }
+          var seconds = error && error.body && error.body.retry_after_seconds;
+          return waitToRetry(upload, seconds, attempts, 'temporary').then(function (continueRetry) {
+            return continueRetry ? attempt() : cancelledResult(upload, attempts);
+          });
+        });
+      }
+      return attempt();
+    }
+    return valid.reduce(function (chain, upload) {
+      return chain.then(function (results) {
+        return recoverUpload(upload).then(function (result) {
+          results.push(result);
+          return results;
+        });
+      });
+    }, Promise.resolve([])).then(function (results) {
+      if (cancelled) return { state: value, results: results };
+      return window.WALK.view(t).then(function (refreshed) {
+        return { state: refreshed, results: results };
+      });
+    }).finally(function () {
+      removeCancel();
+    });
+  }
+
   window.WALK = {
     token: token,
     setToken: setToken,
     go: go,
     back: back,
     ph: ph,
+    hydrationGuard: hydrationGuard,
+    classifyRecoveryError: classifyRecoveryError,
+    renderRecovery: renderRecovery,
     normalizeConnectionSet: normalizeConnectionSet,
     pricingBasis: pricingBasis,
     saveConnectionTruth: saveConnectionTruth,
     readConnectionTruth: readConnectionTruth,
     progressTruth: progressTruth,
     paintProgress: paintProgress,
+    reconcilePendingUploads: reconcilePendingUploads,
     view: function (t) {
       return getJson(BASE + '/pre-read-view?token=' + encodeURIComponent(t)).then(function (value) {
         rememberJourneyState(t, value);
@@ -428,11 +685,26 @@
         if (suppliedIdentity && suppliedIdentity.panel_id != null) {
           throw new Error('invalid_media_panel');
         }
+        var replacementMediaId = suppliedIdentity && suppliedIdentity.replacement_media_id != null
+          ? String(suppliedIdentity.replacement_media_id)
+          : '';
+        var replacementAttemptId = suppliedIdentity && suppliedIdentity.replacement_attempt_id != null
+          ? String(suppliedIdentity.replacement_attempt_id)
+          : '';
+        if (replacementMediaId && !/^[a-f0-9-]{36}$/i.test(replacementMediaId)) {
+          throw new Error('invalid_replacement_media');
+        }
+        if ((replacementMediaId && !/^[a-zA-Z0-9:_-]{12,160}$/.test(replacementAttemptId))
+            || (!replacementMediaId && replacementAttemptId)) {
+          throw new Error('invalid_replacement_attempt');
+        }
         return {
           journey_version: state.version || null,
           role: role,
           panel_id: null,
-          image: digest
+          image: digest,
+          replacement_media_id: replacementMediaId || null,
+          replacement_attempt_id: replacementAttemptId || null
         };
       }
       function hexFromBuffer(buffer) {
@@ -460,16 +732,18 @@
             if (state.version) {
               payload.role = identity.role;
               payload.panel_id = identity.panel_id;
+              payload.replacement_media_id = identity.replacement_media_id;
+              payload.replacement_attempt_id = identity.replacement_attempt_id;
               payload.expected_version = state.version;
               payload.request_key = requestKey(t, 'register_media', identity, state.version);
             }
             return postJson(BASE + '/pre-read-photo', payload, 30000).then(function (signed) {
               if (!signed || !signed.upload_url) throw new Error('media_sign_failed');
-              return fetch(signed.upload_url, {
+              return fetchWithTimeout(signed.upload_url, {
                 method: 'PUT',
                 headers: { 'Content-Type': mimeType },
                 body: file
-              }).then(function (uploaded) {
+              }, 45000).then(function (uploaded) {
                 if (!uploaded.ok) throw new Error('media_upload_failed');
                 return postJson(BASE + '/pre-read-photo', {
                   token: t,
@@ -477,6 +751,14 @@
                   reservation_id: signed.reservation_id,
                   lease_id: signed.lease_id
                 }, 30000);
+              }).catch(function () {
+                return recoverReservedUpload(signed).then(function (recovery) {
+                  if (recovery && recovery.receipt_settled === true) return recovery;
+                  if (recovery && recovery.retry_ready === true && !retried) return sendFile(file, true);
+                  var waiting = new Error('media_upload_state_unavailable');
+                  waiting.body = recovery || {};
+                  throw waiting;
+                });
               });
             }).then(function (value) {
               if (state.version && (!value || value.receipt_settled !== true)) {
@@ -494,6 +776,17 @@
           throw error;
         });
       }
+      function recoverReservedUpload(signed) {
+        if (!signed || !signed.reservation_id || !signed.lease_id) {
+          return Promise.reject(new Error('media_reservation_missing'));
+        }
+        return postJson(BASE + '/pre-read-photo', {
+          token: t,
+          mode: 'recover',
+          reservation_id: signed.reservation_id,
+          lease_id: signed.lease_id
+        }, 30000);
+      }
       function sendImage(retried) {
         var state = readJourneyState(t);
         var identity = identityFor(state, fingerprint(dataUrl));
@@ -501,6 +794,8 @@
         if (state.version) {
           payload.role = identity.role;
           payload.panel_id = identity.panel_id;
+          payload.replacement_media_id = identity.replacement_media_id;
+          payload.replacement_attempt_id = identity.replacement_attempt_id;
           payload.expected_version = state.version;
           payload.request_key = requestKey(t, 'register_media', identity, state.version);
         }
@@ -536,11 +831,33 @@
     /* address auto-suggest via Mapbox Geocoding, the same provider the rest of
        BPP uses (quote.html, m/, pre-read). Publishable pk. token, US addresses,
        biased to Greenville. Returns {description} so the dropdown render is shared. */
-    addrSuggest: function (q, timeoutMs) {
+    rankAddressSuggestions: function (features) {
+      return (Array.isArray(features) ? features : []).map(function (feature, index) {
+        var county = String(feature && feature.county || '').replace(/\s+County$/i, '');
+        var state = String(feature && feature.state || '').toUpperCase();
+        var countyRank = AUTHORIZED_SERVICE_COUNTIES.indexOf(county);
+        return {
+          feature: feature,
+          index: index,
+          rank: countyRank >= 0 ? countyRank : state === 'SC' ? 10 : 20
+        };
+      }).sort(function (left, right) {
+        return left.rank - right.rank || left.index - right.index;
+      }).map(function (entry) { return entry.feature; });
+    },
+    addrSuggest: function (q, timeoutMs, telemetry) {
       var MB = 'qa-mapbox-disabled';
       var url = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' + encodeURIComponent(q)
-        + '.json?access_token=' + MB + '&country=us&types=address&autocomplete=true&limit=5&proximity=-82.3940,34.8526';
-      return getJson(url, timeoutMs || 8000)
+        + '.json?access_token=' + MB + '&country=us&types=address&autocomplete=true&limit=10&proximity=-82.3940,34.8526';
+      var startedAt = Date.now();
+      var context = telemetry || {};
+      return getJson(url, timeoutMs || 8000, {
+        /* The page keeps a no-referrer policy for customer privacy. Mapbox's
+           URL-restricted browser token still needs the BPP origin to authorize
+           this one provider request. Send only the origin, never the page path
+           or its query values. */
+        referrerPolicy: 'strict-origin-when-cross-origin'
+      })
         .then(function (d) { return (d.features || []).map(function (f) {
           /* pull structured city/state/zip from the Mapbox feature context so the
              contact + pre_read carry them (the every-detail rule), not just the
@@ -575,7 +892,30 @@
             zip: ctxText('postcode'),
           };
         }); })
-        .catch(function () { return []; });
+        .then(function (features) {
+          var ranked = window.WALK.rankAddressSuggestions(features).slice(0, 5);
+          ph('walk_v2_address_lookup_result', {
+            outcome: ranked.length ? 'success' : 'empty',
+            duration_bucket: durationBucket(Date.now() - startedAt),
+            suggestion_count: ranked.length,
+            input_method: context.input_method || 'unknown',
+            trigger: context.trigger || 'unknown'
+          });
+          return ranked;
+        })
+        .catch(function (error) {
+          var outcome = error && error.name === 'TimeoutError'
+            ? 'timeout'
+            : (Number(error && error.status || 0) ? 'http_error' : 'network_error');
+          ph('walk_v2_address_lookup_result', {
+            outcome: outcome,
+            duration_bucket: durationBucket(Date.now() - startedAt),
+            suggestion_count: 0,
+            input_method: context.input_method || 'unknown',
+            trigger: context.trigger || 'unknown'
+          });
+          return [];
+        });
     },
     newLead: function (payload) { return postJson(BASE + '/quo-ai-new-lead', payload); },
     submitLead: function (payload, timeoutMs) {

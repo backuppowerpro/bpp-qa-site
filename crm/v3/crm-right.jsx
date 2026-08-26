@@ -3957,7 +3957,7 @@ function __manualEmailIntentIdentity(payload) {
     contact_id: payload.contact_id,
     to_email: payload.to_email,
     subject: payload.subject,
-    resource_id: vars.proposal_url || vars.invoice_url || vars.receipt_url
+    resource_id: payload.document_id || vars.proposal_url || vars.invoice_url || vars.receipt_url
       || vars.certificate_url || vars.owner_guide_url || vars.retry_url
       || vars.quote_num || vars.invoice_num || vars.receipt_num || payload.subject,
   };
@@ -5582,12 +5582,13 @@ function AddEventInline({ contact, bumpData, hasUpcoming, quiet }) {
 // XSS target) and never sessionStorage; Key re-enters it after a reload.
 let __chargeOperatorSecret = '';
 
-function ChargeCardPanel({ contact, proposal, onClose }) {
+function ChargeCardPanel({ contact, proposal, invoice, onClose }) {
   const [amount, setAmount] = React.useState('');
   const [code, setCode]     = React.useState('');
   const [secret, setSecret] = React.useState(__chargeOperatorSecret);
   const [busy, setBusy]     = React.useState(false);
   const [codeSent, setCodeSent] = React.useState(false);
+  const [reviewedCents, setReviewedCents] = React.useState(null);
 
   // Estimate ONLY (shown as a hint). Paid invoices tied to this proposal net
   // against its total; the edge fn computes the authoritative balance from the
@@ -5630,8 +5631,30 @@ function ChargeCardPanel({ contact, proposal, onClose }) {
     if (!secret.trim()) { window.showToast?.('Enter the operator passphrase first'); return; }
     setBusy(true);
     try {
+      const preview = await CRM.__invokeFn('charge-saved-card', {
+        body: { action: 'preview', invoice_id: invoice.id },
+        headers: opHeaders(),
+      });
+      if (preview.error || !preview.data?.eligible) {
+        window.showToast?.(`Charge review failed: ${preview.data?.error || await describeError(preview.error)}`);
+        return;
+      }
+      const exactCents = Number(preview.data.amount_cents);
+      if (!Number.isSafeInteger(exactCents) || exactCents <= 0
+          || preview.data.invoice_id !== invoice.id
+          || preview.data.proposal_id !== proposal.id) {
+        window.showToast?.('Charge review changed. Refresh the invoice before continuing.');
+        return;
+      }
+      setReviewedCents(exactCents);
+      setAmount((exactCents / 100).toFixed(2));
       const { error } = await CRM.__invokeFn('request-charge-code', {
-        body: { proposal_id: proposal.id },
+        body: {
+          purpose: 'charge',
+          proposal_id: proposal.id,
+          invoice_id: invoice.id,
+          expected_amount_cents: exactCents,
+        },
         headers: opHeaders(),
       });
       if (error) { window.showToast?.(`Code request failed: ${await describeError(error)}`); return; }
@@ -5644,12 +5667,22 @@ function ChargeCardPanel({ contact, proposal, onClose }) {
     if (busy) return;
     const amt = Number(amount);
     if (!(amt > 0)) { window.showToast?.('Enter the exact dollar amount to charge'); return; }
+    const amountCents = Math.round(amt * 100);
+    if (!Number.isSafeInteger(reviewedCents) || amountCents !== reviewedCents) {
+      window.showToast?.('The amount no longer matches the reviewed invoice. Text a new code to review it again.');
+      return;
+    }
     if (!/^\d{6}$/.test(code.trim())) { window.showToast?.('Enter the 6-digit code from the text'); return; }
     if (!secret.trim()) { window.showToast?.('Enter the operator passphrase'); return; }
     setBusy(true);
     try {
       const { data, error } = await CRM.__invokeFn('charge-saved-card', {
-        body: { proposal_id: proposal.id, expected_amount: amt },
+        body: {
+          invoice_id: invoice.id,
+          proposal_id: proposal.id,
+          expected_amount: amt,
+          expected_amount_cents: reviewedCents,
+        },
         headers: { ...opHeaders(), 'x-charge-code': code.trim() },
       });
       if (error) { window.showToast?.(`Charge refused: ${await describeError(error)}`); return; }
@@ -5748,10 +5781,19 @@ function RefundPanel({ payment, onClose }) {
     if (busy) return;
     if (!secret.trim()) { window.showToast?.('Enter the operator passphrase first'); return; }
     if (!payment.proposal_id) { window.showToast?.('This payment has no proposal to authorize against'); return; }
+    const amountCents = Math.round(Number(amount) * 100);
+    if (!Number.isSafeInteger(amountCents) || amountCents <= 0 || amountCents > Math.round(remaining * 100)) {
+      window.showToast?.('Enter the exact refundable amount before requesting a code'); return;
+    }
     setBusy(true);
     try {
       const { error } = await CRM.__invokeFn('request-charge-code', {
-        body: { proposal_id: payment.proposal_id },
+        body: {
+          purpose: 'refund',
+          proposal_id: payment.proposal_id,
+          payment_id: payment.id,
+          expected_amount_cents: amountCents,
+        },
         headers: opHeaders(),
       });
       if (error) { window.showToast?.(`Code request failed: ${await describeError(error)}`); return; }
@@ -6054,6 +6096,9 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
     return (b.id || '').localeCompare(a.id || '');
   })[0];
   const sortedInvoices = [...invoices].sort((a,b) => (a.sent_at||'').localeCompare(b.sent_at||''));
+  const chargeInvoice = invoices.find(inv => inv.proposal_id === proposal?.id
+    && ['sent', 'viewed', 'unpaid', 'open', 'partial', 'overdue'].includes(String(inv.status || '').toLowerCase())
+    && Number(inv.amount_cents || 0) > 0) || null;
 
   // P1 modals - proposal/invoice builders. State lives at this level so the
   // modals stay open across re-renders from realtime updates.
@@ -6467,7 +6512,14 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
       variables.amount = fmtC(dueC);
       variables.retry_url = url || invoiceUrl(invoice) || '';
     }
-    const currentPayload = { template, contact_id, subject, variables, trigger_source: 'crm_v3_finance_action' };
+    const currentPayload = {
+      template,
+      contact_id,
+      document_id: proposal?.id || invoice?.id,
+      subject,
+      variables,
+      trigger_source: 'crm_v3_finance_action',
+    };
     const emailIntent = __manualEmailIntentIdentity({ ...currentPayload, to_email: contact.email });
     const sendPayload = await __manualEmailRememberedPayload(emailIntent) || currentPayload;
     const sendVariables = sendPayload.variables || {};
@@ -7127,7 +7179,7 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
             edge fns are NOT deployed yet; the panel fails closed with an
             honest toast until the Key-gated supervised session activates
             them. Ghost styling: rarer + heavier action than invoicing. */}
-        {!moneyManaged && proposal?.status === 'approved' && contact.has_card_on_file && chargeCardFor !== proposal.id && (
+        {!moneyManaged && chargeInvoice && proposal?.status === 'approved' && contact.has_card_on_file && chargeCardFor !== proposal.id && (
           <div style={{ padding:'0 14px 12px' }}>
             <button
               onClick={() => setChargeCardFor(proposal.id)}
@@ -7141,9 +7193,9 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
             </button>
           </div>
         )}
-        {proposal && chargeCardFor === proposal.id && (
+        {proposal && chargeInvoice && chargeCardFor === proposal.id && (
           <div style={{ padding:'0 14px 12px' }}>
-            <ChargeCardPanel contact={contact} proposal={proposal} onClose={() => setChargeCardFor(null)} />
+            <ChargeCardPanel contact={contact} proposal={proposal} invoice={chargeInvoice} onClose={() => setChargeCardFor(null)} />
           </div>
         )}
 
@@ -10769,7 +10821,7 @@ function NewProposalModal({ contact, onClose, inline = false, editingProposal = 
         <div className="cm2-scope-grid">
           <Scope on={includeCord}   onClick={() => setIncludeCord(v => !v)}   label="Cord"   price={fmt$((QA_PRICES.cordOff  || {})[amp] || 0)} />
           <Scope on={includeInlet}  onClick={() => setIncludeInlet(v => !v)}  label="Inlet"  price={fmt$((QA_PRICES.inletOff || {})[amp] || 0)} />
-          <Scope on={includePermit} onClick={() => setIncludePermit(v => !v)} label="Permit" price={fmt$(QA_PRICES.permitOff || 125)} />
+          <Scope on={includePermit} onClick={() => setIncludePermit(v => !v)} label="Permit" price={fmt$(QA_PRICES.permitOff || 150)} />
           <Scope on={pomOffered}    onClick={() => setPomOffered(v => !v)}    label="Peace of Mind" price={fmt$(QA_PRICES.pom || 447)} />
         </div>
         {pomOffered && (
