@@ -105,8 +105,8 @@
       '</article>';
     });
     if (photos.length < MAX_ITEMS && !pendingUploads.length) {
-      html += '<button class="add-photo-tile" type="button" data-add-more aria-label="Add photo or video">' +
-        '<span aria-hidden="true">+</span><span>Add</span></button>';
+      html += '<button class="add-photo-tile" type="button" data-add-more aria-label="Click to add photos or videos">' +
+        '<span aria-hidden="true">+</span><span>Click to add photos or videos</span></button>';
     }
     slots.className = "slots unified-photo-list";
     slots.innerHTML = html;
@@ -387,7 +387,7 @@
     WALK.view(t).then(function (latest) {
       var state = latest.quote_walk_v2 || {};
       if (reconciliationController) reconciliationController.abort();
-      if (Array.isArray(state.blockers) && state.blockers.length) WALK.go("incomplete.html", t);
+      if (Array.isArray(state.blockers) && state.blockers.length) WALK.routeRecoveryFromState(t, latest);
       else WALK.go("range.html", t);
     }).catch(function () {
       sending = false;

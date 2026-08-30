@@ -8,7 +8,7 @@
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://js.stripe.com 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://api.stripe.com https://maps.googleapis.com https://*.google.com; frame-src https://js.stripe.com https://www.google.com;">
-<script src="/assets/js/bpp-analytics.js?v=20260825-scope3"></script>
+<script src="/assets/js/bpp-analytics.js?v=7c57ff22b3f1"></script>
 <title>Proposal | Backup Power Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
@@ -52,6 +52,7 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
 .property-banner-eyebrow{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:4px}
 .property-banner-addr{font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.5);line-height:1.25}
 .property-banner-initials{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:52px;font-weight:800;color:rgba(255,255,255,.18);letter-spacing:-3px;pointer-events:none;min-height:160px}
+.property-banner-text-only{min-height:160px}
 @media(max-width:480px){.property-banner{margin:-24px -20px 0;width:calc(100% + 40px)}.property-banner-addr{font-size:13px}.hero-card #property-banner-wrap .property-banner{margin:-24px -20px 0;width:calc(100% + 40px)}}
 /* ── SCOPE + PRICE PRODUCT THUMBS ──────────────────── */
 .scope-thumb{width:52px;height:52px;border-radius:9px;object-fit:cover;flex-shrink:0;margin-left:auto;box-shadow:0 2px 8px rgba(11,31,59,.1)}
@@ -751,6 +752,14 @@ async function renderPropertyBanner() {
   if (!wrap) return;
   wrap.innerHTML = '';
   const addr = String(P.contact_address || '').trim();
+  if (P.show_property_image === false) {
+    const titleCase = s => (s||'').replace(/\w\S*/g, t => t.charAt(0).toUpperCase()+t.substr(1).toLowerCase());
+    const displayName = titleCase(P.contact_name || '');
+    const forTagHtml = displayName ? `<div class="property-banner-for-tag"><span class="property-banner-for-text">Prepared for ${esc(displayName)}</span></div>` : '';
+    const labelHtml = addr ? `<div class="property-banner-label"><div class="property-banner-eyebrow">📍 Your Installation Address</div><div class="property-banner-addr">${esc(addr)}</div></div>` : '';
+    wrap.innerHTML = `<div class="property-banner property-banner-text-only">${forTagHtml}${labelHtml}</div>`;
+    return;
+  }
   const token = new URLSearchParams(window.location.search).get('token');
   if (!token) return;
 

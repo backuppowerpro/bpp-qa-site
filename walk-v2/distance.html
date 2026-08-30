@@ -6,8 +6,8 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-GMsCHlRs72eojbKU90wE+SXfWkgaIl9bjemCsCzZJsE='; script-src-attr 'none'; style-src 'self' 'sha256-79EA0Z7tOgJx/57ELeHbp0LMplLGf3/Fv468aggOIt4='; style-src-elem 'self' https://fonts.googleapis.com 'sha256-79EA0Z7tOgJx/57ELeHbp0LMplLGf3/Fv468aggOIt4='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
-<script src="/assets/js/bpp-analytics.js?v=20260825-scope3"></script>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-SQHZCp4pqtWo3eDP1NbjIBkU8VzppQ/bMQJUG+nSpNo='; script-src-attr 'none'; style-src 'self' 'sha256-TRhi5LkSvf0t7Yhq09i8fgcIsvzycxuEM21o1TB34BE='; style-src-elem 'self' https://fonts.googleapis.com 'sha256-TRhi5LkSvf0t7Yhq09i8fgcIsvzycxuEM21o1TB34BE='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/assets/js/bpp-analytics.js?v=7c57ff22b3f1"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
@@ -444,7 +444,7 @@
   .distance-confirm .cord-benefit::before { content: none; }
   .cord-benefit img {
     width: 62px;
-    height: 42px;
+    height: 62px;
     flex: 0 0 auto;
     object-fit: contain;
     border-radius: 8px;
@@ -517,7 +517,7 @@
     .state-label { display: none; }
   }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=775a15192cad" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=d678618d4433" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
 </head>
 <body>
@@ -561,7 +561,7 @@
             <div class="dia-mid is-pending" data-distance-cue aria-live="polite">?</div>
             <div class="dia-line"></div>
             <div class="dia-ico">
-              <img src="/img/install-inlet-siding.jpg" alt="New outdoor connection" />
+              <img src="/walk-v2/outdoor-connection-brick.jpg" alt="New outdoor connection installed on a brick wall" />
             </div>
           </div>
           <div class="dia-foot">
@@ -618,7 +618,7 @@
       </div>
 
       <section class="distance-confirm" data-distance-confirm="" aria-live="polite">
-        <p class="context cord-benefit"><img data-cord-image src="/assets/product-images/cord-30amp.jpg" alt="Yellow manufactured generator connection cord" /><span>Your setup stays flexible: at least 20 ft of compatible cord is included, so the generator can run outdoors away from doors, windows, and vents. Longer lengths are available when needed.</span></p>
+        <p class="context cord-benefit"><img data-cord-image src="/walk-v2/cord-square-yellow.jpg" alt="Yellow manufactured generator connection cord" /><span>Your setup stays flexible: at least 20 ft of compatible cord is included, so the generator can run outdoors away from doors, windows, and vents. Longer lengths are available when needed.</span></p>
         <div class="confirm-actions qw-action-stack">
           <button class="continue qw-primary-action" type="button" data-continue="">Continue</button>
           <button class="change qw-secondary-action" type="button" data-change="">Change distance</button>
@@ -637,7 +637,7 @@
 
 </div>
 
-<script src="/walk-v2/walk.js?v=608192bed14a"></script>
+<script src="/walk-v2/walk.js?v=f121686a4c8d"></script>
 <script>
 
 (function () {
@@ -690,7 +690,7 @@
        NOT bounce when location is already answered, so normal flow and Back-nav
        are untouched (no self-redirect, the landing already runs this same guard). */
     if (!sequentialEntry && !v.confirmed_panel_room) { WALK.routeFromState(t, v); return; }
-    cordImage.src = '/assets/product-images/cord-30amp.jpg';
+    cordImage.src = '/walk-v2/cord-square-yellow.jpg';
     var editMode = params.get('edit') === '1';
     var recoveryMode = params.get('recovery') === '1';
     var savedDistance = v.distance_band && API_BAND[v.distance_band];

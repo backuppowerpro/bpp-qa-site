@@ -6,8 +6,8 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="robots" content="noindex,nofollow,noarchive" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-aWwxE1+iJDZRYCws+8aXoxt6ZqgccGamq/x7qCBo3BY='; script-src-attr 'none'; style-src 'self' 'sha256-+6Ffm1vrZYa4Vi2tMkHenmNSEHhXCrI5AmZspoSkIew='; style-src-elem 'self' 'sha256-+6Ffm1vrZYa4Vi2tMkHenmNSEHhXCrI5AmZspoSkIew='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; form-action 'self'; frame-src 'none'" />
-<script src="/assets/js/bpp-analytics.js?v=20260825-scope3"></script>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-nJgOSd/3pRvOuD2NyJv0ZjyPihariIdKeEqugxqMZ8Q='; script-src-attr 'none'; style-src 'self' 'sha256-/P0+VP8oVslqAneMUkckrhcltOLuYNU8dDGRnjNXVQ0='; style-src-elem 'self' 'sha256-/P0+VP8oVslqAneMUkckrhcltOLuYNU8dDGRnjNXVQ0='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; form-action 'self'; frame-src 'none'" />
+<script src="/assets/js/bpp-analytics.js?v=7c57ff22b3f1"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
 <title>Saved Quote Walk | Backup Power Pro</title>
@@ -35,7 +35,7 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
 .tasks { display:grid; gap:10px; }
 .task {
   display:grid;
-  grid-template-columns:64px minmax(0,1fr) auto;
+  grid-template-columns:64px minmax(0,1fr);
   gap:12px;
   align-items:center;
   min-height:76px;
@@ -45,13 +45,13 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
   background:var(--card);
   box-shadow:0 2px 6px rgba(11,31,59,.05);
 }
-.task:first-child { border-color:var(--gold); box-shadow:0 4px 16px rgba(11,31,59,.08),inset 0 0 0 1px var(--gold); }
 .task-visual { width:64px; height:54px; overflow:hidden; border-radius:11px; background:#eef1f6; }
 .task-visual img { width:100%; height:100%; object-fit:cover; display:block; }
-.task.generator .task-visual img { object-fit:contain; padding:6px; background:#f3f6fb; }
+.task.generator .task-visual { display:grid; place-items:center; background:#fff; }
+.task.generator .connection-icon-30 { position:relative; display:block; width:36px; height:36px; overflow:hidden; border-radius:50%; background:#fff; }
+.task.generator .connection-icon-30::before { content:""; position:absolute; inset:0; background:var(--navy); -webkit-mask:url("/img/30amp-outlet-navy.png") center/contain no-repeat; mask:url("/img/30amp-outlet-navy.png") center/contain no-repeat; }
 .task.distance .task-visual img { object-fit:contain; padding:5px; background:#fff; }
 .task-label { min-width:0; color:var(--navy); font-family:var(--head); font-size:14px; font-weight:700; line-height:1.25; }
-.action { min-height:44px; padding:8px 11px; border:0; border-radius:999px; background:transparent; color:var(--navy); font-family:var(--head); font-size:13px; font-weight:700; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
 .resume-action {
   width:100%;
   min-height:50px;
@@ -66,23 +66,22 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
   font-size:15px;
   font-weight:700;
 }
-.action:focus-visible { outline:3px solid rgba(255,186,0,.48); outline-offset:2px; }
+.resume-action:focus-visible { outline:3px solid rgba(255,186,0,.48); outline-offset:2px; }
 .error { margin:0 0 12px; color:#b42318; font-size:13px; font-weight:600; }
 .hidden { display:none; }
 .foot { padding:20px; background:var(--navy); color:rgba(255,255,255,.72); font-size:12px; line-height:1.6; text-align:center; }
 @media (max-width:340px) {
   main { padding-right:16px; padding-left:16px; }
   h1 { font-size:20px; }
-  .task { grid-template-columns:54px minmax(0,1fr) auto; gap:9px; padding-right:9px; }
+  .task { grid-template-columns:54px minmax(0,1fr); gap:9px; padding-right:9px; }
   .task-visual { width:54px; height:48px; }
-  .action { padding-right:8px; padding-left:8px; font-size:12.5px; }
 }
 @media (min-width:760px) { .page { min-height:calc(100vh - 48px); margin:24px auto; overflow:hidden; border-radius:20px; box-shadow:0 18px 44px rgba(11,31,59,.14); } }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=775a15192cad" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=d678618d4433" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
 </head>
-<body>
+<body class="qw-page-unframed">
 <div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to load your saved Quote Walk. Your saved answers remain on file. Turn it on and reload, or call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
 <div class="page" data-screen-label="Quote walk incomplete">
   <header class="head"><img src="/assets/images/logo-white-v2.png" alt="Backup Power Pro" /></header>
@@ -100,7 +99,7 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
     <span class="foot-process">Every project is reviewed and permitted by Key, completed with trusted local installation partners, and coordinated through final inspection.</span>
   </footer>
 </div>
-<script src="/walk-v2/walk.js?v=608192bed14a"></script>
+<script src="/walk-v2/walk.js?v=f121686a4c8d"></script>
 <script>
 (function () {
   var t = WALK.requireToken(); if (!t) return;
@@ -110,43 +109,34 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
   var loadRetry = document.querySelector('[data-load-retry]');
 
   var TASKS = {
-    service: { label: 'Verify your service area', action: 'Check address', image: '/assets/images/work-full-install.jpg' },
-    generator: { label: 'Confirm your generator connection', action: 'Check generator', image: '/assets/images/work-generator-plugged.jpg' },
-    panel: { label: 'Confirm your panel details', action: 'Check panels', image: '/img/panel-example.jpg' },
-    distance: { label: 'Confirm the connection distance', action: 'Check distance', image: '/assets/product-images/cord-30amp.jpg' },
-    photos: { label: 'Add clear setup photos', action: 'Add photos', image: '/assets/images/work-full-install.jpg' }
+    generator: { label: 'Confirm your generator connection', icon: 'connection-icon-30' },
+    panel: { label: 'Confirm your panel details', image: '/img/panel-example.jpg' },
+    distance: { label: 'Confirm the connection distance', image: '/walk-v2/connection-distance-icon.png' },
+    photos: { label: 'Add clear setup photos', image: '/assets/images/work-full-install.jpg' }
   };
-  function addTask(group, target, refresh, label, actionLabel) {
+  function addTask(group, label) {
     var definition = TASKS[group];
     var card = document.createElement('article');
     card.className = 'task ' + group;
     var visual = document.createElement('span');
     visual.className = 'task-visual';
-    var image = document.createElement('img');
-    image.src = definition.image;
-    image.alt = '';
-    visual.appendChild(image);
+    if (definition.icon) {
+      var icon = document.createElement('span');
+      icon.className = definition.icon;
+      icon.setAttribute('role', 'img');
+      icon.setAttribute('aria-label', 'Round four-slot 30 Amp twist-lock connection');
+      visual.appendChild(icon);
+    } else {
+      var image = document.createElement('img');
+      image.src = definition.image;
+      image.alt = '';
+      visual.appendChild(image);
+    }
     var text = document.createElement('span');
     text.className = 'task-label';
     text.textContent = label || definition.label;
-    var button = document.createElement('button');
-    button.className = 'action';
-    button.type = 'button';
-    button.textContent = actionLabel || 'Open';
-    if (group === 'service') {
-      button.addEventListener('click', function () {
-        navigateTask('service', {}, []);
-      });
-    } else if (refresh) {
-      button.addEventListener('click', load);
-    } else {
-      button.addEventListener('click', function () {
-        WALK.go(target, t, { recovery: '1' });
-      });
-    }
     card.appendChild(visual);
     card.appendChild(text);
-    card.appendChild(button);
     actions.appendChild(card);
   }
   function navigateTask(group, value, blockers) {
@@ -163,10 +153,6 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
     } else if (group === 'photos') {
       target = 'photos.html';
     }
-    if (group === 'service') {
-      WALK.go('index.html', t, { edit: 'details' });
-      return;
-    }
     WALK.go(target, t, { recovery: '1' });
   }
   function unique(values) {
@@ -182,13 +168,13 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
       WALK.go('index.html', t, { area: 'out' });
       return;
     }
+    blockers = blockers.filter(function (blocker) { return blocker !== 'service_area'; });
     if (!blockers.length) {
       WALK.routeFromState(t, value);
       return;
     }
 
     var groups = [];
-    if (blockers.indexOf('service_area') !== -1) groups.push('service');
     if (blockers.indexOf('generator_connection') !== -1) groups.push('generator');
     if (blockers.indexOf('panel_location') !== -1 || blockers.indexOf('panel_inventory') !== -1) groups.push('panel');
     if (blockers.indexOf('distance') !== -1) groups.push('distance');
@@ -210,31 +196,19 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
     actions.replaceChildren();
 
     groups.forEach(function (group) {
-      if (group === 'service') {
-        addTask('service', '', true, '', 'Open');
-      } else if (group === 'generator') {
+      if (group === 'generator') {
         var needsEquipment = value.generator_ownership_status === 'not_owned'
           || value.connection_status === 'no_compatible_generator_connection';
-        var away = value.connection_status === 'pending_access';
         addTask(
           'generator',
-          needsEquipment ? 'generator-needed.html' : 'connection.html',
-          false,
-          needsEquipment ? 'Get a compatible generator connection' : TASKS.generator.label,
-          'Open'
+          needsEquipment ? 'Get a compatible generator connection' : TASKS.generator.label
         );
       } else if (group === 'panel') {
-        addTask(
-          'panel',
-          'location.html',
-          false,
-          TASKS.panel.label,
-          'Open'
-        );
+        addTask('panel', TASKS.panel.label);
       } else if (group === 'distance') {
-        addTask('distance', 'distance.html', false);
+        addTask('distance');
       } else if (group === 'photos') {
-        addTask('photos', 'photos.html', false);
+        addTask('photos');
       }
     });
     var resume = document.createElement('button');

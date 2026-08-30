@@ -15,8 +15,8 @@
 
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://connect.facebook.net 'sha256-TSf9hPr43r9T9eJr1YlgW7NyDImqpOyAsfxnE3OQYwY=' 'sha256-w8HCc5pLnyEUBsQK1Ps0LrOL+NOHDQSgash7Zyno/4w=' 'sha256-86zCxSUGHNNoz6XFNtbvojE3P+SPVBAbcJQwJTqOXiI='; script-src-attr 'none'; style-src 'self' 'sha256-BuvqUh7iB0AoDfKg/8gV96gGldTNPPeIA/fLsxb6ADs='; style-src-elem 'self' 'sha256-BuvqUh7iB0AoDfKg/8gV96gGldTNPPeIA/fLsxb6ADs='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.facebook.com; connect-src 'self' https://api.mapbox.com https://hfatblrcwytxvijjhpal.supabase.co https://www.facebook.com; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
-<script src="/assets/js/bpp-analytics.js?v=20260825-scope3"></script>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://connect.facebook.net 'sha256-TSf9hPr43r9T9eJr1YlgW7NyDImqpOyAsfxnE3OQYwY=' 'sha256-w8HCc5pLnyEUBsQK1Ps0LrOL+NOHDQSgash7Zyno/4w=' 'sha256-yb7NVdccrJax9flHisKW9R9aTVBCgd/fAxkBXuFvi3s='; script-src-attr 'none'; style-src 'self' 'sha256-H+JbNkpdjYqb6G4/gPteqrHrXunHg9PyI7zv8fBsuk0='; style-src-elem 'self' 'sha256-H+JbNkpdjYqb6G4/gPteqrHrXunHg9PyI7zv8fBsuk0='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.facebook.com; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co https://www.facebook.com; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/assets/js/bpp-analytics.js?v=7c57ff22b3f1"></script>
 <script src="/walk-v2/token-bootstrap.js?v=29a627571994"></script>
 <script src="/walk-v2/meta-pixel.js?v=d618134d2b83"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
@@ -631,6 +631,8 @@
   }
   .field input:-webkit-autofill,
   .field input:-webkit-autofill:hover {
+    animation-name: bpp-autofill-start;
+    animation-duration: 0.001s;
     -webkit-text-fill-color: var(--text) !important;
     caret-color: var(--text);
     -webkit-box-shadow: inset 0 0 0 1.5px var(--edge), inset 0 0 0 1000px var(--page) !important;
@@ -648,6 +650,10 @@
   .field input:autofill {
     color: var(--text) !important;
     background: var(--page) !important;
+  }
+  @keyframes bpp-autofill-start {
+    from { opacity: 1; }
+    to { opacity: 1; }
   }
   .field input::placeholder { color: var(--faint); }
   .field input:focus { outline: none; box-shadow: inset 0 0 0 2px var(--gold); }
@@ -966,7 +972,7 @@
     .state-label { display: none; }
   }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=775a15192cad" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=d678618d4433" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
 </head>
 <body>
@@ -1322,7 +1328,7 @@
               Turn on JavaScript, then reload this page to start your quote.
             </div>
           </noscript>
-          <form autocomplete="off">
+          <form autocomplete="on">
             <div class="fields">
               <div class="field">
                 <label for="fName">Name</label>
@@ -1335,7 +1341,7 @@
               </div>
               <div class="field" data-addr-field="">
                 <label for="fAddr">Home address</label>
-                <input id="fAddr" name="address" type="text" inputmode="text" autocomplete="off" placeholder="Start typing your address" data-f="addr" />
+                <input id="fAddr" name="address" type="text" inputmode="text" autocomplete="address-line1" placeholder="Start typing your address" data-f="addr" />
                 <div class="addr-drop" data-addr-drop=""></div>
               </div>
               <div class="field" data-email-field="" hidden>
@@ -1346,7 +1352,7 @@
 
             <!-- 5. submit row: consent is the tap on the gold button, never required -->
             <div class="submit-row">
-              <p data-unconfirmed-address="" aria-live="polite" style="display:none; font-size:14px; line-height:1.5; color:var(--gold-ink, #8a5a00); text-align:center; margin:0 0 12px; font-weight:600;">Your address is saved exactly as entered. Continue with the setup questions. Your service area still needs to be verified before your project range or proposal can be prepared.</p>
+              <p data-unconfirmed-address="" aria-live="polite" style="display:none; font-size:14px; line-height:1.5; color:var(--gold-ink, #8a5a00); text-align:center; margin:0 0 12px; font-weight:600;">Your address is saved exactly as entered. I will verify it while you finish the setup questions.</p>
               <button class="cta" type="submit" data-cta="" disabled="">
                 <svg viewBox="0 0 16 16"><path d="M2.5 3.5h11a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H6.5l-3 2.4V11.5h-1a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1z"></path></svg>
                 <span data-cta-label="">Continue</span>
@@ -1370,7 +1376,7 @@
 
 </div>
 
-<script src="/walk-v2/walk.js?v=608192bed14a"></script>
+<script src="/walk-v2/walk.js?v=f121686a4c8d"></script>
 <script>
 
 (function () {
@@ -1518,9 +1524,11 @@
   var fired = {};
   function once(event, props) { if (fired[event]) return; fired[event] = true; WALK.ph(event, props); }
 
-  /* Address auto-suggest via the server-side Places proxy. Debounced; a pick
-     fills the field. The field still works as a plain input if Google is down. */
+  /* Address suggestions use the same-site lookup. A selected result fills
+     structured geography, while the explicit escape still lets a real address
+     continue if the provider cannot find it. */
   var addrTimer = null, addrLookupSequence = 0, addrPicked = false, addrSel = { city: '', state: '', zip: '' }, lastAddrPreds = [];
+  var lastDropSignature = '', viewportFitTimer = null;
   var lastAddressInputMethod = 'unknown';
   var lastAddressLookupTrigger = 'unknown';
   /* Soft-block (Key 2026-07-21): the Next gate requires a VALIDATED address, a real
@@ -1535,12 +1543,30 @@
     if (!drop.classList.contains('open')) return;
     var viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
     var top = drop.getBoundingClientRect().top;
-    drop.style.maxHeight = Math.max(96, Math.floor(viewportHeight - top - 10)) + 'px';
+    var nextHeight = Math.max(96, Math.floor(viewportHeight - top - 10)) + 'px';
+    if (drop.style.maxHeight !== nextHeight) drop.style.maxHeight = nextHeight;
   }
-  function closeDrop() { drop.classList.remove('open'); drop.innerHTML = ''; drop.style.maxHeight = ''; }
+  function scheduleDropFit() {
+    if (viewportFitTimer) clearTimeout(viewportFitTimer);
+    viewportFitTimer = setTimeout(fitDropToViewport, 120);
+  }
+  function closeDrop() {
+    if (viewportFitTimer) clearTimeout(viewportFitTimer);
+    viewportFitTimer = null;
+    lastDropSignature = '';
+    drop.classList.remove('open'); drop.innerHTML = ''; drop.style.maxHeight = '';
+  }
   function renderDrop(preds) {
     lastAddrPreds = preds || [];
     var q = addrIn.value.trim();
+    var showEscape = addressLooksComplete();
+    var nextSignature = (preds || []).map(function (p) {
+      return String(p && (p.id || p.description) || '');
+    }).join('|') + '|escape:' + String(showEscape);
+    if (drop.classList.contains('open') && nextSignature === lastDropSignature) {
+      scheduleDropFit();
+      return;
+    }
     var html = (preds || []).map(function (p) {
       var d = String(p.description || '');
       return '<button type="button" class="addr-opt" data-addr-pick="' + encodeURIComponent(d) + '">' +
@@ -1549,12 +1575,13 @@
     /* Deliberate escape (soft-block): a real address Mapbox does not know still gets
        through, but only by an explicit tap, and it rides as flagged. Shown once the
        typed address looks complete, and it is the ONLY row when Mapbox returns nothing. */
-    if (q.length >= 6) {
+    if (showEscape) {
       html += '<button type="button" class="addr-opt addr-escape" data-addr-escape="1">' +
         addrEditSvg + '<span class="lines"><span class="a1">My address isn\'t listed</span>' +
         '<span class="a2">Use what I typed</span></span></button>';
     }
     if (!html) { closeDrop(); return; }
+    lastDropSignature = nextSignature;
     drop.innerHTML = html;
     /* set suggestion text via textContent (never innerHTML on the address string) */
     var opts = drop.querySelectorAll('.addr-opt[data-addr-pick]');
@@ -1572,22 +1599,166 @@
     addrSel = { city: '', state: '', zip: '' }; // editing after a pick invalidates the structured parts
     addrValidated = false; addrUnverified = false; // and re-locks Next until a fresh pick
   }
+  function canonicalStreetLine(value) {
+    return String(value || '').split(',')[0].toLowerCase()
+      .replace(/[^a-z0-9-]+/g, ' ')
+      .replace(/\b(north|n)\b/g, 'n')
+      .replace(/\b(south|s)\b/g, 's')
+      .replace(/\b(east|e)\b/g, 'e')
+      .replace(/\b(west|w)\b/g, 'w')
+      .replace(/\b(northeast|ne)\b/g, 'ne')
+      .replace(/\b(northwest|nw)\b/g, 'nw')
+      .replace(/\b(southeast|se)\b/g, 'se')
+      .replace(/\b(southwest|sw)\b/g, 'sw')
+      .replace(/\b(street|st)\b/g, 'st')
+      .replace(/\b(road|rd)\b/g, 'rd')
+      .replace(/\b(avenue|ave)\b/g, 'ave')
+      .replace(/\b(court|ct)\b/g, 'ct')
+      .replace(/\b(lane|ln)\b/g, 'ln')
+      .replace(/\b(drive|dr)\b/g, 'dr')
+      .replace(/\b(circle|cir)\b/g, 'cir')
+      .replace(/\b(boulevard|blvd)\b/g, 'blvd')
+      .replace(/\b(highway|hwy)\b/g, 'hwy')
+      .replace(/\b(place|pl)\b/g, 'pl')
+      .replace(/\b(parkway|pkwy)\b/g, 'pkwy')
+      .replace(/\b(terrace|ter)\b/g, 'ter')
+      .replace(/\s+/g, ' ').trim();
+  }
+  /* Chrome can concatenate multiple saved street lines into this one-line field.
+     Collapse only a repeated house-number pair whose two street names are equivalent,
+     so ordinary apartment, unit, rural-route, and hyphenated addresses stay untouched. */
+  function normalizeBrowserStreetAddress(value) {
+    var trimmed = String(value || '').replace(/\s+/g, ' ').trim();
+    var repeated = trimmed.match(/^(\d+[A-Za-z]?(?:-[A-Za-z0-9]+)?)\s+(.+?)\s+\1\s+(.+)$/i);
+    if (!repeated) return trimmed;
+    var first = repeated[1] + ' ' + repeated[2];
+    var second = repeated[1] + ' ' + repeated[3];
+    return canonicalStreetLine(first) === canonicalStreetLine(second) ? second : trimmed;
+  }
+  function cleanAddressLookupValue(value) {
+    var cleaned = String(value || '')
+      .replace(/[\r\n\t|;]+/g, ', ')
+      .replace(/\s*,\s*/g, ', ')
+      .replace(/(?:,\s*){2,}/g, ', ')
+      .replace(/^(?:(?:home|work|shipping|billing|mailing|delivery|residential|residence|primary|current|street|contact|other)(?:\s*address)?|my\s*address|address(?:\s*line\s*[12])?)\s*(?:(?:[:=,-]\s*)|(?=\d))/i, '')
+      .replace(/^,\s*|,\s*$/g, '')
+      .trim();
+    return normalizeBrowserStreetAddress(cleaned);
+  }
+  function addressLookupQueries(value) {
+    var full = cleanAddressLookupValue(value);
+    var queries = [];
+    function add(query) {
+      var cleaned = String(query || '').trim();
+      if (!cleaned) return;
+      var key = cleaned.toLowerCase();
+      for (var i = 0; i < queries.length; i++) {
+        if (queries[i].toLowerCase() === key) return;
+      }
+      queries.push(cleaned);
+    }
+    add(full);
+    var street = full.split(',')[0].trim();
+    if (/^\d+[A-Za-z]?(?:-[A-Za-z0-9]+)?\s+\S/.test(street)) add(street);
+    return queries.slice(0, 3);
+  }
+  function mergeAddressPredictions(current, incoming) {
+    var merged = (current || []).slice();
+    (incoming || []).forEach(function (prediction) {
+      var key = String(prediction && (prediction.id || prediction.description) || '').toLowerCase();
+      var duplicate = merged.some(function (existing) {
+        return String(existing && (existing.id || existing.description) || '').toLowerCase() === key;
+      });
+      if (!duplicate) merged.push(prediction);
+    });
+    return merged;
+  }
+  function matchingExactPrediction(query, predictions) {
+    /* Safari can label saved-contact autofill as ordinary insertText. A unique exact
+       street match is safe to accept for every input method. Ambiguous same-street
+       results still stay visible for the customer to choose. */
+    var wanted = canonicalStreetLine(query);
+    if (!/^\d/.test(wanted)) return null;
+    var queryParts = String(query || '').split(',');
+    var localityTokens = queryParts.slice(1).join(' ').toLowerCase()
+      .replace(/[^a-z0-9-]+/g, ' ').trim().split(/\s+/).filter(Boolean)
+      .filter(function (token) { return ['us', 'usa', 'united', 'states'].indexOf(token) === -1; });
+    var matches = [];
+    for (var i = 0; i < (predictions || []).length; i++) {
+      if (canonicalStreetLine(predictions[i].description) === wanted) {
+        matches.push({ prediction: predictions[i], rank: i + 1 });
+      }
+    }
+    if (localityTokens.length) {
+      matches = matches.filter(function (entry) {
+        var prediction = entry.prediction || {};
+        var locationText = [
+          String(prediction.description || '').split(',').slice(1).join(' '),
+          prediction.city || '', prediction.state || '', prediction.zip || ''
+        ].join(' ').toLowerCase().replace(/[^a-z0-9-]+/g, ' ');
+        var predictionTokens = locationText.split(/\s+/).filter(Boolean);
+        return localityTokens.every(function (token) { return predictionTokens.indexOf(token) !== -1; });
+      });
+    }
+    return matches.length === 1 ? matches[0] : null;
+  }
+  function acceptAddressPrediction(match, selectedRank) {
+    if (!match) return;
+    var picked = String(match.description || '');
+    addrPicked = true;
+    addrIn.value = picked;
+    addrSel = { city: match.city || '', state: match.state || '', zip: match.zip || '' };
+    addrValidated = true; addrUnverified = false; addrValidatedValue = picked;
+    lastSyncedAddress = picked;
+    persistDraft();
+    var serviceAreaGroup = ['Greenville', 'Spartanburg', 'Pickens'].indexOf(match.county || '') !== -1
+      ? 'authorized'
+      : (String(match.state || '').toUpperCase() === 'SC'
+        ? 'other_sc'
+        : (match.state ? 'out_of_state' : 'unknown'));
+    WALK.ph('walk_v2_address_suggestion_selected', {
+      rank: selectedRank || 1,
+      service_area_group: serviceAreaGroup,
+      input_method: lastAddressInputMethod
+    });
+    closeDrop(); refresh();
+  }
   function suggest(trigger) {
     invalidateAddressEdit();
     var q = addrIn.value.trim();
+    var matchQuery = cleanAddressLookupValue(q);
+    var lookupQueries = addressLookupQueries(q);
     var lookupSequence = ++addrLookupSequence;
     lastAddressLookupTrigger = trigger || 'unknown';
     if (addrTimer) clearTimeout(addrTimer);
-    if (q.length < 3) { closeDrop(); return; }
+    if (q.length < 3 || !lookupQueries.length) { closeDrop(); return; }
+    var lookupDelay = trigger === 'typing' && lastAddressInputMethod === 'typed' ? 900 : 120;
     addrTimer = setTimeout(function () {
-      WALK.addrSuggest(q, 8000, {
-        input_method: lastAddressInputMethod,
-        trigger: lastAddressLookupTrigger
-      }).then(function (predictions) {
+      function lookupNext(index, predictions) {
+        if (index >= lookupQueries.length) return Promise.resolve(predictions);
+        return WALK.addrSuggest(lookupQueries[index], 8000, {
+          input_method: lastAddressInputMethod,
+          trigger: index === 0 ? lastAddressLookupTrigger : 'formatted_address_recovery'
+        }).then(function (nextPredictions) {
+          var merged = mergeAddressPredictions(predictions, nextPredictions);
+          if (matchingExactPrediction(matchQuery, merged)) return merged;
+          return lookupNext(index + 1, merged);
+        });
+      }
+      lookupNext(0, []).then(function (predictions) {
         if (lookupSequence !== addrLookupSequence || addrIn.value.trim() !== q) return;
+        var exactMatch = matchingExactPrediction(matchQuery, predictions);
+        /* Never rewrite a field while a person is typing. On iPhone Safari that
+           moves the caret, scrolls the viewport, and can append later keystrokes
+           to the provider's longer address. Browser autofill and paste are one
+           complete replacement, so a unique exact result is safe to accept. */
+        if (exactMatch && lastAddressInputMethod !== 'typed') {
+          acceptAddressPrediction(exactMatch.prediction, exactMatch.rank);
+          return;
+        }
         renderDrop(predictions);
       });
-    }, 220);
+    }, lookupDelay);
   }
   drop.addEventListener('click', function (e) {
     /* explicit "my address isn't listed" escape: validate the typed text, but flag it */
@@ -1604,28 +1775,14 @@
       return;
     }
     var b = e.target.closest('[data-addr-pick]'); if (!b) return;
-    addrPicked = true;
     var picked = decodeURIComponent(b.getAttribute('data-addr-pick'));
-    addrIn.value = picked;
     /* copy the picked prediction's structured parts so the lead carries city/state/zip */
     var match = null;
     for (var mi = 0; mi < lastAddrPreds.length; mi++) {
       if (String(lastAddrPreds[mi].description) === picked) { match = lastAddrPreds[mi]; break; }
     }
-    if (match) addrSel = { city: match.city || '', state: match.state || '', zip: match.zip || '' };
-    addrValidated = true; addrUnverified = false; addrValidatedValue = picked;
     var selectedRank = Array.prototype.indexOf.call(drop.querySelectorAll('[data-addr-pick]'), b) + 1;
-    var serviceAreaGroup = match && ['Greenville', 'Spartanburg', 'Pickens'].indexOf(match.county || '') !== -1
-      ? 'authorized'
-      : (match && String(match.state || '').toUpperCase() === 'SC'
-        ? 'other_sc'
-        : (match && match.state ? 'out_of_state' : 'unknown'));
-    WALK.ph('walk_v2_address_suggestion_selected', {
-      rank: selectedRank || 1,
-      service_area_group: serviceAreaGroup,
-      input_method: lastAddressInputMethod
-    });
-    closeDrop(); refresh();
+    acceptAddressPrediction(match, selectedRank);
   });
   addrIn.addEventListener('blur', function () {
     syncBrowserFilledValues('blur');
@@ -1636,11 +1793,11 @@
   addrIn.addEventListener('focus', function () {
     setTimeout(function () {
       syncBrowserFilledValues('focus');
-      if (!addrOk() && !addressLooksComplete() && addrIn.value.trim().length >= 3) suggest('focus');
+      if (!addrOk() && addrIn.value.trim().length >= 3) suggest('focus');
     }, 0);
   });
-  window.addEventListener('resize', fitDropToViewport);
-  if (window.visualViewport) window.visualViewport.addEventListener('resize', fitDropToViewport);
+  window.addEventListener('resize', scheduleDropFit);
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', scheduleDropFit);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrop(); });
 
   function digits(v) { return (v || '').replace(/\D/g, ''); }
@@ -1656,16 +1813,19 @@
     if (d.length > 3) return '(' + d.slice(0, 3) + ') ' + d.slice(3);
     return d;
   }
-  /* A picked suggestion is trusted immediately. A complete typed, pasted, or browser
-     filled street address may continue as unverified, then the server keeps price and
-     proposal preparation blocked until service area is verified. */
+  /* Continue unlocks only after a provider result is selected or the customer taps the
+     explicit unmatched-address option. Looking complete is not the same as confirmed. */
   function addrOk() { return addrValidated && addrIn.value.trim() === addrValidatedValue; }
   function addressLooksComplete() {
-    var value = addrIn.value.trim();
-    return value.length >= 8 && /^\d+[A-Za-z]?(?:-[A-Za-z0-9]+)?\s+\S.{2,}/.test(value);
+    var value = cleanAddressLookupValue(addrIn.value);
+    if (value.length < 8 || !/^\d+[A-Za-z]?(?:-[A-Za-z0-9]+)?\s+\S/.test(value)) return false;
+    var streetLine = value.split(',')[0].toLowerCase().replace(/[.]/g, '').trim();
+    var streetSuffix = /\b(?:aly|alley|ave|avenue|blvd|boulevard|cir|circle|ct|court|dr|drive|expy|expressway|hwy|highway|ln|lane|pkwy|parkway|pl|place|rd|road|route|rte|st|street|ter|terrace|trl|trail|way)(?:\s+(?:apt|apartment|unit|suite|ste|lot|floor|fl|#)\s*[a-z0-9-]+)?$/i;
+    var includesPostalLocality = value.indexOf(',') !== -1 && /\b\d{5}(?:-\d{4})?\b/.test(value);
+    return streetSuffix.test(streetLine) || includesPostalLocality;
   }
   function addrLooksReady() {
-    return addrOk() || addressLooksComplete();
+    return addrOk();
   }
   function part1Done() {
     return nameIn.value.trim().length > 0 && phoneValid(phoneIn.value) && addrLooksReady();
@@ -1728,12 +1888,27 @@
       return lead + letter.toUpperCase();
     });
   }
+  function splitNameForTracking(value) {
+    var parts = String(value || '').trim().split(/\s+/).filter(Boolean);
+    return {
+      firstName: parts[0] || '',
+      lastName: parts.length > 1 ? parts[parts.length - 1] : ''
+    };
+  }
   var lastSyncedName = '';
   var lastSyncedPhone = '';
   var lastSyncedAddress = '';
-  function inputMethod(event) {
+  function inputMethod(event, previousValue, currentValue) {
     if (event && event.inputType === 'insertFromPaste') return 'paste';
-    if (event && event.inputType && event.inputType !== 'insertReplacementText') return 'typed';
+    if (event && event.inputType === 'insertText'
+        && typeof event.data === 'string' && event.data.length <= 1) return 'typed';
+    if (event && event.inputType && event.inputType.indexOf('delete') === 0) return 'typed';
+    /* iPhone Safari and XCUITest can report an ordinary keyboard keystroke as
+       insertText with null data. A focused, one-character value change is still
+       typing. Saved-contact autofill replaces several characters at once. */
+    var before = String(previousValue || '');
+    var after = String(currentValue || '');
+    if (Math.abs(after.length - before.length) === 1) return 'typed';
     return 'autofill_or_unknown';
   }
   /* Browsers do not agree on how saved-contact autofill is announced. Chrome usually
@@ -1758,9 +1933,17 @@
 
     var addressChanged = rawAddress !== lastSyncedAddress;
     if (addressChanged) {
-      lastAddressInputMethod = trigger === 'input' ? inputMethod(event) : 'autofill_or_unknown';
-      if (trigger === 'input' || !addressLooksComplete()) suggest(trigger === 'input' ? 'typing' : 'browser_autofill');
-      else { invalidateAddressEdit(); closeDrop(); }
+      lastAddressInputMethod = trigger === 'input'
+        ? inputMethod(event, lastSyncedAddress, rawAddress)
+        : 'autofill_or_unknown';
+      if (lastAddressInputMethod === 'autofill_or_unknown') {
+        var normalizedAddress = normalizeBrowserStreetAddress(rawAddress);
+        if (normalizedAddress !== rawAddress) {
+          addrIn.value = normalizedAddress;
+          rawAddress = normalizedAddress;
+        }
+      }
+      suggest(trigger === 'input' ? 'typing' : 'browser_autofill');
     }
 
     lastSyncedName = nameIn.value;
@@ -1794,7 +1977,12 @@
     setTimeout(function () { syncBrowserFilledValues('focusin_delayed'); }, 250);
   });
   main.querySelector('form').addEventListener('animationstart', function (event) {
-    if (event.target && event.target.matches && event.target.matches('input')) syncBrowserFilledValues('autofill_animation');
+    if (event.target && event.target.matches && event.target.matches('input')) {
+      syncBrowserFilledValues('autofill_animation');
+      if (event.target === addrIn && !addrOk() && addressLooksComplete()) {
+        suggest('browser_autofill_animation');
+      }
+    }
   }, true);
   window.addEventListener('pageshow', function () { syncBrowserFilledValues('pageshow'); });
   document.addEventListener('visibilitychange', function () {
@@ -1803,6 +1991,10 @@
   [0, 100, 350, 1000].forEach(function (delay) {
     setTimeout(function () { syncBrowserFilledValues('initial_probe'); }, delay);
   });
+  var browserFillProbe = window.setInterval(function () {
+    if (!document.hidden) syncBrowserFilledValues('periodic_probe');
+  }, 500);
+  window.addEventListener('pagehide', function () { window.clearInterval(browserFillProbe); }, { once: true });
   if (emailIn) emailIn.addEventListener('input', refreshAreaCapture);
 
   /* channel attribution for the first-party event stream + payload.leadChannel.
@@ -1912,14 +2104,6 @@
 
   async function doSubmit(smsGiven) {
     if (submitting || !part1Done()) return;
-    if (!addrOk() && addressLooksComplete()) {
-      addrUnverified = true;
-      addrValidatedValue = addrIn.value.trim();
-      WALK.ph('walk_v2_address_fallback_used', {
-        reason: 'complete_unselected',
-        input_method: lastAddressInputMethod
-      });
-    }
     if (smsGiven) once('walk_v2_consent_checked');
     submitting = true;
     cta.disabled = true;
@@ -1976,8 +2160,9 @@
       } catch (_) { /* leave state empty */ }
     }
 
+    var trackingName = splitNameForTracking(name);
     var payload = {
-      firstName: name, lastName: '', phone: natDigits(phoneIn.value), email: '',
+      firstName: trackingName.firstName, lastName: trackingName.lastName, phone: natDigits(phoneIn.value), email: '',
       existingToken: editDetails ? resumeT : '',
       address: addrIn.value.trim(), addressStreet: '', addressCity: addrSel.city || '', addressCounty: '', addressState: addrSel.state || '', addressZip: addrSel.zip || '', addressCountry: 'US', addressUnverified: addrUnverified ? 'true' : '',
       leadChannel: attr.channel, utmSource: attr.source, utmMedium: attr.medium, utmCampaign: attr.campaign,
@@ -2006,7 +2191,7 @@
        unload; the sync-XHR fallback covers a fetch throw. */
     var body = JSON.stringify(payload);
     var url = 'https://hfatblrcwytxvijjhpal.supabase.co/functions/v1/quo-ai-new-lead';
-    var delivered = false, tokenOut = null, serviceAreaStatus = '', savedAddressRefresh = false, failureMessage = '';
+    var delivered = false, tokenOut = null, serviceAreaStatus = '', savedAddressRefresh = false, metaLeadOut = null, failureMessage = '';
     var savedWalkRecoveryMessage = 'This form cannot open an existing saved Quote Walk. Use your saved Quote Walk link, or call Backup Power Pro for help.';
     try {
       var resp = await fetch(url, { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: body });
@@ -2017,6 +2202,7 @@
           tokenOut = j && j.preReadToken || null;
           serviceAreaStatus = j && j.service_area_status || '';
           savedAddressRefresh = j && j.saved_address_refresh === true;
+          metaLeadOut = j && j.metaLeadEvent || null;
           if (j && j.accepted === true && !tokenOut) {
             delivered = false;
             failureMessage = savedWalkRecoveryMessage;
@@ -2048,6 +2234,7 @@
             tokenOut = fallbackBody.preReadToken || null;
             serviceAreaStatus = fallbackBody.service_area_status || '';
             savedAddressRefresh = fallbackBody.saved_address_refresh === true;
+            metaLeadOut = fallbackBody.metaLeadEvent || null;
             if (fallbackBody.accepted === true && !tokenOut) {
               delivered = false;
               failureMessage = savedWalkRecoveryMessage;
@@ -2066,15 +2253,15 @@
       }
     }
     WALK.ph('walk_v2_submitted', { connection_status: 'unanswered', delivered: delivered });
-    if (delivered && tokenOut && !savedAddressRefresh && window.BPPMeta) {
-      window.BPPMeta.trackLead(eventId);
+    if (delivered && tokenOut && metaLeadOut && metaLeadOut.eligible === true && window.BPPMeta) {
+      window.BPPMeta.trackLead(metaLeadOut.eventId);
     }
     if (delivered && tokenOut && serviceAreaStatus === 'verified_out_of_area') {
       persistDraft();
       WALK.go('index.html', tokenOut, { area: 'out' });
       return;
     }
-    if (delivered && tokenOut && savedAddressRefresh) {
+    if (delivered && tokenOut && savedAddressRefresh && editDetails) {
       persistDraft();
       WALK.go('incomplete.html', tokenOut, { resume: '1' });
       return;

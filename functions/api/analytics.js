@@ -11,6 +11,7 @@ const SAFE_KEYS = new Set([
   'error_class', 'duration_bucket', 'suggestion_count', 'input_method',
   'trigger', 'rank', 'service_area_group', 'reason', 'distinct_id',
   'traffic_scope', 'device_class', 'referrer_class',
+  'environment', 'is_qa', 'qa_run_id',
   '$process_person_profile', '$pathname'
 ])
 const SLUG_KEYS = new Set([
@@ -27,6 +28,7 @@ const OPERATIONAL_ENUMS = {
   service_area_group: new Set(['authorized', 'other_sc', 'out_of_state', 'unknown']),
   reason: new Set(['manual_escape', 'complete_unselected']),
   traffic_scope: new Set(['production', 'qa', 'preview', 'synthetic']),
+  environment: new Set(['production', 'qa', 'preview', 'test']),
   device_class: new Set(['mobile', 'desktop']),
   referrer_class: new Set(['direct', 'same_site', 'search', 'social', 'referral']),
 }
@@ -80,6 +82,8 @@ function sanitizeProperties(input, origin) {
       if (Number.isInteger(value) && value >= 0 && value <= 5) output[key] = value
     } else if (key === 'rank') {
       if (Number.isInteger(value) && value >= 1 && value <= 5) output[key] = value
+    } else if (key === 'qa_run_id') {
+      if (/^[a-zA-Z0-9_-]{8,80}$/.test(String(value || ''))) output[key] = String(value)
     } else if (typeof value === 'boolean') {
       output[key] = value
     } else if (typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= 1000000) {
@@ -91,6 +95,10 @@ function sanitizeProperties(input, origin) {
   }
   if (!output.distinct_id || !output.$pathname) return null
   output.$process_person_profile = false
+  const scope = output.traffic_scope || 'preview'
+  output.environment = scope === 'synthetic' ? 'test' : scope
+  output.is_qa = scope !== 'production'
+  if (!output.is_qa) delete output.qa_run_id
   return output
 }
 

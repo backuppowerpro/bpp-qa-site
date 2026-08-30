@@ -1734,6 +1734,7 @@
       function loadHero(row){
         var photo=document.querySelector('.hero-photo');
         if(!photo) return;
+        if(row.show_property_image === false){photo.classList.add('no-photo');return;}
         if(isLocalFixture){photo.classList.remove('no-photo');photo.style.setProperty('--hero-image','url("assets/images/sample-home.jpg")');return;}
         photo.classList.add('no-photo');
         fetch(SUPABASE_URL+'/functions/v1/streetview-hero?t='+encodeURIComponent(row.token),{headers:{'Authorization':'Bearer '+SUPABASE_KEY}})

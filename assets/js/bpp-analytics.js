@@ -15,7 +15,7 @@
     'walk_src', 'channel', 'action', 'seconds', 'seconds_open', 'outcome',
     'error_class', 'duration_bucket', 'suggestion_count', 'input_method',
     'trigger', 'rank', 'service_area_group', 'reason', 'traffic_scope',
-    'device_class', 'referrer_class'
+    'device_class', 'referrer_class', 'environment', 'is_qa', 'qa_run_id'
   ]);
   var SLUG_KEYS = new Set([
     'surface', 'document_variant', 'funnel', 'screen', 'field', 'value',
@@ -31,6 +31,7 @@
     service_area_group: new Set(['authorized', 'other_sc', 'out_of_state', 'unknown']),
     reason: new Set(['manual_escape', 'complete_unselected']),
     traffic_scope: new Set(['production', 'qa', 'preview', 'synthetic']),
+    environment: new Set(['production', 'qa', 'preview', 'test']),
     device_class: new Set(['mobile', 'desktop']),
     referrer_class: new Set(['direct', 'same_site', 'search', 'social', 'referral'])
   };
@@ -77,6 +78,8 @@
         if (Number.isInteger(value) && value >= 0 && value <= 5) output[key] = value;
       } else if (key === 'rank') {
         if (Number.isInteger(value) && value >= 1 && value <= 5) output[key] = value;
+      } else if (key === 'qa_run_id') {
+        if (/^[a-zA-Z0-9_-]{8,80}$/.test(String(value || ''))) output[key] = String(value);
       } else if (typeof value === 'boolean') {
         output[key] = value;
       } else if (typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= 1000000) {
@@ -132,7 +135,8 @@
   function baseProperties() {
     var path = window.location.pathname || '/';
     var context = surfaceContext();
-    return {
+    var scope = trafficScope();
+    var base = {
       distinct_id: distinctId(),
       $process_person_profile: false,
       $current_url: (window.location.origin || '') + path,
@@ -142,10 +146,17 @@
       channel: safeString(window.__WALK_CHANNEL || ''),
       walk_entry: safeString(window.__WALK_ENTRY || ''),
       walk_src: safeString(window.__WALK_SRC || ''),
-      traffic_scope: trafficScope(),
+      traffic_scope: scope,
+      environment: scope === 'synthetic' ? 'test' : scope,
+      is_qa: scope !== 'production',
       device_class: deviceClass(),
       referrer_class: referrerClass()
     };
+    if (scope === 'synthetic') {
+      var runId = new URLSearchParams(window.location.search || '').get('qa_run_id') || '';
+      if (/^[a-zA-Z0-9_-]{8,80}$/.test(runId)) base.qa_run_id = runId;
+    }
+    return base;
   }
 
   function capture(event, properties) {
@@ -160,6 +171,7 @@
         method: 'POST',
         mode: 'same-origin',
         credentials: 'omit',
+        referrerPolicy: 'no-referrer',
         keepalive: true,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

@@ -16,6 +16,10 @@
     padding: 28px 14px 96px !important;
   }
 
+  body.qw-page-unframed {
+    padding-top: 28px !important;
+  }
+
   .page,
   .page.w-desktop {
     width: 390px !important;
@@ -48,6 +52,10 @@
 }
 
 @media (min-width: 1024px) {
+  body.qw-page-unframed {
+    padding-top: 32px !important;
+  }
+
   .page.qw-range-page {
     display: grid !important;
     grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr) !important;
@@ -1704,6 +1712,19 @@ body.qw-template-document .page > .foot {
     display: flex !important;
   }
 
+  .page[data-screen-label].qw-range-page {
+    gap: 0 !important;
+  }
+
+  .page[data-screen-label].qw-range-page > .site-head {
+    border-radius: 18px 18px 0 0;
+  }
+
+  .page[data-screen-label].qw-range-page > .qw-range-hero {
+    border-radius: 0 0 22px 22px;
+    background: var(--navy, #0b1f3b) !important;
+  }
+
   .page[data-screen-label].qw-range-page > .qw-range-hero,
   .page[data-screen-label].qw-final-page > .qw-final-hero,
   .page[data-screen-label].qw-range-page > #rangePage,
@@ -1718,6 +1739,10 @@ body.qw-template-document .page > .foot {
   .page[data-screen-label].qw-final-page > .qw-final-hero {
     min-height: 0 !important;
     padding: 32px 34px !important;
+  }
+
+  .page[data-screen-label].qw-range-page .range-primary-action {
+    margin-top: 24px !important;
   }
 
   .page[data-screen-label].qw-range-page > #rangePage,
@@ -1735,14 +1760,15 @@ body.qw-template-document .page > .foot {
   }
 
   .page[data-screen-label].qw-range-page > .qw-range-proof-carousel .proof-track {
-    gap: 14px !important;
-    padding: 0 24px !important;
-    scroll-padding-inline: 24px !important;
+    gap: 18px !important;
+    padding: 0 28px 0 0 !important;
+    scroll-padding-inline: 0 !important;
   }
 
   .page[data-screen-label].qw-range-page > .qw-range-proof-carousel .proof-slide {
-    flex-basis: calc((100% - 28px) / 3) !important;
-    height: 210px !important;
+    flex-basis: calc((100% - 18px) / 2.18) !important;
+    height: 230px !important;
+    scroll-snap-align: none !important;
   }
 
   .page[data-screen-label].qw-final-page > .body-grid .col-main,

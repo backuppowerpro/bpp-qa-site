@@ -10455,6 +10455,7 @@ function NewProposalModal({ contact, onClose, inline = false, editingProposal = 
   // require a deposit now"). The toggle is the opt-out for the rare
   // exception; edits keep whatever the existing proposal says.
   const [requireDeposit, setRequireDeposit]= React.useState(() => isEdit ? !!ep.require_deposit : true);
+  const [showPropertyImage, setShowPropertyImage] = React.useState(() => isEdit ? ep.show_property_image !== false : true);
   const [notes,          setNotes]         = React.useState(() => isEdit ? (ep.notes || '') : '');
   // Line items: { id, kind: 'item'|'discount', name, amount, checked, discountType }.
   const [lineItems, setLineItems] = React.useState(() => {
@@ -10598,6 +10599,7 @@ function NewProposalModal({ contact, onClose, inline = false, editingProposal = 
         selected_pom:    false,
         pom_price:       (window.V3_PRICING?.pom) || 447,
         require_deposit: !!requireDeposit,
+        show_property_image: !!showPropertyImage,
         discount_type:   discountItem ? discountItem.discountType : null,
         discount_value:  discountItem ? Number(discountItem.amount) || 0 : null,
         discount_amount: discountItem && discountItem.discountType === 'dollar' ? Number(discountItem.amount) || 0 : 0,
@@ -10875,6 +10877,14 @@ function NewProposalModal({ contact, onClose, inline = false, editingProposal = 
             {depPct}%<span className="cm2-dv">{fmt$(depAmt)} to book</span>
           </button>
         </div>
+        <div style={{ marginTop:12 }}>
+          <Scope
+            on={showPropertyImage}
+            onClick={() => setShowPropertyImage(value => !value)}
+            label="Show property picture"
+            price={showPropertyImage ? 'On' : 'Off'}
+          />
+        </div>
       </div>
 
       {/* CUSTOMER NOTE */}
@@ -11004,6 +11014,9 @@ function NewInvoiceModal({ contact, latestSignedProposal, invoices, onClose, inl
   const [paymentTerms, setPaymentTerms] = React.useState(() => (
     isEdit && ei.payment_terms ? ei.payment_terms : 'Due upon receipt'
   ));
+  const [showPropertyImage, setShowPropertyImage] = React.useState(() => (
+    isEdit ? ei.show_property_image !== false : latestSignedProposal?.show_property_image !== false
+  ));
   const [receivedAt, setReceivedAt] = React.useState(() => {
     const now = new Date();
     return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
@@ -11094,6 +11107,7 @@ function NewInvoiceModal({ contact, latestSignedProposal, invoices, onClose, inl
         contact_phone:   contact.phone   || '',
         contact_address: contact.address || '',
         creator_version: isEdit ? (ei.creator_version || 'v3') : 'v4',
+        show_property_image: !!showPropertyImage,
         line_items: storedItems,
         total,
       };
@@ -11124,14 +11138,15 @@ function NewInvoiceModal({ contact, latestSignedProposal, invoices, onClose, inl
           try { localStorage.removeItem(storageKey); } catch (_) {}
         }
       } else if (isEdit) {
-        const semantic = JSON.stringify([ei.id, payload.total, payload.line_items, payload.due_at || null, payload.payment_terms || null]);
+        const semantic = JSON.stringify([ei.id, payload.total, payload.line_items, payload.due_at || null, payload.payment_terms || null, payload.show_property_image]);
         const storageKey = `bpp-draft-invoice-update:${semantic}`;
         let key = localStorage.getItem(storageKey);
         if (!key) { key = crypto.randomUUID(); localStorage.setItem(storageKey, key); }
         ({ data, error } = await CRM.__invokeFn('record-payment', { body: {
           action: 'update_draft_invoice', invoice_id: ei.id, amount: payload.total,
           line_items: payload.line_items, due_at: payload.due_at || null,
-          payment_terms: payload.payment_terms || 'Due upon receipt', idempotency_key: key,
+          payment_terms: payload.payment_terms || 'Due upon receipt',
+          show_property_image: payload.show_property_image, idempotency_key: key,
         } }));
         if (!error && data?.ok) {
           try { localStorage.removeItem(storageKey); } catch (_) {}
@@ -11328,6 +11343,19 @@ function NewInvoiceModal({ contact, latestSignedProposal, invoices, onClose, inl
             style={{ width:'100%', minHeight:44, border:'1px solid #d9dee8', borderRadius:8, padding:'0 12px', fontSize:16, boxSizing:'border-box', marginBottom:10 }} />
           <input type="date" value={dueAt} onChange={(e) => setDueAt(e.target.value)} aria-label="Invoice due date"
             style={{ width:'100%', minHeight:44, border:'1px solid #d9dee8', borderRadius:8, padding:'0 12px', fontSize:16, boxSizing:'border-box' }} />
+        </div>
+      )}
+      {!receiptMode && isEdit && String(ei.creator_version || '').toLowerCase() !== 'v4' && (
+        <div className="cm2-zone" style={{ marginTop:18 }}>
+          <label style={{ display:'flex', alignItems:'center', gap:10, minHeight:44, color:NAVY, fontWeight:700 }}>
+            <input
+              type="checkbox"
+              checked={showPropertyImage}
+              onChange={(event) => setShowPropertyImage(event.target.checked)}
+              style={{ width:20, height:20, accentColor:NAVY }}
+            />
+            Show property picture
+          </label>
         </div>
       )}
       {receiptMode && (

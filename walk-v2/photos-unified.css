@@ -8,7 +8,8 @@
 .unified-examples .photo-example {
   display: flex !important;
   flex-direction: column !important;
-  min-height: 158px !important;
+  height: auto !important;
+  min-height: 0 !important;
   padding: 0 !important;
   overflow: hidden !important;
   border-radius: 12px !important;
@@ -18,7 +19,9 @@
 
 .unified-examples .photo-example img {
   width: 100% !important;
-  height: 116px !important;
+  height: auto !important;
+  aspect-ratio: 1 / 1 !important;
+  flex: 0 0 auto !important;
   object-fit: cover !important;
   object-position: center 48% !important;
   border-radius: 0 !important;
@@ -168,11 +171,13 @@
 
 .add-photo-tile {
   display: flex;
+  flex-direction: column;
   height: auto;
   aspect-ratio: 1;
   align-items: center;
   justify-content: center;
   gap: 5px;
+  text-align: center;
   color: var(--navy);
   background: #fff;
   border: 2px dashed rgba(11,31,59,.2);
@@ -182,6 +187,7 @@
 }
 
 .add-photo-tile span:first-child {
+  display: block;
   color: var(--gold-ink);
   font-size: 20px;
 }
@@ -228,6 +234,6 @@
 
 @media (max-width: 340px) {
   .unified-examples .photo-example img {
-    height: 104px !important;
+    height: auto !important;
   }
 }

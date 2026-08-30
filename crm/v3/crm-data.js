@@ -2319,6 +2319,7 @@ function mapProposal(r) {
     pom_offered:     !!r.pom_offered,
     pom_accepted:    !!r.pom_accepted,
     require_deposit: r.require_deposit !== false,
+    show_property_image: r.show_property_image !== false,
     deposit_rate: r.deposit_rate != null ? Number(r.deposit_rate) : null,
     extra_line_items: Array.isArray(r.extra_line_items) ? r.extra_line_items : [],
     discount_type:   r.discount_type   || null,
@@ -2382,6 +2383,7 @@ function mapInvoice(r) {
     // V3 invoice fields, line_items + creator_version exposed so editor can rehydrate.
     line_items: Array.isArray(r.line_items) ? r.line_items : [],
     creator_version: r.creator_version || 'v2',
+    show_property_image: r.show_property_image !== false,
     due_at: r.due_at || null,
     payment_terms: r.payment_terms || (String(r.creator_version || '').toLowerCase() === 'v4' ? 'Due upon receipt' : null),
   };
@@ -3253,7 +3255,7 @@ async function _loadLiveDataInner() {
 // NO `kind` / `sent_at` / `viewed_at` columns. mapInvoice derives them:
 // kind from a $-amount heuristic, sent_at from created_at, viewed_at = null.
 // If those columns ever get added, expand the SELECT and the mapper.
-'id, token, document_number, contact_id, proposal_id, total, status, created_at, due_at, payment_terms, paid_at, payment_method, line_items, creator_version')
+'id, token, document_number, contact_id, proposal_id, total, status, created_at, due_at, payment_terms, paid_at, payment_method, line_items, creator_version, show_property_image')
           .order('created_at', { ascending: false }).limit(500);
         if (error) { console.warn('[CRM] realtime invoices refetch failed:', error.message); return; }
         const paymentsResult = await fetchPaidRows();
@@ -3278,7 +3280,7 @@ async function _loadLiveDataInner() {
       const request = ++__moneyRealtimeRequest;
       try {
         const { data, error } = await __db.from('invoices')
-          .select('id, token, document_number, contact_id, proposal_id, total, status, created_at, due_at, payment_terms, paid_at, payment_method, line_items, creator_version')
+          .select('id, token, document_number, contact_id, proposal_id, total, status, created_at, due_at, payment_terms, paid_at, payment_method, line_items, creator_version, show_property_image')
           .order('created_at', { ascending: false }).limit(500);
         if (error) { console.warn('[CRM] realtime payment invoice refetch failed:', error.message); return; }
         const paymentsResult = await fetchPaidRows();
@@ -3308,7 +3310,7 @@ async function _loadLiveDataInner() {
         // re-rendered with default values, and Key's customizations
         // appeared to vanish until full reload.
         const { data, error } = await __db.from('proposals')
-          .select('id, token, document_number, contact_id, pricing_tier, total, signed_total, amp_type, selected_amp, status, copied_at, created_at, viewed_at, signed_at, sent_at, approved_at, creator_version, length_ft, include_cord, include_inlet, include_permit, pom_offered, pom_accepted, require_deposit, deposit_rate, extra_line_items, discount_type, discount_value, notes, superseded_at, superseded_by, signature_revision, lifecycle_revision, approval_source, accepted_at, approval_channel')
+          .select('id, token, document_number, contact_id, pricing_tier, total, signed_total, amp_type, selected_amp, status, copied_at, created_at, viewed_at, signed_at, sent_at, approved_at, creator_version, length_ft, include_cord, include_inlet, include_permit, pom_offered, pom_accepted, require_deposit, show_property_image, deposit_rate, extra_line_items, discount_type, discount_value, notes, superseded_at, superseded_by, signature_revision, lifecycle_revision, approval_source, accepted_at, approval_channel')
           .order('created_at', { ascending: false }).limit(500);
         if (error) { console.warn('[CRM] realtime proposals refetch failed:', error.message); return; }
         if (request !== __proposalsRealtimeRequest) return;
@@ -3450,7 +3452,7 @@ async function _loadLiveDataInner() {
         taskConcurrency: 1,
         tasks: {
           proposals: () => __db.from('proposals')
-            .select('id, token, document_number, contact_id, pricing_tier, total, signed_total, amp_type, selected_amp, status, copied_at, created_at, viewed_at, signed_at, sent_at, approved_at, creator_version, length_ft, include_cord, include_inlet, include_permit, pom_offered, pom_accepted, require_deposit, deposit_rate, extra_line_items, discount_type, discount_value, notes, superseded_at, superseded_by, signature_revision, lifecycle_revision, approval_source, accepted_at, approval_channel')
+            .select('id, token, document_number, contact_id, pricing_tier, total, signed_total, amp_type, selected_amp, status, copied_at, created_at, viewed_at, signed_at, sent_at, approved_at, creator_version, length_ft, include_cord, include_inlet, include_permit, pom_offered, pom_accepted, require_deposit, show_property_image, deposit_rate, extra_line_items, discount_type, discount_value, notes, superseded_at, superseded_by, signature_revision, lifecycle_revision, approval_source, accepted_at, approval_channel')
             .order('created_at', { ascending: false })
             .limit(500),
         },
@@ -3471,7 +3473,7 @@ async function _loadLiveDataInner() {
         taskConcurrency: 2,
         tasks: {
           invoices: () => __db.from('invoices')
-            .select('id, token, document_number, contact_id, proposal_id, total, status, created_at, due_at, payment_terms, paid_at, payment_method, line_items, creator_version')
+            .select('id, token, document_number, contact_id, proposal_id, total, status, created_at, due_at, payment_terms, paid_at, payment_method, line_items, creator_version, show_property_image')
             .order('created_at', { ascending: false })
             .limit(500),
           payments: () => __db.from('payments')
@@ -3629,10 +3631,10 @@ async function refetchAll() {
           dnc: () => __fetchDncPhoneSet(__db),
         } },
         proposals: { tasks: {
-          proposals: () => __db.from('proposals').select('id, token, document_number, contact_id, pricing_tier, total, signed_total, amp_type, selected_amp, status, copied_at, created_at, viewed_at, signed_at, sent_at, approved_at, creator_version, length_ft, include_cord, include_inlet, include_permit, pom_offered, pom_accepted, require_deposit, deposit_rate, extra_line_items, discount_type, discount_value, notes, superseded_at, superseded_by, signature_revision, lifecycle_revision, approval_source, accepted_at, approval_channel').order('created_at', { ascending: false }).limit(500),
+          proposals: () => __db.from('proposals').select('id, token, document_number, contact_id, pricing_tier, total, signed_total, amp_type, selected_amp, status, copied_at, created_at, viewed_at, signed_at, sent_at, approved_at, creator_version, length_ft, include_cord, include_inlet, include_permit, pom_offered, pom_accepted, require_deposit, show_property_image, deposit_rate, extra_line_items, discount_type, discount_value, notes, superseded_at, superseded_by, signature_revision, lifecycle_revision, approval_source, accepted_at, approval_channel').order('created_at', { ascending: false }).limit(500),
         } },
         money: { taskConcurrency: 2, tasks: {
-          invoices: () => __db.from('invoices').select('id, token, document_number, contact_id, proposal_id, total, status, created_at, due_at, payment_terms, paid_at, payment_method, line_items, creator_version').order('created_at', { ascending: false }).limit(500),
+          invoices: () => __db.from('invoices').select('id, token, document_number, contact_id, proposal_id, total, status, created_at, due_at, payment_terms, paid_at, payment_method, line_items, creator_version, show_property_image').order('created_at', { ascending: false }).limit(500),
           payments: () => __db.from('payments').select('id, invoice_id, proposal_id, amount, refunded_amount, status, receipt_token, receipt_document_number, received_at, method, record_source').in('status', ['completed', 'processing', 'failed']).limit(5000),
         } },
         messages: { tasks: {

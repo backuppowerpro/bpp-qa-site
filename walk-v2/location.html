@@ -8,8 +8,8 @@
 
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-HrPrKIFyDCIcyh15AuH0n6WTGf1LQ+j3CBkrt45DNq0='; script-src-attr 'none'; style-src 'self' 'sha256-MrmhzpkHukIm0k9SqZ9up/8dFOQd/BtFVpwQCG7swsw='; style-src-elem 'self' https://fonts.googleapis.com 'sha256-MrmhzpkHukIm0k9SqZ9up/8dFOQd/BtFVpwQCG7swsw='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
-<script src="/assets/js/bpp-analytics.js?v=20260825-scope3"></script>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-yr+iVT/1QObzZkEQ6qkdhT3Uf+g18Nw+3o5LeczZPHo='; script-src-attr 'none'; style-src 'self' 'sha256-EavXYlp3Q1yjh0fbur6hWLvozzph3LJlJ2SUgIlfBwA='; style-src-elem 'self' https://fonts.googleapis.com 'sha256-EavXYlp3Q1yjh0fbur6hWLvozzph3LJlJ2SUgIlfBwA='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/assets/js/bpp-analytics.js?v=7c57ff22b3f1"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
@@ -376,6 +376,32 @@
   .room[aria-pressed="true"] .room-sub { color: rgba(255,255,255,.76); }
   .rooms.is-collapsed { grid-template-columns: 1fr; }
   .rooms.is-collapsed .room:not([aria-pressed="true"]) { display: none; }
+  .panel-examples {
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+  .panel-example-images {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .panel-example-images img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--edge);
+  }
+  .panel-examples figcaption {
+    margin-top: 9px;
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.4;
+    text-align: center;
+  }
   .selection-actions {
     display: none;
     gap: 10px;
@@ -418,6 +444,10 @@
     height: 132px;
     object-fit: cover;
     border-radius: 10px;
+  }
+  .panel-guide .panel-example-images img {
+    height: auto;
+    aspect-ratio: 1;
   }
   .panel-guide h3 {
     margin: 0;
@@ -641,7 +671,7 @@
     .state-label { display: none; }
   }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=775a15192cad" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=d678618d4433" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
 </head>
 <body>
@@ -716,6 +746,14 @@
           </button>
         </section>
 
+        <figure class="panel-examples" data-panel-examples="" hidden>
+          <div class="panel-example-images">
+            <img src="/walk-v2/main-panel-example-breaker.jpg" alt="Main electrical breaker panel with its outer door open" width="900" height="900" />
+            <img src="/walk-v2/main-panel-example-meter-combo.jpg" alt="Outdoor main electrical panel combined with an electric meter" width="900" height="900" />
+          </div>
+          <figcaption>Your main electrical panel may look something like this.</figcaption>
+        </figure>
+
         <!-- echo line -->
         <div class="echo" data-echo="" aria-live="polite">
           <span class="ring"><svg viewBox="0 0 14 14"><path d="M2.5 7.5l3 3 6-7"></path></svg></span>
@@ -728,7 +766,10 @@
         </div>
 
         <section class="panel-guide" data-panel-guide="" aria-live="polite">
-          <img src="/img/panel-example.jpg" alt="Electrical panel with its hinged outer door open" />
+          <div class="panel-example-images" data-panel-guide-examples="">
+            <img src="/walk-v2/main-panel-example-breaker.jpg" alt="Main electrical breaker panel with its outer door open" width="900" height="900" />
+            <img src="/walk-v2/main-panel-example-meter-combo.jpg" alt="Outdoor main electrical panel combined with an electric meter" width="900" height="900" />
+          </div>
           <h3>Common places to look</h3>
           <p>Check the garage, basement, outside wall, closet, or utility area.</p>
           <p>You may open the hinged outer door, but never remove screws or the inner cover.</p>
@@ -751,7 +792,7 @@
 
 </div>
 
-<script src="/walk-v2/walk.js?v=608192bed14a"></script>
+<script src="/walk-v2/walk.js?v=f121686a4c8d"></script>
 <script>
 
 (function () {
@@ -765,6 +806,7 @@
   var rooms = main.querySelector('[data-rooms]');
   var selectionActions = main.querySelector('[data-selection-actions]');
   var panelGuide = main.querySelector('[data-panel-guide]');
+  var panelExamples = main.querySelector('[data-panel-examples]');
   var ROOM_API = { 'Garage': 'garage', 'Basement': 'basement', 'Outside': 'outside', 'Closet': 'closet', 'Utility area': 'laundry', 'Somewhere else': 'other', 'More than one panel': 'more_than_one_panel', 'Not sure': 'not_sure' };
   var API_ROOM = {}; Object.keys(ROOM_API).forEach(function (k) { API_ROOM[ROOM_API[k]] = k; });
   var selectedRoom = null, saving = false;
@@ -782,6 +824,7 @@
     var hasSelection = !!room && !help;
     rooms.classList.toggle('is-collapsed', hasSelection);
     selectionActions.classList.toggle('show', hasSelection);
+    panelExamples.hidden = !room || help;
     if (echoLine && !help) {
       echoText.textContent = room === 'More than one panel'
         ? 'Got it, more than one panel.'
