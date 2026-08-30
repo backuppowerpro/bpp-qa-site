@@ -356,6 +356,30 @@ function __makeStubDb() {
     // back in an error string, matching the floor rule.
     rpc: function (name, args) {
       args = args || {};
+      if (name === 'native_operator_record_system_call_handoff') {
+        window.__bppTestSystemCallHandoffs = window.__bppTestSystemCallHandoffs || [];
+        var existingHandoff = window.__bppTestSystemCallHandoffs.find(function (row) {
+          return row.operation_id === args.p_operation_id;
+        });
+        if (existingHandoff) {
+          return Promise.resolve({ data: Object.assign({}, existingHandoff, { replayed: true }), error: null });
+        }
+        if (!args.p_operation_id || !args.p_contact_id || !args.p_expected_phone) {
+          return Promise.resolve({ data: null, error: { message: 'invalid system call handoff' } });
+        }
+        var handoff = {
+          schema: 'operator_system_call_handoff_v1',
+          operation_id: args.p_operation_id,
+          status: 'recorded',
+          handoff_allowed: true,
+          replayed: false,
+          contact_id: args.p_contact_id,
+          phone: args.p_expected_phone,
+          call_id: 'test-call-' + args.p_operation_id,
+        };
+        window.__bppTestSystemCallHandoffs.push(handoff);
+        return Promise.resolve({ data: handoff, error: null });
+      }
       if (name === 'native_operator_set_communications_state') {
         var confirmedState = {
           mark_thread_read: 'read',
