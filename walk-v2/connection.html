@@ -5,7 +5,7 @@
 <script src="/qa-environment.js"></script>
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-8L9wPwMmMXVNfn1h4y62LRfxkgJjnuBmP5guBDwgGn0='; script-src-attr 'none'; style-src 'self' 'sha256-tWl+AfZF3RDLx4NWWXhgQxbjTVC9Fix3CZUZybNUYTw='; style-src-elem 'self' 'sha256-tWl+AfZF3RDLx4NWWXhgQxbjTVC9Fix3CZUZybNUYTw='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-WpU+Ulf1LNhuGMjNMHt86Y/3Yi4fM7JblF9EsDpzv2o='; script-src-attr 'none'; style-src 'self' 'sha256-tWl+AfZF3RDLx4NWWXhgQxbjTVC9Fix3CZUZybNUYTw='; style-src-elem 'self' 'sha256-tWl+AfZF3RDLx4NWWXhgQxbjTVC9Fix3CZUZybNUYTw='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
 <script src="/assets/js/bpp-analytics.js?v=ea909db798a0"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
@@ -73,7 +73,7 @@
   @media(min-width:760px){.page{width:1080px}.site-head{padding:0 48px}.body{padding:42px 24px 14px}h1{font-size:36px}}
   @media(max-width:759px){html,body{background:var(--page)}.stack{padding:0 0 calc(28px + env(safe-area-inset-bottom,0px))}.page{width:100%;border-radius:0;box-shadow:none}}
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=01391e54773d" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=28c2721bf53c" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
 </head>
 <body>
@@ -99,7 +99,7 @@
     <div class="body">
       <section data-question id="connectionChooser">
         <h1>Which connection is on your generator?</h1>
-        <p class="helper">Look at the power outlets on your generator and tap every shape that matches. If both are present, select both.</p>
+        <p class="helper">This helps me match the house connection to your generator. Tap every outlet shape you have, or choose the away option to check later.</p>
         <div class="choices" role="group" aria-label="Compatible generator connections" data-compatible-choices>
           <button class="choice" type="button" data-status="confirmed_30" aria-pressed="false">
             <span class="connection-icon connection-icon-30" role="img" aria-label="Round four-slot 30 amp twist-lock connection"></span>
@@ -111,7 +111,7 @@
           </button>
         </div>
         <div class="other" role="group" aria-label="Other connection answers">
-          <button class="quiet" type="button" data-status="pending_access" data-compatible-exception aria-pressed="false">Away from your generator?</button>
+          <button class="quiet" type="button" data-status="pending_access" data-compatible-exception aria-pressed="false">I’ll check my generator later</button>
           <button class="quiet" type="button" data-status="no_compatible_generator_connection" data-compatible-exception aria-pressed="false">I don't see either connection</button>
           <button class="quiet" type="button" data-status="no_generator" aria-pressed="false">I don't have a generator yet.</button>
         </div>
@@ -130,7 +130,7 @@
     <footer class="foot">
       <div class="foot-identity"><strong>Licensed and insured</strong><span>SC Lic #2942 by Key Electric</span></div>
       <span class="foot-area">Currently serving Greenville, Spartanburg,<br>and Pickens counties</span>
-      <span class="foot-process">Every project is reviewed and permitted by Key, completed with trusted local installation partners, and coordinated through final inspection.</span>
+      <span class="foot-process">Key reviews your setup, handles permitting, and coordinates installation and final inspection.</span>
     </footer>
   </main>
 </div>
@@ -181,7 +181,10 @@
     changeAnswer.hidden = !compact;
     changeAnswer.setAttribute('aria-expanded', compact ? 'false' : 'true');
     if (selectionEcho) {
-      selectionEcho.hidden = !compact;
+      selectionEcho.hidden = !(compact || selectedException === 'pending_access');
+      if (selectedException === 'pending_access') {
+        selectionEcho.textContent = 'No need to guess. Answer what you can now, then check the outlet when you are home.';
+      }
       if (compact) {
         var labels = selectedCompatible.map(function (value) {
           return value === 'confirmed_50' ? '50 Amp' : '30 Amp';
@@ -284,7 +287,11 @@
       if (selectedException === 'no_compatible_generator_connection' || selectedException === 'no_generator') {
         WALK.go('generator-needed.html', t);
       } else if (selectedException === 'pending_access') {
-        WALK.go('incomplete.html', t);
+        WALK.view(t).then(function (latest) {
+          if (WALK.isUnansweredPanel(latest)) WALK.go('location.html', t, { sequence: '1' });
+          else if (WALK.isUnansweredDistance(latest)) WALK.go('distance.html', t, { sequence: '1' });
+          else WALK.go('incomplete.html', t);
+        }).catch(function () { WALK.go('location.html', t, { sequence: '1' }); });
       } else {
         WALK.view(t).then(function (latest) {
           var params = new URLSearchParams(window.location.search);

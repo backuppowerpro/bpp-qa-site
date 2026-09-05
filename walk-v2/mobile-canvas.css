@@ -2117,3 +2117,15 @@ body.qw-template-document .page > .foot {
 .page[data-screen-label="Landing page (interactive, mobile)"] textarea[data-f="addr"]::-webkit-resizer {
   display: none !important;
 }
+
+/* Range boot reuses its existing hero while data loads. Do not display an
+   empty work card, disabled navigation, or footer before the saved state. */
+.page[data-screen-label].qw-range-page[data-range-state="loading"] > #rangePage,
+.page[data-screen-label].qw-range-page[data-range-state="loading"] > .foot {
+  display: none !important;
+}
+
+/* No usable review destination exists until the saved journey is verified. */
+.qw-range-page [data-back]:disabled {
+  display: none !important;
+}

@@ -6,7 +6,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="robots" content="noindex,nofollow,noarchive" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-hDbkIgJDVq8i6m7NYL8AUi5B+Qy8YsAwLii8PD9JG7U='; script-src-attr 'none'; style-src 'self' 'sha256-GQqG+SMI9YIf1TzKWY4VBkkqHq5mUO/4dW5LhpUPOso='; style-src-elem 'self' 'sha256-GQqG+SMI9YIf1TzKWY4VBkkqHq5mUO/4dW5LhpUPOso='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; form-action 'self'; frame-src 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-kCiLfksBWI4w6wHCoJwtuhs9VvdZ3qYPCJVFQXffyew='; script-src-attr 'none'; style-src 'self' 'sha256-GQqG+SMI9YIf1TzKWY4VBkkqHq5mUO/4dW5LhpUPOso='; style-src-elem 'self' 'sha256-GQqG+SMI9YIf1TzKWY4VBkkqHq5mUO/4dW5LhpUPOso='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; form-action 'self'; frame-src 'none'" />
 <script src="/assets/js/bpp-analytics.js?v=ea909db798a0"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
@@ -78,7 +78,7 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
 }
 @media (min-width:760px) { .page { min-height:calc(100vh - 48px); margin:24px auto; overflow:hidden; border-radius:20px; box-shadow:0 18px 44px rgba(11,31,59,.14); } }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=01391e54773d" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=28c2721bf53c" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
 </head>
 <body class="qw-page-unframed">
@@ -88,7 +88,7 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
   <main>
     <p class="kicker">Saved for later</p>
     <h1 data-title="">Checking your saved Quote Walk.</h1>
-    <p class="helper">Finish these details so I can prepare your project range and review your setup.</p>
+    <p class="helper" data-progress-help="">Load your saved answers to see what is left.</p>
     <p class="error hidden" data-error="" role="alert"></p>
     <button class="resume-action hidden" type="button" data-load-retry="">Try loading saved progress again</button>
     <div class="tasks hidden" data-actions=""></div>
@@ -96,7 +96,7 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
   <footer class="foot">
     <div class="foot-identity"><strong>Licensed and insured</strong><span>SC Lic #2942 by Key Electric</span></div>
     <span class="foot-area">Currently serving Greenville, Spartanburg,<br>and Pickens counties</span>
-    <span class="foot-process">Every project is reviewed and permitted by Key, completed with trusted local installation partners, and coordinated through final inspection.</span>
+    <span class="foot-process">Key reviews your setup, handles permitting, and coordinates installation and final inspection.</span>
   </footer>
 </div>
 <script src="/walk-v2/walk.js?v=060c85c2aaae"></script>
@@ -107,6 +107,7 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
   var actions = document.querySelector('[data-actions]');
   var error = document.querySelector('[data-error]');
   var loadRetry = document.querySelector('[data-load-retry]');
+  var progressHelp = document.querySelector('[data-progress-help]');
 
   var TASKS = {
     generator: { label: 'Confirm your generator connection', icon: 'connection-icon-30' },
@@ -204,6 +205,9 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
       return;
     }
 
+    progressHelp.textContent = pendingAccess
+      ? 'Your answers are saved. Check the generator outlet when you are home so I can match the connection and estimate. Copy your return link before closing this tab.'
+      : 'Your answers are saved. Finish the missing details for an estimate matched to your setup. Copy your return link if you need to come back later.';
     var firstName = String(value.first_name || '').trim();
     title.textContent = groups.length === 1
       ? 'One thing left' + (firstName ? ', ' + firstName : '') + '.'
@@ -232,6 +236,32 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
     resume.textContent = 'Continue where I left off';
     resume.addEventListener('click', function () { load(true); });
     actions.appendChild(resume);
+    var copyReturn = document.createElement('button');
+    copyReturn.className = 'qw-secondary-action';
+    copyReturn.type = 'button';
+    copyReturn.textContent = 'Copy my return link';
+    copyReturn.setAttribute('data-copy-return', '');
+    var copyError = '';
+    copyReturn.addEventListener('click', function () {
+      var returnURL = new URL('/walk-v2/incomplete.html', window.location.origin);
+      returnURL.searchParams.set('t', t);
+      if (!navigator.clipboard || !navigator.clipboard.writeText) {
+        copyError = 'Link copying is unavailable in this browser. Keep this tab open to return to your saved answers.';
+        error.textContent = copyError;
+        error.classList.remove('hidden');
+        return;
+      }
+      navigator.clipboard.writeText(returnURL.href).then(function () {
+        copyReturn.textContent = 'Return link copied';
+        if (copyError && error.textContent === copyError) error.classList.add('hidden');
+        WALK.ph('walk_v2_return_link_copied', { screen: 'incomplete' });
+      }).catch(function () {
+        copyError = 'The link could not be copied. Keep this tab open, or try copying again.';
+        error.textContent = copyError;
+        error.classList.remove('hidden');
+      });
+    });
+    actions.appendChild(copyReturn);
     actions.classList.remove('hidden');
     error.classList.add('hidden');
     WALK.ph('walk_v2_screen_view', { screen: 'incomplete', blocker_count: groups.length });

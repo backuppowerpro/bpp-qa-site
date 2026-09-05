@@ -15,7 +15,7 @@
 
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://connect.facebook.net 'sha256-TSf9hPr43r9T9eJr1YlgW7NyDImqpOyAsfxnE3OQYwY=' 'sha256-QB8dyNik0DF5WMauJw/LqME4wma8+qhKkizDbkSAxxE=' 'sha256-xArGIxj+mIcdudOP317y4w4cZKR8CnTbSVmvWqsXWO4='; script-src-attr 'none'; style-src 'self' 'sha256-5Qh9GlhbF6Y9jQlpGwImmnNa2C9HCNu5g1k0kUTeO+8='; style-src-elem 'self' 'sha256-5Qh9GlhbF6Y9jQlpGwImmnNa2C9HCNu5g1k0kUTeO+8='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.facebook.com; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co https://www.facebook.com; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://connect.facebook.net 'sha256-TSf9hPr43r9T9eJr1YlgW7NyDImqpOyAsfxnE3OQYwY=' 'sha256-UHHFtBBaUZOydYdOgLebKxQPXbKU98ykX0wuUomJqi0=' 'sha256-33dZ5b1d18iDRSP+L0yRIAIHpzSRNOuMTUw2pIDpewA='; script-src-attr 'none'; style-src 'self' 'sha256-5Qh9GlhbF6Y9jQlpGwImmnNa2C9HCNu5g1k0kUTeO+8='; style-src-elem 'self' 'sha256-5Qh9GlhbF6Y9jQlpGwImmnNa2C9HCNu5g1k0kUTeO+8='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.facebook.com; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co https://www.facebook.com; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
 <script src="/assets/js/bpp-analytics.js?v=ea909db798a0"></script>
 <script src="/walk-v2/token-bootstrap.js?v=29a627571994"></script>
 <script src="/walk-v2/meta-pixel.js?v=f88e4977de51"></script>
@@ -998,7 +998,7 @@
     .state-label { display: none; }
   }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=01391e54773d" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=28c2721bf53c" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
 </head>
 <body>
@@ -1018,10 +1018,10 @@
 
     <!-- Claude Design checkpoint composition: promise and Key on navy, real
          installed work, then one form action. -->
-    <section class="hero" data-hv="integrated-a" aria-labelledby="hero-h1">
+    <section class="hero" data-hv="service-first-v1" aria-labelledby="hero-h1">
       <div class="textzone">
-        <h1 id="hero-h1" data-hero-h1=""><span class="hero-line">Portable generator hookup.</span><span class="hero-line">Priced without a home visit.</span></h1>
-        <p class="sub">One hookup. Power what matters. Selected circuits, not the whole house.</p>
+        <h1 id="hero-h1" data-hero-h1=""><span class="hero-line">Portable generator hookup.</span><span class="hero-line">Keep home essentials running.</span></h1>
+        <p class="sub">We install the outdoor inlet and panel interlock. You supply a compatible portable generator and manually select the circuits it can support.</p>
         <div class="identity">
           <span class="portrait" role="img" aria-label="Key Goodson"></span>
           <div>
@@ -1033,7 +1033,7 @@
             </div>
           </div>
         </div>
-        <p class="process">I’ll guide you through a few quick questions. Then I’ll review your setup myself and text you about the next step, so you know exactly what’s included before any work begins.</p>
+        <p class="process">Your installation includes a matching cord, permitting, inspection coordination, and a hands-on walkthrough. Start with a few details for an estimate. I’ll review your photos before sending a firm proposal.</p>
       </div>
     </section>
     </div>
@@ -1182,13 +1182,13 @@
       var src = window.__WALK_SRC || '';
       var h1 = document.querySelector('[data-hero-h1]');
       if (mode === 'home') {
-        setHeroHeading('Portable generator hookup.', 'Priced without a home visit.');
+        setHeroHeading('Portable generator hookup.', 'Keep home essentials running.');
       } else if (mode === 'city') {
         var city = CITY_LABELS[src] || '';
-        if (city) setHeroHeading('Portable generator hookup in ' + city + '.', 'Priced without a home visit.', 'hero-line--city');
-        else setHeroHeading('Portable generator hookup.', 'Priced without a home visit.');
+        if (city) setHeroHeading('Portable generator hookup in ' + city + '.', 'Keep home essentials running.', 'hero-line--city');
+        else setHeroHeading('Portable generator hookup.', 'Keep home essentials running.');
       } else if (mode === 'paid') {
-        setHeroHeading('Portable generator hookup.', 'Priced without a home visit.');
+        setHeroHeading('Portable generator hookup.', 'Keep home essentials running.');
         var fcTitle = document.querySelector('.form-card .fc-title');
         if (fcTitle) fcTitle.textContent = "Let's start with a few details.";
       }
@@ -1197,7 +1197,7 @@
       // Keep the hero variant explicit so entry-mode funnels remain comparable.
       try {
         window.dispatchEvent(new CustomEvent('bpp:walk-event', {
-          detail: { event: 'walk_v2_hero_shown', variant: 'integrated-a', walk_entry: mode, walk_src: src || 'none' }
+          detail: { event: 'walk_v2_hero_shown', variant: 'service-first-v1', walk_entry: mode, walk_src: src || 'none' }
         }));
       } catch(e) {}
       var proofTrack = document.querySelector('[data-proof-track]');
@@ -1302,7 +1302,7 @@
     <footer class="foot">
       <strong>Key Goodson, Licensed Electrician, SC Lic #2942</strong>
       <span>Serving Greenville, Spartanburg, and Pickens counties</span>
-      <span>Every project is reviewed and permitted by Key, completed with trusted local installation partners, and coordinated through final inspection.</span>
+      <span>Key reviews your setup, handles permitting, and coordinates installation and final inspection.</span>
     </footer>
   </main>
 
@@ -1523,9 +1523,23 @@
   var addrEditSvg = '<svg viewBox="0 0 16 16"><path d="M11 2.5l2.5 2.5L6 12.5 3 13l.5-3z"></path></svg>';
   function fitDropToViewport() {
     if (!drop.classList.contains('open')) return;
-    var viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    var top = drop.getBoundingClientRect().top;
-    var nextHeight = Math.max(44, Math.floor(viewportHeight - top - 10)) + 'px';
+    var viewport = window.visualViewport;
+    var viewportTop = viewport ? viewport.offsetTop : 0;
+    var viewportBottom = viewportTop + (viewport ? viewport.height : window.innerHeight);
+    var anchor = addrField.getBoundingClientRect();
+    var below = Math.floor(viewportBottom - anchor.bottom - 6 - 10);
+    var above = Math.floor(anchor.top - viewportTop - 6 - 10);
+    var firstOption = drop.querySelector('.addr-opt');
+    var listStyle = window.getComputedStyle(drop);
+    var minimumHeight = (firstOption ? firstOption.getBoundingClientRect().height : 0)
+      + parseFloat(listStyle.paddingTop || '0') + parseFloat(listStyle.paddingBottom || '0');
+    // Use the rendered option and responsive padding, not a stale CSS minimum.
+    // Flip the existing dropdown above its field when there is no room below;
+    // do not scroll the page or move the typing caret to manufacture space.
+    var opensAbove = below < Math.ceil(minimumHeight) && above > below;
+    drop.style.top = opensAbove ? 'auto' : 'calc(100% + 6px)';
+    drop.style.bottom = opensAbove ? 'calc(100% + 6px)' : 'auto';
+    var nextHeight = Math.max(0, opensAbove ? above : below) + 'px';
     if (drop.style.maxHeight !== nextHeight) drop.style.maxHeight = nextHeight;
   }
   function scheduleDropFit() {
@@ -1536,7 +1550,7 @@
     if (viewportFitTimer) clearTimeout(viewportFitTimer);
     viewportFitTimer = null;
     lastDropSignature = '';
-    drop.classList.remove('open'); drop.innerHTML = ''; drop.style.maxHeight = '';
+    drop.classList.remove('open'); drop.innerHTML = ''; drop.style.maxHeight = ''; drop.style.top = ''; drop.style.bottom = '';
   }
   function renderDrop(preds) {
     lastAddrPreds = preds || [];
@@ -1779,7 +1793,11 @@
     }, 0);
   });
   window.addEventListener('resize', scheduleDropFit);
-  if (window.visualViewport) window.visualViewport.addEventListener('resize', scheduleDropFit);
+  window.addEventListener('scroll', scheduleDropFit, { passive: true });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', scheduleDropFit);
+    window.visualViewport.addEventListener('scroll', scheduleDropFit, { passive: true });
+  }
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrop(); });
 
   function digits(v) { return (v || '').replace(/\D/g, ''); }

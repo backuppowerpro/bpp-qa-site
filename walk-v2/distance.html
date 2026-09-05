@@ -6,7 +6,7 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-hq0ktjzZbOaeocdvW7+A5zYt44t06ANX2KMJqj7Y0io='; script-src-attr 'none'; style-src 'self' 'sha256-uPnxzDxHLpONSu3PJ4t2YTz3nr9v/L+B7x80R4jQj0k='; style-src-elem 'self' 'sha256-uPnxzDxHLpONSu3PJ4t2YTz3nr9v/L+B7x80R4jQj0k='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-+h/0Nn3U4pKvfwc4YthMerwD4WkGHN/edWeIIzmNem8='; script-src-attr 'none'; style-src 'self' 'sha256-uPnxzDxHLpONSu3PJ4t2YTz3nr9v/L+B7x80R4jQj0k='; style-src-elem 'self' 'sha256-uPnxzDxHLpONSu3PJ4t2YTz3nr9v/L+B7x80R4jQj0k='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
 <script src="/assets/js/bpp-analytics.js?v=ea909db798a0"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
@@ -518,7 +518,7 @@
     .state-label { display: none; }
   }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=01391e54773d" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=28c2721bf53c" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
 </head>
 <body>
@@ -575,7 +575,7 @@
       <!-- 4. ask -->
       <section class="ask">
         <h1>How far is your panel from where you want the new outdoor connection?</h1>
-        <p class="helper">A rough estimate works.</p>
+        <p class="helper">Estimate the installed wiring route from the panel to the outdoor inlet. The generator cord is separate. I’ll review the route from your photos.</p>
       </section>
 
       <!-- 5. distance options -->
@@ -632,7 +632,7 @@
     <footer class="foot">
       <div class="foot-identity"><strong>Licensed and insured</strong><span>SC Lic #2942 by Key Electric</span></div>
       <span class="foot-area">Currently serving Greenville, Spartanburg,<br>and Pickens counties</span>
-      <span class="foot-process">Every project is reviewed and permitted by Key, completed with trusted local installation partners, and coordinated through final inspection.</span>
+      <span class="foot-process">Key reviews your setup, handles permitting, and coordinates installation and final inspection.</span>
     </footer>
   </main>
 
@@ -686,13 +686,11 @@
     if (!answerHydration.accepts(hydrationVersion)) return;
     var params = pageParams;
     var sequentialEntry = params.get('sequence') === '1';
-    /* Self-correcting entry guard: only fires when a PRIOR step is unanswered
-       (panel location here). A forwarded / hand-edited deep link straight to this
-       page would otherwise let an incomplete walk finalize and skip Key's "ready
-       to price" ping. routeFromState bounces to the first unanswered step. It does
-       NOT bounce when location is already answered, so normal flow and Back-nav
-       are untouched (no self-redirect, the landing already runs this same guard). */
-    if (WALK.isPendingAccess(v) || WALK.isUnansweredConnection(v) || WALK.isUnansweredPanel(v)) {
+    // An away customer can save a route estimate after answering the panel
+    // question. Range creation still requires confirmed compatibility.
+    var deferredGenerator = sequentialEntry && WALK.isPendingAccess(v)
+      && !WALK.isUnansweredPanel(v);
+    if (!deferredGenerator && (WALK.isPendingAccess(v) || WALK.isUnansweredConnection(v) || WALK.isUnansweredPanel(v))) {
       WALK.go('incomplete.html', t); return;
     }
     if (!sequentialEntry && !v.confirmed_panel_room) { WALK.routeFromState(t, v); return; }

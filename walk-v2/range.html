@@ -4,7 +4,7 @@
 <meta name="robots" content="noindex,nofollow,noarchive">
 <script src="/qa-environment.js"></script>
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-NdCtI5C7mt/RAW+WzIrWNkKFvpefXACVS8UsNaiFjo8='; script-src-attr 'none'; style-src 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-elem 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-p6uYo2vlkeIP6BAOIB7ZAvK+mZXxY8yizsT7tLn8rMo='; script-src-attr 'none'; style-src 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-elem 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
 <script src="/assets/js/bpp-analytics.js?v=ea909db798a0"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
@@ -142,18 +142,22 @@
     main { padding: 34px 40px 48px; }
   }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=01391e54773d" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=28c2721bf53c" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
 </head>
 <body class="qw-template-document qw-page-unframed">
 <div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to review your current range. Your saved answers remain on file. Turn it on and reload, or call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
-<div class="page qw-template-page qw-range-page" data-screen-label="Quote walk range acceptance">
+<div class="page qw-template-page qw-range-page" data-screen-label="Quote walk range acceptance" data-range-state="loading">
   <header class="site-head">
     <a class="lockup" href="https://qa.backuppowerpro.com" aria-label="Backup Power Pro" style="text-decoration:none;">
       <img src="/assets/images/logo-white-v2.png" alt="Backup Power Pro" style="height:28px;display:block;width:auto;" />
     </a>
   </header>
-  <section class="qw-template-hero qw-range-hero">
+  <section class="qw-template-hero qw-range-hero is-recovery">
+    <div class="qw-range-payoff" data-load-intro="" role="status">
+      <h1>Your saved setup</h1>
+      <p class="range-next-step" data-load-copy="">Loading your answers and installation estimate.</p>
+    </div>
     <div class="qw-range-payoff hidden" data-range-card="">
       <h1 data-range-heading=""><span data-estimate-label="">Your installation estimate</span> <span data-amount=""></span></h1>
       <h1 class="hidden" data-accepted-heading="" tabindex="-1"></h1>
@@ -178,11 +182,8 @@
       <button class="btn range-primary-action" type="button" data-accept="">Yes, continue to photos</button>
     </div>
   </section>
-  <button class="back-btn qw-back" type="button" data-back="" aria-label="Back">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
-  </button>
   <main id="rangePage">
-    <div class="notice" data-loading="" role="status">Checking your saved setup...</div>
+    <div class="notice hidden" data-loading="" role="status"></div>
     <div class="notice error hidden" data-error="" role="alert" tabindex="-1">
       <span data-error-copy=""></span>
       <button class="btn" type="button" data-retry-range="">Try again</button>
@@ -272,11 +273,12 @@
       <button class="link-btn qw-secondary-action" type="button" data-cancel-distance="">Back without changing</button>
     </section>
 
+    <button class="link-btn qw-secondary-action" type="button" data-back="" disabled>Review previous step</button>
   </main>
   <footer class="foot">
     <div class="foot-identity"><strong>Licensed and insured</strong><span>SC Lic #2942 by Key Electric</span></div>
     <span class="foot-area">Currently serving Greenville, Spartanburg,<br>and Pickens counties</span>
-    <span class="foot-process">Every project is reviewed and permitted by Key, completed with trusted local installation partners, and coordinated through final inspection.</span>
+    <span class="foot-process">Key reviews your setup, handles permitting, and coordinates installation and final inspection.</span>
   </footer>
 </div>
 <script src="/walk-v2/walk.js?v=060c85c2aaae"></script>
@@ -285,6 +287,10 @@
   var t = WALK.requireToken(); if (!t) return;
   var main = document.getElementById('rangePage');
   var loading = main.querySelector('[data-loading]');
+  var pageShell = document.querySelector('.qw-range-page');
+  var loadIntro = document.querySelector('[data-load-intro]');
+  var loadCopy = document.querySelector('[data-load-copy]');
+  var hasRenderedRange = false;
   var error = main.querySelector('[data-error]');
   var errorCopy = error.querySelector('[data-error-copy]');
   var retryRange = error.querySelector('[data-retry-range]');
@@ -357,12 +363,30 @@
       && snapshot.low_cents > 0 && snapshot.high_cents >= snapshot.low_cents);
   }
   function showChecking() {
-    loading.textContent = 'Checking your saved setup...';
-    loading.classList.remove('hidden');
+    if (!hasRenderedRange) {
+      pageShell.dataset.rangeState = 'loading';
+      show(loadIntro, true);
+      loadCopy.textContent = 'Loading your answers and installation estimate.';
+      loading.classList.add('hidden');
+    } else {
+      loading.textContent = 'Checking your saved setup...';
+      loading.classList.remove('hidden');
+    }
     error.classList.add('hidden');
+  }
+  function revealRange() {
+    hasRenderedRange = true;
+    document.querySelector('.qw-range-hero').classList.remove('is-recovery');
+    pageShell.dataset.rangeState = 'ready';
+    show(loadIntro, false);
   }
   function fail(message) {
     awaitingSnapshot = false;
+    pageShell.dataset.rangeState = 'error';
+    if (!hasRenderedRange) {
+      show(loadIntro, true);
+      loadCopy.textContent = 'Your setup could not be loaded yet. Please try again.';
+    }
     loading.classList.add('hidden');
     if (errorCopy) errorCopy.textContent = message;
     else error.textContent = message;
@@ -567,6 +591,7 @@
       && v2().accepted_range_snapshot_id === snapshot.snapshot_id;
     if (acceptedCurrent && v2().handoff_recorded === true) {
       if (!renderScope(snapshot)) return;
+      revealRange();
       scopeSummaryCopy.textContent = 'This range covers the permanent house-side connection, permit, and required inspection. It does not include the portable generator, fuel, placement, maintenance, or generator modifications. Operate the generator only within its capacity and manufacturer instructions.';
       var firstName = String(view.first_name || '').trim();
       var displayName = firstName.split(/\s+/)[0].replace(/(^|[\s'-])([a-z])/g, function (_, lead, letter) {
@@ -633,6 +658,7 @@
       : 'Use your own compatible cord and see an updated estimate.';
     var observed = Array.isArray(v2().observed_connections) ? v2().observed_connections : [];
     if (!renderScope(snapshot)) return;
+    revealRange();
     var distanceCopy = (DISTANCE_LABELS[v2().distance_band] || 'the confirmed path').toLowerCase();
     var pricingBasis = snapshot.pricing_basis || v2().pricing_basis || '';
     if (pricingBasis === '50A') pricingBasis = '50';
@@ -697,6 +723,7 @@
   function loadView() {
     return WALK.view(t).then(function (value) {
       view = value;
+      backControl.textContent = isNewJourney() ? 'Review wiring distance' : 'Review setup photos';
       backControl.disabled = false;
       return value;
     });
