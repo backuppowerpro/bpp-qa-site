@@ -4,7 +4,7 @@
 <meta name="robots" content="noindex,nofollow,noarchive">
 <script src="/qa-environment.js"></script>
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-m5n2AiIN39PRZdmMPhbNeMnjfNamPprE0kNlofnpvgI='; script-src-attr 'none'; style-src 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-elem 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-NdCtI5C7mt/RAW+WzIrWNkKFvpefXACVS8UsNaiFjo8='; script-src-attr 'none'; style-src 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-elem 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
 <script src="/assets/js/bpp-analytics.js?v=ea909db798a0"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
@@ -155,13 +155,14 @@
   </header>
   <section class="qw-template-hero qw-range-hero">
     <div class="qw-range-payoff hidden" data-range-card="">
-      <h1 data-range-heading="">Your project should land between <span data-amount=""></span></h1>
+      <h1 data-range-heading=""><span data-estimate-label="">Your installation estimate</span> <span data-amount=""></span></h1>
       <h1 class="hidden" data-accepted-heading="" tabindex="-1"></h1>
       <p class="range-basis" data-basis=""></p>
       <p class="range-next-step">I’ll review your setup and explain the next step.</p>
       <section class="accepted-delivery hidden" data-accepted-delivery="" aria-labelledby="acceptedDeliveryTitle">
         <h2 id="acceptedDeliveryTitle">Your next step is saved.</h2>
         <p data-delivery-copy=""></p>
+        <p class="hidden" data-photo-instructions=""></p>
         <a class="link-btn qw-secondary-action" data-send-photos="" href="sms:+18648637800">Text the two photos to Key</a>
         <button class="link-btn qw-secondary-action" type="button" data-edit-phone=""></button>
         <form class="accepted-phone-form hidden" data-phone-form="" novalidate>
@@ -174,7 +175,7 @@
         </form>
         <p class="accepted-phone-status hidden" data-phone-status="" role="status"></p>
       </section>
-      <button class="btn range-primary-action" type="button" data-accept="">Yes, continue to my exact proposal</button>
+      <button class="btn range-primary-action" type="button" data-accept="">Yes, continue to photos</button>
     </div>
   </section>
   <button class="back-btn qw-back" type="button" data-back="" aria-label="Back">
@@ -196,11 +197,11 @@
       <div class="actions">
         <div class="scope-expansion" id="includedScope" data-scope="">
           <div class="scope-head">
-            <h2 tabindex="-1">Included in your project range</h2>
+            <h2 tabindex="-1">Included in your installation</h2>
           </div>
           <p class="scope-summary-copy" data-scope-summary-copy=""></p>
           <div class="scope-list" data-scope-list=""></div>
-          <button class="btn" type="button" data-accept-bottom="">Yes, continue to my exact proposal</button>
+          <button class="btn" type="button" data-accept-bottom="">Yes, continue to photos</button>
           <button class="btn hidden" type="button" data-retry-handoff="">Continue with this saved setup</button>
         </div>
         <button class="link-btn qw-secondary-action" type="button" data-no="">Not yet</button>
@@ -249,7 +250,7 @@
       </button>
       <button class="choice" type="button" data-alt-cord="">
         <strong>I will provide my own approved compatible cord</strong>
-        <small data-cord-removal-copy="">Remove the included cord and lower this range by $150.</small>
+        <small data-cord-removal-copy="">Use your own compatible cord and see an updated estimate.</small>
       </button>
       <button class="choice" type="button" data-no-alternative="">
         <strong>None of these options work for me</strong>
@@ -346,7 +347,14 @@
   }
   var awaitingSnapshot = false;
   function snapshotAvailable() {
-    return !!(v2().current_range_snapshot && v2().current_range_snapshot.status === 'available');
+    var snapshot = v2().current_range_snapshot;
+    if (!snapshot || snapshot.status !== 'available') return false;
+    if (snapshot.calculator_version !== 'quote_walk_catalog_1') return true;
+    var context = pricingContext(snapshot);
+    return !!(context && ['starting_at', 'single', 'bounded'].indexOf(context.estimate_kind) !== -1
+      && Number.isInteger(context.cord_removed_credit_cents) && context.cord_removed_credit_cents >= 0
+      && context.low_cents === snapshot.low_cents && context.high_cents === snapshot.high_cents
+      && snapshot.low_cents > 0 && snapshot.high_cents >= snapshot.low_cents);
   }
   function showChecking() {
     loading.textContent = 'Checking your saved setup...';
@@ -361,7 +369,15 @@
     error.classList.remove('hidden');
   }
   function money(cents) { return '$' + Math.round(Number(cents) / 100).toLocaleString('en-US'); }
-  function cordCredit(snapshot) { return String(snapshot && snapshot.pricing_basis) === '30' ? 10000 : 15000; }
+  function pricingContext(snapshot) {
+    return snapshot && snapshot.calculator_version === 'quote_walk_catalog_1'
+      ? snapshot.pricing_context : null;
+  }
+  function cordCredit(snapshot) {
+    var context = pricingContext(snapshot);
+    return context ? context.cord_removed_credit_cents
+      : String(snapshot && snapshot.pricing_basis) === '30' ? 10000 : 15000;
+  }
   function v2() { return view && view.quote_walk_v2 || {}; }
   function isNewJourney() {
     return WALK.isNewJourney(view, t);
@@ -453,10 +469,13 @@
       var openerLast4 = String(openerDelivery.destination_last4 || phoneDigits(view.phone).slice(-4));
       document.getElementById('acceptedDeliveryTitle').textContent = openerSent
         ? 'Photo request sent.'
-        : 'Your next step is saved.';
+        : 'Send two setup photos.';
       deliveryCopy.textContent = openerSent
-        ? 'A request for your two setup photos was sent to the mobile number ending in ' + openerLast4 + '. Once I have those photos, I’ll prepare your exact proposal.'
-        : 'Your setup is saved. To prepare your exact proposal, send Key two photos: one of your main breaker panel with its outer door open, and one showing the outdoor connection area and the path back to the panel. You can send them below even if an automatic text does not arrive.';
+        ? 'Your photo request was sent to the mobile number ending in ' + openerLast4 + '. You can reply when you’re home.'
+        : 'You can send them when you’re home.';
+      var photoInstructions = rangeCard.querySelector('[data-photo-instructions]');
+      photoInstructions.textContent = 'Text Key at (864) 863-7800: one photo of your main breaker panel with its outer door open, and one showing the outdoor connection area and the path back to the panel. Leave the screwed-on panel cover in place.';
+      show(photoInstructions, true);
       show(sendPhotos, true);
       editPhone.textContent = openerSent ? "Didn't receive it? Check or change the number" : 'Check or change the mobile number';
       phoneInput.value = fullPhone;
@@ -477,6 +496,7 @@
       : sent
         ? 'Your proposal link was sent to the mobile number ending in ' + sentLast4 + '.'
         : 'Your request is saved. Key will review your setup and use the mobile number ending in ' + last4 + ' for the next step.';
+    show(rangeCard.querySelector('[data-photo-instructions]'), false);
     show(sendPhotos, false);
     editPhone.textContent = sent ? "Didn't receive it? Check or change the number" : 'Wrong number? Change it';
     phoneInput.value = formatPhone(view.phone);
@@ -554,13 +574,13 @@
       });
       var acceptedHeading = rangeCard.querySelector('[data-accepted-heading]');
       acceptedHeading.textContent = displayName
-        ? "I've got your setup, " + displayName + ". I'll take it from here."
-        : "I've got your setup. I'll take it from here.";
+        ? "Thanks, " + displayName + ". Your setup is saved."
+        : "Your setup is saved.";
       show(rangeCard.querySelector('[data-range-heading]'), false);
       show(acceptedHeading, true);
       rangeCard.querySelector('[data-basis]').textContent = '';
       rangeCard.querySelector('.range-next-step').textContent = 'Thanks for sharing the details of your setup. Key will review it and handle the next step.';
-      if (isNewJourney()) rangeCard.querySelector('.range-next-step').textContent = '';
+      if (isNewJourney()) rangeCard.querySelector('.range-next-step').textContent = 'Photos are next. Once Key has usable photos, he’ll send your exact proposal or explain what else is needed by the next business day.';
       document.querySelector('.qw-range-hero').classList.add('is-accepted');
       renderDelivery();
       show(rangeCard, true);
@@ -587,11 +607,11 @@
     var newJourney = isNewJourney();
     document.querySelectorAll('[data-accept], [data-accept-bottom]').forEach(function (button) {
       button.textContent = newJourney
-        ? 'Yes, continue to my exact proposal'
+        ? 'Yes, continue to photos'
         : 'Yes, prepare my exact proposal';
     });
     rangeCard.querySelector('.range-next-step').textContent = newJourney
-      ? 'This is a planning range, not an approval. If you continue, the next step is two setup photos before I prepare your exact proposal.'
+      ? 'Next, send two setup photos when you’re home. Key will review them before preparing your exact proposal. Continuing does not book the installation or charge you.'
       : 'This is a planning range, not an approval. I’ll review your photos, then I’ll prepare your exact proposal.';
     document.querySelectorAll('[data-accept], [data-accept-bottom], [data-no]').forEach(function (button) {
       button.classList.toggle('hidden', !standardActionsAvailable);
@@ -601,8 +621,16 @@
     show(rangeCard.querySelector('[data-accepted-heading]'), false);
     show(acceptedDelivery, false);
     document.querySelector('.qw-range-hero').classList.remove('is-accepted');
-    rangeCard.querySelector('[data-amount]').textContent = money(snapshot.low_cents) + ' and ' + money(snapshot.high_cents);
-    cordRemovalCopy.textContent = 'Remove the included cord and lower this range by ' + money(cordCredit(snapshot)) + '.';
+    var context = pricingContext(snapshot);
+    var startingEstimate = context && context.estimate_kind === 'starting_at';
+    rangeCard.querySelector('[data-estimate-label]').textContent = startingEstimate
+      ? 'Your installation estimate starts at'
+      : 'Your installation estimate';
+    rangeCard.querySelector('[data-amount]').textContent = money(snapshot.low_cents)
+      + (snapshot.low_cents === snapshot.high_cents ? '' : ' to ' + money(snapshot.high_cents));
+    cordRemovalCopy.textContent = context
+      ? 'Use your own compatible cord for a ' + money(cordCredit(snapshot)) + ' credit in the updated estimate.'
+      : 'Use your own compatible cord and see an updated estimate.';
     var observed = Array.isArray(v2().observed_connections) ? v2().observed_connections : [];
     if (!renderScope(snapshot)) return;
     var distanceCopy = (DISTANCE_LABELS[v2().distance_band] || 'the confirmed path').toLowerCase();
@@ -619,6 +647,8 @@
           : 'the confirmed generator connection';
     var isRevisedRange = Boolean(snapshot.revision_reason && snapshot.revision_reason !== 'initial');
     var qualifier = 'Based on ' + basisCopy + ' and a connection path of ' + distanceCopy + ', this is the ' + (isRevisedRange ? 'revised ' : '') + 'range I expect for your permanent, permitted backup power connection.';
+    if (startingEstimate) qualifier = 'This starting estimate allows for 45 feet of wiring. Key will review your longer route and ask for measurements if needed before quoting the exact price.';
+    else if (context) qualifier = 'Based on ' + basisCopy + ' and a wiring route of ' + distanceCopy + '. Key will review your photos and confirm any remaining details before quoting the exact price.';
     if (observed.length === 2) {
       qualifier += pricingBasis === '30'
         ? ' Both connections remain saved.'
@@ -630,9 +660,9 @@
     if (snapshot.revision_reason === 'shorter_distance') {
       revisionMessage = 'Revised setup: The connection path changed to ' + (DISTANCE_LABELS[snapshot.distance_band] || 'the newly selected shorter path') + '. This saved path produced the revised range.';
     } else if (snapshot.revision_reason === 'cord_removed') {
-      revisionMessage = 'Revised setup: You will provide the approved compatible cord. This range is ' + money(cordCredit(snapshot)) + ' lower.';
+      revisionMessage = 'Revised setup: You will provide the approved compatible cord. ' + (context ? 'The estimate includes a ' + money(cordCredit(snapshot)) + ' cord credit.' : 'This saved range includes the cord credit.');
     } else if (snapshot.revision_reason === 'cord_restored') {
-      revisionMessage = 'Revised setup: The approved compatible cord is included again, and the original range has been restored.';
+      revisionMessage = 'Revised setup: The approved compatible cord is included again. The estimate has been recalculated for this setup.';
     }
     revisionCopy.textContent = revisionMessage;
     restoreCord.disabled = false;
