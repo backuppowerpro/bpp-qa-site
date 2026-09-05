@@ -4,7 +4,7 @@
 <meta name="robots" content="noindex,nofollow,noarchive">
 <script src="/qa-environment.js"></script>
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-TYAcNp5OQt4ibsI4tdHwb1MieGpQF5YlRGHw0khNipU='; script-src-attr 'none'; style-src 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-elem 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-J9rh29ePxfsmPpcKl7Eik504jUe2m1oEQHrHQgtAomQ='; script-src-attr 'none'; style-src 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-elem 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
 <script src="/assets/js/bpp-analytics.js?v=ea909db798a0"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
@@ -271,7 +271,6 @@
       <button class="link-btn qw-secondary-action" type="button" data-cancel-distance="">Back without changing</button>
     </section>
 
-    <button class="link-btn qw-secondary-action" type="button" data-back="" disabled>Review previous step</button>
   </main>
   <footer class="foot">
     <div class="foot-identity"><strong>Licensed and insured</strong><span>SC Lic #2942 by Key Electric</span></div>
@@ -292,8 +291,6 @@
   var error = main.querySelector('[data-error]');
   var errorCopy = error.querySelector('[data-error-copy]');
   var retryRange = error.querySelector('[data-retry-range]');
-  var backControl = document.querySelector('[data-back]');
-  backControl.disabled = true;
   var rangeCard = document.querySelector('[data-range-card]');
   var acceptedDelivery = document.querySelector('[data-accepted-delivery]');
   var deliveryCopy = acceptedDelivery.querySelector('[data-delivery-copy]');
@@ -721,7 +718,6 @@
     show(askKey, savedOutcomeVisible && (savedReason === 'need_clarity' || newJourney && reviewConcern));
     show(savedReturn, savedOutcomeVisible && !editingOptions);
     show(choiceSaved.querySelector('[data-copy-return]'), savedOutcomeVisible && savedReason === 'not_ready');
-    show(backControl, !savedOutcomeVisible && !showingReason);
     show(options, editingOptions && !showingReason);
     show(main.querySelector('[data-not-fit-terminal]'), notFitClosed);
     show(main.querySelector('[data-alt-30]'), observed.indexOf('30') !== -1 && observed.indexOf('50') !== -1 && pricingBasis === '50');
@@ -735,8 +731,6 @@
   function loadView() {
     return WALK.view(t).then(function (value) {
       view = value;
-      backControl.textContent = isNewJourney() ? 'Review wiring distance' : 'Review setup photos';
-      backControl.disabled = false;
       return value;
     });
   }
@@ -1129,9 +1123,6 @@
   if (retryRange) {
     retryRange.addEventListener('click', function () { bootRange(); });
   }
-  backControl.addEventListener('click', function () {
-    WALK.back(isNewJourney() ? 'distance.html' : 'photos.html', t);
-  });
   WALK.ph('walk_v2_screen_view', { screen: 'range' });
   bootRange();
 })();

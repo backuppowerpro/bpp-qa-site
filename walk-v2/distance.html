@@ -6,7 +6,7 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-+h/0Nn3U4pKvfwc4YthMerwD4WkGHN/edWeIIzmNem8='; script-src-attr 'none'; style-src 'self' 'sha256-hKFHi84+LLajeUlQuhJSuqGPqZoPmzzLdDgCbKI7gaI='; style-src-elem 'self' 'sha256-hKFHi84+LLajeUlQuhJSuqGPqZoPmzzLdDgCbKI7gaI='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-JJR8ted3QfF+PHiI2ZPp4tOTov2zSxboEbEMSujzPrU='; script-src-attr 'none'; style-src 'self' 'sha256-Yk6d/GHTEZ/kMCfFW0VmdZ0NAnId4/H4jclckJO5cHs='; style-src-elem 'self' 'sha256-Yk6d/GHTEZ/kMCfFW0VmdZ0NAnId4/H4jclckJO5cHs='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
 <script src="/assets/js/bpp-analytics.js?v=ea909db798a0"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
@@ -359,6 +359,9 @@
     background: #fff;
   }
   .body.is-confirmed .ask, .body.is-confirmed .explain .lead, .body.is-confirmed .echo { display: none; }
+  .body.is-confirmed .echo.is-error { display: flex; }
+  .echo.is-error { animation: none; }
+  .echo.is-error .ring { display: none; }
   .distance-confirm .confirm-actions { display: grid; gap: 2px; }
   .distance-confirm button {
     width: 100%; min-height: 48px; border-radius: 100px; font-weight: 800;
@@ -564,7 +567,20 @@
   var pageParams = new URLSearchParams(window.location.search);
   var editMode = pageParams.get('edit') === '1';
 
+  function returnToSavedRange(value) {
+    var state = value && value.quote_walk_v2 || {};
+    if (!state.current_range_snapshot_id) return false;
+    var shorterEditAvailable = editMode && state.range_fit_answer === 'no'
+      && DISTANCE_ORDER[state.distance_band || value.distance_band] > 1
+      && !state.accepted_range_snapshot_id && state.handoff_recorded !== true;
+    if (shorterEditAvailable) return false;
+    navigated = true;
+    WALK.go('range.html', t, null, true);
+    return true;
+  }
+
   function paint(label, echoLine) {
+    echo.classList.remove('is-error');
     selectedLabel = label || null;
     main.querySelectorAll('[data-dist]').forEach(function (c) {
       c.setAttribute('aria-pressed', c.getAttribute('data-dist') === label ? 'true' : 'false');
@@ -585,6 +601,8 @@
 
   var hydrationVersion = answerHydration.begin();
   WALK.view(t).then(function (v) {
+    // Saved range authority must still apply after an early option tap.
+    if (returnToSavedRange(v)) return;
     if (!answerHydration.accepts(hydrationVersion)) return;
     var params = pageParams;
     var sequentialEntry = params.get('sequence') === '1';
@@ -612,7 +630,7 @@
     }
     var pendingDistance = savedDistance === 'Not sure';
     if (!editMode && !sequentialEntry && savedDistance && !(recoveryMode && pendingDistance)) paint(savedDistance, false);
-  }).catch(function () { /* the welcome-back preselect is best-effort; a transient read failure must NOT strip the token and bounce a mid-walk customer to a blank form. The step works without it. */ });
+  }).catch(function () { /* Preselection is best-effort. Continue still requires a fresh authority read. Preserve the saved token on a transient failure. */ });
 
   main.querySelectorAll('[data-dist]').forEach(function (card) {
     card.addEventListener('click', function () {
@@ -632,8 +650,9 @@
   });
 
   function persistDistance(answers) {
-    if (!editMode) return WALK.confirm(t, answers);
     return WALK.view(t).then(function (latest) {
+      if (returnToSavedRange(latest)) return;
+      if (!editMode) return WALK.confirm(t, answers);
       var state = latest && latest.quote_walk_v2 || {};
       var currentDistance = state.distance_band || latest.distance_band || null;
       var requestedDistance = answers.distance_band;
@@ -653,7 +672,7 @@
   }
 
   main.querySelector('[data-continue]').addEventListener('click', function () {
-    if (!selectedLabel || saving) return;
+    if (!selectedLabel || saving || navigated) return;
     saving = true;
     var continueBtn = main.querySelector('[data-continue]');
     continueBtn.disabled = true;
@@ -664,6 +683,7 @@
     }
     persistDistance(answers)
       .then(function () {
+        if (navigated) return;
         navigated = true;
         var recovery = new URLSearchParams(window.location.search).get('recovery') === '1';
         WALK.view(t).then(function (latest) {
@@ -697,12 +717,31 @@
         });
       })
       .catch(function () {
-        saving = false;
-        continueBtn.disabled = false;
-        continueBtn.textContent = 'Continue';
-        echoText.textContent = 'That distance did not save. Try again.';
-        echo.classList.add('show');
+        // Another tab may have created a range after the pre-save read.
+        // Reconcile its saved state without retrying an unauthorized change.
+        WALK.view(t).then(function (latest) {
+          if (!returnToSavedRange(latest)) showSaveRetry();
+        }).catch(showSaveRetry);
       });
+  });
+
+  function showSaveRetry() {
+    saving = false;
+    var button = main.querySelector('[data-continue]');
+    button.disabled = false;
+    button.textContent = 'Continue';
+    echoText.textContent = 'Your saved setup could not be updated. Try Continue again.';
+    echo.classList.add('show', 'is-error');
+  }
+
+  window.addEventListener('pageshow', function (event) {
+    if (!event.persisted) return;
+    navigated = false;
+    saving = false;
+    var button = main.querySelector('[data-continue]');
+    button.disabled = false;
+    button.textContent = 'Continue';
+    WALK.view(t).then(returnToSavedRange).catch(showSaveRetry);
   });
 
   var backBtn = main.querySelector('[data-back]');
