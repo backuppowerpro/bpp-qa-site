@@ -2129,3 +2129,25 @@ body.qw-template-document .page > .foot {
 .qw-range-page [data-back]:disabled {
   display: none !important;
 }
+
+/* Reuse the design-system gold button press and the range's existing hover
+   color. Pending/disabled controls never imply another action is available. */
+.page .qw-primary-action,
+.qw-range-page .btn {
+  transition: transform .07s, background .2s;
+}
+.page .qw-primary-action:not(:disabled):not([aria-disabled="true"]):active,
+.qw-range-page .btn:not(:disabled):not([aria-disabled="true"]):active {
+  transform: scale(.98);
+  background: var(--gold-hover, #ffc519) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .page .qw-primary-action,
+  .qw-range-page .btn {
+    transition: none !important;
+  }
+  .page .qw-primary-action:active,
+  .qw-range-page .btn:active {
+    transform: none !important;
+  }
+}
