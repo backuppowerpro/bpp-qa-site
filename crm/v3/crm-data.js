@@ -15,6 +15,7 @@ import {
   createDomainStatusMap,
   startProgressiveDomains,
 } from './progressive-domain-load.js';
+import { createCrmProposalWithRecovery } from './proposal-create-operation.js';
 
 // One contact column list for BOTH fetch paths (initial + refresh). The two
 // lists drifted on 2026-06-10 (refresh lacked ai_summary) and the AI summary
@@ -356,6 +357,60 @@ function __makeStubDb() {
     // back in an error string, matching the floor rule.
     rpc: function (name, args) {
       args = args || {};
+      if (name === 'operator_create_crm_proposal_v1') {
+        window.__bppTestProposalCreates = window.__bppTestProposalCreates || {};
+        var priorCreate = window.__bppTestProposalCreates[args.p_request_key];
+        if (priorCreate) {
+          return Promise.resolve({
+            data: Object.assign({}, priorCreate, { outcome: 'duplicate' }),
+            error: null,
+          });
+        }
+        var proposalPayload = args.p_payload || {};
+        var proposalContact = (window.CRM?.contacts || []).find(function (item) {
+          return String(item.id) === String(args.p_contact_id);
+        }) || {};
+        var proposalId = 'test-proposal-' + String(args.p_request_key || '').slice(-18);
+        var proposalRow = {
+          id: proposalId,
+          token: 'test-token-' + String(args.p_request_key || '').slice(-18),
+          contact_id: args.p_contact_id,
+          contact_name: proposalContact.name || '',
+          contact_email: proposalContact.email || '',
+          contact_phone: proposalContact.phone || '',
+          contact_address: proposalContact.address || '',
+          creator_version: proposalPayload.creator_version || 'v4',
+          amp_type: proposalPayload.amp,
+          selected_amp: proposalPayload.amp,
+          length_ft: proposalPayload.length_ft,
+          run_ft: proposalPayload.length_ft,
+          include_cord: proposalPayload.include_cord,
+          include_inlet: proposalPayload.include_inlet,
+          include_permit: proposalPayload.include_permit,
+          pom_offered: proposalPayload.pom_offered,
+          pom_accepted: false,
+          require_deposit: proposalPayload.require_deposit,
+          show_property_image: proposalPayload.show_property_image,
+          deposit_rate: 0.20,
+          extra_line_items: proposalPayload.extra_line_items || [],
+          discount_type: proposalPayload.discount_type || null,
+          discount_value: proposalPayload.discount_value,
+          total: proposalPayload.total,
+          notes: proposalPayload.notes || '',
+          status: 'Created',
+          created_at: new Date().toISOString(),
+        };
+        var createResponse = {
+          schema: 'operator_create_crm_proposal_v1',
+          ok: true,
+          outcome: 'applied',
+          proposal_id: proposalId,
+          proposal: proposalRow,
+          superseded_proposal_ids: [],
+        };
+        window.__bppTestProposalCreates[args.p_request_key] = createResponse;
+        return Promise.resolve({ data: createResponse, error: null });
+      }
       if (name === 'native_operator_record_system_call_handoff') {
         window.__bppTestSystemCallHandoffs = window.__bppTestSystemCallHandoffs || [];
         var existingHandoff = window.__bppTestSystemCallHandoffs.find(function (row) {
@@ -1089,7 +1144,7 @@ function _hasLiveProposalLocal(contactId) {
   // proposal whose mapped (lowercased) status isn't dead counts, drafts
   // included.
   return (window.CRM?.proposals || []).some(function (p) {
-    return p.contact_id === contactId && !p.superseded_at
+    return p.contact_id === contactId && !p.superseded_at && !p.superseded_by
       && _DEAD_PROPOSAL_STATUSES.indexOf(p.status) === -1;
   });
 }
@@ -1696,7 +1751,7 @@ function isQuoteDeskReady(contact, preRead, proposals) {
   for (var i = 0; i < list.length; i++) {
     var p = list[i];
     if (p.contact_id !== contact.id) continue;
-    if (p.superseded_at) continue;
+    if (p.superseded_at || p.superseded_by) continue;
     if (DEAD.indexOf(String(p.status || '').toLowerCase()) !== -1) continue;
     return false; // live proposal already exists
   }
@@ -1769,24 +1824,6 @@ async function _generateDraftProposalInner(contact) {
     lineItems: [],
   });
 
-  // Idempotency re-check against the DB right before insert: a double-tap,
-  // a second device, or a stale client must not produce a second draft.
-  // Statuses in the DB are title-case; apply the same lowercase canon
-  // mapProposal uses rather than trusting case in a filter string.
-  try {
-    var liveQ = await window.CRM.__db.from('proposals')
-      .select('id, status, superseded_at')
-      .eq('contact_id', contact.id);
-    if (liveQ.error) return { ok: false, error: liveQ.error.message };
-    var hasLive = (liveQ.data || []).some(function (r) {
-      var s = (r.status || '').toLowerCase();
-      return !r.superseded_at && _DEAD_PROPOSAL_STATUSES.indexOf(s) === -1;
-    });
-    if (hasLive) return { ok: false, error: 'Live proposal already exists' };
-  } catch (e) {
-    return { ok: false, error: e?.message || String(e) };
-  }
-
   var payload = {
     contact_id:      contact.id,
     contact_name:    contact.name    || '',
@@ -1822,36 +1859,26 @@ async function _generateDraftProposalInner(contact) {
     notes:           draftNote,
   };
 
-  var ins = await window.CRM.__db.from('proposals')
-    .insert([{ ...payload, deposit_rate: 0.20, status: 'Created' }])
-    .select().single();
-  if (ins.error || !ins.data) return { ok: false, error: ins.error?.message || 'insert failed' };
+  var created = await createCrmProposalWithRecovery({
+    db: window.CRM.__db,
+    contactId: contact.id,
+    payload: payload,
+  });
+  if (!created.ok || !created.proposal) {
+    return { ok: false, error: created.error || 'proposal creation failed' };
+  }
 
   // Optimistic push via the SAME mapper the refetch path uses so the row
   // can never drift from the canonical shape (mirrors NewProposalModal).
-  var mapped = mapProposal(ins.data);
+  var mapped = mapProposal(created.proposal);
   var arr = (window.CRM.proposals = window.CRM.proposals || []);
   var idx = arr.findIndex(function (p) { return p.id === mapped.id; });
   if (idx >= 0) arr[idx] = mapped; else arr.unshift(mapped);
 
-  // Stage bump NEW -> QUOTED on first proposal create, mirroring the modal:
-  // awaited, rolled back in memory on failure, but non-fatal to the draft
-  // (the proposal row exists either way).
-  if (contact.stage === 'new') {
-    var numQuoted = STAGE_STR_TO_NUM.quoted;
-    var prevStage = contact.stage;
-    contact.stage = 'quoted';
-    try {
-      var stageRes = await window.CRM.__db.from('contacts').update({ stage: numQuoted }).eq('id', contact.id);
-      if (stageRes.error) {
-        contact.stage = prevStage;
-        window.showToast?.('Stage update failed: ' + stageRes.error.message, { kind: 'error' });
-      }
-    } catch (err) {
-      contact.stage = prevStage;
-      window.showToast?.('Stage update failed: ' + (err?.message || err), { kind: 'error' });
-    }
-  }
+  // The server receipt carries the contact stage read after the insert trigger.
+  // Apply that exact value so a later stage can never be moved backward locally.
+  var authoritativeStage = STAGE_NUM_TO_STR[created.contactStage];
+  if (authoritativeStage) contact.stage = authoritativeStage;
 
   window.dispatchEvent(new CustomEvent('crm-data-changed'));
   return { ok: true, proposal: mapped };
@@ -2282,7 +2309,8 @@ function mapProposal(r) {
   // of Approved. Folding signed into approved here was the old misleading
   // behavior (#114).
   const status =
-    rawStatus === 'copied' || rawStatus === 'sent' ? 'sent' :
+    rawStatus === 'copied' ? 'copied' :
+    rawStatus === 'sent' ? 'sent' :
     rawStatus === 'signed' ? 'signed' :
     rawStatus === 'approved' ? 'approved' :
     rawStatus === 'created' ? 'draft' :
@@ -2313,10 +2341,9 @@ function mapProposal(r) {
     // 2026-05-26 audit: sent_at MUST be null on unsent drafts. Previously
     // fell back to created_at, which meant every Created/draft proposal
     // got a truthy sent_at and silently matched stale-quote filters.
-    // Real semantic: sent_at = the timestamp we put the proposal in
-    // front of the customer (sent_at column when present, else copied_at
-    // from the Copy-link path). Null = never sent.
-    sent_at: r.sent_at || r.copied_at || null,
+    // Real semantic: sent_at is provider-confirmed delivery only.
+    // copied_at records an operator clipboard action separately.
+    sent_at: r.sent_at || null,
     // Mirror raw DB columns so signal logic can disambiguate.
     copied_at: r.copied_at || null,
     superseded_at: r.superseded_at || null,
@@ -2418,7 +2445,7 @@ function mapInvoice(r) {
 // scheduled, error) added 2026-06-10 for the Messages-page wiring; keep the
 // three SELECTs reading this constant so they never drift (the CONTACT_COLS
 // lesson). comm_attachments are fetched per-thread lazily, not bulk-joined.
-var MSG_COLS = 'id, contact_id, direction, body, created_at, read_at, sender, status, kind, delivered_at, status_updated_at, scheduled_at, error_code, error_message, twilio_sid';
+var MSG_COLS = 'id, contact_id, direction, body, created_at, read_at, sender, status, kind, delivered_at, status_updated_at, scheduled_at, error_code, error_message, twilio_sid, idempotency_key, provider_attempted_at, proposal_id, proposal_signature_revision';
 
 function mapMessage(r) {
   // Real DB columns: id, contact_id, direction, body, created_at,
@@ -2460,6 +2487,12 @@ function mapMessage(r) {
     error_code: r.error_code || null,
     error_message: r.error_message || null,
     twilio_sid: r.twilio_sid || null,
+    idempotency_key: r.idempotency_key || null,
+    provider_attempted_at: r.provider_attempted_at || null,
+    proposal_id: r.proposal_id || null,
+    proposal_signature_revision: r.proposal_signature_revision == null
+      ? null
+      : Number(r.proposal_signature_revision),
   };
 }
 

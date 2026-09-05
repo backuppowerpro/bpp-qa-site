@@ -690,6 +690,48 @@ html.qw-template-document-root {
   scroll-padding-inline: var(--qw-content-gutter) !important;
 }
 
+/* Reused from the approved Claude Design review-carousel control pattern. */
+.page .proof-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.page .proof-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1.5px solid rgba(11,31,59,.12);
+  border-radius: 50%;
+  color: var(--navy, #0b1f3b);
+  background: #fff;
+  cursor: pointer;
+  transition: color .15s, background .15s, border-color .15s;
+}
+
+.page .proof-arrow:hover {
+  border-color: var(--navy, #0b1f3b);
+  color: #fff;
+  background: var(--navy, #0b1f3b);
+}
+
+.page .proof-arrow:focus-visible {
+  outline: 3px solid var(--gold, #ffba00);
+  outline-offset: 3px;
+}
+
+.page .proof-arrow svg {
+  width: 18px;
+  height: 18px;
+}
+
 .page .proof-carousel::before,
 .page .proof-carousel::after {
   display: none !important;
@@ -735,6 +777,23 @@ html.qw-template-document-root {
 
 .qw-progress .qw-progress-rail::after {
   display: none !important;
+}
+
+.qw-progress .qw-progress-rail[data-steps="3"],
+.qw-progress .qw-progress-rail:not(:has(.pstep:nth-child(4))) {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+.qw-progress .qw-progress-rail[data-steps="3"]::before,
+.qw-progress .qw-progress-rail[data-steps="3"]::after,
+.qw-progress .qw-progress-rail:not(:has(.pstep:nth-child(4)))::before,
+.qw-progress .qw-progress-rail:not(:has(.pstep:nth-child(4)))::after {
+  left: 16.666% !important;
+}
+
+.qw-progress .qw-progress-rail[data-steps="3"]::before,
+.qw-progress .qw-progress-rail:not(:has(.pstep:nth-child(4)))::before {
+  right: 16.666% !important;
 }
 
 .qw-progress .pstep {
@@ -1268,6 +1327,15 @@ body.qw-template-document .page > .foot {
   padding-top: 20px;
 }
 
+.page[data-screen-label="Landing page (interactive, mobile)"] .form-card {
+  position: relative;
+  z-index: 2;
+}
+
+.page[data-screen-label="Landing page (interactive, mobile)"] .proof-carousel {
+  background: transparent !important;
+}
+
 .page[data-screen-label="Landing page (interactive, mobile)"] .proof-carousel::before,
 .page[data-screen-label="Landing page (interactive, mobile)"] .proof-carousel::after {
   display: none !important;
@@ -1414,12 +1482,12 @@ body.qw-template-document .page > .foot {
 
   .page[data-screen-label="Landing page (interactive, mobile)"] .proof-track {
     gap: 18px;
-    padding: 0 28px 0 0 !important;
+    padding: 0 !important;
     scroll-padding-inline: 0 !important;
   }
 
   .page[data-screen-label="Landing page (interactive, mobile)"] .proof-slide {
-    flex-basis: calc((100% - 18px) / 2.18);
+    flex-basis: calc((100% - 18px) / 2);
     height: 230px;
     scroll-snap-align: none;
   }
@@ -1775,4 +1843,277 @@ body.qw-template-document .page > .foot {
   .page[data-screen-label].qw-final-page > .body-grid .price {
     height: auto !important;
   }
+}
+
+/* 20260831-logocsp: phone winces. Canvas stays 390 until 1024 desktop. */
+@media (max-width: 1023px) {
+  /* Address suggestions: undo the shared .page button type-scale squeeze so
+     city/state stays readable and each row is a real 48px+ thumb target. */
+  .page[data-screen-label="Landing page (interactive, mobile)"] .addr-drop.open {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+    padding: 6px !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .addr-opt {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    width: 100% !important;
+    min-height: 52px !important;
+    height: auto !important;
+    padding: 12px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .addr-opt .lines {
+    display: flex !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    white-space: normal !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .addr-opt .a1,
+  .page[data-screen-label="Landing page (interactive, mobile)"] .addr-opt .a2 {
+    display: block !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .addr-opt .a2 {
+    color: #4d5a6e !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 1.35 !important;
+  }
+
+  /* Filled review-details address: no ellipsis clip; wrap if the UA allows,
+     otherwise keep the full string scrollable instead of cutting "La Fayette, G". */
+  .page[data-screen-label="Landing page (interactive, mobile)"] .field[data-addr-field] input {
+    height: auto !important;
+    min-height: 52px !important;
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+    line-height: 1.35 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    text-overflow: clip !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    field-sizing: content;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .field.ok[data-addr-field] input {
+    padding-right: 36px !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .field[data-addr-field] .ok-mark {
+    top: 40px !important;
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  /* Landing carousel: one complete card at a time on the focused canvas. */
+  .page[data-screen-label="Landing page (interactive, mobile)"] .proof-carousel {
+    padding-right: 20px !important;
+    padding-left: 20px !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .proof-track {
+    gap: 20px !important;
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+    scroll-padding-inline: 0 !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .proof-slide {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+    scroll-snap-align: start !important;
+    scroll-snap-stop: always !important;
+  }
+}
+
+
+/* 20260831-recovery: tappable recovery column. Phone + desktop. */
+.qw-recovery-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  pointer-events: auto;
+  position: relative;
+  z-index: 2;
+}
+
+.qw-recovery-actions button,
+.qw-recovery-actions a {
+  min-height: 44px;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* Do not inherit .cta:disabled gray. */
+.qw-recovery-actions button,
+.qw-recovery-actions button:disabled,
+.qw-recovery-actions a {
+  background: transparent;
+  color: #0b1f3b;
+  box-shadow: none;
+  opacity: 1;
+  filter: none;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+
+/* 20260901-nits: parked visual polish. Same colors/fonts/radii. Phone 390 canvas. */
+.qw-progress .qw-progress-rail::before,
+.qw-progress .qw-progress-rail::after,
+.qw-progress .qw-progress-rail[data-steps="3"]::before,
+.qw-progress .qw-progress-rail[data-steps="3"]::after,
+.qw-progress .qw-progress-rail:not(:has(.pstep:nth-child(4)))::before,
+.qw-progress .qw-progress-rail:not(:has(.pstep:nth-child(4)))::after {
+  top: 0.5px !important;
+  height: 3px !important;
+}
+
+.qw-progress .pstep .dot {
+  width: 4px !important;
+  height: 4px !important;
+  box-shadow: inset 0 0 0 1.5px var(--edge, rgba(11,31,59,.12)) !important;
+}
+
+.qw-progress .pstep.done .dot,
+.qw-progress .pstep.on.done .dot {
+  background: var(--gold, #ffba00) !important;
+  box-shadow: none !important;
+}
+
+.qw-progress .pstep.on .dot {
+  background: var(--gold, #ffba00) !important;
+  box-shadow: none !important;
+}
+
+.qw-progress .pstep.reached:not(:last-child)::after {
+  top: 0.5px !important;
+  height: 3px !important;
+  background: var(--gold, #ffba00) !important;
+}
+
+.page .qw-primary-action:disabled,
+.page .submit:disabled,
+.page .cta:disabled,
+.page .continue-btn:disabled {
+  color: var(--faint, #5d6b7e) !important;
+  background: #e9ecf2 !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  filter: none !important;
+  cursor: not-allowed !important;
+}
+
+.page .room,
+.page .room .ric {
+  -webkit-tap-highlight-color: transparent !important;
+  transition: box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1), transform 220ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.page .room[aria-pressed="true"],
+.page .room[aria-pressed="true"]:hover,
+.page .room[aria-pressed="true"]:active,
+.page .room[aria-pressed="true"]:focus,
+.page .room[aria-pressed="true"]:focus-visible {
+  background: var(--navy, #0b1f3b) !important;
+  color: #fff !important;
+}
+
+.page .room[aria-pressed="true"] .ric,
+.page .room[aria-pressed="true"]:hover .ric,
+.page .room[aria-pressed="true"]:active .ric {
+  background: var(--gold, #ffba00) !important;
+  color: var(--navy, #0b1f3b) !important;
+}
+
+/* 20260901-addr: empty Home address matches Phone (52px / 16px / inset 1.5px).
+   Drop field-sizing:content because it shrank the empty box. Do not force height
+   !important so a tiny scrollHeight autosize can grow a long pick. */
+@media (max-width: 1023px) {
+  .page[data-screen-label="Landing page (interactive, mobile)"] .field[data-addr-field] input,
+  .page[data-screen-label="Landing page (interactive, mobile)"] .field[data-addr-field] textarea {
+    display: block !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 52px !important;
+    padding: 14px 16px !important;
+    border: 0 !important;
+    border-radius: var(--r-md, 14px) !important;
+    color: var(--text, #16243a) !important;
+    background: var(--page, #fafbfc) !important;
+    background-color: var(--page, #fafbfc) !important;
+    box-shadow: inset 0 0 0 1.5px var(--edge, rgba(11,31,59,.10)) !important;
+    font-family: var(--body, inherit) !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+    line-height: 1.5 !important;
+    white-space: pre-wrap !important;
+    text-overflow: clip !important;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    resize: none !important;
+    field-sizing: fixed;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .field[data-addr-field] textarea::placeholder {
+    color: var(--faint, #5d6b7e) !important;
+    font-family: inherit !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+    opacity: 1 !important;
+    line-height: 1.5 !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .field.ok[data-addr-field] input,
+  .page[data-screen-label="Landing page (interactive, mobile)"] .field.ok[data-addr-field] textarea {
+    padding-right: 44px !important;
+    box-shadow: inset 0 0 0 2px rgba(5,150,105,0.45) !important;
+  }
+  .page[data-screen-label="Landing page (interactive, mobile)"] .field[data-addr-field] textarea:focus {
+    outline: none !important;
+    box-shadow: inset 0 0 0 2px var(--gold, #ffba00) !important;
+  }
+
+  .page[data-screen-label="Landing page (interactive, mobile)"] .field[data-addr-field] .ok-mark {
+    top: 38px !important;
+    bottom: auto !important;
+    width: 22px !important;
+    height: 22px !important;
+  }
+}
+
+/* Address wrap without a textarea drag-corner. */
+.page[data-screen-label="Landing page (interactive, mobile)"] textarea[data-f="addr"] {
+  resize: none !important;
+  overflow: hidden;
+}
+.page[data-screen-label="Landing page (interactive, mobile)"] textarea[data-f="addr"]::-webkit-resizer {
+  display: none !important;
 }

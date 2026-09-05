@@ -1,11 +1,17 @@
 /* Privacy-safe analytics for Quote Walk and customer money documents.
- * This client sends only an anonymous browser ID, a query-free page path,
- * controlled enum properties, and explicit interaction events. */
+ * Range funnel facts come from server-owned journey records, never from a
+ * browser analytics claim. Other events use an anonymous browser ID. */
 (function () {
   'use strict';
 
   var CAPTURE_URL = '/api/analytics';
   var STORAGE_KEY = 'bpp:analytics:id';
+  var SERVER_OWNED_RANGE_EVENTS = new Set([
+    'walk_v2_range_presented',
+    'walk_v2_range_accepted_view',
+    'walk_v2_range_accepted_lead',
+    'walk_v2_range_non_yes_reason_saved'
+  ]);
   var SAFE_KEYS = new Set([
     'surface', 'document_variant', 'funnel', 'screen', 'blocker_count',
     'field', 'value', 'from', 'state', 'has_range', 'unsure_count',
@@ -40,6 +46,14 @@
     return navigator.globalPrivacyControl === true
       || navigator.doNotTrack === '1'
       || window.doNotTrack === '1';
+  }
+
+  function analyticsTestMode() {
+    try {
+      return new URLSearchParams(window.location.search || '').get('analytics_test') === '1';
+    } catch (_) {
+      return false;
+    }
   }
 
   function randomId() {
@@ -105,11 +119,11 @@
   }
 
   function trafficScope() {
-    var params = new URLSearchParams(window.location.search || '');
-    if (params.get('analytics_test') === '1' || params.get('preview') === '1') return 'synthetic';
     var host = String(window.location.hostname || '').toLowerCase();
     if (host === 'backuppowerpro.com' || host === 'www.backuppowerpro.com') return 'production';
     if (host === 'qa.backuppowerpro.com' || host.indexOf('bpp-qa-site.pages.dev') !== -1) return 'qa';
+    var params = new URLSearchParams(window.location.search || '');
+    if (params.get('analytics_test') === '1' || params.get('preview') === '1') return 'synthetic';
     return 'preview';
   }
 
@@ -160,8 +174,9 @@
   }
 
   function capture(event, properties) {
-    if (privacyBlocked()) return false;
+    if (privacyBlocked() || analyticsTestMode()) return false;
     if (!/^\$pageview$|^[a-z][a-z0-9_]{2,80}$/.test(String(event || ''))) return false;
+    if (SERVER_OWNED_RANGE_EVENTS.has(event)) return false;
     var payload = {
       event: event,
       properties: Object.assign(baseProperties(), safeProps(properties))

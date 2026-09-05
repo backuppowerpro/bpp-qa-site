@@ -6,8 +6,8 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-ZXU70hPTo8KpJ4rlHHrurC/zWIwLOiNjIRM9BSa6NiU='; script-src-attr 'none'; style-src 'self' 'sha256-vJTGL1d96TSIuABuUIQ8TUdUz5v/h9tVLGK35mlVJQ0='; style-src-elem 'self' 'sha256-vJTGL1d96TSIuABuUIQ8TUdUz5v/h9tVLGK35mlVJQ0='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
-<script src="/assets/js/bpp-analytics.js?v=7c57ff22b3f1"></script>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-U3rSZRjAEKAE9q3rYOklj5mWJu3LJOl39y8oUEDNURQ='; script-src-attr 'none'; style-src 'self' 'sha256-2DgN8H0ohK2jnF6DhuBgm+KtFGN6d75LW0/1bWarbG4='; style-src-elem 'self' 'sha256-2DgN8H0ohK2jnF6DhuBgm+KtFGN6d75LW0/1bWarbG4='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/assets/js/bpp-analytics.js?v=ea909db798a0"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
@@ -570,6 +570,7 @@
     margin-top: 26px;
     padding: 20px 20px 28px;
     border-top: 1px solid var(--edge-soft);
+    background: transparent;
     font-size: 12.5px;
     line-height: 1.6;
     color: var(--faint);
@@ -592,7 +593,7 @@
     .state-label { display: none; }
   }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=d678618d4433" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=01391e54773d" />
 </head>
 <body>
 <div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to load the current Quote Walk result. Your saved answers remain on file. Turn it on and reload, or call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
@@ -665,7 +666,7 @@
 
 </div>
 
-<script src="/walk-v2/walk.js?v=f121686a4c8d"></script>
+<script src="/walk-v2/walk.js?v=060c85c2aaae"></script>
 <script>
 
 (function () {
@@ -738,8 +739,11 @@
     if (v.address) main.querySelector('[data-recap="address"]').textContent = String(v.address).split(',')[0];
 
     WALK.ph('walk_v2_range_accepted_view', {
-      snapshot_id: acceptedSnapshot.snapshot_id,
-      journey_version: acceptedSnapshot.journey_version,
+      event_schema_version: 1,
+      surface_state: 'range_accepted',
+      entry_path: WALK.isNewJourney(v, t) ? 'new_intake' : 'legacy_photo_first',
+      result: 'accepted',
+      pricing_basis: String(acceptedSnapshot.pricing_basis || v2State.pricing_basis || '').replace(/A$/, ''),
     });
     return;
 

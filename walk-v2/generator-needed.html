@@ -5,8 +5,8 @@
 <script src="/qa-environment.js"></script>
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-ClVCen54E+lfIwJCthrUSQbASVNWwYZjlnAAwnUkPwg='; script-src-attr 'none'; style-src 'self' 'sha256-i7n4K0wkeLlNAKllpljkAbkEUdrV5vO8Klq4xqm1FCg='; style-src-elem 'self' https://fonts.googleapis.com 'sha256-i7n4K0wkeLlNAKllpljkAbkEUdrV5vO8Klq4xqm1FCg='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
-<script src="/assets/js/bpp-analytics.js?v=7c57ff22b3f1"></script>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-ClVCen54E+lfIwJCthrUSQbASVNWwYZjlnAAwnUkPwg='; script-src-attr 'none'; style-src 'self' 'sha256-c/4BtqAswPu+k2jWoQtbOT10q8RYoaCa5L4d+FaH5C8='; style-src-elem 'self' https://fonts.googleapis.com 'sha256-c/4BtqAswPu+k2jWoQtbOT10q8RYoaCa5L4d+FaH5C8='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/assets/js/bpp-analytics.js?v=ea909db798a0"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
@@ -54,12 +54,12 @@
   .progress-link{width:100%;min-height:44px;margin-top:8px;background:transparent;color:var(--navy);font-size:14px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
   .error{padding:26px 0 18px}
   .error p{font-size:15px;line-height:1.6;color:var(--muted);margin:0}
-  .foot{margin-top:24px;padding:20px;border-top:1px solid var(--edge-soft);font-size:12.5px;line-height:1.6;color:var(--faint);text-align:center}
+  .foot{margin-top:24px;padding:20px;border-top:1px solid var(--edge-soft);background:transparent;font-size:12.5px;line-height:1.6;color:var(--faint);text-align:center}
   .foot strong{font-family:var(--head);font-weight:600;color:var(--muted)}
   @media(min-width:760px){.page{width:1080px}.site-head{padding:0 48px}.body{padding:42px 24px 14px}h1{font-size:36px}}
   @media(max-width:759px){html,body{background:var(--page)}.stack{padding:0 0 calc(28px + env(safe-area-inset-bottom,0px))}.page{width:100%;border-radius:0;box-shadow:none}}
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=d678618d4433" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=01391e54773d" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
 </head>
 <body>
@@ -67,9 +67,9 @@
 <div class="stack">
   <main class="page" id="mainPage" data-screen-label="Quote walk: generator needed">
     <header class="site-head">
-      <span class="lockup" aria-label="Backup Power Pro">
+      <a class="lockup" href="https://qa.backuppowerpro.com" aria-label="Backup Power Pro" style="text-decoration:none;">
         <img src="/assets/images/logo-white-v2.png" alt="Backup Power Pro" style="height:28px;width:auto;display:block" />
-      </span>
+      </a>
     </header>
     <div class="prog qw-progress" data-qw-step="generator">
       <div class="rail qw-progress-rail" role="img" aria-label="Step 1 of 4: Generator">
@@ -117,7 +117,7 @@
     </footer>
   </main>
 </div>
-<script src="/walk-v2/walk.js?v=f121686a4c8d"></script>
+<script src="/walk-v2/walk.js?v=060c85c2aaae"></script>
 <script>
 (function () {
   var t = WALK.requireToken(); if (!t) return;

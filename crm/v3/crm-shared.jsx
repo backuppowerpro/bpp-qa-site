@@ -1631,21 +1631,22 @@ function buildContactSignals({ contacts, messages, calls, proposals, invoices, e
     // are title-case 'Copied'/'Created'/'Approved'/'Cancelled' etc.
     // No row ever matched. Result: the rotting-quote pill never fired
     // and the Rotting lens silently undercounted by hundreds of days.
-    // Fix: accept any proposal that has a send timestamp + isn't
-    // signed + isn't in a dead status + isn't superseded by a newer
-    // version. Falls back to copied_at when sent_at is null (legacy
-    // data path; backfilled 2026-05-26).
+    // Fix: accept any proposal that has a provider-confirmed send
+    // timestamp + isn't signed + isn't in a dead status + isn't
+    // superseded by a newer version. Clipboard copy is tracked
+    // separately because it does not prove customer delivery.
     // mapProposal lowercases p.status, so the filter array must too.
     // Title-case 'Cancelled' silently never matched, letting 3 cancelled
     // proposals slip into the rotting set (2026-05-26 audit).
     const DEAD_STATUSES = ['cancelled', 'declined', 'expired'];
     const sentProposals = cProps
-      .filter(p => (p.sent_at || p.copied_at)
+      .filter(p => p.sent_at
         && !p.approved_at
         && p.status !== 'signed' /* Legacy unpaid signatures require an explicit audit/reset, not an automated stale-proposal chase. */
         && !p.superseded_at
+        && !p.superseded_by
         && !DEAD_STATUSES.includes(p.status))
-      .map(p => ({ ...p, _sentTs: p.sent_at || p.copied_at }))
+      .map(p => ({ ...p, _sentTs: p.sent_at }))
       .sort((a, b) => (a._sentTs || '').localeCompare(b._sentTs || ''));
     const freshestStale = sentProposals[sentProposals.length - 1] || null;
     const proposalAgeDays = freshestStale
@@ -1653,6 +1654,16 @@ function buildContactSignals({ contacts, messages, calls, proposals, invoices, e
       : null;
     const stale = freshestStale && proposalAgeDays >= 3;
     const veryStale = freshestStale && proposalAgeDays >= 7;
+    const copiedProposals = cProps
+      .filter(p => p.copied_at
+        && !p.sent_at
+        && !p.approved_at
+        && p.status !== 'signed'
+        && !p.superseded_at
+        && !p.superseded_by
+        && !DEAD_STATUSES.includes(p.status))
+      .sort((a, b) => (a.copied_at || '').localeCompare(b.copied_at || ''));
+    const freshestCopied = copiedProposals[copiedProposals.length - 1] || null;
     // Recently-viewed proposal, surface as a positive nudge.
     const recentlyViewedProposal = cProps
       .filter(p => p.viewed_at && (now - new Date(p.viewed_at).getTime()) < 24 * 3600 * 1000)
@@ -1764,7 +1775,7 @@ function buildContactSignals({ contacts, messages, calls, proposals, invoices, e
 
     out.set(c.id, {
       lastTouchAt, daysSinceTouch, lastMsg,
-      stale, veryStale, proposalAgeDays, freshestStale,
+      stale, veryStale, proposalAgeDays, freshestStale, freshestCopied,
       recentlyViewedProposal,
       staleViewed, staleViewedDays,
       outstandingCents, outstandingOldestDays,

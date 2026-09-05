@@ -1,8 +1,9 @@
-import { deliverySyncMessage, operatorDocumentPreviewUrl, promoteDocumentAfterDelivery } from './money-link-delivery.js';
+import { copyProposalWithRecovery, deliverySyncMessage, operatorDocumentPreviewUrl, proposalCopyRecoveryPending, promoteDocumentAfterDelivery, reconcileProposalEmailReceipt } from './money-link-delivery.js';
 import { applyProposalLifecycleReceipt, mutateProposalLifecycle } from './proposal-lifecycle.js';
 import { applyInvoiceLifecycleReceipt, mutateInvoiceLifecycle } from './invoice-lifecycle.js';
 import { deleteDraftMoneyDocument } from './money-document-operation.js';
-import { sendManualSmsWithReceipt } from './manual-sms-operation.js';
+import { proposalDeliveryPending, sendManualSmsWithReceipt } from './manual-sms-operation.js';
+import { createCrmProposalWithRecovery } from './proposal-create-operation.js';
 
 // crm-right.jsx - Right panel: contact detail, 5 fully-featured tabs.
 // Consumes canonical DB-shape arrays directly. Each tab filters by contact_id inline.
@@ -6089,8 +6090,8 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
   // making this sort hide drafts behind sent ones; that fallback was
   // removed because it broke the rotting-quote signal.
   const proposal = [...proposals].sort((a,b) => {
-    const tb = b.sent_at || b.approved_at || '';
-    const ta = a.sent_at || a.approved_at || '';
+    const tb = b.sent_at || b.copied_at || b.approved_at || '';
+    const ta = a.sent_at || a.copied_at || a.approved_at || '';
     if (tb !== ta) return tb.localeCompare(ta);
     // Same send timestamp (or both null) → break ties on id (UUIDv7-ish ordering).
     return (b.id || '').localeCompare(a.id || '');
@@ -6635,8 +6636,24 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
       window.showToast?.('Email status is unclear. Retry the same send or reconcile it before creating another.', { kind: 'error' });
       return;
     }
-    const promotion = await promoteDeliveredLink(sendUrl);
-    __finishManualEmailAttempt(dispatchAttempt);
+    let promotion;
+    if (template === 'proposal' && proposal) {
+      const liveProposal = (CRM.proposals || []).find(row => row.id === proposal.id) || proposal;
+      promotion = await reconcileProposalEmailReceipt({
+        db: CRM.__db,
+        proposal: liveProposal,
+        serverReceipt: data.proposal,
+        expectedRevision: Number(liveProposal.signature_revision),
+      });
+      if (promotion.ok && promotion.row) {
+        liveProposal.status = promotion.row.status || liveProposal.status;
+        liveProposal.sent_at = promotion.row.sent_at;
+        if (promotion.row.copied_at) liveProposal.copied_at = promotion.row.copied_at;
+        window.dispatchEvent(new CustomEvent('crm-data-changed'));
+      }
+    } else {
+      promotion = await promoteDeliveredLink(sendUrl);
+    }
     // #213: send-email already logged this to messages_email; tell the open
     // thread to refetch so the internal "Email sent" note appears right away.
     window.dispatchEvent(new CustomEvent('crm-email-logged', { detail: { contact_id } }));
@@ -6644,6 +6661,7 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
       window.showToast?.(deliverySyncMessage('email'), { kind:'error', duration:4200 });
       return;
     }
+    __finishManualEmailAttempt(dispatchAttempt);
     window.showToast?.(`Email sent to ${contact.email}`);
     } finally {
       sendingEmailRef.current = false;
@@ -6659,6 +6677,7 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
   // left-pane lens mirrors these labels; logic reads keys only).
   const FIN_PILL = {
     paid:      { bg:'#f0fdf4', color:'#16a34a', label:'Paid' },
+    copied:    { bg:'#eff6ff', color:'#2563eb', label:'Copied' },
     sent:      { bg:'#eff6ff', color:'#2563eb', label:'Sent' },
     viewed:    { bg:'#f5f3ff', color:'#7c3aed', label:'Viewed' },
     overdue:   { bg:'#fef2f2', color:'#991b1b', label:'Overdue' },
@@ -6706,9 +6725,10 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
     : false;
 
   const propActivity = p => {
-    const verbByStatus = { approved:'Approved', signed:'Signed', declined:'Declined', sent:null, viewed:null, draft:null };
+    const verbByStatus = { approved:'Approved', signed:'Signed', declined:'Declined', copied:null, sent:null, viewed:null, draft:null };
     const respondedVerb = verbByStatus[p.status];
     const parts = [];
+    if (p.copied_at)   parts.push(`Copied ${fmtShort(p.copied_at)}`);
     if (p.sent_at)     parts.push(`Sent ${fmtShort(p.sent_at)}`);
     if (p.viewed_at)   parts.push(`Viewed ${fmtShort(p.viewed_at)}`);
     if (respondedVerb && p.approved_at) parts.push(`${respondedVerb} ${fmtShort(p.approved_at)}`);
@@ -6757,12 +6777,12 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
       kind,
       token,
       currentStatus: live?.status,
+      currentSentAt: live?.sent_at,
       testMode: CRM.__testMode === true,
     });
     if (result.ok && result.changed && live) {
       live.status = 'sent';
       live.sent_at = result.row?.sent_at || live.sent_at;
-      if (kind === 'proposal') live.copied_at = result.row?.copied_at || live.copied_at;
       window.dispatchEvent(new CustomEvent('crm-data-changed'));
     }
     return result;
@@ -6771,22 +6791,31 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
   // instead of the generic update line (#114). Same link, same dedupe, the
   // promote-to-Sent block below cannot touch it (status guard excludes Signed).
   const sendLink = async (linkUrl, depositAsk = false, proposal = null) => {
-    if (proposal?.superseded_at || proposal?.superseded_by) {
+    const liveProposal = proposal
+      ? ((CRM.proposals || []).find(row => row.id === proposal.id) || proposal)
+      : null;
+    const effectiveLinkUrl = liveProposal ? proposalUrl(liveProposal) : linkUrl;
+    if (liveProposal?.superseded_at || liveProposal?.superseded_by) {
       window.showToast?.('This proposal was replaced. Use the current proposal.');
       return;
     }
     // Guard: a draft proposal or invoice that hasn't been issued a token
     // yet has linkUrl=null. Sending "null" as a URL would deliver the
     // literal word to the customer. Refuse + tell Key why.
-    if (!linkUrl) {
+    if (!effectiveLinkUrl) {
       window.showToast?.('No link yet, save the draft first');
       return;
     }
-    if (proposal && !proposalHasFirmFacts(proposal)) {
+    const linkKind = effectiveLinkUrl.includes('/invoice.html') ? 'inv' : effectiveLinkUrl.includes('/proposal.html') ? 'prop' : 'link';
+    if (linkKind === 'prop' && !proposal) {
+      window.showToast?.('Proposal details are unavailable. Refresh before sending.');
+      return;
+    }
+    if (liveProposal && !proposalHasFirmFacts(liveProposal)) {
       window.showToast?.('Confirm amperage and run distance before sending this proposal');
       return;
     }
-    const lockKey = `${contact.id}::${linkUrl}`;
+    const lockKey = `${contact.id}::${effectiveLinkUrl}`;
     if (contact.do_not_contact) {
       window.showToast?.('Marked do not contact, cannot send');
       return;
@@ -6798,9 +6827,8 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
     if (sendingRef.current.has(lockKey)) return;
     sendingRef.current.add(lockKey);
     const body = depositAsk
-      ? `Here's the deposit link for your signed proposal from Backup Power Pro: ${linkUrl}`
-      : `Here's your update from Backup Power Pro: ${linkUrl}`;
-    const linkKind = linkUrl.includes('/invoice.html') ? 'inv' : linkUrl.includes('/proposal.html') ? 'prop' : 'link';
+      ? `Here's the deposit link for your signed proposal from Backup Power Pro: ${effectiveLinkUrl}`
+      : `Here's your update from Backup Power Pro: ${effectiveLinkUrl}`;
     window.showToast?.(`Sending to ${firstName}…`);
     try {
       const sent = await sendManualSmsWithReceipt({
@@ -6808,17 +6836,38 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
         scope: linkKind === 'inv' ? 'invoice-link' : linkKind === 'prop' ? 'proposal-link' : 'money-link',
         contactId: contact.id,
         body,
-        semanticId: proposal?.id || linkKind,
+        semanticId: liveProposal?.id || linkKind,
+        proposalId: liveProposal?.id || '',
+        proposalRevision: liveProposal ? Number(liveProposal.signature_revision) : null,
         testMode: CRM.__testMode === true,
       });
       if (!sent.ok) {
+        if (liveProposal) {
+          liveProposal.delivery_confirmation_pending = sent.ambiguous === true;
+          window.dispatchEvent(new CustomEvent('crm-data-changed'));
+        }
         window.showToast?.(sent.error, { kind:'error', duration:4200 });
         return;
       }
-      const promotion = await promoteDeliveredLink(linkUrl);
-      if (!promotion.ok) {
-        window.showToast?.(`${firstName}, ${deliverySyncMessage('sms')}`, { kind:'error', duration:4200 });
-        return;
+      if (liveProposal) {
+        const receipt = sent.data?.proposal;
+        if (String(receipt?.id || '') !== String(liveProposal.id)
+            || receipt?.communication_state !== 'sent'
+            || !Number.isFinite(Date.parse(String(receipt?.sent_at || '')))) {
+          window.showToast?.(`${firstName}, ${deliverySyncMessage('sms')}`, { kind:'error', duration:4200 });
+          return;
+        }
+        liveProposal.status = receipt.status || 'Sent';
+        liveProposal.sent_at = receipt.sent_at;
+        liveProposal.delivery_confirmation_pending = false;
+        if (receipt.copied_at) liveProposal.copied_at = receipt.copied_at;
+        window.dispatchEvent(new CustomEvent('crm-data-changed'));
+      } else {
+        const promotion = await promoteDeliveredLink(effectiveLinkUrl);
+        if (!promotion.ok) {
+          window.showToast?.(`${firstName}, ${deliverySyncMessage('sms')}`, { kind:'error', duration:4200 });
+          return;
+        }
       }
       window.showToast?.(`SMS sent to ${firstName}`);
     } finally {
@@ -6828,34 +6877,51 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
     }
   };
   const copyLink = async (linkUrl, proposal = null) => {
-    if (proposal?.superseded_at || proposal?.superseded_by) {
+    const live = proposal
+      ? ((CRM.proposals || []).find(row => row.id === proposal.id) || proposal)
+      : null;
+    const effectiveLinkUrl = live ? proposalUrl(live) : linkUrl;
+    if (live?.superseded_at || live?.superseded_by) {
       window.showToast?.('This proposal was replaced. Use the current proposal.');
       return;
     }
-    if (!linkUrl) { window.showToast?.('No link yet, save the draft first'); return; }
-    if (proposal && !proposalHasFirmFacts(proposal)) {
+    if (!effectiveLinkUrl) { window.showToast?.('No link yet, save the draft first'); return; }
+    if (live && !proposalHasFirmFacts(live)) {
       window.showToast?.('Confirm amperage and run distance before copying this proposal');
       return;
     }
-    const ok = await window.copyText(linkUrl);
-    if (!ok) {
-      window.showToast?.('Copy failed');
+    let sync;
+    if (live) {
+      sync = await copyProposalWithRecovery({
+        copyText: value => window.copyText(value),
+        linkUrl: effectiveLinkUrl,
+        db: CRM.__db,
+        proposalId: live.id,
+        expectedRevision: Number(live.signature_revision || 1),
+        currentStatus: live.status,
+        testMode: CRM.__testMode === true,
+      });
+      if (sync.ok && sync.changed) {
+        live.status = 'copied';
+        live.copied_at = sync.row?.copied_at || live.copied_at || new Date().toISOString();
+        window.dispatchEvent(new CustomEvent('crm-data-changed'));
+      }
+    } else {
+      const ok = await window.copyText(effectiveLinkUrl);
+      if (!ok) {
+        window.showToast?.('Copy failed');
+        return;
+      }
+      sync = await promoteDeliveredLink(effectiveLinkUrl);
+    }
+    if (!sync.ok) {
+      window.showToast?.(
+        sync.copied ? deliverySyncMessage('clipboard') : (sync.error || 'Copy failed'),
+        { kind:'error', duration:4200 },
+      );
       return;
     }
-    // 2026-05-26: stamp copied_at + sent_at + flip to 'Sent' status when
-    // Key copies a draft proposal link, because the act of copying means
-    // he's about to paste it to the customer via iMessage/email/etc.
-    // Without this, every proposal sent via Copy stayed in 'Created'
-    // (draft) - rotting signal silent, no follow-up reminders, no audit
-    // trail of who got which quote. The Send button does the same DB
-    // updates AND fires Twilio; Copy does the same DB updates without
-    // the Twilio fire so Key can use any channel.
-    const promotion = await promoteDeliveredLink(linkUrl);
-    if (!promotion.ok) {
-      window.showToast?.(deliverySyncMessage('clipboard'), { kind:'error', duration:4200 });
-      return;
-    }
-    window.showToast?.('Link copied');
+    window.showToast?.(sync.reconciled ? 'Copy status synced' : 'Link copied');
   };
   const viewAsCustomer = (linkUrl) => {
     if (!linkUrl) { window.showToast?.('No link yet, save the draft first'); return; }
@@ -6886,14 +6952,18 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
     // 'cancelled' = legacy v1 word for a killed invoice (and a cancelled proposal);
     // treat it as a closed/final state so a cancelled row never offers Send/Copy/View.
     const FINAL_INVOICE = ['paid', 'voided', 'refunded', 'cancelled'];
-    const isProposal = !FIN_PILL[status] || ['draft','sent','viewed','signed','approved','declined','expired'].includes(status);
+    const isProposal = Boolean(proposal);
+    const deliveryPending = isProposal && proposalDeliveryPending(proposal, CRM.messages || []);
+    const copyPending = isProposal && proposalCopyRecoveryPending(proposal);
+    const recoveryLocked = deliveryPending || copyPending;
     // Loose heuristic: presence of `kind` field would indicate invoice,
     // but we only have status - use the strict invoice-only set check.
     const isFinalInvoice = FINAL_INVOICE.includes(status);
     const isFinalProposal = FINAL_PROPOSAL.includes(status);
-    const showSend = !isFinalInvoice && !isFinalProposal;
-    const showCopy = !['voided','refunded','cancelled','replaced'].includes(status);
-    const showView = !['voided','refunded','cancelled','replaced'].includes(status);
+    const showSend = !recoveryLocked && !isFinalInvoice && !isFinalProposal
+      && (!isProposal || !Number.isFinite(Date.parse(String(proposal.sent_at || ''))));
+    const showCopy = !recoveryLocked && !['voided','refunded','cancelled','replaced'].includes(status);
+    const showView = !recoveryLocked && !['voided','refunded','cancelled','replaced'].includes(status);
     // CRM revamp 2026-06-10 (validated crm-finance-row.html): collapse the
     // old two button rows (up to 7 ghosts) into ONE primary action + a "⋯"
     // overflow menu, all on the header row. Same handlers + guards, fewer
@@ -6903,13 +6973,17 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
     // tone:'good'/'gold' keys were dead + misleading, so they are dropped , the
     // code now states the truth. Overflow items keep their tones (the menu
     // renderer reads them).
-    const primary = onMarkPaid
+    const primary = deliveryPending
+      ? { label:'Check delivery', onClick:() => sendLink(linkUrl, false, proposal), icon:SendIcon }
+      : copyPending
+        ? { label:'Finish copy record', onClick:() => copyLink(linkUrl, proposal), icon:CopyIcon }
+        : onMarkPaid
       ? { label:'Mark paid', onClick:onMarkPaid }
       : (showSend && linkUrl)
           ? { label:'Send', onClick:() => sendLink(linkUrl, false, proposal), icon:SendIcon }
           : null;
     const confirmThen = (cfg, fn) => async () => { const ok = await window.confirmAction?.(cfg); if (ok) fn(); };
-    const overflowItems = [
+    const overflowItems = recoveryLocked ? [] : [
       // When Mark paid takes the primary slot (an unpaid invoice), Send got
       // displaced , keep the SMS-resend reachable here so Key can still re-text
       // an unpaid invoice's link, exactly like the old two-row layout offered.
@@ -7121,8 +7195,8 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
             activity={propActivity(proposal)}
             linkUrl={proposalUrl(proposal)}
             proposal={proposal}
-            onOfflineApprove={!proposalReplaced && proposal.require_deposit === false && ['sent','viewed'].includes(proposal.status) ? () => recordOfflineApproval(proposal) : null}
-            onCancel={!proposalReplaced && (proposal.status === 'sent' || proposal.status === 'viewed') ? () => cancelProposal(proposal) : null}
+            onOfflineApprove={!proposalReplaced && proposal.require_deposit === false && ['copied','sent','viewed'].includes(proposal.status) ? () => recordOfflineApproval(proposal) : null}
+            onCancel={!proposalReplaced && ['copied','sent','viewed'].includes(proposal.status) ? () => cancelProposal(proposal) : null}
             onRevive={!proposalReplaced && ['declined','cancelled','expired'].includes(proposal.status) ? () => reviveProposal(proposal) : null}
             onEdit={!proposalReplaced && ['draft','created'].includes(String(proposal.status || '').toLowerCase()) ? () => { setProposalModalOpen(false); setEditingProposalId(proposal.id); } : null}
             onDelete={!proposalReplaced && ['draft','created'].includes(String(proposal.status || '').toLowerCase()) ? () => deleteProposal(proposal) : null}
@@ -10611,31 +10685,22 @@ function NewProposalModal({ contact, onClose, inline = false, editingProposal = 
         notes:           notes.trim(),
       };
       let data, error;
+      let createdContactStage = null;
       if (isEdit) {
         ({ data, error } = await CRM.__db.from('proposals').update(payload).eq('id', ep.id)
           .in('status', ['Created', 'Draft', 'draft']).select().single());
       } else {
         // Initial status 'Created' (renders as Draft pill via mapProposal). The
-        // Send button on the FinanceRow is the trigger for SMS dispatch - Create
+        // Send button on the FinanceRow is the trigger for SMS dispatch. Create
         // just saves the document, leaving Key in control of cadence.
-        ({ data, error } = await CRM.__db.from('proposals').insert([{ ...payload, deposit_rate: 0.20, status: 'Created' }]).select().single());
-        // 2026-05-26: when creating a NEW proposal for a contact who has
-        // pre-existing un-sent un-superseded drafts, supersede those so
-        // the rotting/staleViewed signals + the DealCard don't show
-        // ghost drafts. Replays the Will Gribble case (two same-day
-        // drafts, only one was ever sent - the older one lingered).
-        if (!error && data) {
-          try {
-            await CRM.__db.from('proposals')
-              .update({ superseded_at: new Date().toISOString(), superseded_by: data.id })
-              .eq('contact_id', contact.id)
-              .is('signed_at', null)
-              .is('sent_at', null)
-              .is('copied_at', null)
-              .is('superseded_at', null)
-              .neq('id', data.id);
-          } catch (_) { /* non-fatal - supersede is a hygiene win, not critical */ }
-        }
+        const created = await createCrmProposalWithRecovery({
+          db: CRM.__db,
+          contactId: contact.id,
+          payload,
+        });
+        data = created.proposal || null;
+        createdContactStage = created.contactStage;
+        error = created.ok ? null : { message: created.error || 'unknown' };
       }
       if (error || !data || data.ok === false) {
         window.showToast?.(`${isEdit ? 'Update' : 'Create'} failed: ${error?.message || data?.error || 'unknown'}`);
@@ -10654,27 +10719,11 @@ function NewProposalModal({ contact, onClose, inline = false, editingProposal = 
       const arr = (window.CRM.proposals = window.CRM.proposals || []);
       const idx = arr.findIndex(p => p.id === mapped.id);
       if (idx >= 0) arr[idx] = mapped; else arr.unshift(mapped);
-      // Bump contact stage NEW → QUOTED on first proposal create.
-      // Audit-2026-05-09 H7: this was fire-and-forget - submit() called
-      // onClose() before the stage write resolved, so a failure toast
-      // landed after the modal had closed AND a subsequent close+open
-      // could race with the original write. Now awaited + rolled back
-      // before onClose so the user actually sees the failure feedback.
-      if (!isEdit && contact.stage === 'new') {
-        const numQuoted = CRM.STAGE_STR_TO_NUM?.quoted ?? 2;
-        contact.stage = 'quoted';
-        try {
-          const { error: stageErr } = await CRM.__db.from('contacts').update({ stage: numQuoted }).eq('id', contact.id);
-          if (stageErr) {
-            contact.stage = 'new';
-            window.dispatchEvent(new CustomEvent('crm-data-changed'));
-            window.showToast?.(`Stage update failed: ${stageErr.message}`, { kind:'error' });
-          }
-        } catch (err) {
-          contact.stage = 'new';
-          window.dispatchEvent(new CustomEvent('crm-data-changed'));
-          window.showToast?.(`Stage update failed: ${err?.message || err}`, { kind:'error' });
-        }
+      // Apply the exact contact stage from the server receipt. This preserves a
+      // later stage if the contact changed while the modal was open.
+      if (!isEdit) {
+        const authoritativeStage = CRM.STAGE_NUM_TO_STR?.[createdContactStage];
+        if (authoritativeStage) contact.stage = authoritativeStage;
       }
       window.dispatchEvent(new CustomEvent('crm-data-changed'));
       window.showToast?.(isEdit ? 'Proposal updated' : 'Proposal created');

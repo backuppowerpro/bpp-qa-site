@@ -6,8 +6,8 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="robots" content="noindex,nofollow,noarchive" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-nJgOSd/3pRvOuD2NyJv0ZjyPihariIdKeEqugxqMZ8Q='; script-src-attr 'none'; style-src 'self' 'sha256-/P0+VP8oVslqAneMUkckrhcltOLuYNU8dDGRnjNXVQ0='; style-src-elem 'self' 'sha256-/P0+VP8oVslqAneMUkckrhcltOLuYNU8dDGRnjNXVQ0='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; form-action 'self'; frame-src 'none'" />
-<script src="/assets/js/bpp-analytics.js?v=7c57ff22b3f1"></script>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-hDbkIgJDVq8i6m7NYL8AUi5B+Qy8YsAwLii8PD9JG7U='; script-src-attr 'none'; style-src 'self' 'sha256-GQqG+SMI9YIf1TzKWY4VBkkqHq5mUO/4dW5LhpUPOso='; style-src-elem 'self' 'sha256-GQqG+SMI9YIf1TzKWY4VBkkqHq5mUO/4dW5LhpUPOso='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; form-action 'self'; frame-src 'none'" />
+<script src="/assets/js/bpp-analytics.js?v=ea909db798a0"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
 <title>Saved Quote Walk | Backup Power Pro</title>
@@ -69,7 +69,7 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
 .resume-action:focus-visible { outline:3px solid rgba(255,186,0,.48); outline-offset:2px; }
 .error { margin:0 0 12px; color:#b42318; font-size:13px; font-weight:600; }
 .hidden { display:none; }
-.foot { padding:20px; background:var(--navy); color:rgba(255,255,255,.72); font-size:12px; line-height:1.6; text-align:center; }
+.foot { padding:20px; background:transparent; color:#68758a; font-size:12px; line-height:1.6; text-align:center; }
 @media (max-width:340px) {
   main { padding-right:16px; padding-left:16px; }
   h1 { font-size:20px; }
@@ -78,13 +78,13 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
 }
 @media (min-width:760px) { .page { min-height:calc(100vh - 48px); margin:24px auto; overflow:hidden; border-radius:20px; box-shadow:0 18px 44px rgba(11,31,59,.14); } }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=d678618d4433" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=01391e54773d" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
 </head>
 <body class="qw-page-unframed">
 <div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to load your saved Quote Walk. Your saved answers remain on file. Turn it on and reload, or call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
 <div class="page" data-screen-label="Quote walk incomplete">
-  <header class="head"><img src="/assets/images/logo-white-v2.png" alt="Backup Power Pro" /></header>
+  <header class="head"><a class="lockup" href="https://qa.backuppowerpro.com" aria-label="Backup Power Pro"><img src="/assets/images/logo-white-v2.png" alt="Backup Power Pro" /></a></header>
   <main>
     <p class="kicker">Saved for later</p>
     <h1 data-title="">Checking your saved Quote Walk.</h1>
@@ -99,7 +99,7 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
     <span class="foot-process">Every project is reviewed and permitted by Key, completed with trusted local installation partners, and coordinated through final inspection.</span>
   </footer>
 </div>
-<script src="/walk-v2/walk.js?v=f121686a4c8d"></script>
+<script src="/walk-v2/walk.js?v=060c85c2aaae"></script>
 <script>
 (function () {
   var t = WALK.requireToken(); if (!t) return;
@@ -110,7 +110,7 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
 
   var TASKS = {
     generator: { label: 'Confirm your generator connection', icon: 'connection-icon-30' },
-    panel: { label: 'Confirm your panel details', image: '/img/panel-example.jpg' },
+    panel: { label: 'Confirm your panel location', image: '/img/panel-example.jpg' },
     distance: { label: 'Confirm the connection distance', image: '/walk-v2/connection-distance-icon.png' },
     photos: { label: 'Add clear setup photos', image: '/assets/images/work-full-install.jpg' }
   };
@@ -169,6 +169,21 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
       return;
     }
     blockers = blockers.filter(function (blocker) { return blocker !== 'service_area'; });
+    if (WALK.isNewJourney(value, t)) {
+      blockers = blockers.filter(function (blocker) { return !/_photo$/.test(blocker); });
+    }
+    var pendingAccess = WALK.isPendingAccess(value);
+    var connectionUnanswered = pendingAccess || WALK.isUnansweredConnection(value);
+    var panelUnanswered = WALK.isUnansweredPanel(value);
+    if (connectionUnanswered && blockers.indexOf('generator_connection') === -1) {
+      blockers = ['generator_connection'].concat(blockers);
+    }
+    if (panelUnanswered && blockers.indexOf('panel_location') === -1 && blockers.indexOf('panel_inventory') === -1) {
+      blockers = blockers.concat(['panel_location']);
+    }
+    if ((WALK.isDistanceSkipped(value) || (!connectionUnanswered && !panelUnanswered && WALK.isUnansweredDistance(value))) && blockers.indexOf('distance') === -1) {
+      blockers = blockers.concat(['distance']);
+    }
     if (!blockers.length) {
       WALK.routeFromState(t, value);
       return;
@@ -176,8 +191,8 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
 
     var groups = [];
     if (blockers.indexOf('generator_connection') !== -1) groups.push('generator');
-    if (blockers.indexOf('panel_location') !== -1 || blockers.indexOf('panel_inventory') !== -1) groups.push('panel');
-    if (blockers.indexOf('distance') !== -1) groups.push('distance');
+    if (!connectionUnanswered && (blockers.indexOf('panel_location') !== -1 || blockers.indexOf('panel_inventory') !== -1)) groups.push('panel');
+    if (!connectionUnanswered && !panelUnanswered && blockers.indexOf('distance') !== -1) groups.push('distance');
     if (
       blockers.indexOf('generator_connection_photo') !== -1
       || blockers.indexOf('panel_photo') !== -1

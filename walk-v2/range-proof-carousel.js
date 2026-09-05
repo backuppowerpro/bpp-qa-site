@@ -5,6 +5,8 @@
     if (!carousel || carousel.dataset.carouselReady === "true") return;
     var track = carousel.querySelector("[data-proof-track]");
     if (!track) return;
+    var previousButton = carousel.querySelector("[data-proof-prev]");
+    var nextButton = carousel.querySelector("[data-proof-next]");
     var originals = Array.prototype.slice.call(track.querySelectorAll("[data-proof-slide]"));
     if (originals.length < 2) return;
     carousel.dataset.carouselReady = "true";
@@ -25,8 +27,6 @@
     });
 
     var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    var interval = Number(track.dataset.autoplayMs || 8000);
-    var timer = 0;
     var dragging = false;
     var startX = 0;
     var startScroll = 0;
@@ -63,18 +63,13 @@
       centerSlide(list[Math.max(0, Math.min(list.length - 1, index))], reduceMotion ? "auto" : "smooth");
       window.setTimeout(settle, reduceMotion ? 0 : 500);
     }
-    function startAutoplay() {
-      window.clearInterval(timer);
-      if (reduceMotion || document.hidden) return;
-      timer = window.setInterval(function () { advance(1); }, interval);
-    }
-
     track.addEventListener("keydown", function (event) {
       if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
       event.preventDefault();
       advance(event.key === "ArrowRight" ? 1 : -1);
-      startAutoplay();
     });
+    if (previousButton) previousButton.addEventListener("click", function () { advance(-1); });
+    if (nextButton) nextButton.addEventListener("click", function () { advance(1); });
     track.addEventListener("pointerdown", function (event) {
       dragging = true;
       startX = event.clientX;
@@ -92,16 +87,13 @@
       if (track.hasPointerCapture(event.pointerId)) track.releasePointerCapture(event.pointerId);
       centerSlide(slides()[centeredIndex()], reduceMotion ? "auto" : "smooth");
       window.setTimeout(settle, reduceMotion ? 0 : 500);
-      startAutoplay();
     }
     track.addEventListener("pointerup", endDrag);
     track.addEventListener("pointercancel", endDrag);
-    document.addEventListener("visibilitychange", startAutoplay);
-
     window.requestAnimationFrame(function () {
       window.requestAnimationFrame(function () {
         centerSlide(originals[0], "auto");
-        startAutoplay();
+        track.setAttribute("data-autoplay-paused", "true");
       });
     });
   }

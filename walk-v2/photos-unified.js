@@ -414,6 +414,10 @@
   });
 
   function hydrateFromView(value) {
+    if (WALK.isNewJourney(value, t)) {
+      WALK.go("range.html", t);
+      return false;
+    }
     var state = value.quote_walk_v2 || {};
     pendingUploads = (Array.isArray(state.pending_media_uploads) ? state.pending_media_uploads : []).filter(function (upload) {
       return upload && upload.status === "uploading";
@@ -427,7 +431,7 @@
       || value.connection_status === "pending_access";
     if (!sequentialEntry && (!connectionAnswered || !value.confirmed_panel_room || !state.distance_band)) {
       WALK.routeFromState(t, value);
-      return;
+      return false;
     }
     photos = (Array.isArray(state.media) ? state.media : []).slice(0, MAX_ITEMS).map(function (media, index) {
       var mimeType = String(media.mime_type || media.mimeType || "");
@@ -448,6 +452,7 @@
     });
     nextIndex = photos.length + 1;
     render();
+    return true;
   }
 
   function renderReconciliationStatus(status) {
@@ -492,7 +497,7 @@
     reconciliationController = controller;
     reconciliationPromise = WALK.view(t).then(function (value) {
       if (runId !== reconciliationRunId || (controller && controller.signal.aborted)) return null;
-      hydrateFromView(value);
+      if (!hydrateFromView(value)) return null;
       return WALK.reconcilePendingUploads(t, value, {
         signal: controller && controller.signal,
         onStatus: function (status) {
@@ -510,7 +515,7 @@
       var value = reconciliation.state || {};
       var results = reconciliation.results || [];
       if (results.some(function (result) { return result.cancelled === true; })) return;
-      hydrateFromView(value);
+      if (!hydrateFromView(value)) return;
       if (results.length && results.every(function (result) { return result.terminal === "finalized"; })) {
         statusMessage = "";
         render();

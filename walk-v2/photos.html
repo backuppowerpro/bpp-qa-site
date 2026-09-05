@@ -6,8 +6,8 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-7zS1if/ugRtaZxG0qD7LcMT/rvxTo8Ma0e5ASnzQc90='; script-src-attr 'none'; style-src 'self' 'sha256-TR5WsvRLJrBeuhBlf0r8jNpbnwt9KX6aRmecxwF1rHg='; style-src-elem 'self' https://fonts.googleapis.com 'sha256-TR5WsvRLJrBeuhBlf0r8jNpbnwt9KX6aRmecxwF1rHg='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data: https://hfatblrcwytxvijjhpal.supabase.co; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
-<script src="/assets/js/bpp-analytics.js?v=7c57ff22b3f1"></script>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-eYf2V4zTS2V3VQtoEz+38YJNzzvD4Uu5aqUCi8iOI6c='; script-src-attr 'none'; style-src 'self' 'sha256-TR5WsvRLJrBeuhBlf0r8jNpbnwt9KX6aRmecxwF1rHg='; style-src-elem 'self' 'sha256-TR5WsvRLJrBeuhBlf0r8jNpbnwt9KX6aRmecxwF1rHg='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data: https://hfatblrcwytxvijjhpal.supabase.co; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/assets/js/bpp-analytics.js?v=ea909db798a0"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
@@ -785,7 +785,7 @@
     .state-label { display: none; }
   }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=d678618d4433" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=01391e54773d" />
 <link rel="stylesheet" href="/walk-v2/photos-unified.css?v=0766548764e4" />
 </head>
 <body>
@@ -821,7 +821,7 @@
 
         <!-- 3. ask -->
         <section class="ask rv" style="--rvd: 0ms;">
-          <h2 data-photo-heading="">Lets see the panels and the path.</h2>
+          <h2 data-photo-heading="">Let's see the panels and the path.</h2>
           <p class="helper" data-photo-helper="">Add at least one photo or short video before we prepare your range. Clear photos of every panel that may matter, the outdoor connection-box area, and the path back to the panel help most. Honestly, the more images or videos the better.</p>
         </section>
 
@@ -871,13 +871,13 @@
 
 </div>
 
-<script src="/walk-v2/walk.js?v=f121686a4c8d"></script>
-<script src="/walk-v2/photos-unified.js?v=3fa91403a0d1"></script>
+<script src="/walk-v2/walk.js?v=060c85c2aaae"></script>
+<script src="/walk-v2/photos-unified.js?v=74e7dc88bf3c"></script>
 <script>
 
 (function () {
-  if (window.__BPP_UNIFIED_PHOTOS__) return;
   var t = WALK.requireToken(); if (!t) return;
+  if (window.__BPP_UNIFIED_PHOTOS__) return;
   var fallbackMain = document.getElementById('mainPage');
   var fallbackHint = fallbackMain.querySelector('[data-hint]');
   var fallbackCta = fallbackMain.querySelector('[data-cta]');
@@ -889,7 +889,17 @@
   fallbackHint.textContent = 'Photo upload is temporarily unavailable. Your saved answers are safe. Try reloading, or finish the photos later.';
   fallbackHint.style.color = 'var(--red, #dc2626)';
   fallbackCta.disabled = true;
+  fallbackLater.disabled = true;
   fallbackLater.hidden = false;
+  WALK.view(t).then(function (value) {
+    if (WALK.isNewJourney(value, t)) {
+      WALK.go('range.html', t);
+      return;
+    }
+    fallbackLater.disabled = false;
+  }).catch(function () {
+    fallbackHint.textContent = 'Your saved Quote Walk could not be confirmed. Reload before continuing.';
+  });
   fallbackLater.addEventListener('click', function () {
     if (fallbackLater.disabled) return;
     fallbackLater.disabled = true;
@@ -913,6 +923,7 @@
      normal forward flow and Back-nav stay untouched. A read failure is ignored:
      the step works without it and must never strand a customer mid-walk. */
   WALK.view(t).then(function (v) {
+    if (WALK.isNewJourney(v, t)) { WALK.go('range.html', t); return; }
     if (!v.confirmed_panel_room || !v.distance_band) WALK.routeFromState(t, v);
   }).catch(function () {});
 

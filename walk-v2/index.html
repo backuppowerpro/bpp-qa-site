@@ -15,10 +15,10 @@
 
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://connect.facebook.net 'sha256-TSf9hPr43r9T9eJr1YlgW7NyDImqpOyAsfxnE3OQYwY=' 'sha256-w8HCc5pLnyEUBsQK1Ps0LrOL+NOHDQSgash7Zyno/4w=' 'sha256-yb7NVdccrJax9flHisKW9R9aTVBCgd/fAxkBXuFvi3s='; script-src-attr 'none'; style-src 'self' 'sha256-H+JbNkpdjYqb6G4/gPteqrHrXunHg9PyI7zv8fBsuk0='; style-src-elem 'self' 'sha256-H+JbNkpdjYqb6G4/gPteqrHrXunHg9PyI7zv8fBsuk0='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.facebook.com; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co https://www.facebook.com; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
-<script src="/assets/js/bpp-analytics.js?v=7c57ff22b3f1"></script>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://connect.facebook.net 'sha256-TSf9hPr43r9T9eJr1YlgW7NyDImqpOyAsfxnE3OQYwY=' 'sha256-QB8dyNik0DF5WMauJw/LqME4wma8+qhKkizDbkSAxxE=' 'sha256-xArGIxj+mIcdudOP317y4w4cZKR8CnTbSVmvWqsXWO4='; script-src-attr 'none'; style-src 'self' 'sha256-5Qh9GlhbF6Y9jQlpGwImmnNa2C9HCNu5g1k0kUTeO+8='; style-src-elem 'self' 'sha256-5Qh9GlhbF6Y9jQlpGwImmnNa2C9HCNu5g1k0kUTeO+8='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.facebook.com; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co https://www.facebook.com; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/assets/js/bpp-analytics.js?v=ea909db798a0"></script>
 <script src="/walk-v2/token-bootstrap.js?v=29a627571994"></script>
-<script src="/walk-v2/meta-pixel.js?v=d618134d2b83"></script>
+<script src="/walk-v2/meta-pixel.js?v=f88e4977de51"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
 <script>/* Entry mode + dynamic hero (Key 2026-07-01 / 2026-07-13 / paid fast lane 2026-07-13):
    src=home -> home hero
@@ -125,8 +125,8 @@
     appearance: none;
     -webkit-tap-highlight-color: transparent;
   }
-  input { font-family: inherit; -webkit-appearance: none; appearance: none; }
-  button:focus-visible, input:focus-visible, a:focus-visible {
+  input, textarea { font-family: inherit; font-weight: 400; -webkit-appearance: none; appearance: none; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible {
     outline: 2px solid var(--gold);
     outline-offset: 2px;
   }
@@ -194,7 +194,7 @@
   /* Paid informative hero: a bit more room for the service boundary. */
   .walk-paid .hero .sub { max-width: 46ch; }
   /* Quiet field ok: engineered check, not busy chrome. Old-person sized. */
-  .field.ok input { box-shadow: inset 0 0 0 2px rgba(5,150,105,0.45); padding-right: 44px; }
+  .field.ok input, .field.ok textarea { box-shadow: inset 0 0 0 2px rgba(5,150,105,0.45); padding-right: 44px; }
   .field .ok-mark {
     display: none; position: absolute; right: 14px; top: 38px;
     width: 22px; height: 22px; border-radius: 50%;
@@ -308,6 +308,9 @@
     display: block;
     white-space: nowrap;
   }
+  .hero h1 .hero-line--city {
+    white-space: normal;
+  }
   .hero .sub {
     max-width: 39ch;
     margin: 10px 0 0;
@@ -367,8 +370,9 @@
   .hero .process strong { color: #fff; }
   .proof-carousel {
     position: relative;
+    z-index: 0;
     padding: 14px 0 0;
-    background: var(--page);
+    background: transparent;
   }
   .proof-track {
     display: flex;
@@ -574,7 +578,7 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 22px;
-    padding: 26px 20px 8px;
+    padding: 26px 20px 22px;
   }
   .col-main { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
   .col-trust { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
@@ -594,6 +598,8 @@
 
   /* ================= 4. form card ================= */
   .form-card {
+    position: relative;
+    z-index: 2;
     background: var(--card);
     border-radius: var(--r-lg);
     box-shadow: var(--shadow-lift), inset 0 0 0 1px var(--edge-soft);
@@ -616,10 +622,13 @@
     font-weight: 600;
     color: var(--navy);
   }
-  .field input {
+  .field input,
+  .field textarea {
     height: 52px;
     padding: 0 16px;
     font-size: 16px;
+    font-family: inherit;
+    font-weight: 400;
     color: var(--text);
     background: var(--page);
     background-color: var(--page);
@@ -629,6 +638,20 @@
     transition: box-shadow var(--dur) var(--ease);
     width: 100%;
   }
+  .field textarea {
+    display: block;
+    min-height: 52px;
+    padding: 14px 16px;
+    line-height: 1.5;
+    resize: none;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    field-sizing: fixed;
+    vertical-align: top;
+  }
+  .field textarea::-webkit-resizer { display: none; }
   .field input:-webkit-autofill,
   .field input:-webkit-autofill:hover {
     animation-name: bpp-autofill-start;
@@ -655,9 +678,12 @@
     from { opacity: 1; }
     to { opacity: 1; }
   }
-  .field input::placeholder { color: var(--faint); }
-  .field input:focus { outline: none; box-shadow: inset 0 0 0 2px var(--gold); }
-  .field.has-error input { box-shadow: inset 0 0 0 2px var(--red); }
+  .field input::placeholder,
+  .field textarea::placeholder { color: var(--faint); opacity: 1; }
+  .field input:focus,
+  .field textarea:focus { outline: none; box-shadow: inset 0 0 0 2px var(--gold); }
+  .field.has-error input,
+  .field.has-error textarea { box-shadow: inset 0 0 0 2px var(--red); }
   .field-error {
     display: none;
     align-items: center;
@@ -972,7 +998,7 @@
     .state-label { display: none; }
   }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=d678618d4433" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=01391e54773d" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
 </head>
 <body>
@@ -1007,47 +1033,93 @@
             </div>
           </div>
         </div>
-        <p class="process">I’ll guide you through a few quick questions and ask for photos of your panel. Then I’ll review your setup myself and text you a complete proposal, so you know exactly what’s included before any work begins.</p>
+        <p class="process">I’ll guide you through a few quick questions. Then I’ll review your setup myself and text you about the next step, so you know exactly what’s included before any work begins.</p>
       </div>
     </section>
     </div>
+
+    <div class="body-grid">
+      <div class="col-main">
+        <section class="form-card" id="quote-form">
+          <h2 class="fc-title">Let's start with a few details.</h2>
+          <noscript>
+            <div style="background:#fff8e6;border:1px solid #ffba00;border-radius:12px;padding:16px;margin-bottom:18px;color:#1b2b4b;font-size:16px;line-height:1.55;text-align:center;">
+              Turn on JavaScript, then reload this page to start your quote.
+            </div>
+          </noscript>
+          <form autocomplete="on">
+            <div class="fields">
+              <div class="field">
+                <label for="fName">Name</label>
+                <input id="fName" name="name" type="text" inputmode="text" autocomplete="name" autocapitalize="words" placeholder="Sarah" data-f="name" />
+              </div>
+              <div class="field" data-phone-field="">
+                <label for="fPhone">Phone</label>
+                <input id="fPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(864) 000-0000" data-f="phone" />
+                <span class="field-error"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"></circle><path d="M8 5v3.5M8 11v.2"></path></svg><span>Enter a 10-digit phone number so I can text your quote</span></span>
+              </div>
+              <div class="field" data-addr-field="">
+                <label for="fAddr">Home address</label>
+                <textarea id="fAddr" name="address" rows="2" inputmode="text" autocomplete="street-address" placeholder="Start typing your address" data-f="addr"></textarea>
+                <div class="addr-drop" data-addr-drop=""></div>
+              </div>
+              <div class="field" data-email-field="" hidden>
+                <label for="fEmail">Email</label>
+                <input id="fEmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" data-f="email" />
+              </div>
+            </div>
+            <div class="submit-row">
+              <p data-unconfirmed-address="" aria-live="polite" style="display:none; font-size:14px; line-height:1.5; color:var(--gold-ink, #8a5a00); text-align:center; margin:0 0 12px; font-weight:600;">Your address is saved exactly as entered. I will verify it while you finish the setup questions.</p>
+              <button class="cta" type="submit" data-cta="" disabled="">
+                <svg viewBox="0 0 16 16"><path d="M2.5 3.5h11a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H6.5l-3 2.4V11.5h-1a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1z"></path></svg>
+                <span data-cta-label="">Continue</span>
+              </button>
+              <p class="cta-hint" data-cta-hint="" aria-live="polite" style="display:none; font-size:14px; line-height:1.5; color:var(--gold-ink, #8a5a00); text-align:center; margin:10px 0 0; font-weight:600;"></p>
+              <div data-submit-error="" role="alert" style="display:none; font-size:15px; line-height:1.5; color:var(--red, #dc2626); text-align:center; margin:10px 0 0; font-weight:600;"></div>
+              <p class="consent-fine">By tapping the button you agree to get texts from Backup Power Pro about your quote and install. Msg and data rates may apply. Reply STOP anytime.</p>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+
     <section class="proof-carousel" aria-label="Installed work and customer reviews">
-      <div class="proof-track" role="group" aria-roledescription="carousel" tabindex="0" data-proof-track="" data-autoplay-ms="8000" data-autoplay-paused="false">
+      <div class="proof-track" role="group" aria-roledescription="carousel" aria-label="Installed work and customer reviews. Use the buttons, swipe, or use arrow keys to browse." tabindex="0" data-proof-track="" data-autoplay-paused="true">
         <article class="proof-slide proof-slide--image" role="group" aria-roledescription="slide" aria-label="Carousel item 1 of 10" data-proof-slide="">
-          <img class="proof-image" src="/img/connected-generator-current.jpg" alt="Portable generator connected by a yellow cord to an outdoor home inlet" />
+          <img class="proof-image" src="/img/connected-generator-current-1200.jpg" alt="Portable generator connected by a yellow cord to an outdoor home inlet" decoding="async" width="1200" height="769" />
           <p class="proof-copy">One hookup. Power what matters.</p>
         </article>
         <article class="proof-slide proof-slide--review" role="group" aria-roledescription="slide" aria-label="Carousel item 2 of 10" data-proof-slide="">
           <blockquote class="proof-review">
             <div class="review-stars" role="img" aria-label="5 star Google review"><img src="/img/google-g-logo.webp" alt="" width="13" height="13" />★★★★★</div>
-            <p>Installed a 50-amp Generator inlet box along with a panel interlock system in our home. I was impressed by Key’s attention to detail, professionalism, and organization.</p>
+            <p>Key Electric installed a 50-amp Generator inlet box along with a panel interlock system in our home. I was impressed by Key's attention to detail, professionalism, and organization.…</p>
             <cite>Jim J. · Google review</cite>
           </blockquote>
         </article>
         <article class="proof-slide proof-slide--image" role="group" aria-roledescription="slide" aria-label="Carousel item 3 of 10" data-proof-slide="">
-          <img class="proof-image" src="/img/essentials-powered-current.png" alt="A lit home, a cold refrigerator, and a phone charging at night" />
+          <img class="proof-image" src="/img/essentials-powered-current-1200.jpg" alt="A lit home, a cold refrigerator, and a phone charging at night" decoding="async" width="1200" height="769" />
           <p class="proof-copy">Keep your essentials on.</p>
         </article>
         <article class="proof-slide proof-slide--review" role="group" aria-roledescription="slide" aria-label="Carousel item 4 of 10" data-proof-slide="">
           <blockquote class="proof-review">
             <div class="review-stars" role="img" aria-label="5 star Google review"><img src="/img/google-g-logo.webp" alt="" width="13" height="13" />★★★★★</div>
-            <p>Oh my gosh these guys were absolutely fantastic. Everything went so smoothly and the finished work looks super professional.</p>
-            <cite>Hallie L. · Google review</cite>
+            <p>Key recently installed a 50 amp generator plug and interlock system in our home and did an amazing job! He worked around my schedule and he was punctual, meticulous and professional.…</p>
+            <cite>Don Nelson · Google review</cite>
           </blockquote>
         </article>
         <article class="proof-slide proof-slide--image" role="group" aria-roledescription="slide" aria-label="Carousel item 5 of 10" data-proof-slide="">
-          <img class="proof-image" src="/img/outdoor-inlets-current.png" alt="Two BPP-installed metal outdoor generator connection boxes with weather-rated covers" />
+          <img class="proof-image" src="/img/outdoor-inlets-current-1200.jpg" alt="Two BPP-installed metal outdoor generator connection boxes with weather-rated covers" decoding="async" width="1200" height="769" />
           <p class="proof-copy">A permanent outdoor connection.</p>
         </article>
         <article class="proof-slide proof-slide--review" role="group" aria-roledescription="slide" aria-label="Carousel item 6 of 10" data-proof-slide="">
           <blockquote class="proof-review">
             <div class="review-stars" role="img" aria-label="5 star Google review"><img src="/img/google-g-logo.webp" alt="" width="13" height="13" />★★★★★</div>
-            <p>punctual, professional, and truly set the bar high. Throughout permitting and scheduling, he kept me fully informed, and his performance and timing exceeded my expectations.</p>
+            <p>KeyElectric is absolutely outstanding! From start to finish, my first experience with KeyElectric was exceptional.…</p>
             <cite>Dino S. · Google review</cite>
           </blockquote>
         </article>
         <article class="proof-slide proof-slide--image" role="group" aria-roledescription="slide" aria-label="Carousel item 7 of 10" data-proof-slide="">
-          <img class="proof-image" src="/img/transfer-systems-current.jpg" alt="Two installed breaker-panel interlock systems that prevent utility and generator power from being on at the same time" />
+          <img class="proof-image" src="/img/transfer-systems-current-1200.jpg" alt="Two installed breaker-panel interlock systems that prevent utility and generator power from being on at the same time" decoding="async" width="1200" height="769" />
           <p class="proof-copy">Safely switch to generator power.</p>
         </article>
         <article class="proof-slide proof-slide--review" role="group" aria-roledescription="slide" aria-label="Carousel item 8 of 10" data-proof-slide="">
@@ -1058,16 +1130,20 @@
           </blockquote>
         </article>
         <article class="proof-slide proof-slide--image" role="group" aria-roledescription="slide" aria-label="Carousel item 9 of 10" data-proof-slide="">
-          <img class="proof-image" src="/img/cord-permit-current.jpg" alt="A compatible yellow generator cord and electrical permit paperwork posted for inspection" />
+          <img class="proof-image" src="/img/cord-permit-current-1200.jpg" alt="A compatible yellow generator cord and electrical permit paperwork posted for inspection" decoding="async" width="1200" height="769" />
           <p class="proof-copy">Cord included. Permit handled.</p>
         </article>
         <article class="proof-slide proof-slide--review" role="group" aria-roledescription="slide" aria-label="Carousel item 10 of 10" data-proof-slide="">
           <blockquote class="proof-review">
             <div class="review-stars" role="img" aria-label="5 star Google review"><img src="/img/google-g-logo.webp" alt="" width="13" height="13" />★★★★★</div>
-            <p>Best customer service ever, he went above and beyond to help us. Very knowledgeable and honest man!! Definitely I'll recommend Key to all my friends.</p>
-            <cite>Bogdi · Google review</cite>
+            <p>…He kept his tools organized and wore shoe covers in the house.…</p>
+            <cite>Dingo 7Six · Google review</cite>
           </blockquote>
         </article>
+      </div>
+      <div class="proof-controls" role="group" aria-label="Installed work and review controls">
+        <button class="proof-arrow" type="button" data-proof-prev="" aria-label="Previous installed work or review"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></button>
+        <button class="proof-arrow" type="button" data-proof-next="" aria-label="Next installed work or review"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg></button>
       </div>
     </section>
     <script>
@@ -1091,12 +1167,13 @@
         city_spartanburg: 'Spartanburg',
         city_taylors: 'Taylors'
       });
-      function setHeroHeading(firstLine, secondLine) {
+      function setHeroHeading(firstLine, secondLine, firstLineClass) {
         if (!h1) return;
         var first = document.createElement('span');
         var second = document.createElement('span');
         first.className = 'hero-line';
         second.className = 'hero-line';
+        if (firstLineClass) first.classList.add(firstLineClass);
         first.textContent = firstLine;
         second.textContent = secondLine;
         h1.replaceChildren(first, second);
@@ -1108,7 +1185,7 @@
         setHeroHeading('Portable generator hookup.', 'Priced without a home visit.');
       } else if (mode === 'city') {
         var city = CITY_LABELS[src] || '';
-        if (city) setHeroHeading('Generator hookup in ' + city + '.', 'Priced without a home visit.');
+        if (city) setHeroHeading('Portable generator hookup in ' + city + '.', 'Priced without a home visit.', 'hero-line--city');
         else setHeroHeading('Portable generator hookup.', 'Priced without a home visit.');
       } else if (mode === 'paid') {
         setHeroHeading('Portable generator hookup.', 'Priced without a home visit.');
@@ -1125,111 +1202,45 @@
       } catch(e) {}
       var proofTrack = document.querySelector('[data-proof-track]');
       if (proofTrack) {
+        var proofPrevious = document.querySelector('[data-proof-prev]');
+        var proofNext = document.querySelector('[data-proof-next]');
         var originals = Array.prototype.slice.call(proofTrack.querySelectorAll('[data-proof-slide]'));
-        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        var autoplayMs = 8000;
-        var textIdleMs = 2400;
-        var timer = 0;
-        var textEntryPaused = false;
-        var textIdleTimer = 0;
-        var settleTimer = 0;
         var dragPointer = null;
         var dragStartX = 0;
         var dragStartScroll = 0;
 
-        function slides() {
-          return Array.prototype.slice.call(proofTrack.querySelectorAll('.proof-slide'));
-        }
         function widePairMode() {
           return window.matchMedia('(min-width: 1024px)').matches;
         }
         function slideContentLeft(slide) {
           return slide.getBoundingClientRect().left - proofTrack.getBoundingClientRect().left + proofTrack.scrollLeft;
         }
-        function slideGap() {
-          return parseFloat(window.getComputedStyle(proofTrack).columnGap) || 0;
+        function maxIndex() {
+          return Math.max(0, originals.length - (widePairMode() ? 2 : 1));
         }
-        function slideOffset(index) {
-          var slide = slides()[index];
-          if (!slide) return proofTrack.scrollLeft;
-          var visibleWidth = slide.offsetWidth;
-          if (widePairMode()) visibleWidth = slide.offsetWidth * 2 + slideGap();
-          return slideContentLeft(slide) - (proofTrack.clientWidth - visibleWidth) / 2;
+        function normalizeIndex(index) {
+          if (index < 0) return maxIndex();
+          if (index > maxIndex()) return 0;
+          return index;
         }
-        function jumpTo(index, smooth) {
+        function jumpTo(index) {
+          var targetIndex = normalizeIndex(index);
           proofTrack.scrollTo({
-            left: slideOffset(index),
-            behavior: smooth && !reduced ? 'smooth' : 'auto'
-          });
-        }
-        function teleportTo(index) {
-          var priorSnap = proofTrack.style.scrollSnapType;
-          proofTrack.style.scrollSnapType = 'none';
-          proofTrack.scrollLeft = slideOffset(index);
-          window.requestAnimationFrame(function () {
-            proofTrack.style.scrollSnapType = priorSnap;
+            left: slideContentLeft(originals[targetIndex]),
+            behavior: 'auto'
           });
         }
         function currentIndex() {
-          var target = proofTrack.scrollLeft + proofTrack.clientWidth / 2;
           var nearest = 0;
           var distance = Infinity;
-          slides().forEach(function (slide, index) {
-            var visibleWidth = slide.offsetWidth;
-            if (widePairMode()) visibleWidth = slide.offsetWidth * 2 + slideGap();
-            var slideTarget = slideContentLeft(slide) + visibleWidth / 2;
-            var nextDistance = Math.abs(slideTarget - target);
+          originals.forEach(function (slide, index) {
+            var nextDistance = Math.abs(slideContentLeft(slide) - proofTrack.scrollLeft);
             if (nextDistance < distance) {
               nearest = index;
               distance = nextDistance;
             }
           });
-          return nearest;
-        }
-        function clearAutoplay() {
-          if (timer) window.clearInterval(timer);
-          timer = 0;
-        }
-        function syncPauseState() {
-          proofTrack.setAttribute('data-autoplay-paused', textEntryPaused ? 'true' : 'false');
-        }
-        function startAutoplay() {
-          if (reduced || textEntryPaused || timer || document.visibilityState !== 'visible') return;
-          timer = window.setInterval(function () {
-            if (!textEntryPaused && document.visibilityState === 'visible') {
-              jumpTo(currentIndex() + 1, true);
-            }
-          }, autoplayMs);
-        }
-        function restartAutoplay() {
-          clearAutoplay();
-          startAutoplay();
-        }
-        function isTextEntry(target) {
-          if (!target || !target.matches) return false;
-          if (target.matches('textarea, [contenteditable="true"]')) return true;
-          if (!target.matches('input')) return false;
-          return !/^(button|checkbox|color|file|hidden|image|radio|range|reset|submit)$/i.test(target.type || 'text');
-        }
-        function releaseTextPause() {
-          textEntryPaused = false;
-          syncPauseState();
-          restartAutoplay();
-        }
-        function holdForTextActivity() {
-          textEntryPaused = true;
-          syncPauseState();
-          clearAutoplay();
-          if (textIdleTimer) window.clearTimeout(textIdleTimer);
-          textIdleTimer = window.setTimeout(releaseTextPause, textIdleMs);
-        }
-        function settle() {
-          if (settleTimer) window.clearTimeout(settleTimer);
-          settleTimer = window.setTimeout(function () {
-            var index = currentIndex();
-            if (index < originals.length) teleportTo(index + originals.length);
-            if (index >= originals.length * 2) teleportTo(index - originals.length);
-          }, reduced ? 0 : 260);
+          return Math.min(nearest, maxIndex());
         }
         function beginDrag(event) {
           if (event.button !== undefined && event.button !== 0) return;
@@ -1240,7 +1251,6 @@
           proofTrack.style.scrollSnapType = 'none';
           proofTrack.classList.add('is-dragging');
           if (proofTrack.setPointerCapture) proofTrack.setPointerCapture(event.pointerId);
-          restartAutoplay();
         }
         function moveDrag(event) {
           if (dragPointer !== event.pointerId) return;
@@ -1256,33 +1266,21 @@
             proofTrack.releasePointerCapture(event.pointerId);
           }
           proofTrack.style.scrollSnapType = '';
-          jumpTo(targetIndex, true);
-          settle();
-          restartAutoplay();
+          jumpTo(targetIndex);
+        }
+        function advanceProof(direction) {
+          jumpTo(currentIndex() + direction);
         }
 
         if (originals.length > 1) {
-          function makeLoopClone(slide) {
-            var clone = slide.cloneNode(true);
-            clone.removeAttribute('data-proof-slide');
-            clone.setAttribute('aria-hidden', 'true');
-            return clone;
-          }
-          originals.forEach(function (slide) {
-            proofTrack.insertBefore(makeLoopClone(slide), originals[0]);
-          });
-          originals.forEach(function (slide) {
-            proofTrack.appendChild(makeLoopClone(slide));
-          });
           function alignFirstSlide() {
             window.requestAnimationFrame(function () {
-              window.requestAnimationFrame(function () { teleportTo(originals.length); });
+              window.requestAnimationFrame(function () { jumpTo(0); });
             });
           }
           alignFirstSlide();
           if (document.readyState !== 'complete') window.addEventListener('load', alignFirstSlide, { once: true });
 
-          proofTrack.addEventListener('scroll', settle, { passive: true });
           proofTrack.addEventListener('pointerdown', beginDrag);
           proofTrack.addEventListener('pointermove', moveDrag);
           proofTrack.addEventListener('pointerup', endDrag);
@@ -1290,81 +1288,15 @@
           proofTrack.addEventListener('keydown', function (event) {
             if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
             event.preventDefault();
-            jumpTo(currentIndex() + (event.key === 'ArrowRight' ? 1 : -1), true);
-            restartAutoplay();
+            advanceProof(event.key === 'ArrowRight' ? 1 : -1);
           });
-          document.addEventListener('focusin', function (event) {
-            if (isTextEntry(event.target)) holdForTextActivity();
-          });
-          document.addEventListener('input', function (event) {
-            if (isTextEntry(event.target)) holdForTextActivity();
-          });
-          document.addEventListener('focusout', function (event) {
-            if (!isTextEntry(event.target)) return;
-            if (textIdleTimer) window.clearTimeout(textIdleTimer);
-            window.setTimeout(function () {
-              if (!isTextEntry(document.activeElement)) releaseTextPause();
-            }, 0);
-          });
-          document.addEventListener('visibilitychange', function () {
-            if (document.visibilityState === 'visible') startAutoplay();
-            else clearAutoplay();
-          });
-          syncPauseState();
-          startAutoplay();
+          if (proofPrevious) proofPrevious.addEventListener('click', function () { advanceProof(-1); });
+          if (proofNext) proofNext.addEventListener('click', function () { advanceProof(1); });
+          proofTrack.setAttribute('data-autoplay-paused', 'true');
         }
       }
     })();
     </script>
-
-    <div class="body-grid">
-      <div class="col-main">
-
-        <!-- 4. form card -->
-        <section class="form-card" id="quote-form">
-          <h2 class="fc-title">Let's start with a few details.</h2>
-          <noscript>
-            <div style="background:#fff8e6;border:1px solid #ffba00;border-radius:12px;padding:16px;margin-bottom:18px;color:#1b2b4b;font-size:16px;line-height:1.55;text-align:center;">
-              Turn on JavaScript, then reload this page to start your quote.
-            </div>
-          </noscript>
-          <form autocomplete="on">
-            <div class="fields">
-              <div class="field">
-                <label for="fName">Name</label>
-                <input id="fName" name="name" type="text" inputmode="text" autocomplete="name" autocapitalize="words" placeholder="Sarah" data-f="name" />
-              </div>
-              <div class="field" data-phone-field="">
-                <label for="fPhone">Phone</label>
-                <input id="fPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(864) 000-0000" data-f="phone" />
-                <span class="field-error"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"></circle><path d="M8 5v3.5M8 11v.2"></path></svg><span>Enter a 10-digit phone number so I can text your quote</span></span>
-              </div>
-              <div class="field" data-addr-field="">
-                <label for="fAddr">Home address</label>
-                <input id="fAddr" name="address" type="text" inputmode="text" autocomplete="address-line1" placeholder="Start typing your address" data-f="addr" />
-                <div class="addr-drop" data-addr-drop=""></div>
-              </div>
-              <div class="field" data-email-field="" hidden>
-                <label for="fEmail">Email</label>
-                <input id="fEmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" data-f="email" />
-              </div>
-            </div>
-
-            <!-- 5. submit row: consent is the tap on the gold button, never required -->
-            <div class="submit-row">
-              <p data-unconfirmed-address="" aria-live="polite" style="display:none; font-size:14px; line-height:1.5; color:var(--gold-ink, #8a5a00); text-align:center; margin:0 0 12px; font-weight:600;">Your address is saved exactly as entered. I will verify it while you finish the setup questions.</p>
-              <button class="cta" type="submit" data-cta="" disabled="">
-                <svg viewBox="0 0 16 16"><path d="M2.5 3.5h11a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H6.5l-3 2.4V11.5h-1a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1z"></path></svg>
-                <span data-cta-label="">Continue</span>
-              </button>
-              <p class="cta-hint" data-cta-hint="" aria-live="polite" style="display:none; font-size:14px; line-height:1.5; color:var(--gold-ink, #8a5a00); text-align:center; margin:10px 0 0; font-weight:600;"></p>
-              <p data-submit-error="" role="alert" style="display:none; font-size:15px; line-height:1.5; color:var(--red, #dc2626); text-align:center; margin:10px 0 0; font-weight:600;"></p>
-              <p class="consent-fine">By tapping the button you agree to get texts from Backup Power Pro about your quote and install. Msg and data rates may apply. Reply STOP anytime.</p>
-            </div>
-          </form>
-        </section>
-      </div>
-    </div>
 
     <!-- 7. footer -->
     <footer class="foot">
@@ -1376,7 +1308,7 @@
 
 </div>
 
-<script src="/walk-v2/walk.js?v=f121686a4c8d"></script>
+<script src="/walk-v2/walk.js?v=060c85c2aaae"></script>
 <script>
 
 (function () {
@@ -1395,6 +1327,7 @@
       if (draft.name && nameIn && !nameIn.value) nameIn.value = draft.name;
       if (draft.phone && phoneIn && !phoneIn.value) phoneIn.value = draft.phone;
       if (draft.address && addrIn && !addrIn.value) addrIn.value = draft.address;
+      sizeAddrBox();
     } catch (_) {}
   }
   function persistDraft() {
@@ -1405,6 +1338,56 @@
         address: addrIn && addrIn.value || '',
       }));
     } catch (_) {}
+  }
+  var pendingIntakeKey = 'bpp:qwv2:pending-intake';
+  var pendingIntakeMaxAgeMs = 15 * 60 * 1000;
+  var intakeNoncePattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  var analyticsEventIdPattern = /^wv2-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  function readPendingIntakeBody() {
+    try {
+      var body = sessionStorage.getItem(pendingIntakeKey) || '';
+      if (!body) return '';
+      var pending = JSON.parse(body);
+      if (!pending || pending.source !== 'walkv2-landing'
+          || !analyticsEventIdPattern.test(String(pending.eventId || ''))
+          || !intakeNoncePattern.test(String(pending.intakeNonce || ''))) return '';
+      var submittedAt = Date.parse(String(pending.submittedAt || ''));
+      if (!Number.isFinite(submittedAt) || Date.now() - submittedAt > pendingIntakeMaxAgeMs) {
+        clearPendingIntakeBody();
+        return '';
+      }
+      return body;
+    } catch (_) { return ''; }
+  }
+  function normalizePendingName(payload) {
+    return [payload && payload.firstName, payload && payload.lastName]
+      .filter(Boolean).join(' ').replace(/\s+/g, ' ').trim().toLowerCase();
+  }
+  function normalizePendingPhone(payload) {
+    var digits = String(payload && payload.phone || '').replace(/\D/g, '');
+    return digits.length === 11 && digits.charAt(0) === '1' ? digits.slice(1) : digits;
+  }
+  function normalizePendingAddress(payload) {
+    return String(payload && payload.address || '').replace(/\s+/g, ' ').trim().toLowerCase();
+  }
+  function samePendingIntakeIdentity(a, b) {
+    return normalizePendingName(a) === normalizePendingName(b)
+      && normalizePendingPhone(a) === normalizePendingPhone(b)
+      && normalizePendingAddress(a) === normalizePendingAddress(b);
+  }
+  function keepPendingIntakeBody(body) {
+    var pendingBody = readPendingIntakeBody();
+    if (pendingBody) {
+      try {
+        if (samePendingIntakeIdentity(JSON.parse(pendingBody), JSON.parse(body))) return pendingBody;
+      } catch (_) {}
+      clearPendingIntakeBody();
+    }
+    try { sessionStorage.setItem(pendingIntakeKey, body); } catch (_) {}
+    return body;
+  }
+  function clearPendingIntakeBody() {
+    try { sessionStorage.removeItem(pendingIntakeKey); } catch (_) {}
   }
   [nameIn, phoneIn, addrIn].forEach(function (field) {
     if (field) field.addEventListener('input', persistDraft);
@@ -1438,24 +1421,24 @@
     restoreDraft();
     WALK.ph('walk_v2_screen_view', { screen: editDetails ? 'landing_edit' : 'landing' });
   }
-  var emailIn = main.querySelector('[data-f="email"]');
   var phoneField = main.querySelector('[data-phone-field]');
   var nameField = nameIn ? nameIn.closest('.field') : null;
   var addrField = main.querySelector('[data-addr-field]');
-  var emailField = main.querySelector('[data-email-field]');
   var drop = main.querySelector('[data-addr-drop]');
   var cta = main.querySelector('[data-cta]');
   var ctaLabelEl = cta.querySelector('[data-cta-label]');
   var ctaHint = main.querySelector('[data-cta-hint]');
+  var processCopy = main.querySelector('.hero .process');
   var unconfirmedAddressNote = main.querySelector('[data-unconfirmed-address]');
   var submitting = false;
   if (areaBoundary) {
+    if (processCopy) processCopy.hidden = true;
     var areaTitle = main.querySelector('.fc-title');
     var areaMessage = main.querySelector('[data-submit-error]');
     if (areaTitle) areaTitle.textContent = 'Outside our current service area';
     if (areaMessage) {
       areaMessage.setAttribute('data-area-boundary', '');
-      areaMessage.textContent = 'I currently install in Greenville, Spartanburg, and Pickens counties. Leave your email and I will be in touch as service expands.';
+      areaMessage.textContent = 'I currently serve Greenville, Spartanburg, and Pickens counties. This address is outside that area, so I cannot quote this project.';
       areaMessage.style.display = '';
       areaMessage.style.color = 'var(--ink, #0b2343)';
       var changeAddress = document.createElement('button');
@@ -1470,20 +1453,19 @@
     }
     if (nameField) nameField.hidden = true;
     if (phoneField) phoneField.hidden = true;
+    if (addrField) addrField.hidden = true;
     nameIn.disabled = true;
     phoneIn.disabled = true;
     addrIn.disabled = true;
-    if (emailField) emailField.hidden = false;
-    if (emailIn) emailIn.disabled = false;
     cta.disabled = true;
-    ctaLabelEl.textContent = 'Keep me updated';
+    cta.style.display = 'none';
+    if (ctaHint) ctaHint.style.display = 'none';
     var consentCopy = main.querySelector('.consent-fine');
-    if (consentCopy) consentCopy.textContent = 'I will use this email only to contact you about future service availability.';
+    if (consentCopy) consentCopy.style.display = 'none';
     WALK.view(resumeT).then(function (v) {
       if (v && v.address) addrIn.value = v.address;
-    }).catch(function () {
-      if (areaMessage) areaMessage.textContent = 'Your information is saved. Add your email and I will be in touch as service expands.';
-    });
+      sizeAddrBox();
+    }).catch(function () {});
   }
   if (editDetails) {
     var editTitle = main.querySelector('.fc-title');
@@ -1543,7 +1525,7 @@
     if (!drop.classList.contains('open')) return;
     var viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
     var top = drop.getBoundingClientRect().top;
-    var nextHeight = Math.max(96, Math.floor(viewportHeight - top - 10)) + 'px';
+    var nextHeight = Math.max(44, Math.floor(viewportHeight - top - 10)) + 'px';
     if (drop.style.maxHeight !== nextHeight) drop.style.maxHeight = nextHeight;
   }
   function scheduleDropFit() {
@@ -1830,22 +1812,6 @@
   function part1Done() {
     return nameIn.value.trim().length > 0 && phoneValid(phoneIn.value) && addrLooksReady();
   }
-  function emailValid(v) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || '').trim());
-  }
-  function refreshAreaCapture() {
-    if (!areaBoundary || !emailIn) return;
-    ctaLabelEl.textContent = submitting ? 'Saving' : 'Keep me updated';
-    cta.disabled = submitting || !emailValid(emailIn.value);
-    if (ctaHint) {
-      if (emailIn.value.trim() && !emailValid(emailIn.value)) {
-        ctaHint.textContent = 'Enter a complete email address.';
-        ctaHint.style.display = '';
-      } else {
-        ctaHint.style.display = 'none';
-      }
-    }
-  }
   /* names the one thing still missing so the disabled gold button is never a silent dead
      end. A disabled button cannot be tapped for feedback, so the hint is always-visible once
      they have begun. Ruth (78) fills her name, stumbles on the phone, and now sees why. */
@@ -1856,7 +1822,21 @@
     if (!addrLooksReady()) return 'Add your address to continue.';
     return '';
   }
+  function sizeAddrBox() {
+    if (!addrIn) return;
+    addrIn.style.height = '52px';
+    var next = addrIn.scrollHeight;
+    if (next < 52) next = 52;
+    addrIn.style.height = next + 'px';
+  }
   function refresh() {
+    if (areaBoundary) {
+      if (ctaHint) {
+        ctaHint.textContent = '';
+        ctaHint.style.display = 'none';
+      }
+      return;
+    }
     // Dismiss any stale "didn't go through" error once the user edits/retries.
     if (!submitting) {
       var _se = main.querySelector('[data-submit-error]');
@@ -1868,6 +1848,7 @@
       ) _se.style.display = 'none';
     }
     paintFieldOk();
+    sizeAddrBox();
     ctaLabelEl.textContent = 'Continue';
     var ready = part1Done();
     cta.disabled = submitting || !ready;
@@ -1969,15 +1950,24 @@
     refresh();
   });
   addrIn.addEventListener('input', function (event) {
+    if (/[\n\r]/.test(addrIn.value)) {
+      var caret = addrIn.selectionStart;
+      addrIn.value = addrIn.value.replace(/[\n\r]+/g, ' ');
+      if (typeof caret === 'number') try { addrIn.setSelectionRange(caret, caret); } catch (_) {}
+    }
     syncBrowserFilledValues('input', event);
   });
+  addrIn.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') event.preventDefault();
+  });
+  sizeAddrBox();
   addrIn.addEventListener('change', function (event) { syncBrowserFilledValues('change', event); });
   main.querySelector('form').addEventListener('focusin', function () {
     setTimeout(function () { syncBrowserFilledValues('focusin'); }, 0);
     setTimeout(function () { syncBrowserFilledValues('focusin_delayed'); }, 250);
   });
   main.querySelector('form').addEventListener('animationstart', function (event) {
-    if (event.target && event.target.matches && event.target.matches('input')) {
+    if (event.target && event.target.matches && event.target.matches('input, textarea')) {
       syncBrowserFilledValues('autofill_animation');
       if (event.target === addrIn && !addrOk() && addressLooksComplete()) {
         suggest('browser_autofill_animation');
@@ -1995,8 +1985,6 @@
     if (!document.hidden) syncBrowserFilledValues('periodic_probe');
   }, 500);
   window.addEventListener('pagehide', function () { window.clearInterval(browserFillProbe); }, { once: true });
-  if (emailIn) emailIn.addEventListener('input', refreshAreaCapture);
-
   /* channel attribution for the first-party event stream + payload.leadChannel.
      Server deriveLeadChannel also reads ?src= / fbclid / gclid from pageUrl
      (audit 2026-07-13). Keep client labels in the contacts whitelist where
@@ -2043,6 +2031,9 @@
       placement: p.get('utm_placement') || p.get('placement') || '',
       siteSourceName: p.get('utm_site_source') || p.get('site_source_name') || '',
       fbclid: p.get('fbclid') || '',
+      gclid: p.get('gclid') || '',
+      gbraid: p.get('gbraid') || '',
+      wbraid: p.get('wbraid') || '',
       fbp: (document.cookie.match(/(?:^|;\s*)_fbp=([^;]*)/) || [])[1] || '',
       fbc: (document.cookie.match(/(?:^|;\s*)_fbc=([^;]*)/) || [])[1] || ''
     };
@@ -2070,37 +2061,9 @@
   main.querySelector('form').addEventListener('submit', function (e) {
     e.preventDefault();
     closeDrop();
-    if (areaBoundary) {
-      doAreaCapture();
-      return;
-    }
+    if (areaBoundary) return;
     doSubmit(true);
   });
-
-  async function doAreaCapture() {
-    if (submitting || !resumeT || !emailIn || !emailValid(emailIn.value)) return;
-    submitting = true;
-    refreshAreaCapture();
-    var areaMessage = main.querySelector('[data-submit-error]');
-    try {
-      await WALK.emailCapture(resumeT, emailIn.value.trim());
-      emailIn.disabled = true;
-      cta.style.display = 'none';
-      if (ctaHint) ctaHint.style.display = 'none';
-      if (areaMessage) {
-        areaMessage.textContent = 'Thank you. Your information is saved, and I will be in touch as service expands.';
-        areaMessage.style.color = 'var(--green, #087443)';
-      }
-      WALK.ph('walk_v2_out_of_area_email_saved');
-    } catch (_) {
-      submitting = false;
-      refreshAreaCapture();
-      if (areaMessage) {
-        areaMessage.textContent = 'That email did not save. Check it and try again.';
-        areaMessage.style.color = 'var(--red, #dc2626)';
-      }
-    }
-  }
 
   async function doSubmit(smsGiven) {
     if (submitting || !part1Done()) return;
@@ -2113,7 +2076,8 @@
     var name = nameIn.value.trim();
     var attr = attribution();
     var touches = savedMarketingTouches();
-    var eventId = 'wv2-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+    var eventId = 'wv2-' + window.crypto.randomUUID();
+    var intakeNonce = window.crypto.randomUUID();
 
     /* Structured city/state/zip come only from a picked Mapbox feature.
        An unselected type-in or the explicit escape stores the typed string
@@ -2174,11 +2138,17 @@
       smsConsent: smsGiven ? 'true' : '',
       submittedAt: new Date().toISOString(), eventTimestamp: Math.floor(Date.now() / 1000),
       source: 'walkv2-landing',
-      actionSource: 'website', eventName: 'Lead', eventId: eventId,
+      actionSource: 'website', eventName: 'QuoteWalkStarted', eventId: eventId,
+      intakeNonce: intakeNonce,
+      journeyVersion: 'intake-no-upload-v1',
+      journey_version: 'intake-no-upload-v1',
       clientUserAgent: navigator.userAgent || '',
       fbp: (document.cookie.match(/(?:^|;\s*)_fbp=([^;]*)/) || [])[1] || '',
       fbc: (document.cookie.match(/(?:^|;\s*)_fbc=([^;]*)/) || [])[1] || '',
       fbclid: new URLSearchParams(window.location.search).get('fbclid') || '',
+      gclid: new URLSearchParams(window.location.search).get('gclid') || '',
+      gbraid: new URLSearchParams(window.location.search).get('gbraid') || '',
+      wbraid: new URLSearchParams(window.location.search).get('wbraid') || '',
       pageUrl: window.location.href, referrer: document.referrer || '',
       firstTouch: touches.first,
       currentTouch: touches.current
@@ -2190,8 +2160,9 @@
        (a second contact in the rare concurrent-lookup race). keepalive covers
        unload; the sync-XHR fallback covers a fetch throw. */
     var body = JSON.stringify(payload);
+    if (!editDetails) body = keepPendingIntakeBody(body);
     var url = 'https://hfatblrcwytxvijjhpal.supabase.co/functions/v1/quo-ai-new-lead';
-    var delivered = false, tokenOut = null, serviceAreaStatus = '', savedAddressRefresh = false, metaLeadOut = null, failureMessage = '';
+    var delivered = false, tokenOut = null, serviceAreaStatus = '', savedAddressRefresh = false, metaLeadOut = null, failureMessage = '', terminalIntakeReset = false;
     var savedWalkRecoveryMessage = 'This form cannot open an existing saved Quote Walk. Use your saved Quote Walk link, or call Backup Power Pro for help.';
     try {
       var resp = await fetch(url, { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: body });
@@ -2205,9 +2176,11 @@
           metaLeadOut = j && j.metaLeadEvent || null;
           if (j && j.accepted === true && !tokenOut) {
             delivered = false;
+            terminalIntakeReset = true;
             failureMessage = savedWalkRecoveryMessage;
           } else if (j && j.skipped && !tokenOut) {
             delivered = false;
+            terminalIntakeReset = true;
             if (j.reason === 'do_not_contact') {
               failureMessage = 'This mobile number is marked as opted out of texts. Use a different mobile number, or contact Backup Power Pro to update your text preference.';
             }
@@ -2237,9 +2210,11 @@
             metaLeadOut = fallbackBody.metaLeadEvent || null;
             if (fallbackBody.accepted === true && !tokenOut) {
               delivered = false;
+              terminalIntakeReset = true;
               failureMessage = savedWalkRecoveryMessage;
             } else if (fallbackBody.skipped && !tokenOut) {
               delivered = false;
+              terminalIntakeReset = true;
               if (fallbackBody.reason === 'do_not_contact') {
                 failureMessage = 'This mobile number is marked as opted out of texts. Use a different mobile number, or contact Backup Power Pro to update your text preference.';
               }
@@ -2252,9 +2227,17 @@
         WALK.ph('lead_submit_failed', { err: String(err).slice(0, 200), method: 'xhr-threw', form: 'walkv2-landing' });
       }
     }
-    WALK.ph('walk_v2_submitted', { connection_status: 'unanswered', delivered: delivered });
-    if (delivered && tokenOut && metaLeadOut && metaLeadOut.eligible === true && window.BPPMeta) {
-      window.BPPMeta.trackLead(metaLeadOut.eventId);
+    if (terminalIntakeReset) clearPendingIntakeBody();
+    if (delivered && tokenOut) {
+      clearPendingIntakeBody();
+      WALK.markNewJourney(tokenOut);
+      if (metaLeadOut && metaLeadOut.eligible === true && window.BPPMeta) {
+        if (metaLeadOut.eventName === 'QuoteWalkStarted') {
+          window.BPPMeta.trackQuoteWalkStarted(metaLeadOut.eventId);
+        } else if (metaLeadOut.eventName === 'Lead') {
+          window.BPPMeta.trackLead(metaLeadOut.eventId);
+        }
+      }
     }
     if (delivered && tokenOut && serviceAreaStatus === 'verified_out_of_area') {
       persistDraft();

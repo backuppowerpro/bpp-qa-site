@@ -6,9 +6,10 @@
     return navigator.globalPrivacyControl === true || dnt === '1' || dnt === 'yes';
   }
 
-  var trackedLeadIds = Object.create(null);
+  var trackedEventIds = Object.create(null);
   window.BPPMeta = {
     enabled: false,
+    trackQuoteWalkStarted: function () {},
     trackLead: function () {}
   };
 
@@ -44,10 +45,19 @@
 
   window.BPPMeta = {
     enabled: true,
+    trackQuoteWalkStarted: function (eventId) {
+      var safeId = String(eventId || '');
+      if (!/^wv2-[a-zA-Z0-9-]{8,100}$/.test(safeId) || trackedEventIds['start:' + safeId]) return;
+      trackedEventIds['start:' + safeId] = true;
+      window.fbq('trackCustom', 'QuoteWalkStarted', {
+        content_name: 'generator-inlet-quote-walk',
+        content_category: 'generator-installation'
+      }, { eventID: safeId });
+    },
     trackLead: function (eventId) {
       var safeId = String(eventId || '');
-      if (!/^wv2-[a-zA-Z0-9-]{8,100}$/.test(safeId) || trackedLeadIds[safeId]) return;
-      trackedLeadIds[safeId] = true;
+      if (!/^wv2-[a-zA-Z0-9-]{8,100}$/.test(safeId) || trackedEventIds['lead:' + safeId]) return;
+      trackedEventIds['lead:' + safeId] = true;
       window.fbq('track', 'Lead', {
         content_name: 'generator-inlet-quote',
         content_category: 'generator-installation'

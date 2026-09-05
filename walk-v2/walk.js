@@ -8,6 +8,27 @@
   var BASE = window.BPP_QUOTE_WALK_FUNCTIONS_BASE
     || 'https://hfatblrcwytxvijjhpal.supabase.co/functions/v1';
   var TOKEN_STORAGE_KEY = 'bpp:qwv2:bearer';
+  var CHANNEL_STORAGE_KEY = 'bpp:qwv2:channel';
+  var VALID_CHANNEL = /^(?:direct|meta|google|organic|local|neighbor|get-quote|social|referral)$/;
+  try {
+    var pageChannel = String(window.__WALK_CHANNEL || '');
+    if (VALID_CHANNEL.test(pageChannel)) {
+      sessionStorage.setItem(CHANNEL_STORAGE_KEY, pageChannel);
+    } else {
+      var savedChannel = String(sessionStorage.getItem(CHANNEL_STORAGE_KEY) || '');
+      if (VALID_CHANNEL.test(savedChannel)) window.__WALK_CHANNEL = savedChannel;
+    }
+  } catch (_) {}
+  var NEW_JOURNEY_VERSION = 'intake-no-upload-v1';
+  /* Public policy mirror for NEW_JOURNEY_VERSION. The server owns delivery and
+     permits only the post-Yes photo opener. */
+  var NEW_JOURNEY_OPENER_POLICY = Object.freeze({
+    opener: "Hey {first name}, it’s Key. Text me a couple photos of the panel with the doors open and the path where you want the outlet. I’ll send your proposal once I have those. Reply STOP to opt out.",
+    trigger: 'accepted_range',
+    pre_yes_automated_sms: false,
+    automated_follow_ups: false,
+    proposal_auto_send: false
+  });
   var AUTHORIZED_SERVICE_COUNTIES = ['Greenville', 'Spartanburg', 'Pickens'];
   var ADDRESS_LOOKUP_PATH = '/api/address-suggest';
 
@@ -43,11 +64,27 @@
     Object.keys(extra || {}).forEach(function (key) {
       if (extra[key] != null) params.set(key, String(extra[key]));
     });
+    params.delete('analytics_test');
+    params.delete('qa_run_id');
+    try {
+      var currentParams = new URLSearchParams(window.location.search || '');
+      if (currentParams.get('analytics_test') === '1') params.set('analytics_test', '1');
+    } catch (_) {}
     var carried = retained;
     if (retained !== t) {
       carried = /^[a-zA-Z0-9_-]{32,160}$/.test(String(t || '')) ? String(t) : retained;
     }
     if (carried) params.set('t', carried);
+    var njToken = carried || t;
+    var extraNj = extra && extra.nj;
+    var journeyAuthority = journeyContractAuthority(null, njToken);
+    var nextIsNewJourney = journeyAuthority.loaded
+      ? journeyAuthority.contract === NEW_JOURNEY_VERSION
+      : isNewJourney(null, njToken) || extraNj === '1' || extraNj === 1;
+    if (nextIsNewJourney) {
+      params.set('nj', '1');
+      markNewJourney(njToken);
+    }
     var query = params.toString();
     var target = '/walk-v2/' + page + (query ? '?' + query : '');
     if (window.__QW_NAVIGATE__) window.__QW_NAVIGATE__(target);
@@ -104,7 +141,7 @@
     container.replaceChildren();
     container.setAttribute('data-return-recovery', state);
     container.appendChild(document.createTextNode(config.message || copy[state]));
-    var actions = document.createElement('span');
+    var actions = document.createElement('div');
     actions.className = 'qw-recovery-actions';
     if (state === 'temporary' || config.allowRetry === true) {
       var retry = document.createElement('button');
@@ -151,11 +188,149 @@
   function tokenScope(t) {
     return fingerprint(['quote-walk-v2-session', String(t || '')]);
   }
+  function rangePresentationKey(t, snapshot, journeyVersion) {
+    var current = snapshot || {};
+    return [
+      tokenScope(t),
+      String(current.snapshot_id || ''),
+      Number(current.journey_version || journeyVersion || 0),
+      String(current.pricing_basis || ''),
+      String(current.revision_reason || 'initial'),
+      String(current.distance_band || ''),
+      Number(current.low_cents || 0),
+      Number(current.high_cents || 0),
+      current.cord_included === false ? 'cord_out' : 'cord_in'
+    ].join(':');
+  }
   function connectionTruthKey(t) {
     return 'bpp:qwv2:connection-truth:' + tokenScope(t);
   }
   function journeyStateKey(t) {
     return 'bpp:qwv2:journey-state:' + tokenScope(t);
+  }
+  function newJourneyKey(t) {
+    return 'bpp:qwv2:new-journey:' + tokenScope(t);
+  }
+  function markNewJourney(t) {
+    try { sessionStorage.setItem(newJourneyKey(t), NEW_JOURNEY_VERSION); } catch (_) {}
+  }
+  function urlSaysNewJourney() {
+    try { return new URLSearchParams(window.location.search).get('nj') === '1'; } catch (_) { return false; }
+  }
+  function journeyContractAuthority(value, t) {
+    var v2 = value && value.quote_walk_v2;
+    if (v2 && typeof v2 === 'object'
+        && Object.prototype.hasOwnProperty.call(v2, 'intake_contract')) {
+      return {
+        loaded: true,
+        contract: String(v2.intake_contract || '')
+      };
+    }
+    var remembered = readJourneyState(t);
+    if (remembered.intake_contract_loaded === true) {
+      return {
+        loaded: true,
+        contract: String(remembered.intake_contract || '')
+      };
+    }
+    return { loaded: false, contract: '' };
+  }
+  function isNewJourney(value, t) {
+    var authority = journeyContractAuthority(value, t);
+    if (authority.loaded) return authority.contract === NEW_JOURNEY_VERSION;
+    if (urlSaysNewJourney()) return true;
+    try { return sessionStorage.getItem(newJourneyKey(t)) === NEW_JOURNEY_VERSION; } catch (_) { return false; }
+  }
+  function connectionStatusOf(value) {
+    var v2 = value && value.quote_walk_v2 || {};
+    return String((value && value.connection_status) || v2.connection_status || '');
+  }
+  function isPendingAccess(value) {
+    return connectionStatusOf(value) === 'pending_access';
+  }
+  function panelRoomOf(value) {
+    var v2 = value && value.quote_walk_v2 || {};
+    return String((value && value.confirmed_panel_room) || v2.panel_location || '');
+  }
+  function panelInventoryOf(value) {
+    var v2 = value && value.quote_walk_v2 || {};
+    return String(v2.panel_inventory_status || (value && value.panel_inventory_status) || '');
+  }
+  /* Not sure / I'll check later is a skip, not a room. Missing room is also
+     unanswered. "More than one panel" is a real room answer and is not a skip. */
+  function isPanelSkipped(value) {
+    return panelRoomOf(value) === 'not_sure' || panelInventoryOf(value) === 'incomplete';
+  }
+  function isUnansweredPanel(value) {
+    return isPanelSkipped(value) || !panelRoomOf(value);
+  }
+  function distanceBandOf(value) {
+    var v2 = value && value.quote_walk_v2 || {};
+    return String((value && value.distance_band) || v2.distance_band || '');
+  }
+  function isDistanceSkipped(value) {
+    return distanceBandOf(value) === 'not_sure';
+  }
+  function isUnansweredDistance(value) {
+    return isDistanceSkipped(value) || !distanceBandOf(value);
+  }
+  function isGeneratorNeeded(value) {
+    var status = connectionStatusOf(value);
+    return (value && value.generator_ownership_status === 'not_owned')
+      || status === 'no_generator'
+      || status === 'no_compatible_generator_connection';
+  }
+  function isUnansweredConnection(value) {
+    if (isGeneratorNeeded(value)) return false;
+    if (isPendingAccess(value)) return true;
+    var status = connectionStatusOf(value);
+    return !status || status === 'unanswered';
+  }
+  /* Any skipped / incomplete input (not generator-needed, not photos on new
+     journey) must land on the unanswered-questions list, not the step. */
+  function hasIncompleteInputs(value, t) {
+    if (isGeneratorNeeded(value)) return false;
+    if (isUnansweredConnection(value) || isPendingAccess(value)) return true;
+    if (isUnansweredPanel(value) || isPanelSkipped(value)) return true;
+    if (isUnansweredDistance(value) || isDistanceSkipped(value)) return true;
+    var v2 = value && value.quote_walk_v2 || {};
+    var blockers = Array.isArray(v2.blockers) ? v2.blockers : [];
+    var readiness = v2.readiness || {};
+    if (Array.isArray(readiness.input_blockers)) blockers = readiness.input_blockers;
+    blockers = blockers.map(String).filter(function (blocker) {
+      return blocker !== 'service_area' && !/_photo$/.test(blocker);
+    });
+    return blockers.some(function (blocker) {
+      return blocker === 'generator_connection'
+        || blocker === 'panel_location'
+        || blocker === 'panel_inventory'
+        || blocker === 'distance';
+    });
+  }
+  function afterDistancePage(value, t) {
+    if (isPendingAccess(value) || isUnansweredPanel(value) || isDistanceSkipped(value)) return 'incomplete.html';
+    return isNewJourney(value, t) ? 'range.html' : 'photos.html';
+  }
+  function currentWalkPage() {
+    try {
+      return String(window.location.pathname || '').replace(/\/+$/, '').replace(/\.html$/, '').split('/').pop() || '';
+    } catch (_) { return ''; }
+  }
+  function goIncompleteIfNeeded(t) {
+    if (currentWalkPage() === 'incomplete') return;
+    go('incomplete.html', t);
+  }
+  function applyNewJourneyProgress(t, value) {
+    if (typeof document === 'undefined') return;
+    var authority = journeyContractAuthority(value || null, t);
+    if (!authority.loaded || authority.contract !== NEW_JOURNEY_VERSION) return;
+    document.querySelectorAll('.qw-progress .pstep').forEach(function (step) {
+      var label = step.querySelector('.pl');
+      if (String(label && label.textContent || '').trim().toLowerCase() === 'photos') step.remove();
+    });
+    document.querySelectorAll('.qw-progress .qw-progress-rail, .prog .rail').forEach(function (rail) {
+      rail.setAttribute('data-steps', String(rail.querySelectorAll('.pstep').length));
+    });
   }
   function readJourneyState(t) {
     try { return JSON.parse(sessionStorage.getItem(journeyStateKey(t)) || 'null') || {}; } catch (_) { return {}; }
@@ -163,12 +338,18 @@
   function rememberJourneyState(t, value) {
     var current = readJourneyState(t);
     var v2 = value && value.quote_walk_v2 || {};
+    var receivedIntakeContract = value && value.quote_walk_v2
+      && Object.prototype.hasOwnProperty.call(value.quote_walk_v2, 'intake_contract');
     var version = Number(value && value.expected_version || value && value.version || v2.version || current.version || 0);
     var next = {
       version: version || null,
       panels: Array.isArray(v2.panels) ? v2.panels : (current.panels || []),
       blockers: Array.isArray(v2.blockers) ? v2.blockers : (Array.isArray(value && value.blockers) ? value.blockers : (current.blockers || [])),
-      media: Array.isArray(v2.media) ? v2.media : (current.media || [])
+      media: Array.isArray(v2.media) ? v2.media : (current.media || []),
+      intake_contract_loaded: receivedIntakeContract || current.intake_contract_loaded === true,
+      intake_contract: receivedIntakeContract
+        ? String(v2.intake_contract || '')
+        : String(current.intake_contract || '')
     };
     try { sessionStorage.setItem(journeyStateKey(t), JSON.stringify(next)); } catch (_) {}
     return next;
@@ -553,11 +734,34 @@
     readConnectionTruth: readConnectionTruth,
     progressTruth: progressTruth,
     paintProgress: paintProgress,
+    markNewJourney: markNewJourney,
+    isNewJourney: isNewJourney,
+    afterDistancePage: afterDistancePage,
+    connectionStatusOf: connectionStatusOf,
+    isPendingAccess: isPendingAccess,
+    isPanelSkipped: isPanelSkipped,
+    isUnansweredPanel: isUnansweredPanel,
+    isDistanceSkipped: isDistanceSkipped,
+    isUnansweredDistance: isUnansweredDistance,
+    isUnansweredConnection: isUnansweredConnection,
+    isGeneratorNeeded: isGeneratorNeeded,
+    hasIncompleteInputs: hasIncompleteInputs,
+    applyNewJourneyProgress: applyNewJourneyProgress,
+    tokenScope: tokenScope,
+    rangePresentationKey: rangePresentationKey,
+    newJourneyVersion: NEW_JOURNEY_VERSION,
+    newJourneyOpenerPolicy: NEW_JOURNEY_OPENER_POLICY,
     reconcilePendingUploads: reconcilePendingUploads,
     view: function (t) {
       return getJson(BASE + '/pre-read-view?token=' + encodeURIComponent(t)).then(function (value) {
         rememberJourneyState(t, value);
-        if (typeof document !== 'undefined') paintProgress(document, value);
+        applyNewJourneyProgress(t, value);
+        if (typeof document !== 'undefined') {
+          document.querySelectorAll('.qw-progress .qw-progress-rail, .prog .rail').forEach(function (rail) {
+            rail.setAttribute('data-steps', String(rail.querySelectorAll('.pstep').length));
+          });
+          paintProgress(document, value);
+        }
         var state = value && value.quote_walk_v2 || {};
         var path = String(window.location && window.location.pathname || '').replace(/\/index\.html$/, '/');
         if (state.service_area_status === 'verified_out_of_area' && path !== '/walk-v2/') {
@@ -607,10 +811,9 @@
       }
       var payloadKeys = Object.keys(payloadFields);
       var validCreateRange = action === 'create_range'
-        && payloadKeys.length <= 1
         && payloadKeys.every(function (key) { return key === 'revision_reason'; })
         && (
-          !payloadKeys.length
+          payloadKeys.indexOf('revision_reason') === -1
           || ['initial', 'both_to_30', 'shorter_distance', 'cord_removed', 'cord_restored', 'return_to_50']
             .indexOf(String(payloadFields.revision_reason || '')) !== -1
         );
@@ -627,9 +830,14 @@
         && payloadKeys.length === 1
         && payloadKeys[0] === 'phone'
         && /^[2-9][0-9]{2}[2-9][0-9]{6}$/.test(updatePhoneDigits);
-      var validEmpty = ['accept_range', 'handoff'].indexOf(action) !== -1
-        && payloadKeys.length === 0;
-      if (!validCreateRange && !validSupersedeMedia && !validUpdatePhone && !validEmpty) {
+      var validAccept = action === 'accept_range' && (payloadKeys.length === 0 || (
+        payloadKeys.every(function (key) {
+          return ['journey_version', 'lead_event', 'lead_event_id', 'range_low_cents', 'range_high_cents', 'gclid', 'gbraid', 'wbraid'].indexOf(key) !== -1;
+        })
+        && payloadFields.journey_version === NEW_JOURNEY_VERSION
+        && payloadFields.lead_event === 'range_accepted_lead'));
+      var validEmpty = action === 'handoff' && payloadKeys.length === 0;
+      if (!validCreateRange && !validSupersedeMedia && !validUpdatePhone && !validAccept && !validEmpty) {
         return Promise.reject(new Error('invalid_state_payload'));
       }
       function send(retried) {
@@ -1009,66 +1217,40 @@
        connection_status. Amperage remains a legacy fallback for saved walks
        created before the connection step was separated from the lead form. */
     routeFromState: function (t, v) {
-      var v2 = v.quote_walk_v2;
-      if (v2 && Array.isArray(v2.blockers)) {
-        if (v2.service_area_status === 'verified_out_of_area') {
-          go('index.html', t, { area: 'out' });
-          return;
-        }
-        var blockers = v2.blockers.filter(function (blocker) { return blocker !== 'service_area'; });
-        if (blockers.indexOf('generator_connection') !== -1) return go('connection.html', t);
-        if (blockers.indexOf('panel_location') !== -1) return go('location.html', t);
-        if (blockers.indexOf('distance') !== -1) return go('distance.html', t);
-        if (
-          blockers.indexOf('generator_connection_photo') !== -1
-          || blockers.indexOf('panel_photo') !== -1
-          || blockers.indexOf('panel_context_photo') !== -1
-        ) return go('photos.html', t);
-        return go('range.html', t);
+      var v2 = v.quote_walk_v2 || {};
+      var newJourney = isNewJourney(v, t);
+      if (v2.service_area_status === 'verified_out_of_area') {
+        go('index.html', t, { area: 'out' });
+        return;
       }
-      var status = v.connection_status || '';
-      if (v.generator_ownership_status === 'not_owned' ||
-          status === 'no_compatible_generator_connection') return go('generator-needed.html', t);
-      if (!status && v.amperage == null) return go('connection.html', t);
-      if (status === 'unanswered') return go('connection.html', t);
-      if (!v.confirmed_panel_room) return go('location.html', t);
-      if (!v.distance_band) return go('distance.html', t);
-      if (!v.photo_count && !v.photo_received) return go('photos.html', t);
-      return go('thankyou.html', t);
+      if (isGeneratorNeeded(v)) return go('generator-needed.html', t);
+      if (hasIncompleteInputs(v, t)) return goIncompleteIfNeeded(t);
+      if (!newJourney && (
+        (Array.isArray(v2.blockers) && v2.blockers.some(function (blocker) { return /_photo$/.test(String(blocker)); }))
+        || (!v.photo_count && !v.photo_received)
+      )) return go('photos.html', t);
+      return go(newJourney ? 'range.html' : (v2 && v2.blockers ? 'range.html' : 'thankyou.html'), t);
     },
     /* Recovery is task-directed. It re-opens only the first truly unresolved
        requirement, then skips every answer that is already complete. */
     routeRecoveryFromState: function (t, v) {
       var state = v && v.quote_walk_v2 || {};
-      var blockers = Array.isArray(state.blockers)
-        ? state.blockers
-        : state.readiness && Array.isArray(state.readiness.input_blockers)
-          ? state.readiness.input_blockers
-          : [];
       if (state.service_area_status === 'verified_out_of_area') {
         go('index.html', t, { area: 'out' });
         return;
       }
-      blockers = blockers.filter(function (blocker) { return blocker !== 'service_area'; });
-      if (blockers.indexOf('generator_connection') !== -1) {
-        if (v.generator_ownership_status === 'not_owned'
-            || v.connection_status === 'no_generator'
-            || v.connection_status === 'no_compatible_generator_connection') {
-          return go('generator-needed.html', t);
+      if (isGeneratorNeeded(v)) return go('generator-needed.html', t);
+      if (hasIncompleteInputs(v, t)) return goIncompleteIfNeeded(t);
+      if (!isNewJourney(v, t)) {
+        var blockers = Array.isArray(state.blockers)
+          ? state.blockers
+          : state.readiness && Array.isArray(state.readiness.input_blockers)
+            ? state.readiness.input_blockers
+            : [];
+        if (blockers.some(function (blocker) { return /_photo$/.test(String(blocker)); })) {
+          return go('photos.html', t, { recovery: '1' });
         }
-        return go('connection.html', t, { recovery: '1', edit: '1' });
       }
-      if (blockers.indexOf('panel_location') !== -1 || blockers.indexOf('panel_inventory') !== -1) {
-        return go('location.html', t, { recovery: '1', edit: '1' });
-      }
-      if (blockers.indexOf('distance') !== -1) {
-        return go('distance.html', t, { recovery: '1', edit: '1' });
-      }
-      if (
-        blockers.indexOf('generator_connection_photo') !== -1
-        || blockers.indexOf('panel_photo') !== -1
-        || blockers.indexOf('panel_context_photo') !== -1
-      ) return go('photos.html', t, { recovery: '1' });
       return go('range.html', t);
     },
     /* shrink a photo to a phone-friendly JPEG dataURL before upload */
@@ -1122,6 +1304,8 @@
       window.visualViewport.addEventListener('scroll', syncAddressDropViewport, { passive: true });
     }
   }
+  if (urlSaysNewJourney() && token()) markNewJourney(token());
+  applyNewJourneyProgress(token(), null);
   if (typeof window.BPPQuoteWalkMarkReady === 'function') {
     window.BPPQuoteWalkMarkReady();
   }

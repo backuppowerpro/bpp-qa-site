@@ -1,6 +1,39 @@
 const POSTHOG_PROJECT_KEY = 'phc_qoA51lePZqXYtPJYkrIpdA4U8iMDJ79L1kje7r4pD4O'
 const POSTHOG_CAPTURE_URL = 'https://us.i.posthog.com/capture/'
 const MAX_BODY_BYTES = 4096
+const RATE_LIMIT_PER_MINUTE = 30
+const RATE_RETENTION_MINUTES = 1440
+const RATE_TABLE_SQL = `
+  CREATE TABLE IF NOT EXISTS public_analytics_rate_buckets (
+    bucket_minute INTEGER NOT NULL,
+    actor_hash TEXT NOT NULL CHECK (length(actor_hash) = 64),
+    request_count INTEGER NOT NULL CHECK (request_count > 0),
+    updated_at INTEGER NOT NULL,
+    PRIMARY KEY (bucket_minute, actor_hash)
+  )
+`
+const RATE_PRUNE_SQL = `
+  DELETE FROM public_analytics_rate_buckets
+  WHERE bucket_minute < ?
+`
+const RATE_CLAIM_SQL = `
+  INSERT INTO public_analytics_rate_buckets (
+    bucket_minute,
+    actor_hash,
+    request_count,
+    updated_at
+  ) VALUES (?, ?, 1, ?)
+  ON CONFLICT (bucket_minute, actor_hash) DO UPDATE SET
+    request_count = public_analytics_rate_buckets.request_count + 1,
+    updated_at = excluded.updated_at
+  RETURNING request_count
+`
+const SERVER_OWNED_RANGE_EVENTS = new Set([
+  'walk_v2_range_presented',
+  'walk_v2_range_accepted_view',
+  'walk_v2_range_accepted_lead',
+  'walk_v2_range_non_yes_reason_saved',
+])
 const SAFE_KEYS = new Set([
   'surface', 'document_variant', 'funnel', 'screen', 'blocker_count',
   'field', 'value', 'from', 'state', 'has_range', 'unsure_count',
@@ -38,8 +71,11 @@ const RESPONSE_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
 }
 
-function json(body, status) {
-  return new Response(JSON.stringify(body), { status, headers: RESPONSE_HEADERS })
+function json(body, status, extraHeaders = {}) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...RESPONSE_HEADERS, ...extraHeaders },
+  })
 }
 
 function allowedOrigin(request) {
@@ -61,7 +97,62 @@ function safeSlug(value) {
   return text
 }
 
-function sanitizeProperties(input, origin) {
+function requestTrafficContext(request) {
+  const originUrl = new URL(request.headers.get('Origin'))
+  const hostname = originUrl.hostname.toLowerCase()
+  const trafficScope = hostname === 'backuppowerpro.com' || hostname === 'www.backuppowerpro.com'
+    ? 'production'
+    : hostname === 'qa.backuppowerpro.com' || hostname.endsWith('.bpp-qa-site.pages.dev') ? 'qa' : 'preview'
+  return {
+    traffic_scope: trafficScope,
+    environment: trafficScope,
+    is_qa: trafficScope !== 'production',
+  }
+}
+
+async function rateActorHash(clientIp, nowMs) {
+  const daySalt = new Date(nowMs).toISOString().slice(0, 10)
+  const subtle = globalThis.crypto && globalThis.crypto.subtle
+  if (!subtle) return ''
+  const digest = await subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(`${daySalt}:${clientIp}`),
+  )
+  return Array.from(
+    new Uint8Array(digest),
+    (byte) => byte.toString(16).padStart(2, '0'),
+  ).join('')
+}
+
+async function claimAnalyticsRateSlot(env, request) {
+  const db = env && env.ANALYTICS_RATE_DB
+  if (!db || typeof db.prepare !== 'function') return null
+  const clientIp = String(request.headers.get('CF-Connecting-IP') || '')
+  if (!/^[0-9a-fA-F:.]{3,80}$/.test(clientIp)) return null
+  const nowMs = Date.now()
+  const bucketMinute = Math.floor(nowMs / 60000)
+  try {
+    const actorHash = await rateActorHash(clientIp, nowMs)
+    if (!/^[a-f0-9]{64}$/.test(actorHash)) return null
+    await db.prepare(RATE_TABLE_SQL).run()
+    await db.prepare(RATE_PRUNE_SQL)
+      .bind(bucketMinute - RATE_RETENTION_MINUTES)
+      .run()
+    const row = await db.prepare(RATE_CLAIM_SQL)
+      .bind(bucketMinute, actorHash, bucketMinute)
+      .first()
+    const count = Number(row && row.request_count)
+    if (!Number.isInteger(count) || count < 1) return null
+    return {
+      allowed: count <= RATE_LIMIT_PER_MINUTE,
+      retryAfter: Math.max(1, 60 - Math.floor((nowMs % 60000) / 1000)),
+    }
+  } catch (_) {
+    return null
+  }
+}
+
+function sanitizeProperties(input, origin, request) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) return null
   const output = {}
   for (const [key, value] of Object.entries(input)) {
@@ -95,9 +186,10 @@ function sanitizeProperties(input, origin) {
   }
   if (!output.distinct_id || !output.$pathname) return null
   output.$process_person_profile = false
-  const scope = output.traffic_scope || 'preview'
-  output.environment = scope === 'synthetic' ? 'test' : scope
-  output.is_qa = scope !== 'production'
+  const requestContext = requestTrafficContext(request)
+  output.traffic_scope = requestContext.traffic_scope
+  output.environment = requestContext.environment
+  output.is_qa = requestContext.is_qa
   if (!output.is_qa) delete output.qa_run_id
   return output
 }
@@ -116,7 +208,7 @@ async function forward(payload) {
 }
 
 export async function onRequestPost(context) {
-  const { request, waitUntil } = context
+  const { request, waitUntil, env } = context
   if (!allowedOrigin(request) || request.headers.get('Sec-Fetch-Site') !== 'same-origin') {
     return json({ error: 'forbidden' }, 403)
   }
@@ -139,9 +231,18 @@ export async function onRequestPost(context) {
   if (!/^(?:\$pageview|lead_submit_failed|(?:walk_v2_|proposal_|invoice_|receipt_)[a-z0-9_]{1,70})$/.test(event)) {
     return json({ error: 'invalid_event' }, 400)
   }
+  if (SERVER_OWNED_RANGE_EVENTS.has(event)) {
+    return json({ error: 'server_owned_measurement' }, 410)
+  }
   const origin = new URL(request.url).origin
-  const properties = sanitizeProperties(body.properties, origin)
+  const properties = sanitizeProperties(body.properties, origin, request)
   if (!properties) return json({ error: 'invalid_properties' }, 400)
+
+  const rate = await claimAnalyticsRateSlot(env, request)
+  if (!rate) return json({ error: 'measurement_unavailable' }, 503)
+  if (!rate.allowed) {
+    return json({ error: 'rate_limited' }, 429, { 'Retry-After': String(rate.retryAfter) })
+  }
 
   const task = forward({ event, properties }).catch(() => {})
   if (typeof waitUntil === 'function') waitUntil(task)

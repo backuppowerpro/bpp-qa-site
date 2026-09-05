@@ -8,8 +8,8 @@
 
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-yr+iVT/1QObzZkEQ6qkdhT3Uf+g18Nw+3o5LeczZPHo='; script-src-attr 'none'; style-src 'self' 'sha256-EavXYlp3Q1yjh0fbur6hWLvozzph3LJlJ2SUgIlfBwA='; style-src-elem 'self' https://fonts.googleapis.com 'sha256-EavXYlp3Q1yjh0fbur6hWLvozzph3LJlJ2SUgIlfBwA='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
-<script src="/assets/js/bpp-analytics.js?v=7c57ff22b3f1"></script>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-VoU61azup7DvYiub2mqytb+SOy7vjbXyq5ELeyBdmM4='; script-src-attr 'none'; style-src 'self' 'sha256-UEyiwLmGjmiAfRnhMRwKgrz/KGWsuaoCchxkxcnbL3Y='; style-src-elem 'self' 'sha256-UEyiwLmGjmiAfRnhMRwKgrz/KGWsuaoCchxkxcnbL3Y='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/assets/js/bpp-analytics.js?v=ea909db798a0"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
@@ -649,6 +649,7 @@
     margin-top: 26px;
     padding: 20px 20px 28px;
     border-top: 1px solid var(--edge-soft);
+    background: transparent;
     font-size: 12.5px;
     line-height: 1.6;
     color: var(--faint);
@@ -671,7 +672,7 @@
     .state-label { display: none; }
   }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=d678618d4433" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=01391e54773d" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
 </head>
 <body>
@@ -792,7 +793,7 @@
 
 </div>
 
-<script src="/walk-v2/walk.js?v=f121686a4c8d"></script>
+<script src="/walk-v2/walk.js?v=060c85c2aaae"></script>
 <script>
 
 (function () {
@@ -873,12 +874,15 @@
 
   main.querySelector('[data-later]').addEventListener('click', function () {
     answerHydration.touch();
-    saveAndContinue('Not sure', true);
+    saveAndContinue('Not sure', false);
   });
 
   function saveAndContinue(room, continueForward) {
     if (!room || saving) return;
     saving = true;
+    var continueBtn = main.querySelector('[data-continue]');
+    continueBtn.disabled = true;
+    continueBtn.textContent = 'Saving';
     var payload = { confirmed_panel_room: ROOM_API[room] };
     if (room === 'More than one panel') {
       payload.panels = [];
@@ -892,7 +896,9 @@
     }
     WALK.confirm(t, payload).then(function () {
       var recovery = new URLSearchParams(window.location.search).get('recovery') === '1';
-      if (recovery) {
+      if (room === 'Not sure') {
+        WALK.go('incomplete.html', t);
+      } else if (recovery) {
         WALK.view(t).then(function (latest) {
           WALK.routeRecoveryFromState(t, latest);
         }).catch(function () {
@@ -902,6 +908,8 @@
       else WALK.go('incomplete.html', t);
     }).catch(function () {
       saving = false;
+      continueBtn.disabled = false;
+      continueBtn.textContent = 'Continue';
       echoText.textContent = 'That answer did not save. Try again.';
       echo.classList.add('show');
     });

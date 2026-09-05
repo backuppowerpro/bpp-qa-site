@@ -6,8 +6,8 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-SQHZCp4pqtWo3eDP1NbjIBkU8VzppQ/bMQJUG+nSpNo='; script-src-attr 'none'; style-src 'self' 'sha256-TRhi5LkSvf0t7Yhq09i8fgcIsvzycxuEM21o1TB34BE='; style-src-elem 'self' https://fonts.googleapis.com 'sha256-TRhi5LkSvf0t7Yhq09i8fgcIsvzycxuEM21o1TB34BE='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
-<script src="/assets/js/bpp-analytics.js?v=7c57ff22b3f1"></script>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-hq0ktjzZbOaeocdvW7+A5zYt44t06ANX2KMJqj7Y0io='; script-src-attr 'none'; style-src 'self' 'sha256-uPnxzDxHLpONSu3PJ4t2YTz3nr9v/L+B7x80R4jQj0k='; style-src-elem 'self' 'sha256-uPnxzDxHLpONSu3PJ4t2YTz3nr9v/L+B7x80R4jQj0k='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/assets/js/bpp-analytics.js?v=ea909db798a0"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
@@ -495,6 +495,7 @@
     margin-top: 26px;
     padding: 20px 20px 28px;
     border-top: 1px solid var(--edge-soft);
+    background: transparent;
     font-size: 12.5px;
     line-height: 1.6;
     color: var(--faint);
@@ -517,7 +518,7 @@
     .state-label { display: none; }
   }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=d678618d4433" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=01391e54773d" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
 </head>
 <body>
@@ -637,7 +638,7 @@
 
 </div>
 
-<script src="/walk-v2/walk.js?v=f121686a4c8d"></script>
+<script src="/walk-v2/walk.js?v=060c85c2aaae"></script>
 <script>
 
 (function () {
@@ -656,8 +657,10 @@
   var API_BAND = {}; Object.keys(BAND_API).forEach(function (k) { API_BAND[BAND_API[k]] = k; });
   var DISTANCE_ORDER = { about_5: 1, '5_10': 2, '10_20': 3, '20_40': 4, over_40: 5 };
   var selectedLabel = null, saving = false, navigated = false;
-  var priorDistanceBand = null, revisingCurrentRange = false;
+  var priorDistanceBand = null, revisingCurrentRange = false, newJourney = WALK.isNewJourney(null, t);
   var answerHydration = WALK.hydrationGuard();
+  var pageParams = new URLSearchParams(window.location.search);
+  var editMode = pageParams.get('edit') === '1';
 
   function paint(label, echoLine) {
     selectedLabel = label || null;
@@ -681,7 +684,7 @@
   var hydrationVersion = answerHydration.begin();
   WALK.view(t).then(function (v) {
     if (!answerHydration.accepts(hydrationVersion)) return;
-    var params = new URLSearchParams(window.location.search);
+    var params = pageParams;
     var sequentialEntry = params.get('sequence') === '1';
     /* Self-correcting entry guard: only fires when a PRIOR step is unanswered
        (panel location here). A forwarded / hand-edited deep link straight to this
@@ -689,12 +692,15 @@
        to price" ping. routeFromState bounces to the first unanswered step. It does
        NOT bounce when location is already answered, so normal flow and Back-nav
        are untouched (no self-redirect, the landing already runs this same guard). */
+    if (WALK.isPendingAccess(v) || WALK.isUnansweredConnection(v) || WALK.isUnansweredPanel(v)) {
+      WALK.go('incomplete.html', t); return;
+    }
     if (!sequentialEntry && !v.confirmed_panel_room) { WALK.routeFromState(t, v); return; }
     cordImage.src = '/walk-v2/cord-square-yellow.jpg';
-    var editMode = params.get('edit') === '1';
     var recoveryMode = params.get('recovery') === '1';
     var savedDistance = v.distance_band && API_BAND[v.distance_band];
     var state = v.quote_walk_v2 || {};
+    newJourney = WALK.isNewJourney(v, t);
     priorDistanceBand = state.distance_band || v.distance_band || null;
     revisingCurrentRange = editMode && Boolean(state.current_range_snapshot_id);
     if (revisingCurrentRange && DISTANCE_ORDER[priorDistanceBand]) {
@@ -725,29 +731,75 @@
     main.querySelector('[data-dist]').focus();
   });
 
+  function persistDistance(answers) {
+    if (!editMode) return WALK.confirm(t, answers);
+    return WALK.view(t).then(function (latest) {
+      var state = latest && latest.quote_walk_v2 || {};
+      var currentDistance = state.distance_band || latest.distance_band || null;
+      var requestedDistance = answers.distance_band;
+      if (
+        !state.current_range_snapshot_id
+        || !DISTANCE_ORDER[currentDistance]
+        || !DISTANCE_ORDER[requestedDistance]
+        || DISTANCE_ORDER[requestedDistance] >= DISTANCE_ORDER[currentDistance]
+      ) {
+        throw new Error('range_revision_not_current');
+      }
+      priorDistanceBand = currentDistance;
+      revisingCurrentRange = true;
+      answers.revision_reason = 'shorter_distance';
+      return WALK.confirm(t, answers);
+    });
+  }
+
   main.querySelector('[data-continue]').addEventListener('click', function () {
     if (!selectedLabel || saving) return;
     saving = true;
+    var continueBtn = main.querySelector('[data-continue]');
+    continueBtn.disabled = true;
+    continueBtn.textContent = 'Saving';
     var answers = { distance_band: BAND_API[selectedLabel] };
     if (revisingCurrentRange && answers.distance_band !== priorDistanceBand) {
       answers.revision_reason = 'shorter_distance';
     }
-    WALK.confirm(t, answers)
+    persistDistance(answers)
       .then(function () {
         navigated = true;
         var recovery = new URLSearchParams(window.location.search).get('recovery') === '1';
-        if (recovery) {
-          WALK.view(t).then(function (latest) {
-            WALK.routeRecoveryFromState(t, latest);
-          }).catch(function () {
+        WALK.view(t).then(function (latest) {
+          if (
+            selectedLabel === 'Not sure'
+            || WALK.isPendingAccess(latest)
+            || WALK.isUnansweredConnection(latest)
+            || WALK.isUnansweredPanel(latest)
+            || WALK.isDistanceSkipped(latest)
+          ) {
             WALK.go('incomplete.html', t);
-          });
-        } else {
-          WALK.go('photos.html', t, { sequence: '1' });
-        }
+            return;
+          }
+          if (recovery) {
+            WALK.routeRecoveryFromState(t, latest);
+            return;
+          }
+          var next = WALK.afterDistancePage(latest, t);
+          var extra = { sequence: '1' };
+          if (next === 'range.html') extra.nj = '1';
+          WALK.go(next, t, extra);
+        }).catch(function () {
+          if (recovery) {
+            WALK.go('incomplete.html', t);
+            return;
+          }
+          var toRange = WALK.isNewJourney(null, t) || newJourney;
+          var extra = { sequence: '1' };
+          if (toRange) extra.nj = '1';
+          WALK.go(toRange ? 'range.html' : 'photos.html', t, extra);
+        });
       })
       .catch(function () {
         saving = false;
+        continueBtn.disabled = false;
+        continueBtn.textContent = 'Continue';
         echoText.textContent = 'That distance did not save. Try again.';
         echo.classList.add('show');
       });
