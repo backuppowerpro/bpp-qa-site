@@ -363,14 +363,6 @@
       font:800 13px/1 Outfit,sans-serif;cursor:pointer;
     }
     @media (prefers-reduced-motion:reduce){.sticky{transition:none}}
-    .toast{
-      position:fixed;z-index:100;left:50%;bottom:104px;max-width:340px;width:calc(100% - 40px);
-      padding:12px 16px;border-radius:13px;background:var(--plan-navy);color:#fff;text-align:center;
-      font-size:12px;line-height:1.45;box-shadow:0 12px 32px rgba(11,31,59,.28);
-      opacity:0;transform:translate(-50%,12px);pointer-events:none;
-      transition:opacity 180ms cubic-bezier(.16,1,.3,1),transform 180ms cubic-bezier(.16,1,.3,1);
-    }
-    .toast.show{opacity:1;transform:translate(-50%,0)}
     .approval-error{min-height:20px;margin-top:10px;color:#9b1c1c;font-size:12px;line-height:1.45;text-align:center}
     .state-card{margin:28px auto;padding:42px 24px;text-align:center}
     .state-card h1{margin:0;color:var(--plan-navy);font:800 24px/1.15 Outfit,sans-serif}
@@ -594,7 +586,6 @@
     <div><span id="stickyLabel">Deposit today</span><strong id="stickyDeposit">$299</strong></div>
     <button id="reviewButton" type="button">Review and approve</button>
   </div>
-  <div class="toast" id="toast" role="status">Preview only. Nothing was approved or charged.</div>
 
   <script>
     (function(){
@@ -626,7 +617,6 @@
         baseDisplayByAmp:{50:1347}
       };
       var pomSelected=false;
-      var toastTimer=null;
       var infoReturnFocus=null;
       var infoBackground=[];
       var approvalCueTimer=null;
@@ -939,9 +929,7 @@
         document.getElementById('approveButton').textContent=paymentRequired
           ? 'Approve and pay '+money(due)
           : 'Approve this plan';
-        document.getElementById('toast').textContent=paymentRequired
-          ? 'Preview only. Secure payment would open next. Nothing was approved or charged.'
-          : 'Preview only. Nothing was approved.';
+
       }
       function render(){
         document.querySelectorAll('[data-amp]').forEach(function(node){node.textContent=fixture.amp;});
@@ -974,12 +962,6 @@
         button.setAttribute('aria-pressed',pomSelected?'true':'false');
         button.textContent=pomSelected?'Added to plan':'Add upgrade';
         renderMoney();
-      }
-      function showToast(){
-        var toast=document.getElementById('toast');
-        toast.classList.add('show');
-        clearTimeout(toastTimer);
-        toastTimer=setTimeout(function(){toast.classList.remove('show');},2200);
       }
       function openInfo(key,trigger){
         var content=infoContent[key];
@@ -1441,7 +1423,7 @@
       function showPaymentTruthUnconfirmed(row){
         proposal=row;
         if(hasCheckoutReturnHint())scrubCheckoutReturnHints(true);
-        stateView('Payment status needs confirmation','Your proposal approval is recorded, but the payment ledger is not available or does not agree yet. No payment or saved card is being claimed until the server confirms it.','<button class="state-action" id="checkPaymentTruth" type="button">Check payment status</button>');
+        stateView('Payment status needs confirmation','Your approval is recorded, but we cannot confirm your payment or saved card yet. Check its status before trying again.','<button class="state-action" id="checkPaymentTruth" type="button">Check payment status</button>');
         var button=document.getElementById('checkPaymentTruth');
         if(button)button.addEventListener('click',function(){reconcileCheckoutReturn(proposal);});
       }
@@ -1757,6 +1739,19 @@
         authorizationFactsRendered=true;
         syncAuthorizationGateUI();
       }
+      function confirmedPaymentCopy(row){
+        var state=row.payment_state;
+        var amount=function(value){
+          if(typeof value!=='number'&&(typeof value!=='string'||!/^\d+(?:\.\d+)?$/.test(value)))return null;
+          if(!Number.isFinite(Number(value))||Number(value)<0)return null;
+          return Number(value).toLocaleString('en-US',{style:'currency',currency:'USD',minimumFractionDigits:0,maximumFractionDigits:2});
+        };
+        var paid=amount(state.net_paid);
+        var remaining=amount(state.project_remaining);
+        if(row.require_deposit===false)return {title:'Your card is saved',message:'Your proposal is approved. Your card is saved for the agreed payment after installation. Key will contact you to coordinate your installation.'};
+        if(state.kind==='full_payment')return {title:'Payment received',message:(paid?paid+' paid. ':'')+'Your project is paid in full. Key will contact you about the next project step.'};
+        return {title:'Deposit received',message:(paid?paid+' paid toward your project. ':'Your deposit is confirmed. ')+(remaining&&Number(state.project_remaining)>0?'Your remaining balance is '+remaining+', due after installation. ':'')+'Key handles permitting and installation scheduling and will keep you updated by text.'};
+      }
       function routeProposal(row){
         var status=String(row.status||'').toLowerCase();
         var resetAfterHistoryRestore=historyAuthorizationResetPending&&['sent','viewed','copied'].indexOf(status)>-1;
@@ -1772,7 +1767,8 @@
             return stateView('One payment step remains',(row.payment_state&&row.payment_state.status==='partial'?'Part of this '+approvedKind+' is already recorded. ':'')+'Use the secure invoice for the exact remaining balance.',approvedAction);
           }
           if(!approvedPaymentTruthConfirmed(row))return showPaymentTruthUnconfirmed(row);
-          return stateView('You are all set','Your proposal is approved. Key will contact you to confirm the next project step.');
+          var confirmation=confirmedPaymentCopy(row);
+          return stateView(confirmation.title,confirmation.message);
         }
         if(status==='signed'){
           proposal=row;fixture=proposalFixture(row);
