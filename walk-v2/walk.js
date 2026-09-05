@@ -322,16 +322,7 @@
     go('incomplete.html', t);
   }
   function applyNewJourneyProgress(t, value) {
-    if (typeof document === 'undefined') return;
-    var authority = journeyContractAuthority(value || null, t);
-    if (!authority.loaded || authority.contract !== NEW_JOURNEY_VERSION) return;
-    document.querySelectorAll('.qw-progress .pstep').forEach(function (step) {
-      var label = step.querySelector('.pl');
-      if (String(label && label.textContent || '').trim().toLowerCase() === 'photos') step.remove();
-    });
-    document.querySelectorAll('.qw-progress .qw-progress-rail, .prog .rail').forEach(function (rail) {
-      rail.setAttribute('data-steps', String(rail.querySelectorAll('.pstep').length));
-    });
+    if (typeof document !== 'undefined') paintProgress(document, value);
   }
   function readJourneyState(t) {
     try { return JSON.parse(sessionStorage.getItem(journeyStateKey(t)) || 'null') || {}; } catch (_) { return {}; }
@@ -465,29 +456,22 @@
     var scope = root && root.querySelector ? root : document;
     var progress = scope.querySelector('.qw-progress');
     if (!progress) return progressTruth(view);
+    var subject = progress.querySelector('[data-position-subject]');
+    var count = progress.querySelector('[data-position-count]');
+    if (!subject || !count) return progressTruth(view);
     var current = String(progress.getAttribute('data-qw-step') || '').toLowerCase();
-    var truth = progressTruth(view);
-    var labels = [];
-    var steps = Array.from(progress.querySelectorAll('.pstep'));
-    var currentIndex = steps.findIndex(function (step) {
-      var labelNode = step.querySelector('.pl');
-      return String(labelNode && labelNode.textContent || '').trim().toLowerCase() === current;
-    });
-    steps.forEach(function (step, index) {
-      var labelNode = step.querySelector('.pl');
-      var key = String(labelNode && labelNode.textContent || '').trim().toLowerCase();
-      var complete = truth[key] === true && currentIndex >= 0 && index < currentIndex;
-      step.classList.toggle('done', complete);
-      step.classList.toggle('on', key === current);
-      step.classList.toggle('reached', currentIndex >= 0 && index < currentIndex);
-      step.toggleAttribute('data-complete', complete);
-      if (key === current) step.setAttribute('aria-current', 'step');
-      else step.removeAttribute('aria-current');
-      labels.push((key === current ? 'Current ' : '') + key + (complete ? ' complete' : ' incomplete'));
-    });
-    var rail = progress.querySelector('.qw-progress-rail');
-    if (rail) rail.setAttribute('aria-label', labels.join('. ') + '.');
-    return truth;
+    var state = view && view.quote_walk_v2;
+    // Only this response can establish the step count. URL and storage hints
+    // cannot briefly advertise a different journey during loading or recovery.
+    var loaded = state && Object.prototype.hasOwnProperty.call(state, 'intake_contract');
+    var steps = ['generator', 'panel', 'distance'];
+    if (loaded && state.intake_contract !== NEW_JOURNEY_VERSION) steps.push('photos');
+    var index = steps.indexOf(current);
+    var ready = Boolean(loaded && index >= 0);
+    count.textContent = ready ? 'Step ' + (index + 1) + ' of ' + steps.length + ' ·' : '';
+    count.setAttribute('aria-hidden', ready ? 'false' : 'true');
+    progress.setAttribute('data-position-ready', ready ? 'true' : 'false');
+    return progressTruth(view);
   }
   function fetchWithTimeout(url, options, timeoutMs) {
     var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
@@ -771,12 +755,6 @@
       return getJson(BASE + '/pre-read-view?token=' + encodeURIComponent(t)).then(function (value) {
         rememberJourneyState(t, value);
         applyNewJourneyProgress(t, value);
-        if (typeof document !== 'undefined') {
-          document.querySelectorAll('.qw-progress .qw-progress-rail, .prog .rail').forEach(function (rail) {
-            rail.setAttribute('data-steps', String(rail.querySelectorAll('.pstep').length));
-          });
-          paintProgress(document, value);
-        }
         var state = value && value.quote_walk_v2 || {};
         var path = String(window.location && window.location.pathname || '').replace(/\/index\.html$/, '/');
         if (state.service_area_status === 'verified_out_of_area' && path !== '/walk-v2/') {

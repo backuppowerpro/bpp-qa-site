@@ -73,7 +73,7 @@
   @media(min-width:760px){.page{width:1080px}.site-head{padding:0 48px}.body{padding:42px 24px 14px}h1{font-size:36px}}
   @media(max-width:759px){html,body{background:var(--page)}.stack{padding:0 0 calc(28px + env(safe-area-inset-bottom,0px))}.page{width:100%;border-radius:0;box-shadow:none}}
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=7c3b5ed409bf" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=aac4d845b250" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
 </head>
 <body>
@@ -85,17 +85,12 @@
         <img src="/assets/images/logo-white-v2.png" alt="Backup Power Pro" style="height:28px;width:auto;display:block" />
       </a>
     </header>
-    <div class="prog qw-progress" data-qw-step="generator">
-      <div class="rail qw-progress-rail" role="img" aria-label="Step 1 of 4: Generator">
-        <div class="pstep on"><span class="dot"></span><span class="pl">Generator</span></div>
-        <div class="pstep"><span class="dot"></span><span class="pl">Panel</span></div>
-        <div class="pstep"><span class="dot"></span><span class="pl">Distance</span></div>
-        <div class="pstep"><span class="dot"></span><span class="pl">Photos</span></div>
-      </div>
-    </div>
+    <div class="qw-progress" data-qw-step="generator">
     <button class="back-btn qw-back" type="button" data-back aria-label="Back">
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 3.5L6 8l4.5 4.5"></path></svg>
     </button>
+      <p class="qw-position" aria-current="step"><span class="qw-position-count" data-position-count aria-hidden="true"></span><strong data-position-subject>Generator</strong></p>
+    </div>
     <div class="body">
       <section data-question id="connectionChooser">
         <h1>Which connection is on your generator?</h1>
@@ -134,7 +129,7 @@
     </footer>
   </main>
 </div>
-<script src="/walk-v2/walk.js?v=0f41bc8891f8"></script>
+<script src="/walk-v2/walk.js?v=b7913bac293c"></script>
 <script>
 (function () {
   var t = WALK.requireToken(); if (!t) return;

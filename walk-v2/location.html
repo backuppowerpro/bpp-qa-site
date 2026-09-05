@@ -8,7 +8,7 @@
 
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-VoU61azup7DvYiub2mqytb+SOy7vjbXyq5ELeyBdmM4='; script-src-attr 'none'; style-src 'self' 'sha256-UEyiwLmGjmiAfRnhMRwKgrz/KGWsuaoCchxkxcnbL3Y='; style-src-elem 'self' 'sha256-UEyiwLmGjmiAfRnhMRwKgrz/KGWsuaoCchxkxcnbL3Y='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-VoU61azup7DvYiub2mqytb+SOy7vjbXyq5ELeyBdmM4='; script-src-attr 'none'; style-src 'self' 'sha256-RBxNw82cxFglLIavi3DswWwTukkDQpAtYrJqUpEsXJU='; style-src-elem 'self' 'sha256-RBxNw82cxFglLIavi3DswWwTukkDQpAtYrJqUpEsXJU='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
 <script src="/assets/js/bpp-analytics.js?v=ea909db798a0"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
@@ -197,67 +197,6 @@
   .back-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   .back-btn:active { color: var(--navy); }
 
-  /* ================= 2. progress band ================= */
-  .prog {
-    background: var(--card);
-    border-bottom: 1px solid var(--edge-soft);
-    padding: 16px 20px 14px;
-  }
-  .prog .rail {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    position: relative;
-    max-width: 420px;
-    margin: 0 auto;
-  }
-  .prog .rail::before {
-    content: "";
-    position: absolute;
-    top: 5px;
-    left: calc(100% / 6);
-    right: calc(100% / 6);
-    height: 2px;
-    background: var(--edge);
-  }
-  .prog .rail::after {
-    content: "";
-    position: absolute;
-    top: 5px;
-    left: calc(100% / 6);
-    width: 0;
-    height: 2px;
-    background: var(--gold);
-  }
-  .pstep {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 7px;
-  }
-  .pstep .dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--page);
-    box-shadow: inset 0 0 0 2px var(--edge);
-    position: relative;
-    z-index: 1;
-  }
-  .pstep.on .dot {
-    background: var(--gold);
-    box-shadow: 0 0 0 4px rgba(255,186,0,0.22);
-  }
-  .pstep .pl {
-    font-family: var(--head);
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--faint);
-  }
-  .pstep.on .pl { color: var(--gold-ink); }
-
   /* ================= body grid ================= */
   .body-grid {
     display: grid;
@@ -270,7 +209,6 @@
 
   @container page (min-width: 760px) {
     .site-head { padding: 0 48px; }
-    .prog { padding: 18px 48px 16px; }
     .body-grid {
       grid-template-columns: 1fr;
       max-width: 620px;
@@ -672,7 +610,7 @@
     .state-label { display: none; }
   }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=7c3b5ed409bf" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=aac4d845b250" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
 </head>
 <body>
@@ -690,17 +628,12 @@
     </header>
 
     <!-- 2. progress band -->
-    <div class="prog qw-progress" data-qw-step="panel">
-      <div class="rail qw-progress-rail" role="img" aria-label="Step 2 of 4: Panel. Generator complete.">
-        <div class="pstep done"><span class="dot"></span><span class="pl">Generator</span></div>
-        <div class="pstep on"><span class="dot"></span><span class="pl">Panel</span></div>
-        <div class="pstep"><span class="dot"></span><span class="pl">Distance</span></div>
-        <div class="pstep"><span class="dot"></span><span class="pl">Photos</span></div>
-      </div>
-    </div>
+    <div class="qw-progress" data-qw-step="panel">
     <button class="back-btn qw-back" type="button" data-back="" aria-label="Back">
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 3.5L6 8l4.5 4.5"></path></svg>
     </button>
+      <p class="qw-position" aria-current="step"><span class="qw-position-count" data-position-count aria-hidden="true"></span><strong data-position-subject>Panel</strong></p>
+    </div>
 
     <div class="body-grid">
       <div class="col-main">
@@ -793,7 +726,7 @@
 
 </div>
 
-<script src="/walk-v2/walk.js?v=0f41bc8891f8"></script>
+<script src="/walk-v2/walk.js?v=b7913bac293c"></script>
 <script>
 
 (function () {

@@ -6,7 +6,7 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-+h/0Nn3U4pKvfwc4YthMerwD4WkGHN/edWeIIzmNem8='; script-src-attr 'none'; style-src 'self' 'sha256-uPnxzDxHLpONSu3PJ4t2YTz3nr9v/L+B7x80R4jQj0k='; style-src-elem 'self' 'sha256-uPnxzDxHLpONSu3PJ4t2YTz3nr9v/L+B7x80R4jQj0k='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-+h/0Nn3U4pKvfwc4YthMerwD4WkGHN/edWeIIzmNem8='; script-src-attr 'none'; style-src 'self' 'sha256-hKFHi84+LLajeUlQuhJSuqGPqZoPmzzLdDgCbKI7gaI='; style-src-elem 'self' 'sha256-hKFHi84+LLajeUlQuhJSuqGPqZoPmzzLdDgCbKI7gaI='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
 <script src="/assets/js/bpp-analytics.js?v=ea909db798a0"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
@@ -129,97 +129,6 @@
     box-sizing: border-box;
   }
 
-  /* ================= 2. progress band ================= */
-  .prog {
-    background: var(--card);
-    border-bottom: 1px solid var(--edge-soft);
-    padding: 16px 20px 14px;
-  }
-  .prog .rail {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    position: relative;
-    max-width: 420px;
-    margin: 0 auto;
-  }
-  .prog .rail::before {
-    content: "";
-    position: absolute;
-    top: 5px;
-    left: calc(100% / 6);
-    right: calc(100% / 6);
-    height: 2px;
-    background: var(--edge);
-  }
-  .prog .rail::after {
-    content: "";
-    position: absolute;
-    top: 5px;
-    left: calc(100% / 6);
-    width: calc(100% / 3);
-    height: 2px;
-    background: var(--gold);
-  }
-  .pstep {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 7px;
-  }
-  .pstep .dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--page);
-    box-shadow: inset 0 0 0 2px var(--edge);
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--navy);
-  }
-  .pstep .dot svg { width: 7px; height: 7px; stroke-width: 3.4; display: none; }
-  .pstep.done .dot {
-    width: 14px;
-    height: 14px;
-    margin: -1px 0;
-    background: var(--gold);
-    box-shadow: none;
-  }
-  .pstep.done .dot svg { display: block; }
-  .pstep.on .dot {
-    background: var(--gold);
-    box-shadow: 0 0 0 4px rgba(255,186,0,0.22);
-  }
-  .pstep .pl {
-    font-family: var(--head);
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--faint);
-  }
-  .pstep.on .pl, .pstep.done .pl { color: var(--gold-ink); }
-
-  /* back-a-step control */
-  .back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    min-height: 44px;
-    margin: 12px 0 0 14px;
-    padding: 6px 10px 6px 6px;
-    background: none;
-    font-family: var(--head);
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--muted);
-  }
-  .back-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-  .back-btn:active { color: var(--navy); }
-
   /* ================= body ================= */
   .body {
     padding: 4px 22px 28px;
@@ -231,7 +140,6 @@
   }
   @container page (min-width: 760px) {
     .site-head { padding: 0 48px; }
-    .prog { padding: 18px 48px 16px; }
     .body { padding: 8px 24px 28px; }
   }
 
@@ -518,7 +426,7 @@
     .state-label { display: none; }
   }
 </style>
-<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=7c3b5ed409bf" />
+<link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=aac4d845b250" />
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
 </head>
 <body>
@@ -536,18 +444,12 @@
     </header>
 
     <!-- 2. progress band -->
-    <div class="prog qw-progress" data-qw-step="distance">
-      <div class="rail qw-progress-rail" role="img" aria-label="Step 3 of 4: Distance. Generator and Panel complete.">
-        <div class="pstep done"><span class="dot"></span><span class="pl">Generator</span></div>
-        <div class="pstep done"><span class="dot"></span><span class="pl">Panel</span></div>
-        <div class="pstep on"><span class="dot"></span><span class="pl">Distance</span></div>
-        <div class="pstep"><span class="dot"></span><span class="pl">Photos</span></div>
-      </div>
-    </div>
-
+    <div class="qw-progress" data-qw-step="distance">
     <button class="back-btn qw-back" type="button" data-back="" aria-label="Back">
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3l-5 5 5 5"></path></svg>
     </button>
+      <p class="qw-position" aria-current="step"><span class="qw-position-count" data-position-count aria-hidden="true"></span><strong data-position-subject>Distance</strong></p>
+    </div>
 
     <div class="body">
 
@@ -638,7 +540,7 @@
 
 </div>
 
-<script src="/walk-v2/walk.js?v=0f41bc8891f8"></script>
+<script src="/walk-v2/walk.js?v=b7913bac293c"></script>
 <script>
 
 (function () {
