@@ -56,7 +56,7 @@
   function cancelPendingUploadReconciliations() {
     pendingUploadReconciliationCancels.slice().forEach(function (cancel) { cancel(); });
   }
-  function go(page, t, extra) {
+  function go(page, t, extra, replaceHistory) {
     cancelPendingUploadReconciliations();
     insideWalkNav = true;
     var retained = setToken(t);
@@ -88,6 +88,7 @@
     var query = params.toString();
     var target = '/walk-v2/' + page + (query ? '?' + query : '');
     if (window.__QW_NAVIGATE__) window.__QW_NAVIGATE__(target);
+    else if (replaceHistory === true) window.location.replace(target);
     else window.location.href = target;
   }
   /* explicit back-a-step, token preserved everywhere. With no prevPage we send
@@ -720,6 +721,20 @@
   }
 
   window.WALK = {
+    copyReturnLink: function (t, screen) {
+      if (!navigator.clipboard || !navigator.clipboard.writeText) {
+        return Promise.reject(new Error('Link copying is unavailable in this browser. Keep this tab open to return to your saved answers.'));
+      }
+      var returnURL = new URL('/walk-v2/incomplete.html', window.location.origin);
+      returnURL.searchParams.set('t', t);
+      return Promise.resolve().then(function () {
+        return navigator.clipboard.writeText(returnURL.href);
+      }).then(function () {
+        window.WALK.ph('walk_v2_return_link_copied', { screen: screen });
+      }, function () {
+        throw new Error('The link could not be copied. Keep this tab open, or try copying again.');
+      });
+    },
     token: token,
     setToken: setToken,
     go: go,
@@ -1216,20 +1231,20 @@
     /* Resume at the first unanswered step. New records always carry a
        connection_status. Amperage remains a legacy fallback for saved walks
        created before the connection step was separated from the lead form. */
-    routeFromState: function (t, v) {
+    routeFromState: function (t, v, replaceHistory) {
       var v2 = v.quote_walk_v2 || {};
       var newJourney = isNewJourney(v, t);
       if (v2.service_area_status === 'verified_out_of_area') {
-        go('index.html', t, { area: 'out' });
+        go('index.html', t, { area: 'out' }, replaceHistory);
         return;
       }
-      if (isGeneratorNeeded(v)) return go('generator-needed.html', t);
+      if (isGeneratorNeeded(v)) return go('generator-needed.html', t, null, replaceHistory);
       if (hasIncompleteInputs(v, t)) return goIncompleteIfNeeded(t);
       if (!newJourney && (
         (Array.isArray(v2.blockers) && v2.blockers.some(function (blocker) { return /_photo$/.test(String(blocker)); }))
         || (!v.photo_count && !v.photo_received)
-      )) return go('photos.html', t);
-      return go(newJourney ? 'range.html' : (v2 && v2.blockers ? 'range.html' : 'thankyou.html'), t);
+      )) return go('photos.html', t, null, replaceHistory);
+      return go(newJourney ? 'range.html' : (v2 && v2.blockers ? 'range.html' : 'thankyou.html'), t, null, replaceHistory);
     },
     /* Recovery is task-directed. It re-opens only the first truly unresolved
        requirement, then skips every answer that is already complete. */

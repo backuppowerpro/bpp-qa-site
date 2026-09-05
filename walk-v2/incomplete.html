@@ -6,7 +6,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="robots" content="noindex,nofollow,noarchive" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-kCiLfksBWI4w6wHCoJwtuhs9VvdZ3qYPCJVFQXffyew='; script-src-attr 'none'; style-src 'self' 'sha256-GQqG+SMI9YIf1TzKWY4VBkkqHq5mUO/4dW5LhpUPOso='; style-src-elem 'self' 'sha256-GQqG+SMI9YIf1TzKWY4VBkkqHq5mUO/4dW5LhpUPOso='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; form-action 'self'; frame-src 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-R1QAVzF0Md56vRn1gWV3S9b+punJNvCy7gDMRjfGkkA='; script-src-attr 'none'; style-src 'self' 'sha256-GQqG+SMI9YIf1TzKWY4VBkkqHq5mUO/4dW5LhpUPOso='; style-src-elem 'self' 'sha256-GQqG+SMI9YIf1TzKWY4VBkkqHq5mUO/4dW5LhpUPOso='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; form-action 'self'; frame-src 'none'" />
 <script src="/assets/js/bpp-analytics.js?v=ea909db798a0"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
@@ -99,7 +99,7 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
     <span class="foot-process">Key reviews your setup, handles permitting, and coordinates installation and final inspection.</span>
   </footer>
 </div>
-<script src="/walk-v2/walk.js?v=060c85c2aaae"></script>
+<script src="/walk-v2/walk.js?v=0f41bc8891f8"></script>
 <script>
 (function () {
   var t = WALK.requireToken(); if (!t) return;
@@ -186,7 +186,7 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
       blockers = blockers.concat(['distance']);
     }
     if (!blockers.length) {
-      WALK.routeFromState(t, value);
+      WALK.routeFromState(t, value, true);
       return;
     }
 
@@ -243,20 +243,11 @@ h1 { margin:0 0 8px; color:var(--navy); font-family:var(--head); font-size:22px;
     copyReturn.setAttribute('data-copy-return', '');
     var copyError = '';
     copyReturn.addEventListener('click', function () {
-      var returnURL = new URL('/walk-v2/incomplete.html', window.location.origin);
-      returnURL.searchParams.set('t', t);
-      if (!navigator.clipboard || !navigator.clipboard.writeText) {
-        copyError = 'Link copying is unavailable in this browser. Keep this tab open to return to your saved answers.';
-        error.textContent = copyError;
-        error.classList.remove('hidden');
-        return;
-      }
-      navigator.clipboard.writeText(returnURL.href).then(function () {
+      WALK.copyReturnLink(t, 'incomplete').then(function () {
         copyReturn.textContent = 'Return link copied';
         if (copyError && error.textContent === copyError) error.classList.add('hidden');
-        WALK.ph('walk_v2_return_link_copied', { screen: 'incomplete' });
-      }).catch(function () {
-        copyError = 'The link could not be copied. Keep this tab open, or try copying again.';
+      }).catch(function (cause) {
+        copyError = cause.message;
         error.textContent = copyError;
         error.classList.remove('hidden');
       });

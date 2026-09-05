@@ -4,7 +4,7 @@
 <meta name="robots" content="noindex,nofollow,noarchive">
 <script src="/qa-environment.js"></script>
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-p6uYo2vlkeIP6BAOIB7ZAvK+mZXxY8yizsT7tLn8rMo='; script-src-attr 'none'; style-src 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-elem 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-TYAcNp5OQt4ibsI4tdHwb1MieGpQF5YlRGHw0khNipU='; script-src-attr 'none'; style-src 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-elem 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
 <script src="/assets/js/bpp-analytics.js?v=ea909db798a0"></script>
 <script src="/walk-v2/token-bootstrap.js?v=20260815-bearer"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
@@ -221,18 +221,16 @@
       <button class="choice" type="button" data-range-reason="not_ready">
         <strong>I am not ready yet</strong>
       </button>
-      <button class="choice" type="button" data-range-reason="change_setup">
-        <strong>I want to change the setup</strong>
-      </button>
       <button class="link-btn qw-secondary-action options-return" type="button" data-close-reasons="">Back to the current range</button>
     </section>
 
     <section class="notice success hidden" data-range-choice-saved="" role="status" aria-live="polite" tabindex="-1">
-      <strong>Your Quote Walk is saved.</strong><br />
-      No proposal has been requested.
-      <a class="link-btn qw-secondary-action hidden" href="sms:+18648637800" data-ask-key="">Text Key my question</a>
-      <button class="link-btn qw-secondary-action" type="button" data-return-saved="">Back to the current range</button>
+      <strong data-concern-title="">Your Quote Walk is saved.</strong>
+      <p data-concern-copy="">No proposal has been requested.</p>
+      <a class="btn hidden" href="sms:+18648637800" data-ask-key="">Text Key my question</a>
+      <button class="btn" type="button" data-copy-return="">Copy my return link</button>
     </section>
+    <button class="link-btn qw-secondary-action hidden" type="button" data-return-saved="">Back to my estimate</button>
 
     <section class="card hidden" data-options="">
       <h2>Would a different setup work better?</h2>
@@ -281,7 +279,7 @@
     <span class="foot-process">Key reviews your setup, handles permitting, and coordinates installation and final inspection.</span>
   </footer>
 </div>
-<script src="/walk-v2/walk.js?v=060c85c2aaae"></script>
+<script src="/walk-v2/walk.js?v=0f41bc8891f8"></script>
 <script>
 (function () {
   var t = WALK.requireToken(); if (!t) return;
@@ -316,7 +314,7 @@
   var reasonCard = main.querySelector('[data-range-reasons]');
   var reasonSaveStatus = reasonCard.querySelector('[data-reason-save-status]');
   var choiceSaved = main.querySelector('[data-range-choice-saved]');
-  var savedReturn = choiceSaved.querySelector('[data-return-saved]');
+  var savedReturn = main.querySelector('[data-return-saved]');
   var askKey = choiceSaved.querySelector('[data-ask-key]');
   var options = main.querySelector('[data-options]');
   var revision = main.querySelector('[data-distance-revision]');
@@ -603,6 +601,7 @@
         : "Your setup is saved.";
       show(rangeCard.querySelector('[data-range-heading]'), false);
       show(acceptedHeading, true);
+      show(rangeCard.querySelector('.range-next-step'), true);
       rangeCard.querySelector('[data-basis]').textContent = '';
       rangeCard.querySelector('.range-next-step').textContent = 'Thanks for sharing the details of your setup. Key will review it and handle the next step.';
       if (isNewJourney()) rangeCard.querySelector('.range-next-step').textContent = 'Photos are next. Once Key has usable photos, he’ll send your exact proposal or explain what else is needed by the next business day.';
@@ -697,19 +696,32 @@
     var notFitClosed = v2().not_fit_status === 'closed';
     var savedReason = currentSavedReason();
     var savedOutcomeVisible = !savedOutcomeDismissed && !choosingReason && Boolean(savedReason) && !notFitClosed && !v2().accepted_range_snapshot_id;
-    var editingOptions = savedOutcomeVisible && (savedReason === 'price' || savedReason === 'change_setup');
+    var editingOptions = !newJourney && savedOutcomeVisible && (savedReason === 'price' || savedReason === 'change_setup');
+    var reviewConcern = savedReason === 'price' || savedReason === 'change_setup';
+    choiceSaved.querySelector('[data-concern-title]').textContent = newJourney && reviewConcern
+      ? 'Your concern is saved for Key.' : 'Your Quote Walk is saved.';
+    choiceSaved.querySelector('[data-concern-copy]').textContent = newJourney && reviewConcern
+      ? 'Key will review whether a simpler setup makes sense. Any change will be explained in your firm proposal. Your estimate and scope have not changed.'
+      : savedReason === 'need_clarity'
+        ? 'Text Key your question before continuing. No proposal has been requested.'
+        : 'No proposal has been requested. Copy your return link if you want to continue later.';
+    askKey.textContent = reviewConcern ? 'Text Key about my setup' : 'Text Key my question';
     var showingReason = choosingReason && !notFitClosed && !v2().accepted_range_snapshot_id;
     var awaitingHandoffReview = handoffReviewRequired && acceptedCurrent && v2().handoff_recorded !== true;
-    document.querySelector('.qw-range-hero').classList.toggle('is-recovery', notFitClosed);
+    document.querySelector('.qw-range-hero').classList.toggle('is-recovery', notFitClosed || savedOutcomeVisible || showingReason);
     show(rangeCard, !notFitClosed);
+    show(rangeCard.querySelector('.range-next-step'), !savedOutcomeVisible && !showingReason);
     show(scope, !savedOutcomeVisible && !choosingReason && !notFitClosed && (!v2().accepted_range_snapshot_id || awaitingHandoffReview));
     var showAcceptance = !notFitClosed && !v2().accepted_range_snapshot_id && !savedOutcomeVisible && !showingReason;
+    show(rangeCard.querySelector('[data-accept]'), showAcceptance);
     show(fitCard, showAcceptance || awaitingHandoffReview);
     show(retryHandoff, awaitingHandoffReview);
     show(reasonCard, showingReason);
     show(choiceSaved, savedOutcomeVisible);
-    show(askKey, savedOutcomeVisible && savedReason === 'need_clarity');
+    show(askKey, savedOutcomeVisible && (savedReason === 'need_clarity' || newJourney && reviewConcern));
     show(savedReturn, savedOutcomeVisible && !editingOptions);
+    show(choiceSaved.querySelector('[data-copy-return]'), savedOutcomeVisible && savedReason === 'not_ready');
+    show(backControl, !savedOutcomeVisible && !showingReason);
     show(options, editingOptions && !showingReason);
     show(main.querySelector('[data-not-fit-terminal]'), notFitClosed);
     show(main.querySelector('[data-alt-30]'), observed.indexOf('30') !== -1 && observed.indexOf('50') !== -1 && pricingBasis === '50');
@@ -1030,6 +1042,17 @@
     render();
     var accept = main.querySelector('[data-accept-bottom]');
     if (accept) accept.focus();
+  });
+  var copyReturn = choiceSaved.querySelector('[data-copy-return]');
+  var copyReturnError = '';
+  copyReturn.addEventListener('click', function () {
+    WALK.copyReturnLink(t, 'range').then(function () {
+      copyReturn.textContent = 'Return link copied';
+      if (copyReturnError && errorCopy.textContent === copyReturnError) error.classList.add('hidden');
+    }).catch(function (cause) {
+      copyReturnError = cause.message;
+      fail(copyReturnError);
+    });
   });
   savedReturn.addEventListener('click', function () {
     savedOutcomeDismissed = true;
