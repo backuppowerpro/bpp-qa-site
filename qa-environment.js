@@ -232,6 +232,27 @@
   const originalFetch = window.fetch.bind(window);
   window.fetch = function (input, init) {
     const value = input instanceof Request ? input.url : input;
+    const url = new URL(String(value), window.location.href);
+    if (url.origin === window.location.origin && url.pathname === '/api/address-suggest') {
+      const method = String(init?.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
+      return Promise.resolve().then(async function () {
+        try {
+          if (method !== 'POST') throw new Error('invalid_method');
+          const raw = init?.body !== undefined ? init.body : input instanceof Request ? await input.clone().text() : '';
+          if (typeof raw !== 'string' || raw.length > 4096) throw new Error('invalid_body');
+          const body = JSON.parse(raw);
+          if (typeof body?.query !== 'string' || body.query.trim().length < 3 || body.query.length > 256) {
+            throw new Error('invalid_query');
+          }
+          return qaMapboxResponse('https://api.mapbox.com/geocoding/v5/mapbox.places/' + encodeURIComponent(body.query.trim()) + '.json');
+        } catch (_error) {
+          return new Response(JSON.stringify({ error: 'invalid_address_query' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', 'X-BPP-QA-Mock': 'address-suggest' },
+          });
+        }
+      });
+    }
     const mapboxResponse = qaMapboxResponse(value);
     if (mapboxResponse) return Promise.resolve(mapboxResponse);
     const openMapResponse = qaOpenMapResponse(value);
