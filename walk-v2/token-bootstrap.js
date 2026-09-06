@@ -34,6 +34,13 @@
 
   var current = new URL(window.location.href);
   var supplied = current.searchParams.get('t') || '';
+  // A plain visit starts the next owner test. Explicit return links and
+  // in-walk address corrections still belong to their original run.
+  var plainLanding = /^\/walk-v2\/(?:index\.html)?$/.test(current.pathname)
+    && !valid(supplied) && !current.searchParams.has('area') && !current.searchParams.has('edit');
+  try {
+    if (plainLanding && sessionStorage.getItem('bpp:owner-test') === '1') store('');
+  } catch (_) {}
   var stored = valid(supplied) ? store(supplied) : readStored();
   var canRemoveSupplied = !valid(supplied) || stored === supplied;
 

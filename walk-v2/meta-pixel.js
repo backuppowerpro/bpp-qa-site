@@ -6,6 +6,11 @@
     return navigator.globalPrivacyControl === true || dnt === '1' || dnt === 'yes';
   }
 
+  function ownerTestMode() {
+    if (window.__BPP_OWNER_TEST === true) return true;
+    try { return sessionStorage.getItem('bpp:owner-test') === '1'; } catch (_) { return false; }
+  }
+
   var trackedEventIds = Object.create(null);
   window.BPPMeta = {
     enabled: false,
@@ -13,7 +18,7 @@
     trackLead: function () {}
   };
 
-  if (window.__BPP_CAPABILITY_ENTRY === true || privacyBlocked()) return;
+  if (window.__BPP_CAPABILITY_ENTRY === true || privacyBlocked() || ownerTestMode()) return;
 
   if (!window.fbq) {
     var fbq = window.fbq = function () {
@@ -46,6 +51,7 @@
   window.BPPMeta = {
     enabled: true,
     trackQuoteWalkStarted: function (eventId) {
+      if (ownerTestMode()) return;
       var safeId = String(eventId || '');
       if (!/^wv2-[a-zA-Z0-9-]{8,100}$/.test(safeId) || trackedEventIds['start:' + safeId]) return;
       trackedEventIds['start:' + safeId] = true;
@@ -55,6 +61,7 @@
       }, { eventID: safeId });
     },
     trackLead: function (eventId) {
+      if (ownerTestMode()) return;
       var safeId = String(eventId || '');
       if (!/^wv2-[a-zA-Z0-9-]{8,100}$/.test(safeId) || trackedEventIds['lead:' + safeId]) return;
       trackedEventIds['lead:' + safeId] = true;

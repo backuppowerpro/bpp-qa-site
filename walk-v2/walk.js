@@ -328,6 +328,9 @@
     try { return JSON.parse(sessionStorage.getItem(journeyStateKey(t)) || 'null') || {}; } catch (_) { return {}; }
   }
   function rememberJourneyState(t, value) {
+    if (value && typeof value.ownerTest === 'boolean' && typeof window.BPPAnalytics?.setOwnerTestMode === 'function') {
+      window.BPPAnalytics.setOwnerTestMode(value.ownerTest);
+    }
     var current = readJourneyState(t);
     var v2 = value && value.quote_walk_v2 || {};
     var receivedIntakeContract = value && value.quote_walk_v2

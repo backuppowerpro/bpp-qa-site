@@ -118,7 +118,22 @@
     return { surface: surface, document_variant: variant };
   }
 
+  function ownerTestMode() {
+    if (window.__BPP_OWNER_TEST === true) return true;
+    try { return sessionStorage.getItem('bpp:owner-test') === '1'; } catch (_) { return false; }
+  }
+
+  function setOwnerTestMode(isTest) {
+    try {
+      if (isTest === true) sessionStorage.setItem('bpp:owner-test', '1');
+      else sessionStorage.removeItem('bpp:owner-test');
+    } catch (_) {}
+    window.__BPP_OWNER_TEST = isTest === true;
+    if (isTest === true) capture('walk_v2_owner_test_classified');
+  }
+
   function trafficScope() {
+    if (ownerTestMode()) return 'synthetic';
     var host = String(window.location.hostname || '').toLowerCase();
     if (host === 'backuppowerpro.com' || host === 'www.backuppowerpro.com') return 'production';
     if (host === 'qa.backuppowerpro.com' || host.indexOf('bpp-qa-site.pages.dev') !== -1) return 'qa';
@@ -244,7 +259,7 @@
     }, { capture: true });
   }
 
-  window.BPPAnalytics = Object.freeze({ capture: capture });
+  window.BPPAnalytics = Object.freeze({ capture: capture, setOwnerTestMode: setOwnerTestMode });
   window.addEventListener('bpp:walk-event', function (event) {
     var detail = event && event.detail || {};
     capture(detail.event, detail);
