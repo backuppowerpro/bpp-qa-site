@@ -280,7 +280,6 @@
     }
     .ack input:checked + .ack-box{border-color:var(--plan-green);background:var(--plan-green)}
     .ack input:focus-visible + .ack-box{outline:2px solid #1d4ed8;outline-offset:2px}
-    #fullPaymentChoice[hidden]{display:none}
     .price-card .bpp-financing{color:rgba(255,255,255,.78)}
     .price-card .bpp-financing a{color:#fff}
     .ack-copy{color:var(--plan-ink);font-size:13px;line-height:1.5}
@@ -558,12 +557,6 @@
         <h2 class="section-title" id="approveHeading">Approve the plan to begin.</h2>
         <p class="approval-personal">Thank you for trusting me with your home. I’ll make sure your installation is handled carefully, explained clearly, and ready to make the next outage stress free.</p>
 
-        <label class="ack" id="fullPaymentChoice" hidden>
-          <input type="checkbox" id="payFull">
-          <span class="ack-box">✓</span>
-          <span class="ack-copy">Pay the full <strong id="fullPaymentTotal"></strong> today<small>Optional. No remaining installation balance.</small></span>
-        </label>
-
         <label class="ack">
           <input type="checkbox" id="agreementAck">
           <span class="ack-box">✓</span>
@@ -628,7 +621,6 @@
         baseDisplayByAmp:{50:1347}
       };
       var pomSelected=false;
-      var payFullSelected=false;
       var infoReturnFocus=null;
       var infoBackground=[];
       var approvalCueTimer=null;
@@ -654,7 +646,6 @@
       var SUPABASE_URL='https://hfatblrcwytxvijjhpal.supabase.co';
       var SUPABASE_KEY='sb_publishable_kBXthY-Han29JLqcT514RQ_RtwxXLZ-';
       var AUTH_VERSION='mandate-v1-2026-06-08';
-      var FULL_AUTH_VERSION='full-payment-v1-2026-09-07';
       var AUTHORIZATION_GATE_TIMEOUT_MS=4000;
       var authorizationGateState=isPreview?'preview':'pending';
       var authorizationGateInFlight=null;
@@ -819,7 +810,6 @@
         return Math.max(0,(Number(fixture.total)||0)+(pomSelected?POM_PRICE:0));
       }
       function deposit(){
-        if(payFullSelected&&fixture.requireDeposit!==false) return total();
         if(fixture.requireDeposit===false) return 0;
         return Math.round(total()*(Number(fixture.depositRate)||0));
       }
@@ -933,20 +923,15 @@
         var later=projectTotal-due;
         var paymentRequired=fixture.requireDeposit!==false&&due>0;
         document.getElementById('allInTotal').textContent=money(projectTotal);
-        document.getElementById('fullPaymentChoice').hidden=fixture.requireDeposit===false||Number(fixture.depositRate)>=1;
-        document.getElementById('payFull').checked=payFullSelected;
-        document.getElementById('fullPaymentTotal').textContent=money(projectTotal);
-        document.getElementById('dueTodayLabel').textContent=payFullSelected?'Full payment today':'Deposit to begin';
+        document.getElementById('dueTodayLabel').textContent=fixture.requireDeposit===false?'Due today':'Deposit to begin';
         BPPFinancing.render(document.getElementById('proposalFinancing'),projectTotal,previewModeActive());
         document.getElementById('sTotal').textContent=money(due);
         document.getElementById('balanceTotal').textContent=money(later);
-        document.getElementById('agreementMoney').textContent=payFullSelected
-          ? 'saving this payment method and the full '+money(projectTotal)+' payment today. No remaining installation balance will be charged'
-          : fixture.requireDeposit===false
+        document.getElementById('agreementMoney').textContent=fixture.requireDeposit===false
           ? 'saving this payment method and a one-time '+money(projectTotal)+' charge after installation. Key personally reviews that charge before it runs, and I can cancel this authorization before installation'
           : 'the '+money(due)+' deposit today, saving this payment method, and a one-time '+money(later)+' charge after installation. Key personally reviews that charge before it runs, and I can cancel this authorization before installation';
         document.getElementById('stickyDeposit').textContent=money(due);
-        document.getElementById('stickyLabel').textContent=payFullSelected?'Full payment today':(fixture.requireDeposit===false?'Due today':'Deposit today');
+        document.getElementById('stickyLabel').textContent=fixture.requireDeposit===false?'Due today':'Deposit today';
         document.getElementById('approveButton').textContent=paymentRequired
           ? 'Approve and pay '+money(due)
           : 'Approve this plan';
@@ -976,7 +961,6 @@
           && !depositCancellationUnconfirmed;
       }
       function syncApproval(){
-        document.getElementById('payFull').disabled=submitting;
         document.getElementById('pomToggle').disabled=submitting;
         document.getElementById('approveButton').disabled=!approvalReady();
       }
@@ -1193,7 +1177,6 @@
         };
       }
       function canonicalAuthorization(projectTotal){
-        if(payFullSelected)return 'I authorize Key Electric LLC (dba Backup Power Pro) to save my card and charge '+money(projectTotal)+' today as full payment for this project. No remaining installation balance will be charged. This is not a subscription or recurring payment.';
         var rounded=Math.round(Number(projectTotal)||0);
         var due=fixture.requireDeposit===false?0:Math.round(rounded*Number(fixture.depositRate||0));
         var balance=rounded-due;
@@ -1220,14 +1203,14 @@
         document.querySelector('.page').innerHTML='<section class="card state-card"><h1>'+escapeHtml(title)+'</h1><p>'+escapeHtml(message)+'</p>'+(actionHtml||'')+'</section>';
         syncAuthorizationGateUI();
       }
-      function checkout(button,acceptanceAttemptId,fullPayment){
+      function checkout(button,acceptanceAttemptId){
         if(previewModeActive()||!authorizationGateReady()) return Promise.reject(new Error('Authorization check is not ready.'));
         if(!proposal) return Promise.reject(new Error('Proposal is unavailable.'));
         if(button) button.disabled=true;
         if(acceptanceAttemptId)rememberPendingDepositAcceptance(proposal.token,acceptanceAttemptId);
         return fetch(SUPABASE_URL+'/functions/v1/proposal-deposit-checkout',{
           method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},
-          body:JSON.stringify({proposal_token:proposal.token,pay_full:fullPayment===true,acceptance_attempt_id:acceptanceAttemptId||undefined})
+          body:JSON.stringify({proposal_token:proposal.token,pay_full:false,acceptance_attempt_id:acceptanceAttemptId||undefined})
         }).then(function(response){return response.json().catch(function(){return {};}).then(function(data){if(!response.ok) throw new Error(data.error||'Could not start secure checkout.');return data;});})
           .then(function(data){var target=safeStripeUrl(data.url);if(!target) throw new Error('Payment setup returned an invalid destination.');window.location.href=target;})
           .catch(function(error){
@@ -1524,7 +1507,6 @@
         return ['cancelled','canceled','declined','expired','superseded'].indexOf(status)>-1;
       }
       function resetAuthorizationForRevisedContract(row){
-        payFullSelected=false;
         submitting=false;
         signStatusUncertain=false;
         signatureDeliberate=false;
@@ -1547,7 +1529,6 @@
         setApprovalError('This proposal changed. Review the current scope and price, then acknowledge and sign the revised proposal.');
       }
       function resetDepositAcceptanceAuthorization(message){
-        payFullSelected=false;
         submitting=false;
         signStatusUncertain=false;
         signatureDeliberate=false;
@@ -1667,30 +1648,28 @@
         button.textContent='Submitting securely...';
         var projectTotal=total();
         var signer=document.getElementById('signature').value.trim();
-        var fullPayment=payFullSelected;
-        var authorizationVersion=fullPayment?FULL_AUTH_VERSION:AUTH_VERSION;
         var authorization=canonicalAuthorization(projectTotal);
         var depositRequired=proposal.require_deposit!==false;
         var acceptanceRequestKey=crypto.randomUUID();
         var snapshot=JSON.stringify({
           proposal_id:proposal.id,proposal_token:proposal.token,contact_name:proposal.contact_name,contact_address:proposal.contact_address,
-          selected_amp:fixture.amp,selected_pom:pomSelected,selected_surge:false,total:projectTotal,pay_full:fullPayment,scope_acknowledged:true,
+          selected_amp:fixture.amp,selected_pom:pomSelected,selected_surge:false,total:projectTotal,pay_full:false,scope_acknowledged:true,
           safety_acknowledged:true,charge_authorized:true,charge_authorization_text:authorization,
-          charge_authorization_version:authorizationVersion,signer_name:signer,signed_at:new Date().toISOString(),user_agent:navigator.userAgent
+          charge_authorization_version:AUTH_VERSION,signer_name:signer,signed_at:new Date().toISOString(),user_agent:navigator.userAgent
         });
         fetch(SUPABASE_URL+'/functions/v1/proposal-mutate',{
           method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY},
           body:JSON.stringify({token:proposal.token,action:'sign',proposal_revision:Number(proposal.signature_revision),signer_name:signer,
             selected_amp:fixture.amp,selected_surge:false,selected_pom:pomSelected,safety_ack:true,signed_total:projectTotal,
             approved_terms_snapshot:snapshot,charge_authorized:true,charge_authorization_text:authorization,
-            charge_authorization_version:authorizationVersion,acceptance_request_key:acceptanceRequestKey,pay_full:fullPayment})
+            charge_authorization_version:AUTH_VERSION,acceptance_request_key:acceptanceRequestKey,pay_full:false})
         }).then(function(response){return response.json().catch(function(){return {};}).then(function(data){if(!response.ok) throw new Error(data.error||'Could not approve this proposal.');return data;});})
           .then(function(data){
             if(depositRequired){
               var attemptId=String(data&&data.acceptance_attempt_id||'');
               if(data.pending_payment!==true||!/^[0-9a-f-]{36}$/i.test(attemptId))throw new Error('Pending acceptance was not confirmed.');
               button.textContent='Opening secure payment...';
-              return checkout(button,attemptId,fullPayment);
+              return checkout(button,attemptId);
             }
             proposal.status='Signed';proposal.signed_total=projectTotal;button.textContent='Opening secure payment...';return checkout(button);
           })
@@ -1870,12 +1849,6 @@
           });
       }
 
-      document.getElementById('payFull').addEventListener('change',function(){
-        if(submitting){this.checked=payFullSelected;return;}
-        payFullSelected=this.checked;
-        document.getElementById('agreementAck').checked=false;
-        renderMoney();syncApproval();
-      });
       document.getElementById('pomToggle').addEventListener('click',function(){
         if(submitting)return;
         document.getElementById('agreementAck').checked=false;

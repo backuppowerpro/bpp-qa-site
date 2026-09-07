@@ -307,8 +307,7 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
 .approved-icon svg polyline{stroke-dasharray:40;stroke-dashoffset:40;animation:checkDraw .45s ease-out .2s forwards}
 
 /* ── PAYMENT OPTION PICKER ──────────────────────────── */
-.pay-opt{border:2px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s,background .15s,box-shadow .15s;user-select:none}
-.pay-opt:hover{border-color:var(--navy-mid)}
+.pay-opt{border:2px solid var(--border);border-radius:10px;padding:12px 14px;cursor:default;transition:border-color .15s,background .15s,box-shadow .15s;user-select:none}
 .pay-opt.selected{border-color:var(--navy);background:rgba(11,31,59,.04);box-shadow:0 0 0 1px var(--navy)}
 .pay-opt-label{display:flex;justify-content:space-between;align-items:center}
 .pay-opt-name{font-weight:700;font-size:14px;color:var(--navy)}
@@ -425,7 +424,6 @@ let signerIdentityConfirmed = false;
 let signerIdentityTypedCharacters = 0;
 let historyAuthorizationResetPending = false;
 let isPreview = false;
-let selectedPayFull = false;
 let signStatusUncertain = false;
 let approvedCheckoutOpening = false;
 let depositCancellationUnconfirmed = true;
@@ -1284,7 +1282,7 @@ function renderProposal() {
     <div class="sign-card reveal" id="sign-section">
       <div class="sign-card-head">
         <h2>Confirm your connection</h2>
-        <p>${requireDeposit ? 'Check the two items below, choose payment, and type your name. Your payment confirms the spot; I pull the permit and book your date.' : 'Check the two items below and type your name. Once confirmed, I pull the permit and text you to schedule. Price stays locked. No payment until the job is done.'}</p>
+        <p>${requireDeposit ? 'Check the two items below and type your name. Your payment confirms the spot; I pull the permit and book your date.' : 'Check the two items below and type your name. Once confirmed, I pull the permit and text you to schedule. Price stays locked. No payment until the job is done.'}</p>
       </div>
       <div class="sign-card-body">
         <div class="ack-row" id="ack-row-scope" role="checkbox" tabindex="0" aria-checked="false">
@@ -1318,13 +1316,9 @@ function renderProposal() {
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px">
-            <div class="pay-opt selected" id="pay-opt-deposit" onclick="selectPayOpt(false)">
+            <div class="pay-opt selected" id="pay-opt-deposit">
               <div class="pay-opt-label"><span class="pay-opt-name">${Math.round(depositRate*100)}% Deposit</span><span class="pay-opt-amount">${fmt(depositAmt)}</span></div>
               <div class="pay-opt-sub">Remaining ${fmt(total - depositAmt)} due on install day</div>
-            </div>
-            <div class="pay-opt" id="pay-opt-full" onclick="selectPayOpt(true)">
-              <div class="pay-opt-label"><span class="pay-opt-name">Pay in Full</span><span class="pay-opt-amount">${fmt(total)}</span></div>
-              <div class="pay-opt-sub">Remainder is fully refundable if cancelled 48+ hrs before install</div>
             </div>
           </div>
           <div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5">Card or bank transfer. ACH clears in 3 to 5 business days.</div>
@@ -1649,13 +1643,6 @@ function toggleDepPolicy(e) {
   }
 }
 
-function selectPayOpt(full) {
-  selectedPayFull = full;
-  document.getElementById('pay-opt-deposit')?.classList.toggle('selected', !full);
-  document.getElementById('pay-opt-full')?.classList.toggle('selected', full);
-  updateApproveBtn();
-}
-
 function updateApproveBtn() {
   const total = calcTotal(chosenAmp);
   const depositRate = Number(P?.deposit_rate ?? 0.20);
@@ -1664,9 +1651,7 @@ function updateApproveBtn() {
   const label = document.getElementById('approve-btn-label');
   if (label) {
     if (requireDeposit) {
-      label.innerHTML = selectedPayFull
-        ? `Confirm &amp; Pay ${fmt(total)} in Full`
-        : `Confirm &amp; Pay ${fmt(depositAmt)} Deposit`;
+      label.innerHTML = `Confirm &amp; Pay ${fmt(depositAmt)} Deposit`;
     } else {
       label.innerHTML = `Confirm &amp; Lock Price, ${fmt(total)}`;
     }
@@ -1676,18 +1661,18 @@ function updateApproveBtn() {
 }
 
 // ── DEPOSIT PAYMENT (called from approved state) ─────────────
-async function payDeposit(payFull = false) {
+async function payDeposit() {
   if (previewModeActive() || !authorizationGateReady() || approvedCheckoutOpening) return;
   approvedCheckoutOpening = true;
-  const btnId = payFull ? '[onclick="payDeposit(true)"]' : '[onclick="payDeposit()"]';
+  const btnId = '[onclick="payDeposit()"]';
   const btn = document.querySelector(btnId);
-  document.querySelectorAll('[onclick="payDeposit()"],[onclick="payDeposit(true)"]').forEach((control) => { control.disabled = true; });
+  document.querySelectorAll('[onclick="payDeposit()"]').forEach((control) => { control.disabled = true; });
   if (btn) btn.textContent = 'Redirecting...';
   try {
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/proposal-deposit-checkout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
-      body: JSON.stringify({ proposal_token: P.token, pay_full: payFull }),
+      body: JSON.stringify({ proposal_token: P.token, pay_full: false }),
     });
     const result = await resp.json();
     let target = null;
@@ -1699,12 +1684,10 @@ async function payDeposit(payFull = false) {
     alert('Payment error: ' + (result.error || 'Unknown error'));
   } catch(e) { alert('Network error, please call (864) 863-7800.'); }
   approvedCheckoutOpening = false;
-  document.querySelectorAll('[onclick="payDeposit()"],[onclick="payDeposit(true)"]').forEach((control) => { control.disabled = isPreview; });
+  document.querySelectorAll('[onclick="payDeposit()"]').forEach((control) => { control.disabled = isPreview; });
   if (btn) {
     btn.disabled = false;
-    btn.textContent = payFull
-      ? `Pay $${Math.round(P.signed_total??P.total??0).toLocaleString()} in Full`
-      : `Pay $${Math.round((P.signed_total??P.total??0)*Number(P.deposit_rate??0.20)).toLocaleString()} Deposit`;
+    btn.textContent = `Pay $${Math.round((P.signed_total??P.total??0)*Number(P.deposit_rate??0.20)).toLocaleString()} Deposit`;
   }
 }
 
@@ -1722,7 +1705,7 @@ function resetUnsignedApprovalButton(btn) {
   const deposit = Math.round(total * depositRate);
   const label = P.require_deposit === false
     ? `Confirm &amp; Lock Price, ${fmt(total)}`
-    : (selectedPayFull ? `Confirm &amp; Pay ${fmt(total)} in Full` : `Confirm &amp; Pay ${fmt(deposit)} Deposit`);
+    : `Confirm &amp; Pay ${fmt(deposit)} Deposit`;
   btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <span id="approve-btn-label">${label}</span>`;
   validateForm();
 }
@@ -1732,7 +1715,6 @@ function resetDepositAcceptanceAuthorization(message) {
   signStatusUncertain = false;
   signerIdentityConfirmed = false;
   signerIdentityTypedCharacters = 0;
-  selectedPayFull = false;
   ackScope = false;
   ackSafety = false;
   renderProposal();
@@ -1754,7 +1736,7 @@ async function openPendingDepositCheckout(acceptanceAttemptId) {
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
     body: JSON.stringify({
       proposal_token: P.token,
-      pay_full: selectedPayFull,
+      pay_full: false,
       acceptance_attempt_id: acceptanceAttemptId,
     }),
   });
@@ -1778,7 +1760,7 @@ async function openSignedCheckout(btn) {
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/proposal-deposit-checkout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
-      body: JSON.stringify({ proposal_token: P.token, pay_full: selectedPayFull }),
+      body: JSON.stringify({ proposal_token: P.token, pay_full: false }),
     });
     const result = await resp.json().catch(() => ({}));
     if (!resp.ok || result.error || !result.url) throw new Error(result.error || 'Could not start secure payment.');
@@ -2211,7 +2193,6 @@ function resetAuthorizationForRevisedContract(row) {
   signerIdentityConfirmed = false;
   signerIdentityTypedCharacters = 0;
   P = row;
-  selectedPayFull = false;
   ackScope = false;
   ackSafety = false;
   renderProposal();
@@ -2362,7 +2343,7 @@ async function approveProposal() {
         signed_total: total,
         approved_terms_snapshot: termsSnapshot,
         acceptance_request_key: acceptanceRequestKey,
-        pay_full: !!selectedPayFull,
+        pay_full: false,
       }),
     });
     signResult = await signRes.json().catch(() => ({}));
@@ -2623,9 +2604,8 @@ function renderApproved() {
       <p style="font-size:14px;opacity:.85;margin-bottom:22px;line-height:1.55;max-width:30em;margin-left:auto;margin-right:auto">${requireDeposit ? 'Your name is on it and the price is locked. Confirm with your deposit and I book the install.' : 'Your proposal is signed and your price is locked. Save your card securely to finish setup. You pay $0 today.'}</p>
       <div style="display:flex;flex-direction:column;gap:10px;max-width:320px;margin:0 auto">
         <button onclick="payDeposit()" ${isPreview ? 'disabled aria-disabled="true"' : ''} style="background:var(--gold);color:var(--navy);font-family:'Outfit',sans-serif;font-size:16px;font-weight:800;padding:14px 28px;border:none;border-radius:28px;cursor:pointer">${isPreview ? 'Preview, payment disabled' : (requireDeposit ? `Pay $${depositAmt.toLocaleString()} Deposit` : 'Save my card securely')}</button>
-        ${requireDeposit ? `<button onclick="payDeposit(true)" ${isPreview ? 'disabled aria-disabled="true"' : ''} style="background:transparent;color:#fff;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;padding:12px 24px;border:1.5px solid rgba(255,255,255,.35);border-radius:28px;cursor:pointer">${isPreview ? 'Preview, payment disabled' : `Pay $${total.toLocaleString()} in Full`}</button>` : ''}
       </div>
-      <p style="font-size:11px;opacity:.7;margin-top:14px;line-height:1.5">${requireDeposit ? 'Paying in full is optional. Beyond the deposit is fully refundable any time before install is completed.' : 'No payment is collected today. This securely saves the payment method authorized for this project.'}</p>
+      <p style="font-size:11px;opacity:.7;margin-top:14px;line-height:1.5">${requireDeposit ? 'Secure checkout next. Card or bank transfer.' : 'No payment is collected today. This securely saves the payment method authorized for this project.'}</p>
     </div>` : `
     <div class="approved-banner">
       <div class="approved-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
