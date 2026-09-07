@@ -1,0 +1,6 @@
+/* Financing reuses invoice helper copy and proposal policy-link hit targets. */
+.bpp-financing{margin-top:10px;text-align:center;color:var(--text3,#657086);font:400 12px/1.5 Inter,system-ui,sans-serif}
+.bpp-financing a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;color:var(--blue,#28589b);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.bpp-financing a:focus-visible{outline:2px solid var(--gold,#ffba00);outline-offset:3px;border-radius:4px}
+.bpp-financing p{margin:0}
+@media print{.bpp-financing{display:none}}

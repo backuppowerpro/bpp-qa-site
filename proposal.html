@@ -384,6 +384,8 @@ body.preview-mode a.approve-btn[href],body.preview-mode button[onclick^="payDepo
 </script>
 <link rel="icon" href="/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.jpg">
+<script src="assets/js/bpp-financing.js?v=20260907a"></script>
+<link rel="stylesheet" href="assets/css/bpp-financing.css?v=20260907a">
 </head>
 <body>
 <noscript><div class="preview-bar" data-preview-banner="true">Preview unavailable, JavaScript is off, no customer action can occur</div><div class="preview-watermark" data-preview-watermark="true" aria-hidden="true"><span>Preview unavailable</span></div><div style="max-width:620px;margin:70px auto 24px;padding:18px;border:1px solid #ffba00;border-radius:14px;background:#fff8e6;color:#0b1f3b;text-align:center;font:600 16px/1.55 system-ui,sans-serif;">This proposal did not load. Turn on JavaScript and reload, or call (864) 863-7800.</div></noscript>
@@ -1233,6 +1235,7 @@ function renderProposal() {
       <div class="investment-total-section">
         <span class="investment-total-label">Total</span>
         <span class="total-badge" id="total-badge"></span>
+        <div id="proposalFinancing"></div>
       </div>
       <div class="investment-per-day" id="per-day-note"></div>
 
@@ -1487,6 +1490,7 @@ function renderPricing() {
 
   const totalBadge = document.getElementById('total-badge');
   if (totalBadge) totalBadge.textContent = fmt(total);
+  BPPFinancing.render(document.getElementById('proposalFinancing'),total,new URLSearchParams(location.search).get('preview')==='1');
 
   const perDay = document.getElementById('per-day-note');
   const requireDeposit = P.require_deposit !== false;

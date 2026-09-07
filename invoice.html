@@ -194,6 +194,8 @@ body.preview-mode .btn-pay,body.preview-mode .btn-pay-card,body.preview-mode .ch
 </style>
 <link rel="icon" href="/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.jpg">
+<script src="assets/js/bpp-financing.js?v=20260907a"></script>
+<link rel="stylesheet" href="assets/css/bpp-financing.css?v=20260907a">
 </head>
 <body>
 <div class="preview-bar" id="preview-bar" data-preview-banner="true" hidden>Preview mode, not sent to client, read only</div>
@@ -620,6 +622,8 @@ function renderInvoice() {
       <span class="ach-badge">NO FEE</span>
     </button>
     <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:-8px;margin-bottom:8px">ACH bank transfers take 3 to 5 business days to clear.</div>
+
+    ${BPPFinancing.markup(Number(INV.amount_remaining),new URLSearchParams(location.search).get('preview')==='1')}
 
     <!-- Pay by Card, secondary, smaller -->
     <button class="btn-pay-card" onclick="payOnline(false)">

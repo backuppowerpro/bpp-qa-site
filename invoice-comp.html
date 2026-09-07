@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
 <!-- BPP design system: single source of truth. Invoice consumes it like the proposal does. -->
-<link rel="stylesheet" href="assets/css/bpp-ds.css?v=20260713a">
+<link rel="stylesheet" href="assets/css/bpp-ds.css?v=20260907a">
 <style>
 /* tokens, reset, .page/.card/.pad, .eyebrow/.sec, .badge, .status, .btn-gold, .brand-bar, .signature,
    motion + comp-flag all come from bpp-ds.css. Only invoice-specific layout lives here. */
@@ -86,6 +86,7 @@
 body.preview-mode{padding-top:34px}
 body.preview-mode #pay-btn{display:none!important}
 </style>
+<script src="assets/js/bpp-financing.js?v=20260907a"></script>
 </head>
 <body>
 <div class="preview-bar" id="preview-bar" data-preview-banner="true" hidden>Preview mode, not sent to client, read only</div>
@@ -343,6 +344,7 @@ function renderPayable(){
       '<div class="due-when">Balance for your completed install. Due on completion day, after your system is installed and working.</div>'+
       '<button class="btn-gold pay-cta" id="pay-btn" type="button" data-amount="'+fmt(remaining)+'">Pay '+fmt(remaining)+'</button>'+
       '<div class="pay-sub">Secure payment by bank transfer or card. Once it clears, your receipt is ready on this same link, and Key can email it to you.</div>'+
+      BPPFinancing.markup(Number(INV.amount_remaining),IS_PREVIEW)+
     '</div>'+
 
     // LINE ITEMS

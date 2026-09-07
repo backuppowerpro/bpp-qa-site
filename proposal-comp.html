@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
 <!-- BPP design system: single source of truth (tokens, reset, primitives, modal, motion). Edit there to restyle every surface. -->
-<link rel="stylesheet" href="assets/css/bpp-ds.css?v=20260713a">
+<link rel="stylesheet" href="assets/css/bpp-ds.css?v=20260907a">
 <style>
 /* tokens, reset, base, .page, .card/.pad, .eyebrow/.sec, .badge, modal system, base scroll-reveal,
    and confetti keyframes all live in assets/css/bpp-ds.css (single source of truth). Only the
@@ -268,6 +268,7 @@ body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.appr
 /* .comp-flag now lives in bpp-ds.css (shared by every *-comp.html) */
 
 </style>
+<script src="assets/js/bpp-financing.js?v=20260907a"></script>
 </head>
 <body class="booting">
 <div class="boot-spin"><div class="dot"></div></div>
@@ -320,6 +321,7 @@ body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.appr
       </div>
       <div class="amp-rec" id="ampRec"><span>★</span> What I recommend for your setup</div>
     </div>
+    <div id="proposalFinancing"></div>
     <div class="anchor-line">All-in at <b class="anchor-total" id="allInTotal">$1,197</b>: parts, labor, permit, and inspection. Nothing added later.</div>
     <div class="pay-block">
       <div class="pay-line"><span class="pay-lead">Your price</span> <span class="pay-phrase"><span class="num" id="payToday">$239</span> deposit</span> <span class="psep">·</span> <span class="pay-phrase"><span class="num2" id="payLater">$958</span> after installation</span></div>
@@ -839,6 +841,7 @@ function recompute(){
   var deposit=currentDeposit();
   var setT=function(id,v){var el=document.getElementById(id); if(el) el.textContent=v;};
   setT('allInTotal',money(total));
+  BPPFinancing.render(document.getElementById('proposalFinancing'),total,previewModeActive());
   // The headline pay-line must match the sign section's mode. Deposit-ON:
   // "$X deposit · $Y after installation". Deposit-OFF ($0 today, card on
   // file): the old static wording showed a deposit that is never charged,
