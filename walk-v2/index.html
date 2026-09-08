@@ -15,10 +15,10 @@
 
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://connect.facebook.net 'sha256-TSf9hPr43r9T9eJr1YlgW7NyDImqpOyAsfxnE3OQYwY=' 'sha256-UHHFtBBaUZOydYdOgLebKxQPXbKU98ykX0wuUomJqi0=' 'sha256-Z/Pt6ks2URrKW2uT2ziqs6uk9fVZZgNTGtoho8DbyXk='; script-src-attr 'none'; style-src 'self' 'sha256-5Qh9GlhbF6Y9jQlpGwImmnNa2C9HCNu5g1k0kUTeO+8='; style-src-elem 'self' 'sha256-5Qh9GlhbF6Y9jQlpGwImmnNa2C9HCNu5g1k0kUTeO+8='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.facebook.com; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co https://www.facebook.com; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://connect.facebook.net 'sha256-TSf9hPr43r9T9eJr1YlgW7NyDImqpOyAsfxnE3OQYwY=' 'sha256-UHHFtBBaUZOydYdOgLebKxQPXbKU98ykX0wuUomJqi0=' 'sha256-iKXWje6HsNXuZX69dNsr6PUTLF2+RcVShmzdiHuKlVY='; script-src-attr 'none'; style-src 'self' 'sha256-5Qh9GlhbF6Y9jQlpGwImmnNa2C9HCNu5g1k0kUTeO+8='; style-src-elem 'self' 'sha256-5Qh9GlhbF6Y9jQlpGwImmnNa2C9HCNu5g1k0kUTeO+8='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.facebook.com; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co https://www.facebook.com; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
 <script src="/assets/js/bpp-analytics.js?v=6981af272341"></script>
 <script src="/walk-v2/token-bootstrap.js?v=f707c9b088b2"></script>
-<script src="/walk-v2/meta-pixel.js?v=2c2f0c159cf7"></script>
+<script src="/walk-v2/meta-pixel.js?v=ec2ba9712967"></script>
 <script src="/walk-v2/no-js-bootstrap.js"></script>
 <script>/* Entry mode + dynamic hero (Key 2026-07-01 / 2026-07-13 / paid fast lane 2026-07-13):
    src=home -> home hero
@@ -2143,6 +2143,12 @@
     }
 
     var trackingName = splitNameForTracking(name);
+    var trackingHost = String(window.location.hostname || '').toLowerCase();
+    var trackingParams = new URLSearchParams(window.location.search || '');
+    var trackingDnt = String(navigator.doNotTrack || window.doNotTrack || '').toLowerCase();
+    var analyticsOptOut = navigator.globalPrivacyControl === true || trackingDnt === '1' || trackingDnt === 'yes'
+      || (trackingHost !== 'backuppowerpro.com' && trackingHost !== 'www.backuppowerpro.com')
+      || trackingParams.get('preview') === '1' || trackingParams.get('analytics_test') === '1';
     var payload = {
       firstName: trackingName.firstName, lastName: trackingName.lastName, phone: natDigits(phoneIn.value), email: '',
       existingToken: editDetails ? resumeT : '',
@@ -2158,6 +2164,7 @@
       source: 'walkv2-landing',
       actionSource: 'website', eventName: 'QuoteWalkStarted', eventId: eventId,
       intakeNonce: intakeNonce,
+      analyticsOptOut: analyticsOptOut,
       journeyVersion: 'intake-no-upload-v1',
       journey_version: 'intake-no-upload-v1',
       clientUserAgent: navigator.userAgent || '',

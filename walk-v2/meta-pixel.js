@@ -11,6 +11,13 @@
     try { return sessionStorage.getItem('bpp:owner-test') === '1'; } catch (_) { return false; }
   }
 
+  function productionEntry() {
+    var host = String(window.location.hostname || '').toLowerCase();
+    var params = new URLSearchParams(window.location.search || '');
+    return (host === 'backuppowerpro.com' || host === 'www.backuppowerpro.com')
+      && params.get('preview') !== '1' && params.get('analytics_test') !== '1';
+  }
+
   var trackedEventIds = Object.create(null);
   window.BPPMeta = {
     enabled: false,
@@ -18,7 +25,7 @@
     trackLead: function () {}
   };
 
-  if (window.__BPP_CAPABILITY_ENTRY === true || privacyBlocked() || ownerTestMode()) return;
+  if (window.__BPP_CAPABILITY_ENTRY === true || !productionEntry() || privacyBlocked() || ownerTestMode()) return;
 
   if (!window.fbq) {
     var fbq = window.fbq = function () {
@@ -51,7 +58,7 @@
   window.BPPMeta = {
     enabled: true,
     trackQuoteWalkStarted: function (eventId) {
-      if (ownerTestMode()) return;
+      if (!productionEntry() || privacyBlocked() || ownerTestMode()) return;
       var safeId = String(eventId || '');
       if (!/^wv2-[a-zA-Z0-9-]{8,100}$/.test(safeId) || trackedEventIds['start:' + safeId]) return;
       trackedEventIds['start:' + safeId] = true;
@@ -61,7 +68,7 @@
       }, { eventID: safeId });
     },
     trackLead: function (eventId) {
-      if (ownerTestMode()) return;
+      if (!productionEntry() || privacyBlocked() || ownerTestMode()) return;
       var safeId = String(eventId || '');
       if (!/^wv2-[a-zA-Z0-9-]{8,100}$/.test(safeId) || trackedEventIds['lead:' + safeId]) return;
       trackedEventIds['lead:' + safeId] = true;
