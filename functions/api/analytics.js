@@ -34,6 +34,10 @@ const SERVER_OWNED_RANGE_EVENTS = new Set([
   'walk_v2_range_accepted_lead',
   'walk_v2_range_non_yes_reason_saved',
 ])
+const GUIDED_SAVE_EVENTS = new Set([
+  'save_for_later_opened', 'share_invoked', 'share_cancelled_or_unavailable',
+  'share_failed', 'copy_link_succeeded', 'copy_link_failed',
+])
 const SAFE_KEYS = new Set([
   'surface', 'document_variant', 'funnel', 'screen', 'blocker_count',
   'field', 'value', 'from', 'state', 'has_range', 'unsure_count',
@@ -228,7 +232,8 @@ export async function onRequestPost(context) {
   }
 
   const event = String(body && body.event || '')
-  if (!/^(?:\$pageview|lead_submit_failed|(?:walk_v2_|proposal_|invoice_|receipt_)[a-z0-9_]{1,70})$/.test(event)) {
+  if (!GUIDED_SAVE_EVENTS.has(event)
+    && !/^(?:\$pageview|lead_submit_failed|(?:walk_v2_|proposal_|invoice_|receipt_)[a-z0-9_]{1,70})$/.test(event)) {
     return json({ error: 'invalid_event' }, 400)
   }
   if (SERVER_OWNED_RANGE_EVENTS.has(event)) {

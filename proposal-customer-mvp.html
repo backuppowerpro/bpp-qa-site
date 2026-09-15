@@ -467,7 +467,7 @@
     </section>
 
     <section class="card card-pad value-card" id="value" aria-labelledby="handledHeading">
-      <div class="section-label">Your complete project</div>
+      <div class="section-label" id="projectOfferName">Your complete project</div>
       <h2 class="section-title" id="handledHeading">Installed, tested, permitted, and ready.</h2>
       <div class="project-scope" id="projectScope"></div>
     </section>
@@ -854,6 +854,11 @@
         if(!Number.isFinite(mainPrice)) mainPrice=Number(main.amount)||Number(fixture.total)||0;
         return SYSTEM_ORDER.map(function(key){
           var item=system[key];
+          if(item&&fixture.offerPolicy){
+            if(key==='workmanship') item=Object.assign({},item,{title:fixture.offerPolicy.guarantee_title,description:fixture.offerPolicy.guarantee_text});
+            if(key==='walkthrough') item=Object.assign({},item,{title:'Practice before you need it',description:'We offer to test the system with you.'});
+            if(key==='panelGuide') item=Object.assign({},item,{title:'Steps where you need them',description:'An operating-guide sticker stays inside your panel for reference during an outage.'});
+          }
           if(key==='installation'&&!item){
             item={
               id:'installation',title:fixture.amp+'A generator connection installation',
@@ -875,6 +880,7 @@
         }).filter(Boolean);
       }
       function renderScope(){
+        document.getElementById('projectOfferName').textContent=fixture.offerPolicy?fixture.offerPolicy.name:'Your complete project';
         var items=standardProjectItems().concat(displayCustomItems());
         document.getElementById('projectScope').innerHTML=items.map(projectItemHtml).join('');
       }
@@ -979,6 +985,7 @@
         intro.textContent=content.intro||'';
         intro.hidden=!content.intro;
         document.getElementById('infoBody').innerHTML=content.items.map(function(item){
+          if(key==='terms'&&item[0]==='Workmanship'&&fixture.offerPolicy) item=[fixture.offerPolicy.guarantee_title,fixture.offerPolicy.guarantee_text];
           return '<div class="info-item"><strong>'+escapeHtml(item[0])+'</strong><span>'+escapeHtml(item[1])+'</span></div>';
         }).join('');
         document.getElementById('infoDownload').hidden=!content.download;
@@ -1136,7 +1143,12 @@
           -(row.include_inlet===false?inletOff:0)
           -(row.include_permit===false?proposalPermitFee(row):0);
       }
+      function proposalOffer(row){
+        var policy=row&&row.offer_policy;
+        return policy&&policy.version==='generator-home-connection-2026-09-15'&&typeof policy.guarantee_title==='string'&&typeof policy.guarantee_text==='string'?policy:null;
+      }
       function proposalFixture(row){
+        var offer=proposalOffer(row);
         var amp=String(row.selected_amp||row.amp_type)==='30'?'30':'50';
         var standard=structuredBase(row);
         var permitAllocation=row.include_permit===false?0:Math.min(proposalPermitFee(row),standard);
@@ -1158,7 +1170,7 @@
         }
         return {
           customerName:String(row.contact_name||'Homeowner'),customerAddress:String(row.contact_address||''),amp:amp,
-          document_number:row.document_number||null,
+          document_number:row.document_number||null,offerPolicy:offer,
           total:Number(row.signed_total!=null?row.signed_total:row.total)||0,requireDeposit:row.require_deposit!==false,
           depositRate:Number(row.deposit_rate!=null?row.deposit_rate:.20),pomOffered:row.pom_offered!==false,
           aiSummary:'',notes:String(row.notes||''),lineItems:lines,systemSubtotals:(function(){var x={};x[amp]=standard;return x;})(),
@@ -1171,7 +1183,7 @@
             walkthrough:{id:'walkthrough',included:true,title:'System walkthrough',description:'You see the finished system work and learn how to connect your portable generator and select circuits safely.',amount:0,image:'assets/product-images/system-walkthrough.jpg',showItem:true,showPrice:false},
             panelGuide:{id:'panelGuide',included:true,title:'Step-by-step panel guide',description:'A durable instruction label stays inside your panel for quick reference during an outage.',amount:0,image:'assets/product-images/panel-operating-guide.jpg',showItem:true,showPrice:false},
             permit:{id:'permit',included:row.include_permit!==false,title:'Permit and required inspection',description:'Required for local code compliance. We handle the application, permit fee, inspection scheduling, and follow-through.',amount:permitAllocation,image:'assets/product-images/permit-inspection-photo.jpg',showItem:true,showPrice:permitAllocation>0},
-            workmanship:{id:'workmanship',included:true,title:'One-year workmanship support',description:'If an issue comes from our installation work during the first year, we return and correct it at no charge.',amount:0,image:'assets/product-images/workmanship-support.jpg',showItem:true,showPrice:false},
+            workmanship:{id:'workmanship',included:true,title:offer?offer.guarantee_title:'One-year workmanship support',description:offer?offer.guarantee_text:'If an issue comes from our installation work during the first year, we return and correct it at no charge.',amount:0,image:'assets/product-images/workmanship-support.jpg',showItem:true,showPrice:false},
             wire:{id:'wire',included:Number(row.length_ft||row.run_ft||5)>5,title:'Extended wire run',description:'Additional wiring required for your installation.',amount:Math.max(0,Number(row.length_ft||row.run_ft||5)-5)*(amp==='30'?12:14),image:'assets/product-images/wire-run.jpg',showItem:true,showPrice:false}
           }
         };
@@ -1935,6 +1947,7 @@
         if(!event.data||event.data.type!=='bpp-proposal-fixture-update') return;
         var payload=event.data.payload||{};
         fixture={
+          offerPolicy:proposalOffer({offer_policy:payload.offerPolicy}),
           customerName:String(payload.customerName||'Sample Homeowner'),
           customerAddress:String(payload.customerAddress||''),
           amp:String(payload.amp)==='30'?'30':'50',

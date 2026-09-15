@@ -2,6 +2,7 @@
   "use strict";
 
   window.__BPP_UNIFIED_PHOTOS__ = true;
+  function legacyBoot() {
   var t = WALK.requireToken();
   if (!t) return;
 
@@ -543,4 +544,7 @@
   });
 
   startReconciliation();
+  }
+  if (window.BPPGuidedSaved) BPPGuidedSaved.start('photos', legacyBoot);
+  else if (!document.body.hasAttribute('data-guided-saved-page')) legacyBoot();
 })();

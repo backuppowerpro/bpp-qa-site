@@ -6,10 +6,10 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-eYf2V4zTS2V3VQtoEz+38YJNzzvD4Uu5aqUCi8iOI6c='; script-src-attr 'none'; style-src 'self' 'sha256-buzkjph+P4o+ea4GoaAf08QWZO2y9jAT1P8h9MGMjLo='; style-src-elem 'self' 'sha256-buzkjph+P4o+ea4GoaAf08QWZO2y9jAT1P8h9MGMjLo='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data: https://hfatblrcwytxvijjhpal.supabase.co; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-jo7IkNQzc0D2R1bNCXoQD1lEKhPr3rniXIvQVZLqOIs='; script-src-attr 'none'; style-src 'self' 'sha256-buzkjph+P4o+ea4GoaAf08QWZO2y9jAT1P8h9MGMjLo='; style-src-elem 'self' 'sha256-buzkjph+P4o+ea4GoaAf08QWZO2y9jAT1P8h9MGMjLo='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data: https://hfatblrcwytxvijjhpal.supabase.co; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/walk-v2/token-bootstrap.js?v=5561db666347"></script>
 <script src="/assets/js/bpp-analytics.js?v=6981af272341"></script>
-<script src="/walk-v2/token-bootstrap.js?v=f707c9b088b2-bearer"></script>
-<script src="/walk-v2/no-js-bootstrap.js"></script>
+<script src="/walk-v2/no-js-bootstrap.js?v=47a946524088"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
 <title>Backup Power Pro · Quote Walk · Step 3</title>
 <link rel="icon" href="/favicon.png" type="image/png" />
@@ -712,13 +712,15 @@
 </style>
 <link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=aac4d845b250" />
 <link rel="stylesheet" href="/walk-v2/photos-unified.css?v=0766548764e4" />
+<link rel="stylesheet" href="/walk-v2/guided-intake.css?v=d3aba3d08a65" />
+<link rel="stylesheet" href="/walk-v2/guided-saved.css?v=a9f6917b820e" />
 </head>
-<body>
-<div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to upload photos. Photo upload is unavailable until it is turned on. Your saved answers remain on file. Turn it on and reload, or call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
+<body data-guided-saved-page="photos">
+<div class="qw-no-js-note qw-script-recovery" role="alert">Photo upload could not finish loading. Check that JavaScript is enabled, then reopen your saved link. For help, call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
 <div class="stack" id="stack">
 
   <!-- ============ MAIN PAGE (mobile, interactive) ============ -->
-  <main class="page" id="mainPage" data-screen-label="Quote walk step 3 (interactive, mobile)">
+  <main class="page" id="mainPage" data-screen-label="Quote walk step 3 (interactive, mobile)" inert>
 
     <!-- 1. site header -->
     <header class="site-head">
@@ -790,11 +792,13 @@
 
 </div>
 
-<script src="/walk-v2/walk.js?v=4071d2c91ca3"></script>
-<script src="/walk-v2/photos-unified.js?v=74e7dc88bf3c"></script>
+<script src="/walk-v2/walk.js?v=a4d4e6946fb1"></script>
+<script src="/walk-v2/save-for-later.js?v=541da2dd0659"></script><script src="/walk-v2/guided-saved.js?v=a5edf131cb99"></script><script src="/walk-v2/guided-range.js?v=f74b3ea76ded"></script><script src="/walk-v2/guided-photos.js?v=7b31098c52dd"></script>
+<script src="/walk-v2/photos-unified.js?v=fc49973396a8"></script>
 <script>
 
 (function () {
+  if (document.body.hasAttribute('data-guided-saved-page')) return;
   var t = WALK.requireToken(); if (!t) return;
   if (window.__BPP_UNIFIED_PHOTOS__) return;
   var fallbackMain = document.getElementById('mainPage');

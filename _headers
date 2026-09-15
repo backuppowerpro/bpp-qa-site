@@ -65,7 +65,7 @@
   Referrer-Policy: no-referrer
 
 /*
-  Content-Security-Policy: default-src 'none'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'none'; child-src 'none'; frame-src https://js.stripe.com https://hooks.stripe.com; media-src 'self' blob:; form-action 'self'; frame-ancestors 'none'; sandbox allow-scripts allow-same-origin allow-forms allow-modals allow-downloads
+  Content-Security-Policy: default-src 'none'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co/storage/v1/object/sign/; font-src 'self'; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'none'; child-src 'none'; frame-src https://js.stripe.com https://hooks.stripe.com; media-src 'self' blob:; form-action 'self'; frame-ancestors 'none'; sandbox allow-scripts allow-same-origin allow-forms allow-modals allow-downloads
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer

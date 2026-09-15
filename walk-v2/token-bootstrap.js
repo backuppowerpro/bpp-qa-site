@@ -42,11 +42,13 @@
     if (plainLanding && sessionStorage.getItem('bpp:owner-test') === '1') store('');
   } catch (_) {}
   var stored = valid(supplied) ? store(supplied) : readStored();
-  var canRemoveSupplied = !valid(supplied) || stored === supplied;
+  // Memory keeps this active document usable when browser storage is denied.
+  window.__BPP_WALK_TOKEN = valid(supplied) ? supplied : stored;
+  window.__BPP_INVALID_CAPABILITY_ENTRY = current.searchParams.has('t') && !valid(supplied);
 
-  window.__BPP_CAPABILITY_ENTRY = Boolean(valid(supplied) || stored);
+  window.__BPP_CAPABILITY_ENTRY = Boolean(current.searchParams.has('t') || stored);
 
-  if (current.searchParams.has('t') && canRemoveSupplied) {
+  if (current.searchParams.has('t')) {
     current.searchParams.delete('t');
     try {
       history.replaceState(history.state, document.title, current.pathname + current.search + current.hash);

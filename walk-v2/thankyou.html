@@ -6,10 +6,10 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-U3rSZRjAEKAE9q3rYOklj5mWJu3LJOl39y8oUEDNURQ='; script-src-attr 'none'; style-src 'self' 'sha256-2DgN8H0ohK2jnF6DhuBgm+KtFGN6d75LW0/1bWarbG4='; style-src-elem 'self' 'sha256-2DgN8H0ohK2jnF6DhuBgm+KtFGN6d75LW0/1bWarbG4='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-zjtGZ0lxAq4cBhgSHOEH5eB3lQdSCr1ZxsYvpCIqyf4='; script-src-attr 'none'; style-src 'self' 'sha256-2DgN8H0ohK2jnF6DhuBgm+KtFGN6d75LW0/1bWarbG4='; style-src-elem 'self' 'sha256-2DgN8H0ohK2jnF6DhuBgm+KtFGN6d75LW0/1bWarbG4='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/walk-v2/token-bootstrap.js?v=5561db666347"></script>
 <script src="/assets/js/bpp-analytics.js?v=6981af272341"></script>
-<script src="/walk-v2/token-bootstrap.js?v=f707c9b088b2-bearer"></script>
-<script src="/walk-v2/no-js-bootstrap.js"></script>
+<script src="/walk-v2/no-js-bootstrap.js?v=47a946524088"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
 <title>Backup Power Pro · Thank You</title>
 <link rel="icon" href="/favicon.png" type="image/png" />
@@ -594,13 +594,15 @@
   }
 </style>
 <link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=aac4d845b250" />
+<link rel="stylesheet" href="/walk-v2/guided-intake.css?v=d3aba3d08a65" />
+<link rel="stylesheet" href="/walk-v2/guided-saved.css?v=a9f6917b820e" />
 </head>
-<body>
-<div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to load the current Quote Walk result. Your saved answers remain on file. Turn it on and reload, or call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
+<body data-guided-saved-page="thankyou">
+<div class="qw-no-js-note qw-script-recovery" role="alert">Your Quote Walk result could not finish loading. Check that JavaScript is enabled, then reopen your saved link. For help, call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
 <div class="stack" id="stack">
 
   <!-- ============ MAIN PAGE (mobile, interactive) ============ -->
-  <main class="page qw-template-page qw-final-page" id="mainPage" data-screen-label="Quote walk thank you (interactive, mobile)">
+  <main class="page qw-template-page qw-final-page" id="mainPage" data-screen-label="Quote walk thank you (interactive, mobile)" inert>
 
     <!-- 1. site header -->
     <header class="site-head">
@@ -666,10 +668,12 @@
 
 </div>
 
-<script src="/walk-v2/walk.js?v=4071d2c91ca3"></script>
+<script src="/walk-v2/walk.js?v=a4d4e6946fb1"></script>
+<script src="/walk-v2/save-for-later.js?v=541da2dd0659"></script><script src="/walk-v2/guided-saved.js?v=a5edf131cb99"></script><script src="/walk-v2/guided-range.js?v=f74b3ea76ded"></script><script src="/walk-v2/guided-photos.js?v=7b31098c52dd"></script>
 <script>
 
 (function () {
+  function legacyBoot() {
   var t = WALK.requireToken(); if (!t) return;
   WALK.ph('walk_v2_screen_view', { screen: 'thankyou' });
 
@@ -831,6 +835,8 @@
     }, { threshold: 0.12 });
     rvEls.forEach(function (el) { io.observe(el); });
   }
+  }
+  BPPGuidedSaved.start('thankyou', legacyBoot);
 })();
 
 </script>

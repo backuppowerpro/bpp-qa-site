@@ -9,6 +9,8 @@ import {
   quoteWalkV2QuoteDeskState,
   quoteWalkV2ReceiptMode,
   quoteWalkV2ReceiptVerdict,
+  reviewQuoteWalkV2GuidedPhotos,
+  reviewQuoteWalkV2TextPhotos,
 } from '../v3-app/src/quote-walk-v2-receipts.js';
 import { createOperatorCommunicationsStateClient } from './operator-communications-state.js';
 import {
@@ -1370,6 +1372,32 @@ async function claimQuoteWalkV2Handoff(contact) {
   return result;
 }
 
+async function reviewGuidedQuoteWalkPhotos(contactId, intent, textPhotos = false) {
+  if (!contactId || !intent) return { ok: false, error: 'No submitted photo packet selected.' };
+  const current = await fetchQuoteWalkV2ReceiptForContact(contactId, true);
+  if (current?.contact_id !== contactId || current.pre_read_id !== intent.p_pre_read_id) {
+    return { ok: false, error: 'The photo packet does not belong to this contact. Refresh before continuing.' };
+  }
+  // Preserve the caller's exact intent on retry. SQL validates freshness and replay.
+  const result = await (textPhotos ? reviewQuoteWalkV2TextPhotos : reviewQuoteWalkV2GuidedPhotos)(window.CRM?.__db, intent);
+  if (!result.ok) return result;
+  const refreshed = await fetchQuoteWalkV2ReceiptForContact(contactId, true);
+  return { ...result, receipt: refreshed, refreshFailed: !!refreshed?.error };
+}
+
+async function loadGuidedQuoteWalkPhoto(contactId, mediaId, textPhoto = false) {
+  const db = window.CRM?.__db;
+  if (!db?.functions?.invoke) throw new Error('Protected photo connection is unavailable.');
+  const result = await db.functions.invoke('get-recording', {
+    body: textPhoto ? { action: 'read_message_attachment', attachment_id: mediaId, contact_id: contactId }
+      : { action: 'read_contact_media', media_id: mediaId, contact_id: contactId },
+  });
+  if (result.error || !(result.data instanceof Blob) || !result.data.type.startsWith('image/')) {
+    throw new Error('Photo could not be loaded.');
+  }
+  return result.data;
+}
+
 // ── Quote Desk (lead → firm quote speed, 2026-07-13) ───────────────────
 // Walk shows a ballpark RANGE; Key still texts the FIRM number by hand.
 // These helpers draft the SMS + feed draft proposals from walk / pre-read
@@ -2671,6 +2699,8 @@ window.CRM = {
   fetchQuoteWalkV2ReceiptForContact,
   markQuoteWalkV2NotificationSeen,
   claimQuoteWalkV2Handoff,
+  reviewGuidedQuoteWalkPhotos,
+  loadGuidedQuoteWalkPhoto,
   quoteWalkV2ReceiptVerdict,
   quoteWalkV2QuoteDeskState,
   quoteWalkV2ReceiptMode,

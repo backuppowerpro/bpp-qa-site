@@ -4,6 +4,7 @@ import { applyInvoiceLifecycleReceipt, mutateInvoiceLifecycle } from './invoice-
 import { deleteDraftMoneyDocument } from './money-document-operation.js';
 import { proposalDeliveryPending, sendManualSmsWithReceipt } from './manual-sms-operation.js';
 import { createCrmProposalWithRecovery } from './proposal-create-operation.js';
+import { useGuidedPhotoReview, GuidedProtectedPhoto, guidedPhotoStatus } from '../v3-app/src/guided-photo-review.jsx';
 
 // crm-right.jsx - Right panel: contact detail, 5 fully-featured tabs.
 // Consumes canonical DB-shape arrays directly. Each tab filters by contact_id inline.
@@ -1096,6 +1097,7 @@ function QuoteWalkOperatorCard({ contact, receipt, bumpData }) {
   const [claiming, setClaiming] = React.useState(false);
   const [claimError, setClaimError] = React.useState('');
   const claimInFlightRef = React.useRef(false);
+  const review = useGuidedPhotoReview(contact, receipt, bumpData);
   if (!projection || projection.availability !== 'available') return null;
 
   const claim = async () => {
@@ -1134,9 +1136,46 @@ function QuoteWalkOperatorCard({ contact, receipt, bumpData }) {
 
   return (
     <InfoSection title="Quote Walk">
+      {review.packet && <>
+        <InfoLineRow label="Photo review" value={<span>{guidedPhotoStatus(review.packet)}</span>} />
+        {(review.packet.valid ? review.packet.latest_submission?.media_ids || [] : []).map((id, index) => (
+          <InfoLineRow key={'submitted-' + id} label={'Submitted photo ' + (index + 1)}
+            value={<GuidedProtectedPhoto contactId={contact.id} mediaId={id} label={'Open submitted photo ' + (index + 1)} />} />
+        ))}
+        <InfoLineRow label="Uploaded draft" value={`${review.packet.draft_media_ids?.length || 0} images, ${review.packet.pending_uploads?.length || 0} pending uploads${review.packet.newer_photo_draft ? '. Newer changes have not been submitted.' : ''}`} />
+        {review.packet.valid && review.packet.newer_photo_draft && review.packet.draft_media_ids.map((id, index) => (
+          <InfoLineRow key={'draft-' + id} label={'Unsubmitted draft ' + (index + 1)}
+            value={<GuidedProtectedPhoto contactId={contact.id} mediaId={id} label={'Open draft photo ' + (index + 1)} />} />
+        ))}
+        {review.packet.current_correction && <InfoLineRow label="Requested correction" value={<span>{review.packet.current_correction.request_text}</span>} />}
+        {review.packet.valid && (review.packet.manual_review?.attachment_ids || []).map((id, index) => (
+          <InfoLineRow key={'reviewed-text-' + id} label={'Reviewed text photo ' + (index + 1)} value={
+            <GuidedProtectedPhoto contactId={contact.id} mediaId={id} textPhoto label={'Open reviewed text photo ' + (index + 1)} />} />
+        ))}
+        {review.packet.current_acceptance_id && !review.packet.manual_review_current && review.packet.manual_photo_candidates.map((photo, index) => (
+          <InfoLineRow key={'text-' + photo.attachment_id} label={'Received text photo ' + (index + 1)} value={<>
+            <label style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44 }}><input type="checkbox" checked={review.selected.includes(photo.attachment_id)} disabled={review.busy}
+              onChange={() => review.togglePhoto(photo.attachment_id)} /> Reviewed this image </label>
+            <GuidedProtectedPhoto contactId={contact.id} mediaId={photo.attachment_id} textPhoto label={'Open texted photo ' + (index + 1)} />
+          </>} />
+        ))}
+        {review.packet.current_acceptance_id && !review.packet.manual_review_current && review.packet.manual_photo_candidates.length > 0 && (
+          <InfoLineRow label="Manual photo review" value={<span>Select the received text photos that are sufficient. This saves your decision and sends no message.</span>}
+            actions={<GoldActionBtn disabled={review.disabled || review.selected.length < 1 || review.selected.length > 10}
+              onClick={review.reviewTextPhotos}>Texted photos are sufficient</GoldActionBtn>} />
+        )}
+        {review.packet.can_review && <>
+          <InfoLineRow label="Key’s decision" value="Review the submitted photos before recording a decision."
+            actions={<GoldActionBtn disabled={review.disabled} onClick={() => review.decide('sufficient')}>{review.busy ? 'Saving...' : 'Sufficient for proposal'}</GoldActionBtn>} />
+          <InfoLineRow label="Correction needed" value={<textarea aria-label="Specific photo correction needed" maxLength={2000} style={{ minHeight: 44, fontSize: 16 }}
+            disabled={review.busy} value={review.correction} onChange={event => review.setCorrection(event.target.value)} />}
+            actions={<GoldActionBtn disabled={review.disabled || !review.correction.trim()} onClick={() => review.decide('needs_correction')}>Save correction request</GoldActionBtn>} />
+        </>}
+        {review.message && <InfoLineRow label="Review result" value={<span>{review.message}</span>} />}
+      </>}
       <InfoLineRow
         label="Current step"
-        value={[
+        value={review.packet ? display.status : [
           qwv2OperatorText(projection.journey.stage),
           qwv2OperatorText(projection.journey.status),
           qwv2OperatorText(projection.journey.currentStep),
@@ -2183,7 +2222,7 @@ const SMALL_COPY_ICON = (
 //      every InfoLineRow fits cleanly on one line at any width.
 // Apple Contacts / Stripe Dashboard pattern. No more text-pill buttons
 // wrapping below the value with awkward whitespace gaps.
-function GoldActionBtn({ onClick, href, target, children }) {
+function GoldActionBtn({ onClick, href, target, children, disabled = false }) {
   const style = {
     height:44, padding:'0 14px', borderRadius:8,
     background: GOLD, color:NAVY, border:'none',
@@ -2192,7 +2231,7 @@ function GoldActionBtn({ onClick, href, target, children }) {
     textDecoration:'none', whiteSpace:'nowrap',
   };
   if (href) return <a href={href} target={target} rel={target ? 'noopener noreferrer' : undefined} style={style}>{children}</a>;
-  return <button onClick={onClick} style={style}>{children}</button>;
+  return <button onClick={onClick} disabled={disabled} style={style}>{children}</button>;
 }
 
 // remake-2: 16px @ 1.8 stroke per the comp's .iact svg spec.
