@@ -89,6 +89,7 @@ function allowedOrigin(request) {
   if (!originUrl || originUrl.origin !== requestUrl.origin) return false
   return originUrl.hostname === 'backuppowerpro.com'
     || originUrl.hostname === 'www.backuppowerpro.com'
+    || originUrl.hostname === 'qa.backuppowerpro.com'
     || originUrl.hostname.endsWith('.bpp-site.pages.dev')
     || originUrl.hostname.endsWith('.bpp-qa-site.pages.dev')
 }
