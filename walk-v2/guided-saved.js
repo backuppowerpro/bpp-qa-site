@@ -27,16 +27,36 @@
         && handler && typeof handler.mount === 'function' && window.WALK && typeof window.__BPP_WALK_TOKEN === 'string'
         && ['isGuidedJourney', 'guidedDestination', 'rememberJourneyState'].every(function (name) { return typeof WALK[name] === 'function'; });
       var token = compatibleCore ? WALK.token() : '';
-      var loading = element('p', 'Loading your saved request...', 'qw-guided-boot'); loading.setAttribute('role', 'status'); document.body.appendChild(loading);
+      var priorGuided = document.body.classList.contains('guided-walk');
+      var priorSaved = document.body.classList.contains('guided-saved');
+      var bootBusy = false;
+      var boot = shell(kind);
+      var loading = boot.querySelector('[data-saved-content]');
+      function prepareBoot() {
+        if (!boot.isConnected) {
+          if (mounted) { mounted.remove(); mounted = null; }
+          boot = shell(kind); loading = boot.querySelector('[data-saved-content]');
+        }
+        boot.querySelector('[data-saved-back]').onclick = function () { location.href = START; };
+      }
+      function clearBoot() { boot.closest('.stack').remove(); }
+      prepareBoot();
+      var status = element('p', 'Loading your saved request...'); status.setAttribute('role', 'status'); loading.appendChild(status);
       function recovery(error) {
-        loading.replaceChildren(element('span', WALK.classifyRecoveryError(error) === 'temporary' ? 'Your saved request could not load. Try again.' : "We couldn't open this saved request."));
-        var retry = element('button', 'Try again'); retry.type = 'button'; retry.onclick = load; loading.appendChild(retry);
-        var start = element('a', 'Start a new Quote Walk'); start.href = START; start.onclick = function () { WALK.setToken(''); }; loading.appendChild(start);
+        prepareBoot();
+        var heading = element('h1', WALK.classifyRecoveryError(error) === 'temporary' ? 'Your saved request could not load. Try again.' : "We couldn't open this saved request.");
+        heading.tabIndex = -1; loading.replaceChildren(heading);
+        var retry = element('button', 'Try again', 'cta'); retry.type = 'button'; retry.dataset.bootRetry = ''; retry.onclick = load; loading.appendChild(retry);
+        var start = element('a', 'Start a new Quote Walk', 'guided-link'); start.href = START; start.onclick = function () { WALK.setToken(''); }; loading.appendChild(start); heading.focus({ preventScroll: true });
       }
       async function load() {
+        if (bootBusy) return;
+        bootBusy = true;
+        var retryButton = loading.querySelector('[data-boot-retry]');
+        if (retryButton) retryButton.disabled = true;
         if (!compatibleCore) {
-          loading.replaceChildren(element('span', 'Your Quote Walk needs to reload before you can continue.'));
-          var reload = element('button', 'Reload Quote Walk'); reload.type = 'button';
+          loading.replaceChildren(element('h1', 'Your Quote Walk needs to reload before you can continue.'));
+          var reload = element('button', 'Reload Quote Walk', 'cta'); reload.type = 'button';
           reload.onclick = function () {
             var target = new URL(location.href);
             // Reload must retain memory-only authority when browser storage is blocked.
@@ -47,17 +67,20 @@
             }
             location.replace(target.href);
           }; loading.appendChild(reload); reload.focus();
+          bootBusy = false;
           return;
         }
         try {
           if (!token || window.__BPP_INVALID_CAPABILITY_ENTRY) { var invalid = new Error('invalid_or_expired_return'); invalid.status = 410; throw invalid; }
           var view = await WALK.view(token);
           if (!WALK.isGuidedJourney(view, token)) {
-            loading.remove();
+            clearBoot();
+            if (!priorGuided) document.body.classList.remove('guided-walk');
+            if (!priorSaved) document.body.classList.remove('guided-saved');
             if (original) { original.removeAttribute('inert'); original.style.removeProperty('display'); if (originalDisplay) original.style.display = originalDisplay; }
             legacy(); return;
           }
-          loading.remove();
+          clearBoot();
           if (mounted) mounted.remove();
           var main = shell(kind); mounted = main.closest('.stack');
           var ctx = {
@@ -85,8 +108,11 @@
           WALK.ph('walk_v2_screen_view', { screen: 'guided_' + kind });
           window.addEventListener('pageshow', function (event) { if (event.persisted && ctx.reload) ctx.reload(); });
         } catch (error) {
-          if (!loading.isConnected) document.body.appendChild(loading);
           recovery(error);
+        } finally {
+          bootBusy = false;
+          var retryButton = loading.querySelector('[data-boot-retry]');
+          if (retryButton) retryButton.disabled = false;
         }
       }
       load();

@@ -298,7 +298,7 @@
             item.stale = code === 'stale_photo_draft' || code === 'idempotency_conflict';
             if (item.status !== 'received') item.status = 'failed';
             try { await ctx.load(); } catch (_) {}
-            ctx.error(item.tooLarge ? 'This photo is too large to upload here. Choose a smaller photo, or text it to Key.' : item.decodeError ? 'Your browser could not open this photo. Choose another photo, or text it to Key.' : 'This photo could not be confirmed. Check the saved upload before trying again.');
+            ctx.error(item.tooLarge ? 'This photo is too large to upload here. Choose a smaller photo, or text it to Key.' : item.decodeError ? 'Your browser could not open this photo. Choose another photo, or text it to Key.' : item.status === 'received' ? 'This photo was received. Choose Check saved photo to reload your gallery.' : item.historyLimit ? 'The retained photo history is full. Contact Key for help adding another photo.' : item.terminal || item.stale ? 'This upload could not finish. Choose Start a new upload attempt.' : 'This photo could not be confirmed. Choose Retry upload to check this same upload.');
           }
           render();
         }).catch(function () { item.status = 'failed'; render(); ctx.error('This photo did not finish uploading. Try again.'); });

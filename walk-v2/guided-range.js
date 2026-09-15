@@ -73,6 +73,8 @@
         } finally { ctx.busy = false; }
       }
       function phoneForm() {
+        var existing = ctx.content.querySelector('.guided-phone');
+        if (existing) { existing.querySelector('input').focus(); return; }
         var form = element('form', '', 'guided-phone');
         form.innerHTML = '<label for="guided-phone-number">Mobile number</label><input id="guided-phone-number" type="tel" autocomplete="tel" inputmode="tel"><p>By saving, you agree to texts from Backup Power Pro about your project at this mobile number. Msg and data rates may apply. Reply STOP anytime.</p><button type="submit" class="cta">Save mobile number</button><button type="button" class="guided-link" data-cancel-phone>Cancel</button><p role="alert" data-phone-error></p>';
         var input = form.querySelector('input'); input.value = ctx.view.phone || '';
