@@ -14,6 +14,7 @@ function json(body, status) {
 
 function allowedHostname(hostname) {
   return hostname === 'backuppowerpro.com'
+    || hostname === 'qa.backuppowerpro.com'
     || hostname === 'www.backuppowerpro.com'
     || hostname === 'bpp-site.pages.dev'
     || hostname === 'bpp-qa-site.pages.dev'

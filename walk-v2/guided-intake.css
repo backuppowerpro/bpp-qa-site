@@ -113,20 +113,20 @@
   }
   .room .ric svg { width: 16px; height: 16px; stroke-width: 1.8; }
   .room[aria-pressed="true"] {
-    background: var(--navy);
-    color: #fff;
-    box-shadow: var(--shadow-md), inset 0 0 0 1.5px var(--navy);
+    background: #fff8ec;
+    color: var(--navy);
+    box-shadow: var(--shadow-md), inset 0 0 0 2.5px var(--gold);
   }
-  .room[aria-pressed="true"]::before { transform: scaleY(1); }
+  .room[aria-pressed="true"]::before { content: none; }
   .room[aria-pressed="true"] .ric {
-    background: rgba(255,186,0,0.16);
-    color: var(--gold);
+    background: transparent;
+    color: var(--navy);
   }
   .room.room--wide { grid-column: 1 / -1; }
   .room-copy { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
   .room-copy strong { font: inherit; }
   .room-sub { color: var(--muted); font-family: var(--body); font-size: 13px; font-weight: 500; line-height: 1.3; }
-  .room[aria-pressed="true"] .room-sub { color: rgba(255,255,255,.76); }
+  .room[aria-pressed="true"] .room-sub { color: var(--muted); }
   .rooms.is-collapsed { grid-template-columns: 1fr; }
   .rooms.is-collapsed .room:not([aria-pressed="true"]) { display: none; }
   .panel-examples {
@@ -298,11 +298,11 @@
     transition: background var(--dur) var(--ease), box-shadow var(--dur) var(--ease), color var(--dur) var(--ease);
   }
   .opt .tick svg { width: 12px; height: 12px; stroke-width: 3; }
-  .opt[aria-pressed="true"] { background: var(--navy); box-shadow: var(--shadow-md), inset 0 0 0 2.5px var(--gold); }
-  .opt[aria-pressed="true"] .lbl { color: #fff; }
-  .opt[aria-pressed="true"] .cord .plug { background: var(--gold); }
-  .opt[aria-pressed="true"] .cord .run { background: var(--gold); opacity: 0.95; }
-  .opt[aria-pressed="true"] .cord .qm { color: var(--gold); }
+  .opt[aria-pressed="true"] { background: #fff8ec; box-shadow: var(--shadow-md), inset 0 0 0 2.5px var(--gold); }
+  .opt[aria-pressed="true"] .lbl { color: var(--navy); }
+  .opt[aria-pressed="true"] .cord .plug { background: var(--navy); }
+  .opt[aria-pressed="true"] .cord .run { background: var(--navy); opacity: 0.95; }
+  .opt[aria-pressed="true"] .cord .qm { color: var(--navy); }
   .opt[aria-pressed="true"] .tick { background: var(--gold); box-shadow: none; color: var(--navy); }
 
 
@@ -319,3 +319,30 @@
 
 /* Preserve full choice labels at narrow reflow widths. */
 @media(max-width:359px) { .guided-walk .rooms { grid-template-columns: 1fr; } }
+
+/* Reuse the outlet selection treatment without changing answer-card geometry.
+   The panel icon slot holds the same check badge, leaving full label room. */
+.guided-walk .page .room[aria-pressed="true"],
+.guided-walk .page .room[aria-pressed="true"]:is(:hover, :active, :focus, :focus-visible) {
+  background: #fff8ec !important;
+  color: var(--navy) !important;
+}
+.guided-walk .page .room[aria-pressed="true"] .ric,
+.guided-walk .page .room[aria-pressed="true"]:is(:hover, :active) .ric {
+  position: relative;
+  background: transparent !important;
+  color: var(--navy) !important;
+}
+.guided-walk .room[aria-pressed="true"] .ric svg { visibility: hidden; }
+.guided-walk .room[aria-pressed="true"] .ric::after {
+  content: "✓";
+  position: absolute;
+  inset: 3px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--navy);
+  font-size: 15px;
+  font-weight: 900;
+}
