@@ -352,10 +352,10 @@
 .guided-walk .page .guided-hero .textzone { padding-top: 8px !important; padding-bottom: 12px !important; }
 .guided-walk .page .guided-hero h1 { max-width: none; font-size: 24px !important; line-height: 1.12 !important; font-weight: 750; }
 .guided-walk .page .guided-hero .sub { margin-top: 8px; font-size: 16px; line-height: 1.45; }
-.guided-walk .page .guided-hero .identity { grid-template-columns: 48px minmax(0, 1fr); gap: 12px; margin-top: 12px; }
-.guided-walk .page .guided-hero .portrait { width: 48px; height: 48px; margin: 0; border-width: 2px; }
-.guided-walk .page .guided-hero .identity strong { font-family: var(--head); font-size: 18px; line-height: 1.2; font-weight: 700; }
-.guided-walk .page .guided-hero .identity div > span { font-size: 13px; line-height: 1.4; letter-spacing: 0; text-transform: none; }
+.guided-walk .page .guided-hero .identity { grid-template-columns: 92px minmax(0, 1fr); gap: 14px; margin-top: 12px; }
+.guided-walk .page .guided-hero .portrait { width: 92px; height: 92px; margin: 0; border-width: 3px; }
+.guided-walk .page .guided-hero .identity strong { font-family: "Dancing Script Review", "Dancing Script", cursive; font-size: 25px; line-height: 1.05; font-weight: 700; }
+.guided-walk .page .guided-hero .identity div > span { font-size: 11px; line-height: 1.3; letter-spacing: .08em; text-transform: uppercase; }
 .guided-walk[data-active-screen="connection"] .page > .body-grid { padding-top: 16px !important; }
 .guided-walk[data-active-screen="connection"] .guided-flow.form-card { padding: 20px; }
 .guided-screen[data-screen="connection"] h2 { font-size: 22px !important; line-height: 1.2 !important; margin-bottom: 8px; }
@@ -379,10 +379,7 @@
   .guided-walk .page .guided-hero .textzone { padding: 24px 30px 30px !important; justify-content: flex-start; }
   .guided-walk .page .guided-hero h1 { font-size: 36px !important; line-height: 1.1 !important; }
   .guided-walk .page .guided-hero .sub { font-size: 18px; margin-top: 16px; }
-  .guided-walk .page .guided-hero .identity { grid-template-columns: 64px minmax(0, 1fr); margin-top: 24px; }
-  .guided-walk .page .guided-hero .portrait { width: 64px; height: 64px; }
-  .guided-walk .page .guided-hero .identity strong { font-size: 22px; }
-  .guided-walk .page .guided-hero .identity div > span { font-size: 14px; }
+  .guided-walk .page .guided-hero .identity { margin-top: 24px; }
   .guided-walk[data-active-screen="connection"] .page .intro-card { height: auto; }
   .guided-walk[data-active-screen="connection"] .page > .body-grid { padding-top: 0 !important; }
   .guided-walk[data-active-screen="connection"] .guided-flow.form-card { padding: 28px; justify-content: flex-start; }
@@ -391,7 +388,6 @@
 }
 
 /* Reuse the current photo/card language for tangible installation proof. */
-.guided-walk .page .guided-hero .guided-reassurance { margin: 8px 0 0; color: #dbe5f2; font-size: 16px; line-height: 1.45; }
 .guided-offer-proof { display: grid; gap: 20px; margin: 0 20px; }
 .guided-offer-proof .guided-offer-summary { margin: 0; }
 .guided-install-photo { margin: 0; padding: 16px; background: var(--card); border-radius: var(--r-lg); box-shadow: var(--shadow-sm); }
