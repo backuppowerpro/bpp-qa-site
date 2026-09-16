@@ -45,10 +45,15 @@
       function recovery(error) {
         if (window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.hide();
         prepareBoot();
-        var heading = element('h1', WALK.classifyRecoveryError(error) === 'temporary' ? 'Your saved request could not load. Try again.' : "We couldn't open this saved request.");
+        var temporary = WALK.classifyRecoveryError(error) === 'temporary';
+        var heading = element('h1', temporary ? 'Your saved request could not load. Try again.' : "We couldn't open this saved request.");
         heading.tabIndex = -1; loading.replaceChildren(heading);
-        var retry = element('button', 'Try again', 'cta'); retry.type = 'button'; retry.dataset.bootRetry = ''; retry.onclick = load; loading.appendChild(retry);
-        var start = element('a', 'Start a new Quote Walk', 'guided-link'); start.href = START; start.onclick = function () { WALK.setToken(''); }; loading.appendChild(start); heading.focus({ preventScroll: true });
+        if (temporary) {
+          var retry = element('button', 'Try again', 'cta'); retry.type = 'button'; retry.dataset.bootRetry = ''; retry.onclick = load; loading.appendChild(retry);
+        } else {
+          loading.appendChild(element('p', 'This link is no longer available. Start a new Quote Walk to get an estimate.'));
+        }
+        var start = element('a', 'Start a new Quote Walk', temporary ? 'guided-link' : 'cta'); start.href = START; start.onclick = function () { WALK.setToken(''); }; loading.appendChild(start); heading.focus({ preventScroll: true });
       }
       async function load() {
         if (bootBusy) return;

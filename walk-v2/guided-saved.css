@@ -4,7 +4,7 @@
 .guided-saved .page { display: block; padding: 0; background: var(--page, #fafbfc); }
 .guided-saved .guided-flow { margin: 0 auto; width: 100%; max-width: 620px; padding: 28px 20px 10px; box-sizing: border-box; }
 .guided-saved .guided-screen h1, .guided-saved .guided-screen h2 { color: var(--navy, #0b1f3b); font: 800 28px/1.1 var(--head, Outfit, sans-serif); margin: 0 0 12px; }
-.guided-saved .cta { display: flex; align-items: center; justify-content: center; min-height: 52px; border: 0; border-radius: 999px; padding: 12px 16px; background: #ffba00; color: #0b1f3b; font: 700 16px/1.4 var(--head, Outfit, sans-serif); cursor: pointer; box-shadow: 0 6px 24px rgba(255,186,0,.28); }
+.guided-saved .cta { height: auto; white-space: normal; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; min-height: 52px; border: 0; border-radius: 999px; padding: 12px 16px; background: #ffba00; color: #0b1f3b; font: 700 16px/1.4 var(--head, Outfit, sans-serif); cursor: pointer; box-shadow: 0 6px 24px rgba(255,186,0,.28); }
 .guided-saved .guided-screen button { min-height: 44px; }
 .guided-saved [hidden] { display: none !important; }
 .guided-saved .guided-screen p { font-size: 16px; line-height: 1.55; }
@@ -105,9 +105,9 @@
 .guided-photo-gallery .guided-photo { position: relative; padding: 0; border: 0; background: transparent; box-shadow: none; }
 .guided-photo-gallery .guided-photo > button[data-preview] { aspect-ratio: 1; border-radius: 12px; overflow: hidden; }
 .guided-photo-gallery .guided-photo img { border-radius: 12px; }
-.guided-saved .guided-photo-gallery .guided-upload-action { display: grid; width: 100%; height: auto; min-height: 44px; aspect-ratio: auto; padding: 0; border: 2px dashed rgba(11,31,59,.2); border-radius: 12px; box-shadow: none; font-size: 14px; }
+.guided-saved .guided-photo-gallery .guided-upload-action { display: grid; width: 100%; height: auto; min-height: 44px; aspect-ratio: auto; overflow: visible; white-space: normal; overflow-wrap: anywhere; padding: 0; border: 2px dashed rgba(11,31,59,.2); border-radius: 12px; box-shadow: none; font-size: 14px; }
 .guided-photo-gallery .guided-photo-actions { gap: 0; }
-.guided-photo-gallery .guided-photo-actions button { font-size: 14px; }
+.guided-photo-gallery .guided-photo-actions button { font-size: 14px; max-width: 100%; overflow-wrap: anywhere; white-space: normal; }
 .guided-photo-gallery .guided-photo-actions .guided-photo-remove { position: absolute; top: 0; right: 0; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; text-decoration: none; }
 .guided-photo-gallery .guided-photo-remove span { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; box-sizing: border-box; border: 2px solid #fff; border-radius: 50%; background: #0b1f3b; color: #fff; font-size: 18px; line-height: 1; box-shadow: var(--shadow-sm); }
 .guided-photo-gallery .guided-photo.queued, .guided-photo-gallery .guided-photo.uploading, .guided-photo-gallery .guided-photo.failed, .guided-photo-gallery .guided-photo.received { grid-column: 1 / -1; display: grid; grid-template-columns: 88px minmax(0,1fr); gap: 8px 14px; padding: 12px; border-radius: 12px; background: #f4f6fa; }
