@@ -204,8 +204,8 @@
         else if (meta.eventName === 'Lead') BPPMeta.trackLead(meta.eventId);
       }
       // The range bootstrap verifies the current server state and all route guards.
-      // A new in-area guided intake does not need an extra read before that same check.
-      if (original.walkDraft && !original.existingToken && result.intakeContract === CONTRACT && result.service_area_status === 'verified_in_area') {
+      // Server range creation owns readiness, including pending service-area review.
+      if (original.walkDraft && !original.existingToken && result.intakeContract === CONTRACT && Number.isSafeInteger(result.quoteWalkV2Version) && result.quoteWalkV2Version > 0 && ['verified_in_area', 'unconfirmed', 'pending_verification'].indexOf(result.service_area_status) !== -1) {
         // Create from the committed intake version before the one fresh range read.
         // Uncertain creation is reconciled by that read and its existing retry path.
         if (Number.isSafeInteger(result.quoteWalkV2Version) && result.quoteWalkV2Version > 0) {
