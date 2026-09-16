@@ -153,7 +153,7 @@
         var utilities = element('div', '', 'guided-range-utilities');
         save(utilities);
         if (accepted(state)) { utilities.appendChild(element('p', 'Mobile number: ' + String(ctx.view.phone || ''))); link('Edit mobile number', phoneForm, utilities); }
-        layout.appendChild(utilities);
+        layout.insertBefore(utilities, scope);
         var key = WALK.rangePresentationKey(ctx.token, snapshot, state.version);
         if (key !== presented) { presented = key; WALK.ph('walk_v2_range_presented', { event_schema_version: 1, surface_state: 'range_available', entry_path: 'new_intake', result: 'presented', pricing_basis: String(snapshot.pricing_basis || '') }); }
         ctx.focus();
