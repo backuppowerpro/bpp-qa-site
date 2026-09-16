@@ -121,8 +121,15 @@
         function scopeRow(key, description, artwork, title) {
           var item = element('li', '', 'guided-scope-row');
           item.dataset.scopeKey = key;
-          if (artwork && (basis === '30' || basis === '50')) {
-            var img = element('img'); img.src = '/assets/product-images/' + artwork + '-' + basis + 'amp.jpg'; img.alt = ''; img.width = 60; img.height = 60; item.appendChild(img);
+          var scopeImages = {
+            installation: '/assets/images/work-full-install.jpg',
+            panel_guide: '/assets/product-images/panel-operating-guide.jpg',
+            permit_and_required_inspection: '/assets/product-images/permit-inspection-photo.jpg',
+            one_year_workmanship_support: '/assets/product-images/workmanship-support.jpg'
+          };
+          var imageSrc = scopeImages[key] || (artwork && (basis === '30' || basis === '50') ? '/assets/product-images/' + artwork + '-' + basis + 'amp.jpg' : null);
+          if (imageSrc) {
+            var img = element('img'); img.src = imageSrc; img.alt = ''; img.width = 60; img.height = 60; item.appendChild(img);
           } else {
             var icon = element('span', '', 'guided-scope-icon'); icon.setAttribute('aria-hidden', 'true');
             var paths = {
