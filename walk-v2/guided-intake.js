@@ -102,8 +102,6 @@
     flow.hidden = false;
     flow.querySelectorAll('[data-screen]').forEach(function (node) { node.hidden = node.dataset.screen !== screen; });
     activeScreen = flow.querySelector('[data-screen="' + screen + '"]');
-    var outletHelp = flow.querySelector('[data-outlet-help]');
-    if (outletHelp) outletHelp.hidden = !state.editing;
     document.body.dataset.activeScreen = screen;
     document.getElementById('mainPage').dataset.screenLabel = screen === 'connection' || contactFirstAnonymous() ? 'Landing page (interactive, mobile)' : 'Quote walk: guided details';
     progress.hidden = contactFirstAnonymous() || screen === 'connection' || screen === 'recovery' || screen === 'help';
