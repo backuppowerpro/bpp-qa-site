@@ -735,6 +735,7 @@
       }
     }
     if (state.service_area_status === 'verified_out_of_area') return { reason: 'area', page: 'index.html', extra: { area: 'out' } };
+    if (review.followup && review.followup.current === true) return { reason: 'submitted', page: 'thankyou.html' };
     if (activeCorrection) return { reason: 'correction', page: correction.response_submission_id && review.submission_current === true && !review.newer_photo_draft ? 'thankyou.html' : 'photos.html', extra: { correction: '1' } };
     if (isGeneratorNeeded(view) || hasIncompleteInputs(view, t)) {
       var edit = isGeneratorNeeded(view) || isUnansweredConnection(view) || isPendingAccess(view) ? 'connection' : isUnansweredPanel(view) ? 'location' : 'distance';
@@ -894,7 +895,7 @@
         && (action === 'submit_photos'
           ? payloadKeys.length === 4 && payloadKeys.every(function (key) { return ['packet_revision', 'media_ids', 'correction_request_id', 'correction_revision'].indexOf(key) !== -1; }) && Array.isArray(payloadFields.media_ids) && payloadFields.media_ids.length > 0
           : payloadKeys.length === 2 && payloadKeys.indexOf(action === 'remove_guided_photo' ? 'media_id' : 'reservation_id') !== -1);
-      var validEmpty = action === 'handoff' && payloadKeys.length === 0;
+      var validEmpty = action === 'handoff' && (payloadKeys.length === 0 || payloadKeys.length === 4 && payloadKeys.every(function (key) { return ['photo_followup','packet_revision','correction_request_id','correction_revision'].indexOf(key) !== -1; }) && payloadFields.photo_followup === 'text_later');
       if (!validCreateRange && !validSupersedeMedia && !validUpdatePhone && !validAccept && !validEmpty && !validGuidedAnswers && !validPhotoOperation) {
         return Promise.reject(new Error('invalid_state_payload'));
       }

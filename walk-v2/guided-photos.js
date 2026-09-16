@@ -41,30 +41,20 @@
       function button(label, callback, className) { var control = element('button', label, className || 'guided-link'); control.type = 'button'; control.onclick = callback; return control; }
       function latestResponse() { var correction = review().current_correction; var submission = review().latest_submission; return Boolean(correction && submission && correction.response_submission_id === submission.id && submission.correction_request_id === correction.id && submission.correction_revision === correction.revision); }
       function submittedReceipt() {
-        var submission = review().latest_submission;
-        if (review().manual_review_current === true) {
-          ctx.content.replaceChildren(element('h1', 'Key has reviewed your photos'));
-          ctx.content.appendChild(element('p', 'Key reviewed the photos from your text conversation and is preparing your firm proposal. No payment is due now.'));
-          ctx.content.appendChild(element('p', 'Next: Key prepares your firm proposal'));
-          ctx.content.appendChild(button('Add or change photos', function () { WALK.go('photos.html', ctx.token, { edit: 'photos' }); }));
-          ctx.focus(); return;
-        }
-        if (!submission || !submission.id || review().submission_current !== true) { WALK.go('photos.html', ctx.token, null, true); return; }
-        var correctionResponse = latestResponse();
-        ctx.content.replaceChildren(element('h1', correctionResponse ? "Your updates were sent for Key's review." : "Your photos have been sent for Key's review."));
-        ctx.content.appendChild(element('p', "Key will review your setup before preparing your firm proposal. If another detail would help, he'll let you know. No payment is due now."));
-        ctx.content.appendChild(element('p', 'Next: Key reviews your setup'));
-        var estimate = ctx.state().current_range_snapshot;
-        if (estimate && estimate.status === 'available' && estimate.snapshot_id === submission.snapshot_id) {
-          var starting = estimate.pricing_context && estimate.pricing_context.estimate_kind === 'starting_at';
-          ctx.content.appendChild(element('p', 'For your estimate: ' + (starting ? 'Starting at ' : '') + '$' + Math.round(estimate.low_cents / 100).toLocaleString('en-US') + (!starting && estimate.high_cents !== estimate.low_cents ? ' to $' + Math.round(estimate.high_cents / 100).toLocaleString('en-US') : '')));
-        }
-        var receiptPhotos = review().submitted_media || [];
-        var gallery = element('div', '', 'guided-gallery');
-        receiptPhotos.forEach(function (item) { gallery.appendChild(photoCard(item, true)); });
-        ctx.content.appendChild(gallery);
-        ctx.content.appendChild(element('p', String(submission.media_ids.length) + (submission.media_ids.length === 1 ? ' photo submitted.' : ' photos submitted.')));
-        ctx.content.appendChild(button('Add or change photos', function () { WALK.go('photos.html', ctx.token, { edit: 'photos' }); }));
+        var followup = review().followup || {};
+        var last4 = /^\d{4}$/.test(followup.phone_last4 || '') ? followup.phone_last4 : '';
+        var status = followup.status || 'unconfirmed';
+        var destination = last4 ? 'the number ending in ' + last4 : 'your saved mobile number';
+        ctx.content.replaceChildren(element('h1', "You're all set."));
+        var message = status === 'sent' ? 'Check your messages at ' + destination + '.'
+          : status === 'pending' ? 'Expect a text soon at ' + destination + '.'
+          : status === 'unavailable' ? 'Your request is saved, but we could not send a text to ' + destination + '.'
+          : 'Your request is saved. We could not confirm the text yet. Check your messages at ' + destination + '.';
+        ctx.content.appendChild(element('p', message));
+        var from = element('p'); from.appendChild(element('span', 'Our texting number: '));
+        var number = element('a', '(864) 863-7800', 'guided-link'); number.href = 'sms:+18648637800'; from.appendChild(number);
+        ctx.content.appendChild(from);
+        ctx.content.appendChild(button('Back to photos', function () { WALK.go('photos.html', ctx.token, { edit: 'photos' }); }));
         ctx.focus();
       }
       function photoCard(item, readOnly) {
@@ -110,7 +100,7 @@
         if (!ctx.guard()) return;
         if (!accepted()) { WALK.go('range.html', ctx.token, null, true); return; }
         if (ctx.kind === 'thankyou') {
-          if (review().manual_review_current !== true && (review().newer_photo_draft || review().submission_current !== true || !review().latest_submission)) { WALK.go('photos.html', ctx.token, null, true); return; }
+          if (!(review().followup && review().followup.current === true) && review().manual_review_current !== true && (review().newer_photo_draft || review().submission_current !== true || !review().latest_submission)) { WALK.go('photos.html', ctx.token, null, true); return; }
           submittedReceipt(); return;
         }
         var correction = review().current_correction;
@@ -174,18 +164,13 @@
         textLaterBusy = true; textLaterMessage = ''; render();
         try {
           // Reuse the current handoff and its one-opener provider claim.
-          var result = await ctx.action('handoff', {});
-          var status = result && result.photo_text_status;
-          if (status === 'sent' || status === 'already_sent') {
-            textLaterDone = true;
-            textLaterMessage = status === 'already_sent' ? 'Your photo text was already sent. Reply to that message whenever you have your photos.' : 'Photo instructions texted. Reply to that message whenever you have your photos.';
-          } else if (status === 'pending') {
-            textLaterMessage = 'The text could not be confirmed yet. Check your messages before trying again.';
-          } else if (status === 'unavailable') {
-            textLaterMessage = 'The text could not be sent. You can text your photos directly to Key.';
-          } else {
-            textLaterMessage = 'The text could not be confirmed. Check your messages before trying again.';
+          var correction = review().current_correction;
+          await ctx.action('handoff', { photo_followup: 'text_later', packet_revision: review().packet_revision, correction_request_id: correction && !correction.resolved_at ? correction.id : null, correction_revision: correction && !correction.resolved_at ? correction.revision : null });
+          await ctx.load();
+          if (review().followup && review().followup.current === true) {
+            WALK.go('thankyou.html', ctx.token, null, true); return;
           }
+          textLaterMessage = 'Your request could not be confirmed. Try again to check the same request.';
         } catch (error) {
           if (error && error.code === 'stale_customer_authorization') {
             try { await ctx.load(); } catch (_) {}
