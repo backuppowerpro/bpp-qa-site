@@ -36,11 +36,6 @@
       function primary(label, callback, parent) { var button = element('button', label, 'cta qw-primary-action'); button.type = 'button'; button.onclick = callback; (parent || ctx.content).appendChild(button); return button; }
       function link(label, callback, parent) { var button = element('button', label, 'guided-link'); button.type = 'button'; button.onclick = callback; (parent || ctx.content).appendChild(button); return button; }
       function save(parent) { var container = element('div'); container.innerHTML = BPPGuidedSaved.saveMarkup; (parent || ctx.content).appendChild(container); ctx.save(container.querySelector('[data-save-for-later]'), parent ? function () { return 'Keep your private link to return here.'; } : undefined); }
-      function pause() {
-        ctx.content.replaceChildren(element('h1', accepted(ctx.state()) ? 'Your saved request is still available.' : 'Your estimate is saved.'));
-        ctx.content.appendChild(element('p', accepted(ctx.state()) ? 'Keep your link if you want to return.' : 'No proposal has been requested. Keep your link if you want to return.'));
-        save(); link('Back to my estimate', render); ctx.focus();
-      }
       function failure() {
         ctx.content.replaceChildren(element('h1', 'Your details are saved, but your estimate could not load.'));
         primary('Try again', load); save(); ctx.focus();
@@ -154,8 +149,6 @@
 
         var utilities = element('div', '', 'guided-range-utilities');
         save(utilities);
-        link('Correct my setup answers', function () { WALK.go('index.html', ctx.token, { edit: 'setup' }); }, utilities);
-        link('Not ready yet', pause, utilities);
         if (accepted(state)) { utilities.appendChild(element('p', 'Mobile number: ' + String(ctx.view.phone || ''))); link('Edit mobile number', phoneForm, utilities); }
         layout.appendChild(utilities);
         var key = WALK.rangePresentationKey(ctx.token, snapshot, state.version);
