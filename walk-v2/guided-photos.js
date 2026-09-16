@@ -17,14 +17,9 @@
       var submitAuthorization = null;
       var recoveryController = null;
       var replacing = null;
-      var textOpen = false;
-      var textOptions = null;
-      var textPreparing = false;
-      var textPreparedOnce = false;
-      var textMessage = '';
-      var textImport = null;
-      var skippedTextImages = new Set();
-      var copyReferenceFallback = false;
+      var textLaterBusy = false;
+      var textLaterDone = false;
+      var textLaterMessage = '';
       var fileInput = element('input'); fileInput.type = 'file'; fileInput.accept = INPUT_MIME.join(',') + ',.jpg,.jpeg,.png,.webp,.heic,.heif'; fileInput.multiple = true; fileInput.hidden = true;
       ctx.main.appendChild(fileInput);
       var preview = element('dialog', '', 'guided-preview');
@@ -43,7 +38,6 @@
       function busyFiles() { return local.some(function (item) { return item.status === 'queued' || item.status === 'uploading'; }); }
       function hasUnsavedLocal() { return local.length > 0; }
       function accepted() { var state = ctx.state(); var id = state.current_range_snapshot_id || state.current_range_snapshot && state.current_range_snapshot.snapshot_id; return Boolean(id && state.accepted_range_snapshot_id === id); }
-      function save(root) { return ctx.save(root, function () { return busyFiles() || pending().length ? 'Your received photos are saved. An unfinished upload may need to be retried when you return.' : 'Your details and received photos are saved.'; }); }
       function button(label, callback, className) { var control = element('button', label, className || 'guided-link'); control.type = 'button'; control.onclick = callback; return control; }
       function latestResponse() { var correction = review().current_correction; var submission = review().latest_submission; return Boolean(correction && submission && correction.response_submission_id === submission.id && submission.correction_request_id === correction.id && submission.correction_revision === correction.revision); }
       function submittedReceipt() {
@@ -161,99 +155,46 @@
         else if (review().latest_submission) ctx.content.appendChild(element('p', latestResponse() ? "Your updates were sent for Key's review." : "Your previous photos were sent for Key's review."));
         var send = button(submitOperation ? 'Check photo submission' : 'Send photos for review', submitOperation ? reconcileSubmission : submit, 'cta qw-primary-action');
         send.dataset.sendPhotos = '';
-        send.disabled = mutation || busyFiles() || (!submitOperation && (Boolean(textImport) || hasUnsavedLocal() || pending().length > 0 || received().length < 1));
+        send.disabled = mutation || busyFiles() || (!submitOperation && (hasUnsavedLocal() || pending().length > 0 || received().length < 1));
         ctx.content.appendChild(send);
-        var saved = element('div'); saved.innerHTML = BPPGuidedSaved.saveMarkup; ctx.content.appendChild(saved); save(saved.querySelector('[data-save-for-later]'));
-        renderTextFallback();
-      }
-      function renderTextFallback() {
-        var fallback = element('details', '', 'guided-helpful'); fallback.open = textOpen;
-        fallback.appendChild(element('summary', 'Having trouble uploading?'));
-        fallback.appendChild(element('p', 'You can text the photos to Key instead.'));
-        fallback.appendChild(element('p', 'Choose photos up to 32 MB each. JPEG, PNG, WebP and phone photos are supported when your browser can open them.'));
-        fallback.appendChild(element('p', 'Key can review them in your text conversation. If you return here, you can check which photos have been received.'));
-        var textActions = element('div', '', 'guided-photo-actions');
-        if (textPreparing) fallback.appendChild(element('p', 'Preparing your text options...'));
-        if (textOptions) {
-          fallback.appendChild(element('p', 'Include this reference with your photos so they can be matched to this request.'));
-          var reference = element('input'); reference.type = 'text'; reference.readOnly = true; reference.value = textOptions.request_reference; reference.setAttribute('aria-label', 'Your photo request reference'); reference.dataset.textReference = ''; var referenceField = element('div', '', 'guided-phone'); referenceField.appendChild(reference); fallback.appendChild(referenceField);
-          textActions.appendChild(button('Copy reference', async function () {
-            try { if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error('unavailable'); await navigator.clipboard.writeText(textOptions.request_reference); textMessage = 'Reference copied. Include it with your photos.'; }
-            catch (_) { copyReferenceFallback = true; textMessage = 'Select and copy the reference, then include it with your photos.'; }
-            render(); if (copyReferenceFallback) { var field = ctx.content.querySelector('[data-text-reference]'); if (field) { field.focus(); field.select(); } }
-          }));
-        }
-        if (textPreparedOnce && !textPreparing && !textOptions) textActions.appendChild(button('Try loading the reference again', prepareTextOptions));
-        var messages = element('a', 'Open Messages', 'guided-link');
-        messages.href = 'sms:+18648637800' + (textOptions ? '?body=' + encodeURIComponent(textOptions.sms_body) : '');
-        messages.dataset.openTextPhotos = ''; textActions.appendChild(messages); fallback.appendChild(textActions);
-        if (textMessage) { var status = element('p', textMessage); status.setAttribute('role', 'status'); fallback.appendChild(status); }
-        var recoveryActions = element('div', '', 'guided-photo-actions');
-        var check = button(mutation ? 'Checking texted photos...' : 'Check again', checkTextPhotos); check.dataset.checkTextPhotos = ''; check.disabled = mutation || busyFiles() || Boolean(submitOperation); recoveryActions.appendChild(check);
-        recoveryActions.appendChild(button('Back to photo upload', function () { textOpen = false; render(); ctx.content.querySelector('.guided-upload-action').focus(); }));
-        fallback.appendChild(recoveryActions);
-        fallback.addEventListener('toggle', function () { if (!fallback.isConnected) return; textOpen = fallback.open; if (textOpen && !textOptions && !textPreparing && !textPreparedOnce) prepareTextOptions(); });
-        ctx.content.appendChild(fallback);
-      }
-      async function prepareTextOptions() {
-        if (textPreparing || textOptions) return;
-        textPreparing = true; textPreparedOnce = true; render();
-        try {
-          var value = await WALK.textPhotoAction(ctx.token, 'prepare_text_photos');
-          if (!value || value.ok !== true || !/^QW-[A-F0-9]{32}$/.test(value.request_reference || '') || value.sms_recipient !== '+18648637800' || typeof value.sms_body !== 'string' || value.sms_body.length > 500 || value.sms_body.indexOf(value.request_reference) === -1 || value.sms_body.indexOf(ctx.token) !== -1) throw new Error('invalid_text_options');
-          textOptions = value; textMessage = '';
-        } catch (_) { textMessage = 'The request reference could not load. Key can still review photos you text him.'; }
-        finally { textPreparing = false; render(); }
-      }
-      async function checkTextPhotos() {
-        if (mutation || busyFiles() || submitOperation) return;
-        mutation = true; textOpen = true; textMessage = 'Checking for received photos...'; render();
-        var imported = 0;
-        var skipped = 0;
-        function definitiveImageFailure(error) {
-          var code = error && (error.code || error.body && error.body.error);
-          return ['invalid_image', 'image_dimensions_too_large', 'not_an_image', 'image_type_mismatch', 'unsupported_image', 'unsupported_text_photo'].indexOf(code) !== -1;
-        }
-        async function importOrSkip(operation) {
-          try { await importTextPhoto(operation); imported++; }
-          catch (error) {
-            if (!definitiveImageFailure(error)) throw error;
-            // Only definitive pre-reservation image rejection can be skipped here.
-            skippedTextImages.add(operation.text_import_id); textImport = null; skipped++;
+        var later = button(textLaterBusy ? 'Sending photo instructions...' : textLaterDone ? 'Photo instructions texted' : 'Text the photos later', textPhotosLater, 'guided-link');
+        later.dataset.textPhotosLater = '';
+        later.disabled = textLaterBusy || textLaterDone || mutation || busyFiles() || Boolean(submitOperation);
+        var textAction = element('div', '', 'guided-range-utilities'); textAction.appendChild(later);
+        if (textLaterMessage) {
+          var status = element('p', textLaterMessage); status.setAttribute('role', 'status'); status.tabIndex = -1; status.dataset.textLaterStatus = ''; textAction.appendChild(status);
+          if (!textLaterDone && !textLaterBusy) {
+            var messages = element('a', 'Text Key directly', 'guided-link'); messages.href = 'sms:+18648637800'; textAction.appendChild(messages);
           }
         }
+        ctx.content.appendChild(textAction);
+      }
+      async function textPhotosLater() {
+        if (textLaterBusy || textLaterDone || mutation || busyFiles() || submitOperation) return;
+        textLaterBusy = true; textLaterMessage = ''; render();
         try {
-          // Retry only the same frozen import if its previous response was lost.
-          if (textImport) await importOrSkip(textImport);
-          var result = await WALK.textPhotoAction(ctx.token, 'check_text_photos');
-          if (!result || result.ok !== true || !Array.isArray(result.text_photos)) throw new Error('invalid_text_check');
-          for (var item of result.text_photos) {
-            if (item.status !== 'available') continue;
-            if (skippedTextImages.has(item.id)) { skipped++; continue; }
-            await ctx.load();
-            if (!ctx.guard() || !accepted()) return;
-            textImport = { text_import_id: item.id, expected_version: Number(ctx.state().version), packet_revision: Number(review().packet_revision), request_key: crypto.randomUUID() };
-            await importOrSkip(textImport);
+          // Reuse the current handoff and its one-opener provider claim.
+          var result = await ctx.action('handoff', {});
+          var status = result && result.photo_text_status;
+          if (status === 'sent' || status === 'already_sent') {
+            textLaterDone = true;
+            textLaterMessage = status === 'already_sent' ? 'Your photo text was already sent. Reply to that message whenever you have your photos.' : 'Photo instructions texted. Reply to that message whenever you have your photos.';
+          } else if (status === 'pending') {
+            textLaterMessage = 'The text could not be confirmed yet. Check your messages before trying again.';
+          } else if (status === 'unavailable') {
+            textLaterMessage = 'The text could not be sent. You can text your photos directly to Key.';
+          } else {
+            textLaterMessage = 'The text could not be confirmed. Check your messages before trying again.';
           }
-          await ctx.load();
-          if (imported) textMessage = imported === 1 ? 'A texted photo was received. Review your photos, then send them for review when ready.' : 'Texted photos were received. Review your photos, then send them for review when ready.';
-          else if (result.text_photos.some(function (item) { return item.status === 'pending'; })) textMessage = 'A texted photo is still being received. Check again in a moment.';
-          else if (result.text_photos.some(function (item) { return item.status === 'unsupported'; })) textMessage = 'Some texted files cannot be added here. Key can still review them in your text conversation.';
-          else textMessage = 'No new texted photos are available yet.';
-          if (skipped) textMessage = (imported ? textMessage + ' ' : '') + 'Some texted files could not be added here. Key can still review them in your text conversation.';
         } catch (error) {
-          var code = error && (error.code || error.body && error.body.error);
-          if (code === 'media_limit' || code === 'media_limit_history') { textImport = null; textMessage = code === 'media_limit' ? 'Your photo gallery is full. You can send the photos already received, or remove one and check again.' : 'The retained photo history is full. You can send the photos already received. Key can review additional photos in your text conversation.'; }
-          else if (['stale_photo_draft', 'stale_journey_version', 'media_upload_attempt_terminal', 'idempotency_conflict', 'text_photo_removed', 'text_photo_import_removed', 'text_photo_unavailable', 'invalid_text_photo_request', 'text_import_conflict', 'unsupported_text_photo'].indexOf(code) !== -1) { textImport = null; textMessage = 'Your saved photos changed. Check again to load the current photos.'; }
-          else if (code === 'rate limited' || code === 'rate_limited') textMessage = 'Too many tries too quickly. Wait one minute, then check again.';
-          else textMessage = 'Texted photos could not be confirmed. Check again to check the same request.';
-        } finally { mutation = false; render(); }
-      }
-      async function importTextPhoto(operation) {
-        var value = await WALK.textPhotoAction(ctx.token, 'import_text_photo', operation);
-        if (!value || value.receipt_settled !== true || !value.media_receipt_id) throw new Error('unconfirmed_text_receipt');
-        textImport = null;
-        await ctx.load();
+          if (error && error.code === 'stale_customer_authorization') {
+            try { await ctx.load(); } catch (_) {}
+            textLaterMessage = 'Your saved request changed. Review your setup before trying again.';
+          } else textLaterMessage = 'The text could not be confirmed. Check your messages before trying again.';
+        } finally {
+          textLaterBusy = false; render();
+          var statusNode = ctx.content.querySelector('[data-text-later-status]'); if (statusNode) statusNode.focus({ preventScroll: true });
+        }
       }
       async function reload() {
         if (mutation || busyFiles()) return;
@@ -374,7 +315,7 @@
         } finally { mutation = false; render(); }
       }
       async function submit() {
-        if (mutation || busyFiles() || textImport || hasUnsavedLocal() || pending().length || !received().length) return;
+        if (mutation || busyFiles() || hasUnsavedLocal() || pending().length || !received().length) return;
         var correction = review().current_correction;
         submitAuthorization = { version: Number(ctx.state().version), snapshotId: ctx.state().accepted_range_snapshot_id };
         submitOperation = { packet_revision: review().packet_revision, media_ids: received().map(function (item) { return item.id; }).sort(), correction_request_id: correction && !correction.resolved_at ? correction.id : null, correction_revision: correction && !correction.resolved_at ? correction.revision : null };
