@@ -42,6 +42,7 @@
       }
       async function request() {
         if (ctx.busy) return;
+        if (window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.show('photos');
         if (accepted(ctx.state())) { WALK.go('photos.html', ctx.token); return; }
         var displayed = ctx.state().current_range_snapshot.snapshot_id;
         ctx.busy = true;
@@ -161,7 +162,7 @@
       async function load(useInitialView) {
         if (ctx.busy) return;
         ctx.busy = true;
-        if (window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.show();
+        if (window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.show('estimate');
         ctx.content.replaceChildren(element('h1', 'Preparing your estimate...'));
         try {
           if (useInitialView !== true) await ctx.load();

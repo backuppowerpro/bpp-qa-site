@@ -84,27 +84,33 @@
         };
         thumbnail.appendChild(image); thumbnail.onclick = function () { if (item.preview_href) showPreview(item.preview_href, thumbnail); };
         card.appendChild(thumbnail);
-        card.appendChild(element('p', readOnly ? 'Submitted for review' : 'Received'));
+        if (readOnly) card.appendChild(element('p', 'Submitted for review'));
         if (!readOnly) {
           var controls = element('div', '', 'guided-photo-actions');
           controls.appendChild(button('Replace', function () { if (mutation || busyFiles()) return; replacing = item.id; fileInput.multiple = false; fileInput.click(); }));
           controls.appendChild(button('Remove', function () { return remove(item.id); }));
           controls.querySelectorAll('button').forEach(function (control) { control.disabled = mutation || busyFiles() || Boolean(submitOperation); });
+          var removeButton = controls.lastElementChild; removeButton.classList.add('guided-photo-remove'); removeButton.setAttribute('aria-label', 'Remove'); removeButton.innerHTML = '<span aria-hidden="true">×</span>';
           card.appendChild(controls);
         }
         return card;
       }
       function helpful() {
-        var details = element('details', '', 'guided-helpful');
-        details.innerHTML = '<summary><strong>Helpful photos (optional)</strong><span>Generator outlets, electrical panel and outdoor connection area.</span><span>See photo tips</span></summary>';
-        var tips = [
-          ['/img/50amp-outlet-navy.png', 'Generator outlets', 'Show the outlets on your generator and any markings beside them.'],
-          ['/walk-v2/main-panel-example-breaker.jpg', 'Electrical panel', 'Show the panel and its visible labels. Open only the hinged outer door if safe. Never remove screws or the inner cover.'],
-          ['/walk-v2/outdoor-area-path-to-panel.jpg', 'Outdoor connection area', 'Show the area where the inlet will be installed.']
-        ];
-        tips.forEach(function (tip) { var figure = element('figure'); var img = element('img'); img.src = tip[0]; img.alt = tip[1] + ' example'; var caption = element('figcaption'); caption.appendChild(element('strong', tip[1])); caption.appendChild(document.createTextNode(tip[2])); figure.append(img, caption); details.appendChild(figure); });
-        if (ctx.state().panel_inventory_status === 'multiple_unsure_main') details.appendChild(element('p', 'Photos of additional panels can help Key understand your setup. Add whichever photos you have.'));
-        return details;
+        var guidance = element('section', '', 'guided-photo-guidance');
+        guidance.setAttribute('aria-label', 'Helpful photo examples');
+        var examples = element('div', '', 'photo-examples unified-examples');
+        [
+          ['/img/panel-example.jpg', 'Panel with outer door open'],
+          ['/walk-v2/outdoor-area-path-to-panel.jpg', 'Outdoor area and path to panel']
+        ].forEach(function (tip) {
+          var example = element('div', '', 'photo-example');
+          var img = element('img'); img.src = tip[0]; img.alt = tip[1] + ' example';
+          example.append(img, element('span', tip[1])); examples.appendChild(example);
+        });
+        guidance.appendChild(examples);
+        guidance.appendChild(element('p', 'Open only the hinged outer panel door if safe. Never remove screws or the inner cover.', 'guided-photo-safety'));
+        if (ctx.state().panel_inventory_status === 'multiple_unsure_main') guidance.appendChild(element('p', 'Photos of additional panels can help Key understand your setup.'));
+        return guidance;
       }
       function render() {
         if (!ctx.guard()) return;
@@ -115,15 +121,13 @@
         }
         var correction = review().current_correction;
         var activeCorrection = correction && !correction.resolved_at && !correction.response_submission_id;
-        ctx.content.replaceChildren(element('h1', activeCorrection ? 'Key needs another look at your setup' : "Let's check your setup."));
-        ctx.content.appendChild(element('p', activeCorrection ? String(correction.request_text || '') : 'Photos help Key confirm the connection and prepare your firm proposal. Add whichever photos you have.'));
+        ctx.content.replaceChildren(element('h1', activeCorrection ? 'Key needs another look at your setup' : 'Show me your setup.'));
+        ctx.content.appendChild(element('p', activeCorrection ? String(correction.request_text || '') : 'Photos of your generator outlets, panel and outdoor connection area help Key prepare your firm proposal. Add whichever photos you have.'));
         ctx.content.appendChild(helpful());
-        var add = button('Add photos', function () { replacing = null; fileInput.multiple = true; fileInput.click(); }, 'guided-upload-action');
+        var add = button('Add photos', function () { replacing = null; fileInput.multiple = true; fileInput.click(); }, 'guided-upload-action add-photo-tile');
+        add.setAttribute('aria-label', 'Add photos'); var addLabel = element('span', '', 'guided-add-label'); addLabel.append(element('span', '+'), element('span', 'Add photos')); addLabel.firstChild.setAttribute('aria-hidden', 'true'); add.replaceChildren(addLabel);
         add.disabled = mutation || busyFiles() || Boolean(submitOperation) || received().length + local.length >= MAX_IMAGES;
-        ctx.content.appendChild(add);
-        ctx.content.appendChild(element('p', 'Up to 10 photos, 32 MB each. Phone photos, JPEG, PNG and WebP are supported when your browser can open them.'));
-        ctx.content.appendChild(element('h2', 'Your photos'));
-        var gallery = element('div', '', 'guided-gallery');
+        var gallery = element('div', '', 'guided-gallery guided-photo-gallery'); gallery.setAttribute('aria-label', 'Your photos');
         received().forEach(function (item) { gallery.appendChild(photoCard(item, false)); });
         local.forEach(function (item) {
           var card = element('article', '', 'guided-photo ' + item.status);
@@ -143,8 +147,9 @@
           }
           gallery.appendChild(card);
         });
+        gallery.appendChild(add);
         ctx.content.appendChild(gallery);
-        if (!received().length && !local.length) ctx.content.appendChild(element('p', 'No photos added yet.'));
+        ctx.content.appendChild(element('p', received().length ? received().length + ' of 10 photos received.' : 'Add at least one photo. You can add up to 10.', 'guided-photo-count'));
         pending().forEach(function (item) {
           var row = element('div', '', 'guided-photo-pending'); row.appendChild(element('p', 'An unfinished upload needs checking.'));
           row.appendChild(button('Check upload', reconcile));
@@ -165,6 +170,7 @@
         var fallback = element('details', '', 'guided-helpful'); fallback.open = textOpen;
         fallback.appendChild(element('summary', 'Having trouble uploading?'));
         fallback.appendChild(element('p', 'You can text the photos to Key instead.'));
+        fallback.appendChild(element('p', 'Choose photos up to 32 MB each. JPEG, PNG, WebP and phone photos are supported when your browser can open them.'));
         fallback.appendChild(element('p', 'Key can review them in your text conversation. If you return here, you can check which photos have been received.'));
         var textActions = element('div', '', 'guided-photo-actions');
         if (textPreparing) fallback.appendChild(element('p', 'Preparing your text options...'));
