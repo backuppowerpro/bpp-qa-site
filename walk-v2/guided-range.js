@@ -114,7 +114,6 @@
 
         var scope = element('section', '', 'guided-range-included guided-range-card');
         scope.appendChild(element('h2', "What's included"));
-        if (offer(snapshot)) scope.appendChild(element('p', offer(snapshot).name, 'guided-range-caption'));
         var list = element('ul', '', 'guided-scope');
         var rows = {};
         snapshot.scope_rows.forEach(function (row) { rows[row.key] = row; });
