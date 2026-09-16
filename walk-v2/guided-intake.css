@@ -346,3 +346,46 @@
   font-size: 15px;
   font-weight: 900;
 }
+
+/* Opening v2: translated from the generated BPP composition, using the existing
+ * shell, card, outlet, type and shadow primitives. Only the opening is compact. */
+.guided-walk .page .guided-hero .textzone { padding-top: 8px !important; padding-bottom: 12px !important; }
+.guided-walk .page .guided-hero h1 { max-width: none; font-size: 24px !important; line-height: 1.12 !important; font-weight: 750; }
+.guided-walk .page .guided-hero .sub { margin-top: 8px; font-size: 16px; line-height: 1.45; }
+.guided-walk .page .guided-hero .identity { grid-template-columns: 48px minmax(0, 1fr); gap: 12px; margin-top: 12px; }
+.guided-walk .page .guided-hero .portrait { width: 48px; height: 48px; margin: 0; border-width: 2px; }
+.guided-walk .page .guided-hero .identity strong { font-family: var(--head); font-size: 18px; line-height: 1.2; font-weight: 700; }
+.guided-walk .page .guided-hero .identity div > span { font-size: 13px; line-height: 1.4; letter-spacing: 0; text-transform: none; }
+.guided-walk[data-active-screen="connection"] .page > .body-grid { padding-top: 16px !important; }
+.guided-walk[data-active-screen="connection"] .guided-flow.form-card { padding: 20px; }
+.guided-screen[data-screen="connection"] h2 { font-size: 22px !important; line-height: 1.2 !important; margin-bottom: 8px; }
+.guided-screen[data-screen="connection"] .helper { margin-bottom: 0; line-height: 1.45; }
+.guided-screen .guided-save--opening { display: flex; flex-wrap: wrap; align-items: center; gap: 0 4px; margin: 2px 0 8px; }
+.guided-screen .guided-save--opening [data-save-hint] { margin: 0; font-size: 16px; line-height: 1.4; }
+.guided-screen .guided-save--opening [data-save-button] { margin: 0 !important; padding: 8px 0 !important; font-size: 16px !important; }
+.guided-screen .guided-save--opening [data-save-status] { flex-basis: 100%; }
+.guided-screen[data-screen="connection"] .guided-echo:empty { display: none; }
+.guided-screen[data-screen="connection"] .guided-expectation { margin: 16px 0 0; font-size: 16px; line-height: 1.45; }
+.guided-screen[data-screen="connection"] .cta { margin-top: 12px; }
+.guided-offer-summary { margin: 0 20px; padding: 4px 20px; border-radius: var(--r-lg); background: var(--card); box-shadow: var(--shadow-sm); }
+.guided-offer-row { display: flex; align-items: flex-start; gap: 14px; padding: 18px 0; }
+.guided-offer-row + .guided-offer-row { border-top: 1px solid var(--edge-soft); }
+.guided-offer-row > svg { width: 28px; height: 28px; flex: 0 0 28px; color: var(--navy); }
+.guided-offer-row h2 { margin: 0 0 6px; font: 700 18px/1.3 var(--head); letter-spacing: -.02em; color: var(--navy); }
+.guided-offer-row p { margin: 0; font-size: 16px; line-height: 1.5; color: var(--muted); }
+.guided-walk[data-active-screen]:not([data-active-screen="connection"]) .guided-offer-summary { display: none; }
+@media (min-width: 1024px) {
+  .guided-walk[data-active-screen="connection"] .page[data-screen-label] { grid-template-columns: minmax(0, 1fr) minmax(420px, 1fr) !important; }
+  .guided-walk .page .guided-hero .textzone { padding: 24px 30px 30px !important; justify-content: flex-start; }
+  .guided-walk .page .guided-hero h1 { font-size: 36px !important; line-height: 1.1 !important; }
+  .guided-walk .page .guided-hero .sub { font-size: 18px; margin-top: 16px; }
+  .guided-walk .page .guided-hero .identity { grid-template-columns: 64px minmax(0, 1fr); margin-top: 24px; }
+  .guided-walk .page .guided-hero .portrait { width: 64px; height: 64px; }
+  .guided-walk .page .guided-hero .identity strong { font-size: 22px; }
+  .guided-walk .page .guided-hero .identity div > span { font-size: 14px; }
+  .guided-walk[data-active-screen="connection"] .page .intro-card { height: auto; }
+  .guided-walk[data-active-screen="connection"] .page > .body-grid { padding-top: 0 !important; }
+  .guided-walk[data-active-screen="connection"] .guided-flow.form-card { padding: 28px; justify-content: flex-start; }
+  .guided-offer-summary { grid-area: proof; margin: 0; padding: 6px 28px; }
+  .guided-offer-row { gap: 18px; }
+}
