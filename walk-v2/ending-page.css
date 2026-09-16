@@ -1,0 +1,576 @@
+
+  :root {
+    --navy: #0b1f3b;
+    --navy-mid: #1a3a5c;
+    --gold: #ffba00;
+    --gold-hover: #ffc519;
+    --gold-ink: #8a5a00;
+    --gold-tint: #fff7e0;
+    --bg: #eef1f6;
+    --page: #fafbfc;
+    --card: #ffffff;
+    --sunken: #f4f6fa;
+    --edge: rgba(11, 31, 59, 0.10);
+    --edge-soft: rgba(11, 31, 59, 0.07);
+    --text: #16243a;
+    --muted: #4d5a6e;
+    --faint: #5d6b7e;
+
+    --shadow-sm: 0 2px 6px rgba(11,31,59,0.06), 0 1px 2px rgba(11,31,59,0.04);
+    --shadow-md: 0 10px 28px rgba(11,31,59,0.10), 0 2px 8px rgba(11,31,59,0.05);
+    --shadow-lift: 0 18px 44px rgba(11,31,59,0.14), 0 4px 12px rgba(11,31,59,0.06);
+    --shadow-gold: 0 6px 24px rgba(255,186,0,0.30);
+
+    --r-md: 14px;
+    --r-lg: 20px;
+    --r-pill: 100px;
+
+    --head: 'Outfit', sans-serif;
+    --body: 'Inter', system-ui, -apple-system, sans-serif;
+    --script: 'Dancing Script', cursive;
+
+    --dur: 220ms;
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body {
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  button {
+    font-family: inherit;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  input { font-family: inherit; -webkit-appearance: none; appearance: none; }
+  button:focus-visible, input:focus-visible, a:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+  svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+
+  .stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 48px;
+    padding: 28px 14px 96px;
+  }
+  .state-label {
+    width: 390px;
+    max-width: 100%;
+    font-family: var(--head);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: -34px;
+    padding-left: 4px;
+  }
+  .state-label.wide { width: 1080px; }
+  .snapshot { pointer-events: none; }
+
+  /* ================= page frame ================= */
+  .page {
+    width: 390px;
+    max-width: 100%;
+    background: var(--page);
+    border-radius: 24px;
+    box-shadow: var(--shadow-md), inset 0 0 0 1px var(--edge-soft);
+    overflow: hidden;
+    container-type: inline-size;
+    container-name: page;
+  }
+  .page.w-desktop { width: 1080px; }
+  /* staging: the comp's own desktop composition activates responsively
+     (the comps showed it via a snapshot clone with .w-desktop) */
+  @media (min-width: 1140px) {
+    .page { width: 1080px; }
+  }
+
+  .page * { text-wrap: pretty; }
+
+  /* ================= scroll reveal ================= */
+  .rv {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 560ms var(--ease), transform 560ms var(--ease);
+    transition-delay: var(--rvd, 0ms);
+  }
+  .rv.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .rv { opacity: 1; transform: none; transition: none; }
+  }
+
+  /* ================= 1. site header ================= */
+  .site-head {
+    height: 56px;
+    background: var(--navy);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+  }
+  .lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 8px 0;
+    box-sizing: border-box;
+  }
+  .lockup .bolt {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--gold);
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+  .lockup .bolt svg { width: 14px; height: 14px; fill: var(--navy); stroke: none; }
+  .lockup .wm {
+    font-family: var(--head);
+    font-weight: 800;
+    font-size: 13.5px;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .lockup .wm small {
+    display: block;
+    font-size: 7px;
+    font-weight: 600;
+    letter-spacing: 0.34em;
+    color: var(--gold);
+    margin-top: 3px;
+    white-space: nowrap;
+  }
+
+  /* ================= body grid ================= */
+  .body-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 32px 20px 8px;
+  }
+  .col-main { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+  .col-side { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+
+  @container page (min-width: 760px) {
+    .site-head { padding: 0 48px; }
+    .body-grid {
+      grid-template-columns: 1fr;
+      max-width: 620px;
+      margin: 0 auto;
+      gap: 22px;
+      padding: 48px 24px 12px;
+    }
+    .celebrate h1 { font-size: 44px; }
+    .price .pn { font-size: 64px; }
+    /* .page prefix (visual sweep 2026-07-18): dead-rule fix, see outlet.html */
+    .page .foot { padding-left: 48px; padding-right: 48px; }
+  }
+
+  /* ================= 2. calm ownership (not celebration theater) ================= */
+  .celebrate {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+  .celebrate .big-check {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+    margin-bottom: 16px;
+  }
+  .celebrate .big-check svg { width: 20px; height: 20px; stroke-width: 2.6; }
+  .celebrate h1 {
+    font-family: var(--head);
+    font-weight: 800;
+    font-size: 32px;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    color: var(--navy);
+    margin: 0 0 10px;
+  }
+  .celebrate .sub {
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--muted);
+    margin: 0;
+    max-width: 34em;
+  }
+
+  /* ================= 2b. reviewing beat (calm inevitability) ================= */
+  .reviewing {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--card);
+    border-radius: var(--r-lg);
+    box-shadow: inset 0 0 0 1px var(--edge-soft);
+  }
+  .reviewing .ravatar {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1.5px rgba(11,31,59,0.08);
+  }
+  .reviewing .pulse {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 0 2px #fff;
+  }
+  .reviewing .pulse::after { content: none; }
+  .reviewing .rcopy { min-width: 0; flex: 1; }
+  .reviewing .rline {
+    font-family: var(--head);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--navy);
+    margin: 0 0 3px;
+  }
+  .reviewing .rsub {
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  /* ================= 3. recap card ================= */
+  .recap {
+    background: var(--card);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--edge-soft);
+    padding: 20px 22px;
+  }
+  .recap .tk {
+    font-family: var(--head);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold-ink);
+    margin: 0 0 12px;
+  }
+  .recap ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .recap li {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .recap li .ric {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 auto;
+    border-radius: 8px;
+    background: var(--sunken);
+    color: var(--navy-mid);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .recap li .ric svg { width: 15px; height: 15px; stroke-width: 1.8; }
+
+  /* ================= 4. price card (hero) ================= */
+  .price {
+    position: relative;
+    background: var(--navy);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-lift);
+    padding: 26px 24px 24px;
+    color: #fff;
+    overflow: hidden;
+  }
+  .price::before {
+    content: "";
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,186,0,0.14), transparent 70%);
+    pointer-events: none;
+  }
+  .price .pk {
+    font-family: var(--head);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 12px;
+  }
+  .price .pl {
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.78);
+    margin: 0 0 6px;
+  }
+  .price .pn {
+    font-family: var(--head);
+    font-weight: 800;
+    font-size: 31px;
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin: 0 0 20px;
+    white-space: nowrap;
+  }
+  .price .pn .d { color: var(--gold); }
+  .price .pn .and {
+    font-size: 0.46em;
+    font-weight: 700;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.04em;
+    padding: 0 0.55em;
+  }
+  .price .pf {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: rgba(255,255,255,0.78);
+    margin: -8px 0 18px;
+  }
+  .price ul {
+    list-style: none;
+    margin: 0;
+    padding: 18px 0 0;
+    border-top: 1px solid rgba(255,255,255,0.14);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .price li {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.88);
+  }
+  .price li .tick {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    margin-top: 1px;
+    border-radius: 50%;
+    background: rgba(255,186,0,0.16);
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .price li .tick svg { width: 9px; height: 9px; stroke-width: 3; }
+
+  /* ================= 5. gift card ================= */
+  .gift {
+    background: var(--gold-tint);
+    border-radius: var(--r-lg);
+    box-shadow: inset 0 0 0 1.5px rgba(255,186,0,0.4);
+    padding: 22px;
+  }
+  .gift .gh {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .gift .gi {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-gold);
+  }
+  .gift .gi svg { width: 19px; height: 19px; stroke-width: 1.8; }
+  .gift h2 {
+    font-family: var(--head);
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    color: var(--navy);
+    margin: 0;
+  }
+  .gift .gs {
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--muted);
+    margin: 0 0 16px;
+  }
+  .gift input {
+    width: 100%;
+    height: 52px;
+    padding: 0 16px;
+    font-size: 16px;
+    color: var(--text);
+    background: var(--card);
+    border: 0;
+    border-radius: var(--r-md);
+    box-shadow: inset 0 0 0 1.5px var(--edge);
+    transition: box-shadow var(--dur) var(--ease);
+    margin-bottom: 10px;
+  }
+  .gift input::placeholder { color: var(--faint); }
+  .gift input:focus { outline: none; box-shadow: inset 0 0 0 2px var(--gold); }
+  .gift .gift-error {
+    display: none;
+    margin: 0 0 10px;
+    color: #8f2f26;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .gift .gift-error.show { display: block; }
+  .gift .gift-direct-link {
+    display: none;
+    min-height: 44px;
+    align-items: center;
+    color: var(--navy);
+    font-family: var(--head);
+    font-size: 15px;
+    font-weight: 700;
+    margin: -4px 0 10px;
+  }
+  .gift .gift-direct-link.show { display: inline-flex; }
+  .gift .send {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 52px;
+    font-family: var(--head);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--navy);
+    background: var(--gold);
+    border-radius: var(--r-pill);
+    box-shadow: var(--shadow-gold);
+    transition: background var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .gift .send svg { width: 17px; height: 17px; stroke-width: 2; }
+  .gift .send:not(:disabled):hover { background: var(--gold-hover); }
+  .gift .send:not(:disabled):active { transform: scale(0.98); }
+  .gift .send:disabled {
+    background: #eddfae;
+    color: rgba(11,31,59,0.45);
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  /* ================= 6. closing line ================= */
+  .closing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+    padding: 4px 8px 0;
+  }
+  .closing .cl {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--faint);
+    margin: 0;
+    max-width: 30ch;
+  }
+  .closing .cavatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    margin: 12px 0 3px;
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.92), 0 4px 12px rgba(11,31,59,0.14);
+  }
+  .closing .csig {
+    font-family: var(--script);
+    font-size: 27px;
+    font-weight: 600;
+    color: var(--navy);
+    transform: rotate(-1.5deg);
+    line-height: 1;
+  }
+  .closing .csub {
+    font-family: var(--head);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold-ink);
+  }
+
+  /* ================= 7. footer ================= */
+  .foot {
+    margin-top: 26px;
+    padding: 20px 20px 28px;
+    border-top: 1px solid var(--edge-soft);
+    background: transparent;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--faint);
+    text-align: center;
+  }
+  .foot strong { font-family: var(--head); font-weight: 600; color: var(--muted); }
+
+  /* Fresh Air mobile (2026-07-13 design audit): drop the phone-frame gutters.
+     Comp staging used .stack padding + rounded .page; on a real phone that
+     wastes width and looks like a mock. Edge-to-edge under 760px; desktop card stays. */
+  @media (max-width: 759px) {
+    html, body { background: var(--page); }
+    .stack { padding: 0 0 calc(28px + env(safe-area-inset-bottom, 0px)); gap: 0; }
+    .page {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .state-label { display: none; }
+  }

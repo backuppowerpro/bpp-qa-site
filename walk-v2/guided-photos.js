@@ -45,12 +45,16 @@
         var last4 = /^\d{4}$/.test(followup.phone_last4 || '') ? followup.phone_last4 : '';
         var status = followup.status || 'unconfirmed';
         var destination = last4 ? 'the number ending in ' + last4 : 'your saved mobile number';
-        ctx.content.replaceChildren(element('h1', "You're all set."));
+        var later = ctx.kind === 'photos-later';
+        ctx.content.replaceChildren(element('h1', later ? "Send your photos when you're ready." : "You're all set."));
         var message = status === 'sent' ? 'Check your messages at ' + destination + '.'
           : status === 'pending' ? 'Expect a text soon at ' + destination + '.'
           : status === 'unavailable' ? 'Your request is saved, but we could not send a text to ' + destination + '.'
           : 'Your request is saved. We could not confirm the text yet. Check your messages at ' + destination + '.';
         ctx.content.appendChild(element('p', message));
+        if (later) ctx.content.appendChild(element('p', status === 'unavailable'
+          ? 'When you have your photos, text them to the number below.'
+          : 'When you have your photos, reply to our text with them.'));
         var from = element('p'); from.appendChild(element('span', 'Our texting number: '));
         var number = element('a', '(864) 863-7800', 'guided-link'); number.href = 'sms:+18648637800'; from.appendChild(number);
         ctx.content.appendChild(from);
@@ -98,7 +102,7 @@
       function render() {
         if (!ctx.guard()) return;
         if (!accepted()) { WALK.go('range.html', ctx.token, null, true); return; }
-        if (ctx.kind === 'thankyou') {
+        if (ctx.kind === 'thankyou' || ctx.kind === 'photos-later') {
           if (!(review().followup && review().followup.current === true) && review().manual_review_current !== true && (review().newer_photo_draft || review().submission_current !== true || !review().latest_submission)) { WALK.go('photos.html', ctx.token, null, true); return; }
           submittedReceipt(); return;
         }
@@ -167,7 +171,7 @@
           await ctx.action('handoff', { photo_followup: 'text_later', packet_revision: review().packet_revision, correction_request_id: correction && !correction.resolved_at ? correction.id : null, correction_revision: correction && !correction.resolved_at ? correction.revision : null });
           await ctx.load();
           if (review().followup && review().followup.current === true) {
-            WALK.go('thankyou.html', ctx.token, null, true); return;
+            WALK.go('photos-later.html', ctx.token, null, true); return;
           }
           textLaterMessage = 'Your request could not be confirmed. Try again to check the same request.';
         } catch (error) {

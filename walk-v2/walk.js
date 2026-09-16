@@ -735,7 +735,7 @@
       }
     }
     if (state.service_area_status === 'verified_out_of_area') return { reason: 'area', page: 'index.html', extra: { area: 'out' } };
-    if (review.followup && review.followup.current === true) return { reason: 'submitted', page: 'thankyou.html' };
+    if (review.followup && review.followup.current === true) return { reason: 'submitted', page: (review.followup.completion_choice || review.followup.choice) === 'text_later' ? 'photos-later.html' : 'thankyou.html' };
     if (activeCorrection) return { reason: 'correction', page: correction.response_submission_id && review.submission_current === true && !review.newer_photo_draft ? 'thankyou.html' : 'photos.html', extra: { correction: '1' } };
     if (isGeneratorNeeded(view) || hasIncompleteInputs(view, t)) {
       var edit = isGeneratorNeeded(view) || isUnansweredConnection(view) || isPendingAccess(view) ? 'connection' : isUnansweredPanel(view) ? 'location' : 'distance';

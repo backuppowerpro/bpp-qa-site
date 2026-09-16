@@ -9,7 +9,7 @@
     var stack = element('div', '', 'stack');
     var main = element('main', '', 'page'); main.id = 'guidedSavedPage'; main.dataset.screenLabel = 'Quote walk: saved request';
     main.innerHTML = '<header class="site-head"><a class="lockup" href="https://qa.backuppowerpro.com" aria-label="Backup Power Pro"><img src="/assets/images/logo-white-v2.png" alt="Backup Power Pro"></a></header><div class="guided-flow body"><div class="qw-progress"><button type="button" class="qw-back" data-saved-back aria-label="Back"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m10 3-5 5 5 5"/></svg></button><p class="qw-position"><strong data-saved-position></strong></p></div><section class="guided-screen" data-saved-content></section><p class="guided-error" data-saved-error role="alert" hidden></p></div>';
-    main.querySelector('[data-saved-position]').textContent = { range: 'Estimate', photos: 'Photos', thankyou: 'Next steps' }[kind] || 'Your request';
+    main.querySelector('[data-saved-position]').textContent = { range: 'Estimate', photos: 'Photos', thankyou: 'Next steps', 'photos-later': 'Next steps' }[kind] || 'Your request';
     var footer = document.querySelector('footer.foot'); if (footer) main.appendChild(footer.cloneNode(true));
     stack.appendChild(main); document.body.appendChild(stack);
     return main;
@@ -99,13 +99,13 @@
               var destination = WALK.guidedDestination(token, ctx.view);
               var editingReceivedPhotos = kind === 'photos' && new URLSearchParams(window.location.search).get('edit') === 'photos' && ctx.review().submission_current === true;
               var mustFollow = ['deeper', 'area', 'missing', 'correction', 'range'].indexOf(destination.reason) !== -1;
-              if (kind === 'thankyou' && destination.reason === 'photos') mustFollow = true;
+              if ((kind === 'thankyou' || kind === 'photos-later') && ['photos', 'submitted'].indexOf(destination.reason) !== -1) mustFollow = true;
               if (destination.reason === 'correction' && editingReceivedPhotos && destination.page === 'thankyou.html') mustFollow = false;
               if (mustFollow && destination.page !== kind + '.html') { WALK.routeFromState(token, ctx.view, true); return false; }
               return true;
             }
           };
-          main.querySelector('[data-saved-back]').onclick = function () { WALK.go(kind === 'photos' || kind === 'thankyou' ? 'range.html' : 'index.html', token, kind === 'range' ? { edit: 'setup' } : null); };
+          main.querySelector('[data-saved-back]').onclick = function () { WALK.go(kind === 'photos' || kind === 'thankyou' || kind === 'photos-later' ? 'range.html' : 'index.html', token, kind === 'range' ? { edit: 'setup' } : null); };
           if (!ctx.guard()) return;
           await handler.mount(ctx);
           WALK.ph('walk_v2_screen_view', { screen: 'guided_' + kind });
