@@ -168,7 +168,12 @@
         try {
           // Reuse the current handoff and its one-opener provider claim.
           var correction = review().current_correction;
-          await ctx.action('handoff', { photo_followup: 'text_later', packet_revision: review().packet_revision, correction_request_id: correction && !correction.resolved_at ? correction.id : null, correction_revision: correction && !correction.resolved_at ? correction.revision : null });
+          var fields = { photo_followup: 'text_later', packet_revision: review().packet_revision, correction_request_id: correction && !correction.resolved_at ? correction.id : null, correction_revision: correction && !correction.resolved_at ? correction.revision : null };
+          var expected = typeof WALK.guidedReceiptContext === 'function' ? WALK.guidedReceiptContext(ctx.state()) : null;
+          var receipt = await ctx.action('handoff', fields);
+          if (typeof WALK.guidedReceiptMatches === 'function' && WALK.guidedReceiptMatches(receipt, expected, fields)) {
+            WALK.go('photos-later.html', ctx.token, null, true); return;
+          }
           await ctx.load();
           if (review().followup && review().followup.current === true) {
             WALK.go('photos-later.html', ctx.token, null, true); return;
@@ -288,7 +293,12 @@
             var changed = new Error('stale_customer_authorization'); changed.code = 'stale_customer_authorization'; throw changed;
           }
           // Keep the exact submitted media set and correction context for deliberate retry.
-          await ctx.action('submit_photos', submitOperation); await ctx.load();
+          var expected = typeof WALK.guidedReceiptContext === 'function' ? WALK.guidedReceiptContext(ctx.state()) : null;
+          var receipt = await ctx.action('submit_photos', submitOperation);
+          if (typeof WALK.guidedPhotoReceiptMatches === 'function' && WALK.guidedPhotoReceiptMatches(receipt, expected, submitOperation)) {
+            submitOperation = null; WALK.go('thankyou.html', ctx.token, null, true); return;
+          }
+          await ctx.load();
           if (!submissionMatches()) throw new Error('submission_not_confirmed');
           submitOperation = null; WALK.go('thankyou.html', ctx.token, null, true);
         } catch (error) {

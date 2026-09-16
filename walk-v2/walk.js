@@ -721,6 +721,62 @@
     });
   }
 
+  // A receipt can authorize navigation, never replace the destination's fresh read.
+  function guidedReceiptMatches(receipt, expected, followup) {
+    if (!receipt || !expected || !expected.preReadId || !expected.snapshotId || !expected.scopeHash
+        || !Number.isSafeInteger(expected.version) || expected.version < 1) return false;
+    var readiness = receipt.readiness || {};
+    if (receipt.ok !== true || receipt.intake_contract !== GUIDED_JOURNEY_VERSION
+        || receipt.pre_read_id !== expected.preReadId || receipt.version !== expected.version
+        || receipt.range_snapshot_id !== expected.snapshotId || receipt.accepted_range_snapshot_id !== expected.snapshotId
+        || receipt.handoff_recorded !== true || !receipt.handoff_id
+        || ['ready', 'claimed', 'completed'].indexOf(receipt.handoff_status) === -1
+        || readiness.pre_read_id !== expected.preReadId || readiness.journey_version !== expected.version
+        || readiness.snapshot_id !== expected.snapshotId || readiness.scope_hash !== expected.scopeHash
+        || !Array.isArray(receipt.blockers) || receipt.blockers.some(function (value) { return value !== 'panel_photo'; })) return false;
+    if (!followup) return Boolean(receipt.acceptance_id && readiness.acceptance_id === receipt.acceptance_id);
+    var review = receipt.photo_review || {}, choice = review.followup || {}, correction = review.current_correction;
+    var active = correction && !correction.resolved_at ? correction : null;
+    return Boolean(expected.acceptanceId && readiness.acceptance_id === expected.acceptanceId
+      && choice.current === true && choice.completion_choice === 'text_later'
+      && review.packet_revision === followup.packet_revision
+      && (active ? active.id : null) === followup.correction_request_id
+      && (active ? active.revision : null) === followup.correction_revision);
+  }
+  function guidedPhotoReceiptMatches(receipt, expected, operation) {
+    if (!receipt || !expected || !operation || !expected.preReadId || !expected.snapshotId || !expected.acceptanceId
+        || !Number.isSafeInteger(expected.version) || expected.version < 1
+        || !Number.isSafeInteger(operation.packet_revision) || operation.packet_revision < 0
+        || !Array.isArray(operation.media_ids) || !operation.media_ids.length) return false;
+    function sameMedia(values) {
+      return Array.isArray(values) && values.length === operation.media_ids.length
+        && new Set(values).size === values.length
+        && JSON.stringify(values.slice().sort()) === JSON.stringify(operation.media_ids.slice().sort());
+    }
+    function matchingSubmission(value) {
+      return value && value.id === receipt.photo_submission_id && value.snapshot_id === expected.snapshotId
+        && value.acceptance_id === expected.acceptanceId && value.packet_revision === operation.packet_revision
+        && value.correction_request_id === operation.correction_request_id
+        && value.correction_revision === operation.correction_revision && sameMedia(value.media_ids);
+    }
+    var review = receipt.photo_review || {}, followup = review.followup || {}, correction = review.current_correction;
+    return Boolean(receipt.ok === true && receipt.intake_contract === GUIDED_JOURNEY_VERSION
+      && receipt.pre_read_id === expected.preReadId && receipt.photo_submission_id
+      && matchingSubmission(receipt.submission) && matchingSubmission(review.latest_submission)
+      && receipt.acknowledged_packet_revision === operation.packet_revision
+      && review.packet_revision === operation.packet_revision && review.acknowledged_revision === operation.packet_revision
+      && review.submission_current === true && review.newer_photo_draft === false
+      && Array.isArray(review.pending_uploads) && review.pending_uploads.length === 0 && sameMedia(review.draft_media_ids)
+      && followup.current === true && followup.completion_choice === 'send_photos'
+      && (correction ? correction.id : null) === operation.correction_request_id
+      && (correction ? correction.revision : null) === operation.correction_revision
+      && (!correction || correction.response_submission_id === receipt.photo_submission_id));
+  }
+  function guidedReceiptContext(state) {
+    var snapshot = state.current_range_snapshot || {};
+    return { preReadId: state.pre_read_id, version: state.version, snapshotId: snapshot.snapshot_id,
+      scopeHash: snapshot.scope_hash, acceptanceId: (state.readiness || {}).acceptance_id };
+  }
   function guidedDestination(t, view) {
     var state = view.quote_walk_v2 || {};
     var review = state.photo_review || {};
@@ -791,6 +847,9 @@
     isNewJourney: isNewJourney,
     isGuidedJourney: isGuidedJourney,
     guidedDestination: guidedDestination,
+    guidedReceiptMatches: guidedReceiptMatches,
+    guidedPhotoReceiptMatches: guidedPhotoReceiptMatches,
+    guidedReceiptContext: guidedReceiptContext,
     rememberJourneyState: rememberJourneyState,
     guidedJourneyVersion: GUIDED_JOURNEY_VERSION,
     afterDistancePage: afterDistancePage,

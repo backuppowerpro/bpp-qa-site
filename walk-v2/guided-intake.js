@@ -206,6 +206,14 @@
       // The range bootstrap verifies the current server state and all route guards.
       // A new in-area guided intake does not need an extra read before that same check.
       if (original.walkDraft && !original.existingToken && result.intakeContract === CONTRACT && result.service_area_status === 'verified_in_area') {
+        // Create from the committed intake version before the one fresh range read.
+        // Uncertain creation is reconciled by that read and its existing retry path.
+        if (Number.isSafeInteger(result.quoteWalkV2Version) && result.quoteWalkV2Version > 0) {
+          state.busy = true;
+          try { await WALK.stateAction(token, 'create_range', { revision_reason: 'initial' }); }
+          catch (_) { /* The saved intake remains valid when range creation is uncertain. */ }
+          finally { state.busy = false; }
+        }
         WALK.go('range.html', token, null, true); return;
       }
       await loadProtected();

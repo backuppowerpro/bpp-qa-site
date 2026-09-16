@@ -48,7 +48,12 @@
         ctx.busy = true;
         var button = ctx.content.querySelector('[data-request-proposal]'); button.disabled = true; button.textContent = 'Saving your request...';
         try {
-          await ctx.action('accept_range', {});
+          var expected = typeof WALK.guidedReceiptContext === 'function' ? WALK.guidedReceiptContext(ctx.state()) : null;
+          var receipt = await ctx.action('accept_range', {});
+          if (typeof WALK.guidedReceiptMatches === 'function' && WALK.guidedReceiptMatches(receipt, expected)) {
+            WALK.ph('walk_v2_range_accepted_lead', { event_schema_version: 1, surface_state: 'range_accepted', entry_path: 'new_intake', result: 'accepted', pricing_basis: String(ctx.state().current_range_snapshot.pricing_basis || '') });
+            WALK.go('photos.html', ctx.token, null, true); return;
+          }
           await ctx.load();
           if (accepted(ctx.state()) && ctx.state().accepted_range_snapshot_id === displayed) {
             WALK.ph('walk_v2_range_accepted_lead', { event_schema_version: 1, surface_state: 'range_accepted', entry_path: 'new_intake', result: 'accepted', pricing_basis: String(ctx.state().current_range_snapshot.pricing_basis || '') });
