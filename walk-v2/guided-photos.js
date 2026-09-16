@@ -116,7 +116,7 @@
         var correction = review().current_correction;
         var activeCorrection = correction && !correction.resolved_at && !correction.response_submission_id;
         ctx.content.replaceChildren(element('h1', activeCorrection ? 'Key needs another look at your setup' : 'Show me your setup.'));
-        ctx.content.appendChild(element('p', activeCorrection ? String(correction.request_text || '') : 'Photos of your generator outlets, panel and outdoor connection area help Key prepare your firm proposal. Add whichever photos you have.'));
+        ctx.content.appendChild(element('p', activeCorrection ? String(correction.request_text || '') : 'Photos of your generator outlets, panel and outdoor connection area help us prepare your firm proposal. Add whichever photos you have.'));
         ctx.content.appendChild(helpful());
         var add = button('Add photos', function () { replacing = null; fileInput.multiple = true; fileInput.click(); }, 'guided-upload-action add-photo-tile');
         add.setAttribute('aria-label', 'Add photos'); var addLabel = element('span', '', 'guided-add-label'); addLabel.append(element('span', '+'), element('span', 'Add photos')); addLabel.firstChild.setAttribute('aria-hidden', 'true'); add.replaceChildren(addLabel);
