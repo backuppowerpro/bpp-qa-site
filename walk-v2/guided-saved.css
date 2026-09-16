@@ -85,10 +85,6 @@
 .guided-range-included .guided-scope-icon { display: grid; place-items: center; color: #0b1f3b; margin: 0; }
 .guided-range-included .guided-scope-icon svg { width: 28px; height: 28px; }
 .guided-saved .guided-range-included .guided-range-guarantee { margin-top: 12px; padding: 16px; grid-template-columns: 60px minmax(0,1fr); gap: 12px; border: 1px solid #f1d591; border-radius: 12px; background: #fff8ec; align-items: start; }
-.guided-range-details { border-top: 1px solid rgba(11,31,59,.1); margin-top: 20px; padding-top: 8px; }
-.guided-range-details summary { min-height: 44px; padding: 12px 0; box-sizing: border-box; font-size: 16px; font-weight: 600; color: #0b1f3b; cursor: pointer; }
-.guided-saved .guided-range-details p { margin: 14px 0 0; color: #4d5a6e; }
-.guided-range-details p strong { color: #0b1f3b; }
 .guided-range-utilities { display: flex; flex-direction: column; align-items: center; text-align: center; }
 .guided-range-utilities .guided-save { margin-top: 0; }
 .guided-range-utilities > .guided-link { margin-top: 4px; }

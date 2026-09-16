@@ -2,11 +2,11 @@
 (function () {
   'use strict';
   var SCOPE = {
-    installation: ['Generator connection installation', 'Panel-matched installation, breaker wiring, testing, and cleanup.'],
-    metal_outdoor_connection_box: ['Outdoor connection box', 'A permanent, weather-rated connection point for your portable generator.'],
-    heavy_duty_compatible_cord: ['Matching generator cord', 'A factory-manufactured cord assembly matched to your portable generator and connection box.'],
+    installation: ['Generator connection installation', 'Installation matched to your panel, including breaker wiring, testing, and cleanup.'],
+    metal_outdoor_connection_box: ['Outdoor connection box', 'A permanent, weather-rated outdoor connection for your portable generator.'],
+    heavy_duty_compatible_cord: ['Matching generator cord', 'A factory-made cord matched to your generator and connection box.'],
     system_walkthrough: ['Practice before you need it', 'We offer to test the system with you.'],
-    panel_guide: ['Steps where you need them', 'An operating-guide sticker stays inside your panel for reference during an outage.'],
+    panel_guide: ['Steps where you need them', 'A step-by-step sticker stays inside your panel for outages.'],
     permit_and_required_inspection: ['Permit and inspection handled', 'We handle the application, permit fee, inspection scheduling, and follow-through.'],
     one_year_workmanship_support: ['One-year workmanship support', 'If an issue comes from our installation work during the first year, we return and correct it at no charge.']
   };
@@ -139,18 +139,15 @@
             };
             icon.innerHTML = '<svg viewBox="0 0 24 24" stroke-width="1.7">' + (paths[key] || paths.installation) + '</svg>'; item.appendChild(icon);
           }
-          var copy = element('div'); copy.appendChild(element('strong', title || scopeText(rows[key])[0])); copy.appendChild(element('span', description)); item.appendChild(copy); list.appendChild(item); return item;
+          var copy = element('div'); copy.appendChild(element('strong', title || scopeText(rows[key])[0])); copy.appendChild(element('span', description || scopeText(rows[key])[1])); item.appendChild(copy); list.appendChild(item); return item;
         }
-        scopeRow('metal_outdoor_connection_box', 'A permanent, weather-rated outdoor connection.', 'inlet');
-        scopeRow('heavy_duty_compatible_cord', 'Matched to your generator and connection box.', 'cord');
-        scopeRow('installation', 'Panel-matched wiring, testing, and cleanup.');
-        scopeRow('panel_guide', 'A system test with you is offered. A step guide stays inside your panel.', null, 'Practice and a panel guide');
-        scopeRow('permit_and_required_inspection', 'Application, permit fee, scheduling, and follow-through.');
+        scopeRow('metal_outdoor_connection_box', null, 'inlet');
+        scopeRow('heavy_duty_compatible_cord', null, 'cord');
+        scopeRow('installation');
+        scopeRow('panel_guide', scopeText(rows.system_walkthrough)[1] + ' ' + scopeText(rows.panel_guide)[1], null, 'Practice and a panel guide');
+        scopeRow('permit_and_required_inspection');
         var guarantee = scopeRow('one_year_workmanship_support', scopeText(rows.one_year_workmanship_support)[1]); guarantee.classList.add('guided-range-guarantee');
         scope.appendChild(list);
-        var scopeDetails = element('details', '', 'guided-range-details'); scopeDetails.appendChild(element('summary', 'Installation details'));
-        snapshot.scope_rows.forEach(function (row) { var description = element('p'); description.appendChild(element('strong', scopeText(row)[0] + ': ')); description.appendChild(document.createTextNode(scopeText(row)[1])); scopeDetails.appendChild(description); });
-        scope.appendChild(scopeDetails);
         layout.appendChild(scope);
 
         var utilities = element('div', '', 'guided-range-utilities');
