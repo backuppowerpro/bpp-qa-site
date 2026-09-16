@@ -1,0 +1,10 @@
+/* Reuse the existing navy header and white shadow-card language while changing states. */
+.qw-estimate-waiting body > :not(.qw-estimate-wait) { visibility: hidden !important; }
+.qw-estimate-wait { position: fixed; inset: 0; z-index: 10000; overflow: auto; background: #fafbfc; color: #0b1f3b; font-family: Inter, Arial, sans-serif; }
+.qw-estimate-wait-shell { width: min(100%, 390px); min-height: 100%; margin: 0 auto; }
+.qw-estimate-wait header { display: flex; align-items: center; min-height: 56px; padding: 0 20px; background: #0b1f3b; }
+.qw-estimate-wait header img { width: auto; height: 28px; max-width: 100%; }
+.qw-estimate-wait-card { margin: 24px 20px; padding: 24px 20px; border-radius: 20px; background: #fff; box-shadow: 0 12px 34px rgba(11,31,59,.14); }
+.qw-estimate-wait-card h1 { margin: 0; font: 700 24px/1.2 Inter, Arial, sans-serif; letter-spacing: -.02em; }
+.qw-estimate-wait-card p { margin: 12px 0 0; font-size: 16px; line-height: 1.5; color: #526074; }
+@media(min-width:480px) { .qw-estimate-wait-shell { margin: 28px auto; min-height: 0; border-radius: 24px; overflow: hidden; } }

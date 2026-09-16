@@ -155,19 +155,21 @@
         if (key !== presented) { presented = key; WALK.ph('walk_v2_range_presented', { event_schema_version: 1, surface_state: 'range_available', entry_path: 'new_intake', result: 'presented', pricing_basis: String(snapshot.pricing_basis || '') }); }
         ctx.focus();
       }
-      async function load() {
+      async function load(useInitialView) {
         if (ctx.busy) return;
         ctx.busy = true;
-        ctx.content.replaceChildren(element('h1', 'Your details are saved. Preparing your estimate...'));
+        if (window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.show();
+        ctx.content.replaceChildren(element('h1', 'Preparing your estimate...'));
         try {
-          await ctx.load(); if (!ctx.guard()) return;
+          if (useInitialView !== true) await ctx.load();
+          if (!ctx.guard()) return;
           if (!ctx.state().current_range_snapshot || (ctx.state().current_range_snapshot.status === 'unavailable' && ctx.state().current_range_snapshot.reason === 'not_created')) { await ctx.action('create_range', { revision_reason: 'initial' }); await ctx.load(); }
           render();
         } catch (_) { failure(); }
         finally { ctx.busy = false; }
       }
-      ctx.reload = load;
-      await load();
+      ctx.reload = function () { return load(); };
+      await load(true);
     }
   };
 })();

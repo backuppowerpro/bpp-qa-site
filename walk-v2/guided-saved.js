@@ -43,6 +43,7 @@
       prepareBoot();
       var status = element('p', 'Loading your saved request...'); status.setAttribute('role', 'status'); loading.appendChild(status);
       function recovery(error) {
+        if (window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.hide();
         prepareBoot();
         var heading = element('h1', WALK.classifyRecoveryError(error) === 'temporary' ? 'Your saved request could not load. Try again.' : "We couldn't open this saved request.");
         heading.tabIndex = -1; loading.replaceChildren(heading);
@@ -55,6 +56,7 @@
         var retryButton = loading.querySelector('[data-boot-retry]');
         if (retryButton) retryButton.disabled = true;
         if (!compatibleCore) {
+          if (window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.hide();
           loading.replaceChildren(element('h1', 'Your Quote Walk needs to reload before you can continue.'));
           var reload = element('button', 'Reload Quote Walk', 'cta'); reload.type = 'button';
           reload.onclick = function () {
@@ -74,6 +76,7 @@
           if (!token || window.__BPP_INVALID_CAPABILITY_ENTRY) { var invalid = new Error('invalid_or_expired_return'); invalid.status = 410; throw invalid; }
           var view = await WALK.view(token);
           if (!WALK.isGuidedJourney(view, token)) {
+            if (window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.hide();
             clearBoot();
             if (!priorGuided) document.body.classList.remove('guided-walk');
             if (!priorSaved) document.body.classList.remove('guided-saved');
@@ -91,7 +94,7 @@
             review: function () { return ctx.state().photo_review || {}; },
             action: function (action, payload) { return WALK.stateAction(token, action, payload); },
             save: function (root, hint) { return BPPSaveForLater.mount(root, function () { return { mode: 'protected', verified: true, token: token, screen: kind, hint: typeof hint === 'function' ? hint() : hint }; }); },
-            focus: function () { var heading = ctx.content.querySelector('h1,h2'); if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); } },
+            focus: function () { if (window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.hide(); var heading = ctx.content.querySelector('h1,h2'); if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); } },
             guard: function () {
               var destination = WALK.guidedDestination(token, ctx.view);
               var editingReceivedPhotos = kind === 'photos' && new URLSearchParams(window.location.search).get('edit') === 'photos' && ctx.review().submission_current === true;

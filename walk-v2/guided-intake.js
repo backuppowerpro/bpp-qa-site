@@ -89,6 +89,7 @@
     return { schema: CONTRACT, observed_connections: state.outlets.slice().sort(), panel_location: state.room || 'not_sure', panel_inventory_status: multi ? 'multiple_unsure_main' : unknown ? 'incomplete' : 'single_complete', panels: multi || unknown ? [] : [{ stable_key: 'main-panel', label: 'Main panel' }], distance_band: state.distance };
   }
   function show(screen, options) {
+    if (window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.hide();
     options = options || {};
     if (contactFirstAnonymous() && screens.indexOf(screen) !== -1) screen = 'contact';
     else if (screens.indexOf(screen) !== -1 && !state.editing && !state.token) {
@@ -177,6 +178,7 @@
     var body = state.pending;
     state.busy = true;
     recovery("We're checking whether your details saved.", 'Keep this page open while we check your request.', null, false);
+    if (JSON.parse(body).walkDraft && window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.show();
     var response;
     try { response = await WALK.submitLeadBody(body); }
     catch (_) { response = null; }
@@ -202,6 +204,11 @@
       if (meta && meta.eligible === true && window.BPPMeta) {
         if (meta.eventName === 'QuoteWalkStarted') BPPMeta.trackQuoteWalkStarted(meta.eventId);
         else if (meta.eventName === 'Lead') BPPMeta.trackLead(meta.eventId);
+      }
+      // The range bootstrap verifies the current server state and all route guards.
+      // A new in-area guided intake does not need an extra read before that same check.
+      if (original.walkDraft && !original.existingToken && result.intakeContract === CONTRACT && result.service_area_status === 'verified_in_area') {
+        WALK.go('range.html', token, null, true); return;
       }
       await loadProtected();
       return;
@@ -236,7 +243,9 @@
   }
   async function loadProtected() {
     state.verified = false;
+    var preparingEstimate = window.BPPQuoteWalkEstimateLoading && BPPQuoteWalkEstimateLoading.isActive();
     recovery('Loading your saved request...', '', null, false);
+    if (preparingEstimate) BPPQuoteWalkEstimateLoading.show();
     try {
       var currentToken = state.token;
       var view = await WALK.view(currentToken);
@@ -281,6 +290,7 @@
   async function saveAnswers() {
     if (state.busy || !state.verified) return;
     state.busy = true; refreshChoices();
+    if (eligible() && window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.show();
     try {
       await WALK.stateAction(state.token, 'save_guided_answers', { walkDraft: draft() });
       var view = await WALK.view(state.token);
