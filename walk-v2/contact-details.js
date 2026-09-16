@@ -2,6 +2,113 @@
  * The host owns identity, frozen submission recovery and navigation. */
 (function () {
   'use strict';
+  var entryURL = new URL(window.location.href);
+  entryURL.searchParams.delete('t');
+  var marketingEntryTime = new Date().toISOString();
+  /* channel attribution for the first-party event stream + payload.leadChannel.
+     Server deriveLeadChannel also reads ?src= / fbclid / gclid from pageUrl
+     (audit 2026-07-13). Keep client labels in the contacts whitelist where
+     possible: meta, google, organic, local, neighbor, get-quote, direct. */
+  function attribution() {
+    var p = new URLSearchParams(entryURL.search);
+    var us = (p.get('utm_source') || '').toLowerCase();
+    var ref = (document.referrer || '').toLowerCase();
+    var src = (p.get('src') || '').toLowerCase();
+    var ch = 'direct';
+    if (p.get('fbclid') || us === 'meta' || us === 'facebook' || us === 'instagram' || src === 'meta' || src === 'lp') ch = 'meta';
+    else if (p.get('gclid') || p.get('gbraid') || p.get('wbraid') || (us === 'google' && /cpc|ppc|paid/.test((p.get('utm_medium') || '').toLowerCase())) || src === 'google') ch = 'google';
+    else if (us) ch = (/google|bing|yahoo|duckduckgo/.test(us) ? 'organic' : (/fb|facebook|insta|meta|tiktok|linkedin|youtube|snap/.test(us) ? 'social' : 'referral'));
+    /* src=city_<slug> -> local (matches /city/ path channel on the server).
+       NOTE: never write a glob path containing star-slash inside this comment; that exact
+       sequence closes the comment and killed this whole script block Jul 4-11 2026. */
+    else if (/^city_/.test(src) || src === 'city-hub' || src.indexOf('city') === 0) ch = 'local';
+    else if (src === 'quote') ch = 'get-quote';
+    else if (src === 'neighbor') ch = 'neighbor';
+    /* src=home|guide|learn|service: internal hop; contacts taxonomy = direct
+       (local events still get walk_entry / walk_src properties separately). */
+    else if (src) ch = 'direct';
+    else if (/google\.|bing\.|duckduckgo\.|yahoo\./.test(ref)) ch = 'organic';
+    else if (ref && ref.indexOf(location.hostname) === -1) ch = 'referral';
+    return { channel: ch, source: p.get('utm_source') || '', medium: p.get('utm_medium') || '', campaign: p.get('utm_campaign') || '' };
+  }
+
+  function currentMarketingTouch() {
+    var p = new URLSearchParams(entryURL.search);
+    var attr = attribution();
+    return {
+      occurredAt: marketingEntryTime,
+      sourceUrl: entryURL.href,
+      referrer: document.referrer || '',
+      channel: attr.channel,
+      utmSource: p.get('utm_source') || '',
+      utmMedium: p.get('utm_medium') || '',
+      utmCampaign: p.get('utm_campaign') || '',
+      utmContent: p.get('utm_content') || '',
+      utmId: p.get('utm_id') || '',
+      campaignId: p.get('utm_id') || p.get('campaign_id') || '',
+      adsetId: p.get('utm_adset_id') || p.get('adset_id') || '',
+      adId: p.get('utm_ad_id') || p.get('ad_id') || '',
+      placement: p.get('utm_placement') || p.get('placement') || '',
+      siteSourceName: p.get('utm_site_source') || p.get('site_source_name') || '',
+      fbclid: p.get('fbclid') || '',
+      gclid: p.get('gclid') || '',
+      gbraid: p.get('gbraid') || '',
+      wbraid: p.get('wbraid') || '',
+      fbp: (document.cookie.match(/(?:^|;\s*)_fbp=([^;]*)/) || [])[1] || '',
+      fbc: (document.cookie.match(/(?:^|;\s*)_fbc=([^;]*)/) || [])[1] || ''
+    };
+  }
+
+  function savedMarketingTouch(key) {
+    try {
+      var touch = JSON.parse(localStorage.getItem(key) || 'null');
+      var age = Date.now() - new Date(touch && touch.occurredAt).getTime();
+      var url = new URL(touch.sourceUrl);
+      if (age >= 0 && age <= 90 * 24 * 60 * 60 * 1000
+          && ['backuppowerpro.com', 'www.backuppowerpro.com'].indexOf(url.hostname) !== -1
+          && !url.searchParams.has('t') && !url.searchParams.has('analytics_test')
+          && !url.searchParams.has('preview')) return touch;
+    } catch (_) {}
+    return null;
+  }
+
+  function savedMarketingTouches() {
+    var host = String(location.hostname || '').toLowerCase();
+    var params = new URLSearchParams(entryURL.search);
+    var dnt = String(navigator.doNotTrack || window.doNotTrack || '').toLowerCase();
+    // Attribution cannot turn a private return, QA visit, or privacy opt-out
+    // into an advertising touch. Keep contact capture independent of storage.
+    if (window.__BPP_CAPABILITY_ENTRY || window.__BPP_OWNER_TEST
+        || (host !== 'backuppowerpro.com' && host !== 'www.backuppowerpro.com')
+        || navigator.globalPrivacyControl === true || dnt === '1' || dnt === 'yes'
+        || params.get('preview') === '1' || params.get('analytics_test') === '1') {
+      return { first: null, current: null };
+    }
+    try { if (sessionStorage.getItem('bpp:owner-test') === '1') return { first: null, current: null }; } catch (_) {}
+    var current = currentMarketingTouch();
+    var first = savedMarketingTouch('bpp_meta_first_touch');
+    var latest = savedMarketingTouch('bpp_meta_latest_touch');
+    // A clean saved-link return keeps the last known marketing touch, including
+    // its original timestamp and the existing seven-day channel window. A new
+    // non-direct visit replaces it. This is CRM
+    // attribution evidence, not a claim about Meta's ad attribution window.
+    if (current.channel === 'direct' && latest
+        && Date.now() - new Date(latest.occurredAt).getTime() <= 7 * 24 * 60 * 60 * 1000
+        && ['meta', 'google', 'organic', 'social', 'referral', 'local', 'neighbor', 'get-quote'].indexOf(latest.channel) !== -1) {
+      current = Object.assign({}, latest, { fbp: current.fbp || latest.fbp || '' });
+    }
+    if (!first) {
+      first = current;
+      try { localStorage.setItem('bpp_meta_first_touch', JSON.stringify(first)); } catch (_) {}
+    }
+    try { localStorage.setItem('bpp_meta_latest_touch', JSON.stringify(current)); } catch (_) {}
+    return { first: first, current: current };
+  }
+
+  // Capture the public ad entry before any questions or contact form mount.
+  // The clean Save for later link intentionally contains no tracking identity.
+  savedMarketingTouches();
+
   window.BPPContactDetails = {
     mount: function (main, options) {
   options = options || {};
@@ -573,74 +680,6 @@
   }
   startBrowserFillProbe();
   window.addEventListener('pagehide', function () { window.clearInterval(browserFillProbe); });
-  /* channel attribution for the first-party event stream + payload.leadChannel.
-     Server deriveLeadChannel also reads ?src= / fbclid / gclid from pageUrl
-     (audit 2026-07-13). Keep client labels in the contacts whitelist where
-     possible: meta, google, organic, local, neighbor, get-quote, direct. */
-  function attribution() {
-    var p = new URLSearchParams(entryURL.search);
-    var us = (p.get('utm_source') || '').toLowerCase();
-    var ref = (document.referrer || '').toLowerCase();
-    var src = (p.get('src') || '').toLowerCase();
-    var ch = 'direct';
-    if (p.get('fbclid') || us === 'meta' || us === 'facebook' || us === 'instagram' || src === 'meta' || src === 'lp') ch = 'meta';
-    else if (p.get('gclid') || p.get('gbraid') || p.get('wbraid') || (us === 'google' && /cpc|ppc|paid/.test((p.get('utm_medium') || '').toLowerCase())) || src === 'google') ch = 'google';
-    else if (us) ch = (/google|bing|yahoo|duckduckgo/.test(us) ? 'organic' : (/fb|facebook|insta|meta|tiktok|linkedin|youtube|snap/.test(us) ? 'social' : 'referral'));
-    /* src=city_<slug> -> local (matches /city/ path channel on the server).
-       NOTE: never write a glob path containing star-slash inside this comment; that exact
-       sequence closes the comment and killed this whole script block Jul 4-11 2026. */
-    else if (/^city_/.test(src) || src === 'city-hub' || src.indexOf('city') === 0) ch = 'local';
-    else if (src === 'quote') ch = 'get-quote';
-    else if (src === 'neighbor') ch = 'neighbor';
-    /* src=home|guide|learn|service: internal hop; contacts taxonomy = direct
-       (local events still get walk_entry / walk_src properties separately). */
-    else if (src) ch = 'direct';
-    else if (/google\.|bing\.|duckduckgo\.|yahoo\./.test(ref)) ch = 'organic';
-    else if (ref && ref.indexOf(location.hostname) === -1) ch = 'referral';
-    return { channel: ch, source: p.get('utm_source') || '', medium: p.get('utm_medium') || '', campaign: p.get('utm_campaign') || '' };
-  }
-
-  function currentMarketingTouch() {
-    var p = new URLSearchParams(entryURL.search);
-    var attr = attribution();
-    return {
-      occurredAt: new Date().toISOString(),
-      sourceUrl: entryURL.href,
-      referrer: document.referrer || '',
-      channel: attr.channel,
-      utmSource: p.get('utm_source') || '',
-      utmMedium: p.get('utm_medium') || '',
-      utmCampaign: p.get('utm_campaign') || '',
-      utmContent: p.get('utm_content') || '',
-      utmId: p.get('utm_id') || '',
-      campaignId: p.get('utm_id') || p.get('campaign_id') || '',
-      adsetId: p.get('utm_adset_id') || p.get('adset_id') || '',
-      adId: p.get('utm_ad_id') || p.get('ad_id') || '',
-      placement: p.get('utm_placement') || p.get('placement') || '',
-      siteSourceName: p.get('utm_site_source') || p.get('site_source_name') || '',
-      fbclid: p.get('fbclid') || '',
-      gclid: p.get('gclid') || '',
-      gbraid: p.get('gbraid') || '',
-      wbraid: p.get('wbraid') || '',
-      fbp: (document.cookie.match(/(?:^|;\s*)_fbp=([^;]*)/) || [])[1] || '',
-      fbc: (document.cookie.match(/(?:^|;\s*)_fbc=([^;]*)/) || [])[1] || ''
-    };
-  }
-
-  function savedMarketingTouches() {
-    var current = currentMarketingTouch();
-    var first = null;
-    try { first = JSON.parse(localStorage.getItem('bpp_meta_first_touch') || 'null'); } catch (_) {}
-    if (!first || !first.occurredAt) {
-      first = current;
-      try { localStorage.setItem('bpp_meta_first_touch', JSON.stringify(first)); } catch (_) {}
-    }
-    try { localStorage.setItem('bpp_meta_latest_touch', JSON.stringify(current)); } catch (_) {}
-    return { first: first, current: current };
-  }
-
-  savedMarketingTouches();
-
   /* single submit path: tapping the button submits AND grants SMS consent via the
      disclosure beneath it. The texts are about the customer's own requested quote;
      the disclosure is explicit and STOP + the by-phone DNC gate are honored on every
@@ -665,6 +704,10 @@
     var name = nameIn.value.trim();
     var attr = attribution();
     var touches = savedMarketingTouches();
+    if (attr.channel === 'direct' && touches.current) {
+      attr = { channel: touches.current.channel, source: touches.current.utmSource || '',
+        medium: touches.current.utmMedium || '', campaign: touches.current.utmCampaign || '' };
+    }
     var eventId = 'wv2-' + window.crypto.randomUUID();
     var intakeNonce = window.crypto.randomUUID();
 
