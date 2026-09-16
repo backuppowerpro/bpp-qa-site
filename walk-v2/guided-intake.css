@@ -389,3 +389,17 @@
   .guided-offer-summary { grid-area: proof; margin: 0; padding: 6px 28px; }
   .guided-offer-row { gap: 18px; }
 }
+
+/* Reuse the current photo/card language for tangible installation proof. */
+.guided-walk .page .guided-hero .guided-reassurance { margin: 8px 0 0; color: #dbe5f2; font-size: 16px; line-height: 1.45; }
+.guided-offer-proof { display: grid; gap: 20px; margin: 0 20px; }
+.guided-offer-proof .guided-offer-summary { margin: 0; }
+.guided-install-photo { margin: 0; padding: 16px; background: var(--card); border-radius: var(--r-lg); box-shadow: var(--shadow-sm); }
+.guided-install-photo img { display: block; width: 100%; height: 260px; object-fit: cover; object-position: 50% 42%; border-radius: var(--r-md); }
+.guided-install-photo figcaption { margin: 12px 0 0; color: var(--muted); font-size: 16px; line-height: 1.45; }
+.guided-walk[data-active-screen]:not([data-active-screen="connection"]) .guided-offer-proof { display: none; }
+@media (min-width: 1024px) {
+  .guided-offer-proof { grid-area: proof; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); margin: 0; gap: 22px; }
+  .guided-offer-proof .guided-offer-summary { grid-area: auto; }
+  .guided-install-photo img { height: 320px; }
+}
