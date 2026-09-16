@@ -58,3 +58,46 @@
 .guided-saved .site-head { height: 56px; background: #0b1f3b; display: flex; align-items: center; padding: 0 20px; }
 .guided-saved .site-head .lockup { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 0; }
 @media(max-width:479px) { .guided-saved .stack { padding: 0 0 calc(28px + env(safe-area-inset-bottom,0px)); } }
+
+/* Range composition translated from the reviewed next-step-first design reference.
+ * Existing BPP card, gold action, product-image and shadow primitives are reused. */
+.guided-range-layout { display: grid; gap: 16px; min-width: 0; }
+.guided-range-layout > * { min-width: 0; }
+.guided-range-card, .guided-estimate-card { padding: 20px; border-radius: 20px; box-shadow: var(--shadow-md, 0 8px 24px rgba(11,31,59,.08)); }
+.guided-range-card { background: #fff; }
+.guided-estimate-card { background: #0b1f3b; color: #fff; }
+.guided-saved .guided-estimate-card h1 { margin: 0 0 12px; color: #fff; font-size: 18px !important; line-height: 1.35 !important; }
+.guided-saved .guided-estimate-card .guided-amount { padding: 0; border-radius: 0; box-shadow: none; background: transparent; color: #ffba00; font-size: 32px; line-height: 1.2; overflow-wrap: anywhere; }
+.guided-saved .guided-estimate-card .guided-range-basis { margin: 10px 0 0; color: #fff; font-weight: 600; }
+.guided-saved .guided-range-layout .guided-range-caption { margin: 8px 0 0; color: #4d5a6e; font-size: 16px; line-height: 1.45; }
+.guided-saved .guided-estimate-card .guided-range-caption { color: #dbe5f2; }
+.guided-saved .guided-estimate-card .guided-range-condition { margin: 16px 0 0; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.2); color: #dbe5f2; }
+.guided-saved .guided-range-card h2 { margin: 0; font-size: 22px !important; line-height: 1.25; }
+.guided-saved .guided-range-next > p { margin: 10px 0 0; color: #4d5a6e; }
+.guided-saved .guided-range-next .cta { margin: 18px 0 0; }
+.guided-saved .guided-range-next .guided-range-payment { margin-top: 12px; text-align: center; }
+.guided-range-included .guided-scope { margin: 18px 0 0; }
+.guided-saved .guided-range-included .guided-scope-row { display: grid; grid-template-columns: 60px minmax(0,1fr); gap: 14px; align-items: center; padding: 16px 0; border-bottom: 0; }
+.guided-range-included .guided-scope-row + .guided-scope-row { border-top: 1px solid rgba(11,31,59,.1); }
+.guided-range-included .guided-scope-row > img { width: 60px; height: 60px; object-fit: contain; border-radius: 10px; background: #fff; }
+.guided-range-included .guided-scope-row strong { font-size: 17px; line-height: 1.3; color: #0b1f3b; }
+.guided-range-included .guided-scope-row span { font-size: 16px; line-height: 1.45; }
+.guided-range-included .guided-scope-icon { display: grid; place-items: center; color: #0b1f3b; margin: 0; }
+.guided-range-included .guided-scope-icon svg { width: 28px; height: 28px; }
+.guided-saved .guided-range-included .guided-range-guarantee { margin-top: 12px; padding: 16px; grid-template-columns: 28px minmax(0,1fr); gap: 12px; border: 1px solid #f1d591; border-radius: 12px; background: #fff8ec; align-items: start; }
+.guided-range-details { border-top: 1px solid rgba(11,31,59,.1); margin-top: 20px; padding-top: 8px; }
+.guided-range-details summary { min-height: 44px; padding: 12px 0; box-sizing: border-box; font-size: 16px; font-weight: 600; color: #0b1f3b; cursor: pointer; }
+.guided-saved .guided-range-details p { margin: 14px 0 0; color: #4d5a6e; }
+.guided-range-details p strong { color: #0b1f3b; }
+.guided-range-utilities { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.guided-range-utilities .guided-save { margin-top: 0; }
+.guided-range-utilities > .guided-link { margin-top: 4px; }
+@media(min-width:1024px) {
+  .guided-saved[data-active-screen="range"] #guidedSavedPage { width: min(960px, calc(100vw - 64px)) !important; max-width: 960px !important; }
+  .guided-saved[data-active-screen="range"] .guided-flow { max-width: none; padding: 28px; }
+  .guided-range-layout { grid-template-columns: minmax(0,1fr) minmax(0,1.15fr); grid-template-areas: "estimate scope" "next scope" "utilities scope" ". scope"; align-items: start; gap: 20px; }
+  .guided-estimate-card { grid-area: estimate; }
+  .guided-range-next { grid-area: next; }
+  .guided-range-included { grid-area: scope; }
+  .guided-range-utilities { grid-area: utilities; }
+}
