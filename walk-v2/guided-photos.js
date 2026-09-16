@@ -54,7 +54,6 @@
         var from = element('p'); from.appendChild(element('span', 'Our texting number: '));
         var number = element('a', '(864) 863-7800', 'guided-link'); number.href = 'sms:+18648637800'; from.appendChild(number);
         ctx.content.appendChild(from);
-        ctx.content.appendChild(button('Back to photos', function () { WALK.go('photos.html', ctx.token, { edit: 'photos' }); }));
         ctx.focus();
       }
       function photoCard(item, readOnly) {
