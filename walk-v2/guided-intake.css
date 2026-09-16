@@ -349,7 +349,7 @@
 
 /* Opening v2: translated from the generated BPP composition, using the existing
  * shell, card, outlet, type and shadow primitives. Only the opening is compact. */
-.guided-walk .page .guided-hero .textzone { padding-top: 8px !important; padding-bottom: 12px !important; }
+.guided-walk .page .guided-hero .textzone { padding-top: 14px !important; padding-bottom: 20px !important; }
 .guided-walk .page .guided-hero h1 { max-width: none; font-size: 24px !important; line-height: 1.12 !important; font-weight: 750; }
 .guided-walk .page .guided-hero .sub { margin-top: 8px; font-size: 16px; line-height: 1.45; }
 .guided-walk .page .guided-hero .identity { grid-template-columns: 92px minmax(0, 1fr); gap: 14px; margin-top: 12px; }
@@ -360,7 +360,7 @@
 .guided-walk[data-active-screen="connection"] .guided-flow.form-card { padding: 20px; }
 .guided-screen[data-screen="connection"] h2 { font-size: 22px !important; line-height: 1.2 !important; margin-bottom: 8px; }
 .guided-screen[data-screen="connection"] .helper { margin-bottom: 0; line-height: 1.45; }
-.guided-screen .guided-save--opening { display: flex; flex-wrap: wrap; align-items: center; gap: 0 4px; margin: 2px 0 8px; }
+.guided-screen .guided-save--opening { display: flex; flex-wrap: wrap; align-items: center; gap: 0 4px; margin: 0 0 4px; }
 .guided-screen .guided-save--opening [data-save-hint] { margin: 0; font-size: 16px; line-height: 1.4; }
 .guided-screen .guided-save--opening [data-save-button] { margin: 0 !important; padding: 8px 0 !important; font-size: 16px !important; }
 .guided-screen .guided-save--opening [data-save-status] { flex-basis: 100%; }
@@ -376,7 +376,7 @@
 .guided-walk[data-active-screen]:not([data-active-screen="connection"]) .guided-offer-summary { display: none; }
 @media (min-width: 1024px) {
   .guided-walk[data-active-screen="connection"] .page[data-screen-label] { grid-template-columns: minmax(0, 1fr) minmax(420px, 1fr) !important; }
-  .guided-walk .page .guided-hero .textzone { padding: 24px 30px 30px !important; justify-content: flex-start; }
+  .guided-walk .page .guided-hero .textzone { padding: 30px 30px 38px !important; justify-content: flex-start; }
   .guided-walk .page .guided-hero h1 { font-size: 36px !important; line-height: 1.1 !important; }
   .guided-walk .page .guided-hero .sub { font-size: 18px; margin-top: 16px; }
   .guided-walk .page .guided-hero .identity { margin-top: 24px; }
