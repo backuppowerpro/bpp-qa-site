@@ -47,14 +47,6 @@
   // their existing contract. Query parameters cannot enable guided admission.
   function contactFirstAnonymous() { return flow.dataset.anonymousEntry === 'contact-first-compatible' && !state.token && !state.pending; }
   var retry;
-  var outletReview = false;
-  var outletsConfirmed = false;
-  var outletReviewRequired = false;
-  var outletScreen = flow.querySelector('[data-screen="connection"]');
-  var outletImage = flow.querySelector('[data-outlet-warning] img');
-  var outletImageFailed = false;
-  outletImage.addEventListener('load', function () { outletImageFailed = false; refreshChoices(); });
-  outletImage.addEventListener('error', function () { outletImageFailed = true; refreshChoices(); });
   var helpOrigin = 'connection';
   var helpTrigger;
   var mountedContact;
@@ -72,15 +64,6 @@
   });
   function refreshSaves() { saveControls.forEach(function (control) { control.refresh(); }); }
   function refreshChoices() {
-    outletScreen.querySelector('.choices').hidden = outletReview;
-    outletScreen.querySelector('[data-outlet-warning]').hidden = !outletReview;
-    outletScreen.querySelector('[data-guided-next]').hidden = outletReview;
-    outletScreen.querySelector('[data-outlet-confirm]').hidden = !outletReview;
-    outletScreen.querySelector('[data-outlet-confirm]').disabled = !outletReview || !state.outlets.length || state.busy || Boolean(state.pending) || !outletImage.complete || !outletImage.naturalWidth;
-    outletScreen.querySelector('[data-outlet-change]').hidden = !outletReview;
-    outletScreen.querySelector('[data-outlet-image-error]').hidden = !(outletImageFailed || outletImage.complete && !outletImage.naturalWidth);
-    outletScreen.querySelector('h2').textContent = outletReview ? 'Check your outlet shape.' : 'Which outlets are on your generator?';
-    outletScreen.querySelector('.helper').textContent = outletReview ? 'These outlets are different. Make sure yours matches your selection, not one of these.' : 'Match the outlets on your generator. Select all that match.';
     flow.querySelectorAll('[data-connection]').forEach(function (button) { button.setAttribute('aria-pressed', String(state.outlets.indexOf(button.dataset.connection) !== -1)); });
     flow.querySelectorAll('[data-room]').forEach(function (button) { button.setAttribute('aria-pressed', String(ROOMS[button.dataset.room] === state.room)); });
     flow.querySelectorAll('[data-dist]').forEach(function (button) { button.setAttribute('aria-pressed', String(state.distance !== null && BANDS[button.dataset.dist] === state.distance)); });
@@ -99,7 +82,7 @@
       button.textContent = state.editing && screen === 'distance' ? 'Save setup answers' : 'Continue';
     });
   }
-  function eligible() { return contactFirstAnonymous() || outletsConfirmed && state.outlets.length > 0 && Boolean(state.room && state.room !== 'not_sure' && state.distance); }
+  function eligible() { return contactFirstAnonymous() || state.outlets.length > 0 && Boolean(state.room && state.room !== 'not_sure' && state.distance); }
   function draft() {
     var multi = state.room === 'more_than_one_panel';
     var unknown = !state.room || state.room === 'not_sure';
@@ -109,19 +92,13 @@
     if (window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.hide();
     options = options || {};
     if (contactFirstAnonymous() && screens.indexOf(screen) !== -1) screen = 'contact';
-    else if (screens.indexOf(screen) > 0 && outletReviewRequired && !outletsConfirmed) screen = 'connection';
     else if (screens.indexOf(screen) !== -1 && !state.editing && !state.token) {
-      if (screens.indexOf(screen) > 0 && (!state.outlets.length || !outletsConfirmed)) screen = 'connection';
+      if (screens.indexOf(screen) > 0 && !state.outlets.length) screen = 'connection';
       else if (screens.indexOf(screen) > 1 && (!state.room || state.room === 'not_sure')) screen = 'location';
       else if (screen === 'contact' && !state.distance) screen = 'distance';
     }
     if (mountedContact) mountedContact.closeSuggestions();
     state.screen = screen;
-    if (screen === 'connection') {
-      outletReviewRequired = true;
-      outletReview = Boolean(options.outletReview && state.outlets.length);
-      outletsConfirmed = false;
-    }
     flow.hidden = false;
     flow.querySelectorAll('[data-screen]').forEach(function (node) { node.hidden = node.dataset.screen !== screen; });
     activeScreen = flow.querySelector('[data-screen="' + screen + '"]');
@@ -133,7 +110,7 @@
     if (screen === 'contact') { contact(); mountedContact.refresh(); }
     if (!options.noHistory) {
       // Only a logical screen and instance marker enter history, never answers or identity.
-      history[options.replace ? 'replaceState' : 'pushState']({ qwg: instance, screen: screen, outletReview: screen === 'connection' && outletReview }, '', entryURL.pathname + entryURL.search);
+      history[options.replace ? 'replaceState' : 'pushState']({ qwg: instance, screen: screen }, '', entryURL.pathname + entryURL.search);
     }
     if (!options.noFocus) {
       var heading = activeScreen.querySelector('h2');
@@ -264,8 +241,6 @@
   function hydrate(view) {
     var v = view.quote_walk_v2 || {};
     state.outlets = WALK.normalizeConnectionSet(v.observed_connections || view.connection_answers).map(function (value) { return value.replace('A', ''); });
-    outletsConfirmed = state.outlets.length > 0;
-    outletReviewRequired = false;
     state.room = v.panel_location || view.confirmed_panel_room || '';
     if (state.room === 'laundry') state.room = 'laundry_room';
     if (state.room === 'other') state.room = 'somewhere_else';
@@ -320,7 +295,6 @@
   }
   async function saveAnswers() {
     if (state.busy || !state.verified) return;
-    if (outletReviewRequired && !outletsConfirmed) { show('connection'); return; }
     state.busy = true; refreshChoices();
     if (eligible() && window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.show();
     try {
@@ -379,8 +353,6 @@
     var button = event.target.closest('button');
     if (!button || button.disabled || button.closest('[hidden]') || state.busy || state.pending) return;
     if (button.hasAttribute('data-connection')) {
-      if (state.screen !== 'connection' || outletReview) return;
-      outletsConfirmed = false;
       var amp = button.dataset.connection;
       state.outlets = state.outlets.indexOf(amp) === -1 ? state.outlets.concat(amp).sort() : state.outlets.filter(function (value) { return value !== amp; });
       refreshChoices();
@@ -392,21 +364,7 @@
       state.distance = BANDS[button.dataset.dist];
       refreshChoices();
       if (!state.distance) help('distance', button);
-    } else if (button.hasAttribute('data-outlet-confirm')) {
-      if (state.screen !== 'connection' || !outletReview || !state.outlets.length || !outletImage.complete || !outletImage.naturalWidth) return;
-      outletsConfirmed = true;
-      show('location');
-    } else if (button.hasAttribute('data-outlet-change')) {
-      show('connection', { replace: true });
-      outletScreen.querySelector('h2').scrollIntoView({ block: 'start', behavior: 'instant' });
     } else if (button.hasAttribute('data-guided-next')) {
-      if (state.screen === 'connection') {
-        if (!state.outlets.length || outletReview) return;
-        show('connection', { outletReview: true, noFocus: true });
-        outletScreen.querySelector('h2').focus({ preventScroll: true });
-        outletScreen.querySelector('h2').scrollIntoView({ block: 'start', behavior: 'instant' });
-        return;
-      }
       if (state.screen === 'distance' && state.editing) saveAnswers();
       else show(screens[screens.indexOf(state.screen) + 1]);
     } else if (button.hasAttribute('data-help')) {
@@ -432,7 +390,7 @@
   window.addEventListener('popstate', function (event) {
     if (state.pending) { recovery("We're checking whether your details saved.", 'Check this request before starting another.', retryIntake, false); return; }
     if (state.token && !state.editing) { loadProtected(); return; }
-    if (event.state && event.state.qwg === instance && screens.indexOf(event.state.screen) !== -1) show(event.state.screen, { noHistory: true, outletReview: event.state.outletReview });
+    if (event.state && event.state.qwg === instance && screens.indexOf(event.state.screen) !== -1) show(event.state.screen, { noHistory: true });
     else if (!state.token) show('connection', { noHistory: true });
   });
   window.addEventListener('pageshow', function (event) {
