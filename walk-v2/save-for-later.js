@@ -115,7 +115,7 @@
         label.textContent = copiedURL ? 'Copied' : 'Save for later';
         hint.textContent = state.pending ? "We're checking whether your details saved."
           : state.mode === 'protected' ? (state.hint || 'Keep your private link to return to your saved request.')
-          : state.mode === 'public' ? (root.hasAttribute('data-save-compact') ? 'Not at your generator?' : 'Not near your generator? Save this link so you can start when you are home.')
+          : state.mode === 'public' ? (root.hasAttribute('data-save-compact') ? 'Not at your generator?' : 'Need more time? Save this link to start again later.')
           : 'Load your saved request to prepare its return link.';
       }
       button.type = 'button';
