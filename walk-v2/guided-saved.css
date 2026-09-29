@@ -81,6 +81,7 @@
 .guided-range-included .guided-scope-row + .guided-scope-row { border-top: 1px solid rgba(11,31,59,.1); }
 .guided-range-included .guided-scope-row > img { width: 60px; height: 60px; object-fit: contain; border-radius: 10px; background: #fff; }
 .guided-range-included .guided-scope-row strong { font-size: 17px; line-height: 1.3; color: #0b1f3b; }
+.guided-range-included .guided-scope-row > div { min-width: 0; overflow-wrap: anywhere; }
 .guided-range-included .guided-scope-row span { font-size: 16px; line-height: 1.45; }
 .guided-range-included .guided-scope-icon { display: grid; place-items: center; color: #0b1f3b; margin: 0; }
 .guided-range-included .guided-scope-icon svg { width: 28px; height: 28px; }

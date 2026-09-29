@@ -11,6 +11,7 @@
 <meta name="robots" content="noindex,nofollow,noarchive">
 <script src="/qa-environment.js"></script>
 <meta name="referrer" content="no-referrer">
+<link rel="stylesheet" href="/assets/css/bpp-money-fonts.css?v=62ed32bb5d1b" />
 
 
 
@@ -18,9 +19,9 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://connect.facebook.net 'sha256-TSf9hPr43r9T9eJr1YlgW7NyDImqpOyAsfxnE3OQYwY=' 'sha256-/XNoSHFiuTfNoxRXh2G8ZN0jz4Nkvztlk9FYaVaDYF4='; script-src-attr 'none'; style-src 'self' 'sha256-5Qh9GlhbF6Y9jQlpGwImmnNa2C9HCNu5g1k0kUTeO+8='; style-src-elem 'self' 'sha256-5Qh9GlhbF6Y9jQlpGwImmnNa2C9HCNu5g1k0kUTeO+8='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://www.facebook.com; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co https://www.facebook.com; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
 <script src="/walk-v2/token-bootstrap.js?v=5561db666347"></script>
 <link rel="stylesheet" href="/walk-v2/estimate-loading.css?v=2c40bac526b7" />
-<script src="/walk-v2/estimate-loading.js?v=3325707da5f4"></script>
-<script src="/assets/js/bpp-analytics.js?v=6981af272341"></script>
-<script src="/walk-v2/meta-pixel.js?v=ec2ba9712967"></script>
+<script src="/walk-v2/estimate-loading.js?v=d63c31c92d06"></script>
+<script src="/assets/js/bpp-analytics.js?v=4778878d007c"></script>
+<script src="/walk-v2/meta-pixel.js?v=e213334b9955"></script>
 <script src="/walk-v2/no-js-bootstrap.js?v=47a946524088"></script>
 <script>/* Entry mode + dynamic hero (Key 2026-07-01 / 2026-07-13 / paid fast lane 2026-07-13):
    src=home -> home hero
@@ -1002,7 +1003,8 @@
 </style>
 <link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
 <link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=aac4d845b250" />
-<link rel="stylesheet" href="/walk-v2/guided-intake.css?v=082287895f93" />
+<link rel="stylesheet" href="/walk-v2/guided-intake.css?v=fa277f1f4c71" />
+<link rel="stylesheet" href="/walk-v2/guided-saved.css?v=357207b35b05">
 </head>
 <body class="guided-walk">
 <div class="qw-no-js-note qw-script-recovery" role="alert">Your Quote Walk could not finish loading. Check that JavaScript is enabled, then reload. For help, call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
@@ -1118,7 +1120,7 @@
       </section>
 
 <p class="guided-echo" data-distance-echo aria-live="polite"></p><p>A matching generator cord is included.</p><button type="button" class="cta qw-primary-action" data-guided-next disabled>Continue</button><div class="guided-save" data-save-for-later><button type="button" class="qw-secondary-action" data-save-button><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m9 10 6-3M9 14l6 3"/></svg>Save for later</button><p data-save-hint>Need more time? Save this link to start again later.</p><p data-save-status aria-live="polite"></p></div></section>
-<section class="guided-screen" id="quote-form" data-screen="contact" aria-labelledby="contact-heading" hidden><h2 class="fc-title" id="contact-heading" tabindex="-1">See your installation estimate</h2><p class="helper">Add your contact details and installation address to see your estimate and check service coverage. Requesting a firm proposal comes next.</p>          <form autocomplete="on" novalidate>
+<section class="guided-screen" id="quote-form" data-screen="contact" aria-labelledby="contact-heading" hidden><div data-estimate-status role="status"></div><div data-estimate-layout class="guided-range-layout"><div class="guided-range-next guided-range-card" data-contact-card><h2 class="fc-title" id="contact-heading" tabindex="-1">Get your firm proposal</h2><p class="helper">Add your details, then share photos of your setup. We’ll review them and text you about your firm proposal.</p>          <form autocomplete="on" novalidate>
             <div class="fields">
               <div class="field">
                 <label for="fName">Name</label>
@@ -1143,13 +1145,13 @@
               <p data-unconfirmed-address="" aria-live="polite" style="display:none; font-size:14px; line-height:1.5; color:var(--gold-ink, #8a5a00); text-align:center; margin:0 0 12px; font-weight:600;">Your address will need verification after your details are saved.</p>
               <button class="cta" type="submit" data-cta="" disabled="">
                 <svg viewBox="0 0 16 16"><path d="M2.5 3.5h11a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H6.5l-3 2.4V11.5h-1a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1z"></path></svg>
-                <span data-cta-label="">See my estimate</span>
+                <span data-cta-label="">Continue to photos</span>
               </button>
               <p class="cta-hint" data-cta-hint="" aria-live="polite" style="display:none; font-size:14px; line-height:1.5; color:var(--gold-ink, #8a5a00); text-align:center; margin:10px 0 0; font-weight:600;"></p>
               <div data-submit-error="" role="alert" style="display:none; font-size:15px; line-height:1.5; color:var(--red, #dc2626); text-align:center; margin:10px 0 0; font-weight:600;"></div>
-              <p class="consent-fine">By tapping the button you agree to get texts from Backup Power Pro about your quote and install. Msg and data rates may apply. Reply STOP anytime.</p>
+              <button type="submit" class="guided-link" data-contact-text-later>Text the photos later</button><p class="consent-fine">By tapping either button you agree to get texts from Backup Power Pro about your quote and install. Msg and data rates may apply. Reply STOP anytime.</p>
             </div>
-          </form><div class="guided-save" data-save-for-later><button type="button" class="qw-secondary-action" data-save-button><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m9 10 6-3M9 14l6 3"/></svg>Save for later</button><p data-save-hint>Need more time? Save this link to start again later.</p><p data-save-status aria-live="polite"></p></div></section>
+          </form></div><div class="guided-range-utilities"><div class="guided-save" data-save-for-later><button type="button" class="qw-secondary-action" data-save-button><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m9 10 6-3M9 14l6 3"/></svg>Save for later</button><p data-save-hint>Need more time? Save this link to start again later.</p><p data-save-status aria-live="polite"></p></div></div></div></section>
 <section class="guided-screen" data-screen="help" aria-labelledby="help-heading" hidden><h2 id="help-heading" tabindex="-1"></h2><p data-help-copy></p><div data-help-examples></div><button type="button" class="cta qw-primary-action" data-help-return>Back to outlet question</button><div class="guided-save" data-save-for-later><button type="button" class="qw-secondary-action" data-save-button><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m9 10 6-3M9 14l6 3"/></svg>Save for later</button><p data-save-hint>Need more time? Save this link to start again later.</p><p data-save-status aria-live="polite"></p></div></section>
 <section class="guided-screen" data-screen="recovery" aria-labelledby="recovery-heading" hidden><h2 id="recovery-heading" tabindex="-1">Loading your saved request...</h2><p data-recovery-copy role="status"></p><button type="button" class="cta qw-primary-action" data-recovery-retry hidden>Try again</button><button type="button" class="guided-link" data-recovery-new hidden>Start a new Quote Walk</button><a class="guided-link" href="tel:+18648637800" data-recovery-call hidden>Call Backup Power Pro for help</a><div class="guided-save" data-save-for-later><button type="button" class="qw-secondary-action" data-save-button><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m9 10 6-3M9 14l6 3"/></svg>Save for later</button><p data-save-hint>Need more time? Save this link to start again later.</p><p data-save-status aria-live="polite"></p></div></section>
 </div></div></div>    <div class="guided-offer-proof"><figure class="guided-install-photo"><img src="/img/install-inlet-panel.jpg" alt="Installed outdoor generator connection box and conduit on a brick wall" width="675" height="900" loading="lazy" decoding="async"/><figcaption>A permanent connection for your portable generator.</figcaption></figure><section class="guided-offer-summary" aria-label="Your generator home connection includes">
@@ -1171,8 +1173,8 @@
     <!-- 7. footer -->
     <footer class="foot">
       <strong>Key Goodson, Licensed Electrician, SC Lic #2942</strong>
-      <span>Serving Greenville, Spartanburg, and Pickens counties</span>
+    <span>Quote requests accepted throughout South Carolina</span>
     </footer>
 </main></div>
-<script src="/walk-v2/walk.js?v=67c772845da7"></script><script src="/walk-v2/save-for-later.js?v=9cb41d92624b"></script><script src="/walk-v2/contact-details.js?v=cc18952dbbcf"></script><script src="/walk-v2/guided-intake.js?v=fdc9318754c2"></script>
+<script src="/walk-v2/walk.js?v=3c06a729ce2e"></script><script src="/walk-v2/save-for-later.js?v=9cb41d92624b"></script><script src="/walk-v2/contact-details.js?v=2f03079016a4"></script><script src="/walk-v2/guided-estimate.js"></script><script src="/walk-v2/guided-intake.js?v=f54aa6e152ea"></script>
 </body></html>

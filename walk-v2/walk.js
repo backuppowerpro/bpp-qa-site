@@ -30,7 +30,6 @@
     automated_follow_ups: false,
     proposal_auto_send: false
   });
-  var AUTHORIZED_SERVICE_COUNTIES = ['Greenville', 'Spartanburg', 'Pickens'];
   var ADDRESS_LOOKUP_PATH = '/api/address-suggest';
 
   function setToken(value) {
@@ -911,6 +910,14 @@
       }
       return send(false);
     },
+    previewRange: function (draft) {
+      return postJson(BASE + '/quote-walk-v2-state', { action: 'preview_range', payload: { walkDraft: draft } });
+    },
+    acceptPreview: function (t, version, operationKey, previewHash) {
+      return postJson(BASE + '/quote-walk-v2-state', { action: 'accept_preview', credential: t,
+        expected_version: version, request_key: operationKey, payload: { preview_hash: previewHash } })
+        .then(function (value) { rememberJourneyState(t, value); return value; });
+    },
     stateAction: function (t, action, fields) {
       if (['create_range', 'accept_range', 'supersede_media', 'update_phone', 'handoff', 'save_guided_answers', 'submit_photos', 'remove_guided_photo', 'cancel_guided_upload'].indexOf(action) === -1) {
         return Promise.reject(new Error('invalid_state_action'));
@@ -1172,13 +1179,11 @@
        strip the site identity required by the restricted provider token. */
     rankAddressSuggestions: function (features) {
       return (Array.isArray(features) ? features : []).map(function (feature, index) {
-        var county = String(feature && feature.county || '').replace(/\s+County$/i, '');
-        var state = String(feature && feature.state || '').toUpperCase();
-        var countyRank = AUTHORIZED_SERVICE_COUNTIES.indexOf(county);
+        var state = String(feature && feature.state || '').trim().toUpperCase();
         return {
           feature: feature,
           index: index,
-          rank: countyRank >= 0 ? countyRank : state === 'SC' ? 10 : 20
+          rank: state === 'SC' || state === 'SOUTH CAROLINA' ? 0 : 1
         };
       }).sort(function (left, right) {
         return left.rank - right.rank || left.index - right.index;

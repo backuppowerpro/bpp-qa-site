@@ -4,6 +4,7 @@
   'use strict';
   var CONTRACT = 'guided-quote-walk-v1';
   var PENDING_KEY = 'bpp:qwv2:pending-guided-intake';
+  var CONTINUATION_KEY = 'bpp:qwv2:guided-estimate-continuation';
   var LEGACY_PENDING_KEY = 'bpp:qwv2:pending-intake';
   var MAX_REPLAY_AGE = 15 * 60 * 1000;
   var TOKEN = /^[a-zA-Z0-9_-]{32,160}$/;
@@ -14,8 +15,8 @@
   if (!flow) return;
   // An older cached core must not operate the current form or choose saved authority.
   if (!window.WALK || !window.BPPContactDetails || !window.BPPSaveForLater
-      || typeof window.__BPP_WALK_TOKEN !== 'string'
-      || ['submitLeadBody', 'isGuidedJourney', 'guidedDestination', 'rememberJourneyState'].some(function (name) { return typeof WALK[name] !== 'function'; })) {
+      || !window.BPPGuidedEstimate || typeof window.__BPP_WALK_TOKEN !== 'string'
+      || ['previewRange', 'acceptPreview', 'submitLeadBody', 'isGuidedJourney', 'guidedDestination', 'rememberJourneyState'].some(function (name) { return typeof WALK[name] !== 'function'; })) {
     document.documentElement.classList.remove('js');
     document.documentElement.classList.add('no-js');
     flow.setAttribute('inert', '');
@@ -51,6 +52,10 @@
   var helpTrigger;
   var mountedContact;
   var activeScreen;
+  var estimatePreview = null;
+  var previewDraft = '';
+  var previewRequest = 0;
+  var acknowledgedToken = '';
   var recoveryHeading = flow.querySelector('#recovery-heading');
   var recoveryCopy = flow.querySelector('[data-recovery-copy]');
   var retryButton = flow.querySelector('[data-recovery-retry]');
@@ -105,19 +110,55 @@
     document.body.dataset.activeScreen = screen;
     document.getElementById('mainPage').dataset.screenLabel = screen === 'connection' || contactFirstAnonymous() ? 'Landing page (interactive, mobile)' : 'Quote walk: guided details';
     progress.hidden = contactFirstAnonymous() || screen === 'connection' || screen === 'recovery' || screen === 'help';
-    flow.querySelector('[data-guided-position]').textContent = { location: 'Panel', distance: 'Distance', contact: 'Details' }[screen] || '';
+    flow.querySelector('[data-guided-position]').textContent = { location: 'Panel', distance: 'Distance', contact: state.token ? 'Details' : 'Your estimate' }[screen] || '';
     refreshChoices(); refreshSaves();
-    if (screen === 'contact') { contact(); mountedContact.refresh(); }
+    if (screen === 'contact') { contact(); mountedContact.refresh(); if (!state.token && !contactFirstAnonymous()) loadEstimate(); }
     if (!options.noHistory) {
       // Only a logical screen and instance marker enter history, never answers or identity.
       history[options.replace ? 'replaceState' : 'pushState']({ qwg: instance, screen: screen }, '', entryURL.pathname + entryURL.search);
     }
     if (!options.noFocus) {
-      var heading = activeScreen.querySelector('h2');
+      var heading = activeScreen.querySelector('h1, h2');
       if (heading) heading.focus({ preventScroll: true });
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
-    WALK.ph('walk_v2_screen_view', { screen: 'guided_' + screen });
+    WALK.ph('walk_v2_screen_view', { screen: screen === 'contact' && !state.token && !contactFirstAnonymous() ? 'guided_estimate_contact' : 'guided_' + screen });
+  }
+  async function loadEstimate(force) {
+    var selected = JSON.stringify(draft());
+    var screen = flow.querySelector('[data-screen="contact"]');
+    var layout = screen.querySelector('[data-estimate-layout]');
+    var status = screen.querySelector('[data-estimate-status]');
+    screen.classList.add('guided-saved');
+    if (!force && previewDraft === selected && estimatePreview) return;
+    var request = ++previewRequest;
+    estimatePreview = null; previewDraft = selected;
+    layout.querySelectorAll('.guided-estimate-card, .guided-range-included').forEach(function (node) { node.remove(); });
+    status.textContent = 'Preparing your estimate...';
+    layout.hidden = true;
+    mountedContact.refresh();
+    if (window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.show('estimate');
+    try {
+      var snapshot = await WALK.previewRange(JSON.parse(selected));
+      if (request !== previewRequest || selected !== JSON.stringify(draft())) return;
+      if (!BPPGuidedEstimate.usable(snapshot) || !/^[a-f0-9]{64}$/.test(snapshot.preview_hash || '')) throw new Error('invalid_estimate');
+      estimatePreview = snapshot;
+      var cards = BPPGuidedEstimate.cards(snapshot, { panel_inventory_status: draft().panel_inventory_status });
+      layout.prepend(cards.estimate); layout.appendChild(cards.scope);
+      status.textContent = ''; layout.hidden = false;
+      mountedContact.refresh();
+    } catch (_) {
+      if (request !== previewRequest) return;
+      status.textContent = 'Your estimate could not load. Your setup answers are still here.';
+      var again = document.createElement('button'); again.type = 'button'; again.className = 'cta qw-primary-action'; again.textContent = 'Try again';
+      again.onclick = function () { loadEstimate(true); }; status.appendChild(again);
+    } finally {
+      if (request === previewRequest && state.screen === 'contact' && !state.pending) {
+        if (window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.hide();
+        var heading = !layout.hidden && layout.querySelector('.guided-estimate-card h1');
+        if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); }
+      }
+    }
   }
   function recovery(title, copy, callback, allowNew) {
     recoveryHeading.textContent = title;
@@ -133,11 +174,22 @@
   }
   function clearPending() {
     state.pending = '';
-    try { sessionStorage.removeItem(PENDING_KEY); sessionStorage.removeItem(LEGACY_PENDING_KEY); } catch (_) {}
+    acknowledgedToken = '';
+    try { sessionStorage.removeItem(PENDING_KEY); sessionStorage.removeItem(LEGACY_PENDING_KEY); sessionStorage.removeItem(CONTINUATION_KEY); } catch (_) {}
   }
-  function readPending() {
-    var body;
-    try { body = sessionStorage.getItem(PENDING_KEY) || sessionStorage.getItem(LEGACY_PENDING_KEY) || ''; } catch (_) { return null; }
+  function matchingContinuation(pending) {
+    if (!pending || !pending.body || !state.token) return false;
+    try {
+      var original = JSON.parse(pending.body);
+      if (!original.estimatePreviewHash || original.existingToken) return false;
+      if (pending.body === state.pending && acknowledgedToken === state.token) return true;
+      var saved = JSON.parse(sessionStorage.getItem(CONTINUATION_KEY) || 'null');
+      return Boolean(saved && saved.token === state.token && saved.nonce === original.intakeNonce && original.estimatePreviewHash && !original.existingToken);
+    } catch (_) { return acknowledgedToken === state.token && Boolean(state.pending); }
+  }
+  function readPending(memoryBody) {
+    var body = memoryBody || '';
+    if (!body) try { body = sessionStorage.getItem(PENDING_KEY) || sessionStorage.getItem(LEGACY_PENDING_KEY) || ''; } catch (_) { return null; }
     if (!body) return null;
     try {
       var payload = JSON.parse(body);
@@ -147,7 +199,14 @@
       return { body: body };
     } catch (_) { return { expired: true }; }
   }
+  function contactActive() {
+    return state.screen === 'contact' && !flow.hidden && !flow.querySelector('[data-screen="contact"]').hidden;
+  }
   function contact() {
+    if (state.token) {
+      flow.querySelector('#contact-heading').textContent = 'Your contact details';
+      flow.querySelector('[data-screen="contact"] .helper').textContent = 'Update the details for your saved request.';
+    }
     if (mountedContact) { mountedContact.setAuthority(state.token); return; }
     if (contactFirstAnonymous()) {
       flow.querySelector('#contact-heading').textContent = "Let's start with a few details.";
@@ -156,14 +215,16 @@
     mountedContact = BPPContactDetails.mount(flow.querySelector('[data-screen="contact"]'), {
       entryURL: entryURL.href,
       token: state.token,
-      submitLabel: state.token ? 'Save my details' : contactFirstAnonymous() ? 'Continue' : 'See my estimate',
-      canSubmit: function () { return !state.pending && !state.busy && (state.token ? state.verified : eligible()); },
+      submitLabel: state.token ? 'Save my details' : contactFirstAnonymous() ? 'Continue' : 'Continue to photos',
+      canSubmit: function () { return contactActive() && !state.pending && !state.busy && (state.token ? state.verified : eligible() && (contactFirstAnonymous() || Boolean(estimatePreview && previewDraft === JSON.stringify(draft())))); },
       walkDraft: state.token || contactFirstAnonymous() ? null : draft,
+      estimatePreview: contactFirstAnonymous() ? null : function () { return estimatePreview && estimatePreview.preview_hash; },
       onBusy: function (busy) { state.busy = busy; refreshChoices(); },
       onSubmit: submitContact
     });
   }
   async function submitContact(payload) {
+    if (!contactActive()) return;
     if (state.pending) return retryIntake();
     if (!state.token && !eligible()) { show('connection'); return; }
     state.pending = JSON.stringify(payload);
@@ -175,8 +236,8 @@
     if (!state.pending) return;
     var body = state.pending;
     state.busy = true;
-    recovery("We're checking whether your details saved.", 'Keep this page open while we check your request.', null, false);
-    if (JSON.parse(body).walkDraft && window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.show();
+    recovery('Saving your request...', 'Keep this page open while we save your details.', null, false);
+    if (JSON.parse(body).walkDraft && window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.show(JSON.parse(body).photoChoice === 'text_later' ? 'saving' : 'photos');
     var response;
     try { response = await WALK.submitLeadBody(body); }
     catch (_) { response = null; }
@@ -191,17 +252,67 @@
         return;
       }
       state.token = token;
+      if (original.estimatePreviewHash) {
+        acknowledgedToken = token;
+        try { sessionStorage.setItem(CONTINUATION_KEY, JSON.stringify({ token: token, nonce: original.intakeNonce })); } catch (_) {}
+      }
       WALK.setToken(token);
       state.freshLegacy = !original.walkDraft && !original.existingToken && result.intakeContract !== CONTRACT;
       if (state.freshLegacy) WALK.markNewJourney(token);
       if (result.intakeContract === CONTRACT) WALK.rememberJourneyState(token, { quote_walk_v2: { intake_contract: CONTRACT, version: result.quoteWalkV2Version } });
-      clearPending();
+      if (!original.estimatePreviewHash) clearPending();
       if (original.existingToken) entryURL.searchParams.delete('edit');
       if (typeof window.BPPAnalytics?.setOwnerTestMode === 'function' && typeof result.ownerTest === 'boolean') BPPAnalytics.setOwnerTestMode(result.ownerTest);
       var meta = result.metaLeadEvent;
       if (meta && meta.eligible === true && window.BPPMeta) {
         if (meta.eventName === 'QuoteWalkStarted') BPPMeta.trackQuoteWalkStarted(meta.eventId);
         else if (meta.eventName === 'Lead') BPPMeta.trackLead(meta.eventId);
+      }
+      if (original.estimatePreviewHash && original.walkDraft && !original.existingToken && result.intakeContract === CONTRACT) {
+        if (!Number.isSafeInteger(result.quoteWalkV2Version) || result.quoteWalkV2Version < 1 || result.service_area_status === 'verified_out_of_area') {
+          clearPending(); await loadProtected(); return;
+        }
+        try {
+          var acceptance = await WALK.acceptPreview(token, result.quoteWalkV2Version, 'preview-submit:' + original.intakeNonce, original.estimatePreviewHash);
+          if (!acceptance || acceptance.ok !== true || acceptance.intake_contract !== CONTRACT
+              || acceptance.preview_hash !== original.estimatePreviewHash || !acceptance.snapshot_id
+              || acceptance.accepted_range_snapshot_id !== acceptance.snapshot_id
+              || acceptance.handoff_recorded !== true) throw new Error('acceptance_not_confirmed');
+          // Tracking follows the validated acceptance and cannot block photos.
+          try {
+            var acceptedMeta = acceptance.metaLeadEvent;
+            if (acceptedMeta && acceptedMeta.eligible === true && acceptedMeta.eventName === 'Lead' && window.BPPMeta) {
+              BPPMeta.trackLead(acceptedMeta.eventId);
+            }
+          } catch (_) {}
+          if (original.photoChoice === 'text_later') {
+            var latest = await WALK.view(token);
+            var current = latest.quote_walk_v2 || {};
+            var destination = WALK.guidedDestination(token, latest);
+            if (destination.reason === 'deeper' || destination.reason === 'submitted') {
+              clearPending(); WALK.routeFromState(token, latest, true); return;
+            }
+            if (destination.reason === 'photos') {
+              var review = current.photo_review || {};
+              var correction = review.current_correction;
+              var fields = { photo_followup: 'text_later', packet_revision: review.packet_revision,
+                correction_request_id: correction && !correction.resolved_at ? correction.id : null,
+                correction_revision: correction && !correction.resolved_at ? correction.revision : null };
+              var receipt = await WALK.stateAction(token, 'handoff', fields);
+              if (!WALK.guidedReceiptMatches(receipt, WALK.guidedReceiptContext(current), fields)) throw new Error('photo_followup_not_confirmed');
+            } else {
+              clearPending(); WALK.routeFromState(token, latest, true); return;
+            }
+            clearPending(); WALK.go('photos-later.html', token, null, true); return;
+          }
+          clearPending(); WALK.go('photos.html', token, null, true); return;
+        } catch (error) {
+          if (error && error.body && ['range_preview_changed', 'readiness_incomplete', 'stale_journey_version', 'range_not_current'].indexOf(error.body.error) !== -1) {
+            clearPending(); WALK.go('range.html', token, null, true); return;
+          }
+          recovery('Your details are saved.', 'The next step could not open. Try again to continue this same request.', retryIntake, false);
+          return;
+        }
       }
       // The range bootstrap verifies the current server state and all route guards.
       // Server range creation owns readiness, including pending service-area review.
@@ -271,7 +382,7 @@
         return;
       }
       if ((view.quote_walk_v2 || {}).service_area_status === 'verified_out_of_area' || view.service_area_status === 'verified_out_of_area') {
-        recovery('Outside our current service area', 'We currently serve Greenville, Spartanburg and Pickens counties.', function () { entryURL.searchParams.set('edit', 'details'); contact(); mountedContact.hydrate(view); show('contact'); }, false);
+        recovery('Please check your address', 'Quote Walk accepts South Carolina addresses. Check your address to continue.', function () { entryURL.searchParams.set('edit', 'details'); contact(); mountedContact.hydrate(view); show('contact'); }, false);
         retryButton.textContent = 'Correct my address';
         flow.querySelector('[data-screen="recovery"] [data-save-for-later]').hidden = true;
         return;
@@ -396,11 +507,17 @@
   window.addEventListener('pageshow', function (event) {
     if (!event.persisted) return;
     var token = WALK.token();
-    if (token) { state.token = token; state.editing = false; loadProtected(); }
-    else if (state.pending) retryIntake();
+    var pending = readPending(state.pending);
+    if (token) state.token = token;
+    if (matchingContinuation(pending)) { state.pending = pending.body; retryIntake(); }
+    else if (token) { state.token = token; state.editing = false; loadProtected(); }
+    else if (pending && pending.body) { state.pending = pending.body; retryIntake(); }
+    else if (pending && pending.expired) { clearPending(); recovery("We couldn't recover this submission.", 'Use a saved Quote Walk link if you have one, or contact Backup Power Pro before starting again.', null, true); }
   });
   if (window.__BPP_INVALID_CAPABILITY_ENTRY) {
     recovery("We couldn't open this saved request.", 'Use a valid saved Quote Walk link, or start a new Quote Walk.', null, true);
+  } else if (state.token && matchingContinuation(readPending())) {
+    state.pending = readPending().body; retryIntake();
   } else if (state.token) loadProtected();
   else {
     var pending = readPending();

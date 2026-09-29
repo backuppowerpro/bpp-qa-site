@@ -71,11 +71,14 @@
       if (!productionEntry() || privacyBlocked() || ownerTestMode()) return;
       var safeId = String(eventId || '');
       if (!/^wv2-[a-zA-Z0-9-]{8,100}$/.test(safeId) || trackedEventIds['lead:' + safeId]) return;
-      trackedEventIds['lead:' + safeId] = true;
+      var receiptKey = 'bpp:meta:lead:' + safeId;
+      try { if (sessionStorage.getItem(receiptKey) === '1') return; } catch (_) {}
       window.fbq('track', 'Lead', {
         content_name: 'generator-inlet-quote',
         content_category: 'generator-installation'
       }, { eventID: safeId });
+      trackedEventIds['lead:' + safeId] = true;
+      try { sessionStorage.setItem(receiptKey, '1'); } catch (_) {}
     }
   };
 })();

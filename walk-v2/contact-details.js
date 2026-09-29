@@ -5,6 +5,19 @@
   var entryURL = new URL(window.location.href);
   entryURL.searchParams.delete('t');
   var marketingEntryTime = new Date().toISOString();
+  function matchingClickCookie(fbclid, fbc, occurredAt) {
+    var cookie = /^fb\.\d+\.\d{13}\.(.+)$/.exec(fbc || '');
+    if (cookie && (!fbclid || cookie[1] === fbclid)) return fbc;
+    var observed = Date.parse(occurredAt || '');
+    return fbclid && Number.isFinite(observed) && observed > 0 ? 'fb.1.' + observed + '.' + fbclid : '';
+  }
+  function privateIntakeUrl(value, originOnly) {
+    try {
+      var url = new URL(value);
+      if (url.protocol !== 'https:' && url.protocol !== 'http:') return '';
+      return originOnly ? url.origin : url.origin + url.pathname;
+    } catch (_) { return ''; }
+  }
   /* channel attribution for the first-party event stream + payload.leadChannel.
      Server deriveLeadChannel also reads ?src= / fbclid / gclid from pageUrl
      (audit 2026-07-13). Keep client labels in the contacts whitelist where
@@ -55,7 +68,7 @@
       gbraid: p.get('gbraid') || '',
       wbraid: p.get('wbraid') || '',
       fbp: (document.cookie.match(/(?:^|;\s*)_fbp=([^;]*)/) || [])[1] || '',
-      fbc: (document.cookie.match(/(?:^|;\s*)_fbc=([^;]*)/) || [])[1] || ''
+      fbc: matchingClickCookie(p.get('fbclid') || '', (document.cookie.match(/(?:^|;\s*)_fbc=([^;]*)/) || [])[1] || '', marketingEntryTime)
     };
   }
 
@@ -67,7 +80,10 @@
       if (age >= 0 && age <= 90 * 24 * 60 * 60 * 1000
           && ['backuppowerpro.com', 'www.backuppowerpro.com'].indexOf(url.hostname) !== -1
           && !url.searchParams.has('t') && !url.searchParams.has('analytics_test')
-          && !url.searchParams.has('preview')) return touch;
+          && !url.searchParams.has('preview')) {
+        touch.fbc = matchingClickCookie(touch.fbclid || '', touch.fbc || '', touch.occurredAt);
+        return touch;
+      }
     } catch (_) {}
     return null;
   }
@@ -364,11 +380,10 @@
     addrValidated = true; addrUnverified = false; addrValidatedValue = picked;
     lastSyncedAddress = picked;
     persistDraft();
-    var serviceAreaGroup = ['Greenville', 'Spartanburg', 'Pickens'].indexOf(match.county || '') !== -1
+    var selectedState = String(match.state || '').trim().toUpperCase();
+    var serviceAreaGroup = selectedState === 'SC' || selectedState === 'SOUTH CAROLINA'
       ? 'authorized'
-      : (String(match.state || '').toUpperCase() === 'SC'
-        ? 'other_sc'
-        : (match.state ? 'out_of_state' : 'unknown'));
+      : (selectedState ? 'out_of_state' : 'unknown');
     WALK.ph('walk_v2_address_suggestion_selected', {
       rank: selectedRank || 1,
       service_area_group: serviceAreaGroup,
@@ -530,7 +545,12 @@
     sizeAddrBox();
     ctaLabelEl.textContent = options.submitLabel || 'See my estimate';
     var ready = part1Done();
-    cta.disabled = submitting || !ready;
+    cta.disabled = submitting || !ready || Boolean(options.canSubmit && !options.canSubmit());
+    var textLaterButton = main.querySelector('[data-contact-text-later]');
+    if (textLaterButton) {
+      textLaterButton.hidden = editDetails || !options.estimatePreview;
+      textLaterButton.disabled = cta.disabled;
+    }
     if (ready && !submitting) closeDrop();
     if (unconfirmedAddressNote) {
       unconfirmedAddressNote.style.display = addrUnverified && ready ? '' : 'none';
@@ -688,10 +708,10 @@
   main.querySelector('form').addEventListener('submit', function (e) {
     e.preventDefault();
     closeDrop();
-    doSubmit(true);
+    doSubmit(true, Boolean(e.submitter && e.submitter.hasAttribute('data-contact-text-later')));
   });
 
-  async function doSubmit(smsGiven) {
+  async function doSubmit(smsGiven, textLater) {
     if (submitting || !part1Done() || (options.canSubmit && !options.canSubmit())) return;
     if (smsGiven) once('walk_v2_consent_checked');
     submitting = true;
@@ -767,7 +787,7 @@
       firstName: trackingName.firstName, lastName: trackingName.lastName, phone: natDigits(phoneIn.value), email: '',
       existingToken: editDetails ? resumeT : '',
       address: addrIn.value.trim(), addressStreet: '', addressCity: addrSel.city || '', addressCounty: '', addressState: addrSel.state || '', addressZip: addrSel.zip || '', addressCountry: 'US', addressUnverified: addrUnverified ? 'true' : '',
-      leadChannel: attr.channel, utmSource: attr.source, utmMedium: attr.medium, utmCampaign: attr.campaign,
+      leadChannel: attr.channel, utmSource: analyticsOptOut ? '' : attr.source, utmMedium: analyticsOptOut ? '' : attr.medium, utmCampaign: analyticsOptOut ? '' : attr.campaign,
       hasCompatibleGenerator: 'Unanswered - connection check pending',
       outletAmps: [],
       outletUnsure: '',
@@ -779,24 +799,30 @@
       actionSource: 'website', eventName: 'QuoteWalkStarted', eventId: eventId,
       intakeNonce: intakeNonce,
       analyticsOptOut: analyticsOptOut,
+      analyticsDistinctId: !analyticsOptOut && typeof window.BPPAnalytics?.anonymousId === 'function' ? window.BPPAnalytics.anonymousId() : '',
       journeyVersion: 'intake-no-upload-v1',
       journey_version: 'intake-no-upload-v1',
       clientUserAgent: navigator.userAgent || '',
-      fbp: (document.cookie.match(/(?:^|;\s*)_fbp=([^;]*)/) || [])[1] || '',
-      fbc: (document.cookie.match(/(?:^|;\s*)_fbc=([^;]*)/) || [])[1] || '',
-      fbclid: new URLSearchParams(entryURL.search).get('fbclid') || '',
-      gclid: new URLSearchParams(entryURL.search).get('gclid') || '',
-      gbraid: new URLSearchParams(entryURL.search).get('gbraid') || '',
-      wbraid: new URLSearchParams(entryURL.search).get('wbraid') || '',
-      pageUrl: entryURL.href, referrer: document.referrer || '',
-      firstTouch: touches.first,
-      currentTouch: touches.current
+      fbp: analyticsOptOut ? '' : (document.cookie.match(/(?:^|;\s*)_fbp=([^;]*)/) || [])[1] || '',
+      fbc: analyticsOptOut ? '' : matchingClickCookie(new URLSearchParams(entryURL.search).get('fbclid') || '', (document.cookie.match(/(?:^|;\s*)_fbc=([^;]*)/) || [])[1] || '', marketingEntryTime),
+      fbclid: analyticsOptOut ? '' : new URLSearchParams(entryURL.search).get('fbclid') || '',
+      gclid: analyticsOptOut ? '' : new URLSearchParams(entryURL.search).get('gclid') || '',
+      gbraid: analyticsOptOut ? '' : new URLSearchParams(entryURL.search).get('gbraid') || '',
+      wbraid: analyticsOptOut ? '' : new URLSearchParams(entryURL.search).get('wbraid') || '',
+      pageUrl: analyticsOptOut ? privateIntakeUrl(entryURL.href) : entryURL.href,
+      referrer: analyticsOptOut ? privateIntakeUrl(document.referrer, true) : document.referrer || '',
+      firstTouch: analyticsOptOut ? null : touches.first,
+      currentTouch: analyticsOptOut ? null : touches.current
     };
 
 
     if (options.walkDraft) {
       payload.walkDraft = options.walkDraft();
       payload.journeyVersion = payload.journey_version = 'guided-quote-walk-v1';
+    }
+    if (options.estimatePreview && !editDetails) {
+      payload.estimatePreviewHash = options.estimatePreview();
+      payload.photoChoice = textLater ? 'text_later' : 'upload';
     }
     try { await options.onSubmit(payload); }
     catch (_) { showError('Your details did not save. Please try again.'); }

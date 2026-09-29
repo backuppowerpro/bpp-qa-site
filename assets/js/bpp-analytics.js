@@ -6,6 +6,7 @@
 
   var CAPTURE_URL = '/api/analytics';
   var STORAGE_KEY = 'bpp:analytics:id';
+  var pageDistinctId = '';
   var SERVER_OWNED_RANGE_EVENTS = new Set([
     'walk_v2_range_presented',
     'walk_v2_range_accepted_view',
@@ -62,15 +63,16 @@
   }
 
   function distinctId() {
+    if (pageDistinctId) return pageDistinctId;
     try {
       var saved = localStorage.getItem(STORAGE_KEY);
-      if (/^(?:anon-)?[a-zA-Z0-9-]{20,80}$/.test(saved || '')) return saved;
-      var next = randomId();
-      localStorage.setItem(STORAGE_KEY, next);
-      return next;
-    } catch (_) {
-      return randomId();
+      if (/^(?:[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}|anon-[a-z0-9]{8,12}-[a-z0-9]{1,12})$/i.test(saved || '')) pageDistinctId = saved;
+    } catch (_) {}
+    if (!pageDistinctId) {
+      pageDistinctId = randomId();
+      try { localStorage.setItem(STORAGE_KEY, pageDistinctId); } catch (_) {}
     }
+    return pageDistinctId;
   }
 
   function safeString(value) {
@@ -194,10 +196,17 @@
     if (SERVER_OWNED_RANGE_EVENTS.has(event)) return false;
     var payload = {
       event: event,
+      uuid: typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID()
+        : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (char) {
+          var n = Math.floor(Math.random() * 16);
+          return (char === 'x' ? n : ((n & 3) | 8)).toString(16);
+        }),
+      timestamp: new Date().toISOString(),
       properties: Object.assign(baseProperties(), safeProps(properties))
     };
-    try {
-      fetch(CAPTURE_URL, {
+    function send(attempt) {
+      if (privacyBlocked() || analyticsTestMode()) return;
+      try { Promise.resolve(fetch(CAPTURE_URL, {
         method: 'POST',
         mode: 'same-origin',
         credentials: 'omit',
@@ -205,11 +214,18 @@
         keepalive: true,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      }).catch(function () {});
-      return true;
-    } catch (_) {
-      return false;
+      })).then(function (response) {
+        if (attempt === 0 && (response.status === 429 || response.status >= 500)) {
+          setTimeout(function () { send(1); }, response.status === 429 ? 60000 : 1000);
+        }
+      }).catch(function () {
+        if (attempt === 0) setTimeout(function () { send(1); }, 1000);
+      }); } catch (_) {
+        if (attempt === 0) setTimeout(function () { send(1); }, 1000);
+      }
     }
+    send(0);
+    return true;
   }
 
   function moneyAction(surface, text, href) {
@@ -259,7 +275,8 @@
     }, { capture: true });
   }
 
-  window.BPPAnalytics = Object.freeze({ capture: capture, setOwnerTestMode: setOwnerTestMode });
+  window.BPPAnalytics = Object.freeze({ capture: capture, setOwnerTestMode: setOwnerTestMode,
+    anonymousId: function () { return privacyBlocked() || analyticsTestMode() ? '' : distinctId(); } });
   window.addEventListener('bpp:walk-event', function (event) {
     var detail = event && event.detail || {};
     capture(detail.event, detail);

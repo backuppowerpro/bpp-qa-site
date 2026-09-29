@@ -90,7 +90,6 @@ export async function onRequestPost({ request, env }) {
   providerUrl.searchParams.set('types', 'address')
   providerUrl.searchParams.set('autocomplete', 'true')
   providerUrl.searchParams.set('limit', '10')
-  providerUrl.searchParams.set('proximity', '-82.3940,34.8526')
 
   try {
     const provider = await fetch(providerUrl, {

@@ -203,9 +203,12 @@ async function forward(payload) {
   const response = await fetch(POSTHOG_CAPTURE_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    signal: AbortSignal.timeout(5000),
     body: JSON.stringify({
       api_key: POSTHOG_PROJECT_KEY,
       event: payload.event,
+      uuid: payload.uuid,
+      timestamp: payload.timestamp,
       properties: payload.properties,
     }),
   })
@@ -213,9 +216,15 @@ async function forward(payload) {
 }
 
 export async function onRequestPost(context) {
-  const { request, waitUntil, env } = context
-  if (!allowedOrigin(request) || request.headers.get('Sec-Fetch-Site') !== 'same-origin') {
+  const { request, env } = context
+  const fetchSite = request.headers.get('Sec-Fetch-Site')
+  // Some embedded browsers omit Fetch Metadata. Exact Origin and JSON remain
+  // mandatory; an explicitly cross-origin context is still rejected.
+  if (!allowedOrigin(request) || (fetchSite !== null && fetchSite !== 'same-origin')) {
     return json({ error: 'forbidden' }, 403)
+  }
+  if (request.headers.get('Sec-GPC') === '1' || /^(1|yes)$/i.test(request.headers.get('DNT') || '')) {
+    return json({ accepted: false, excluded: true }, 200)
   }
   if (!(request.headers.get('Content-Type') || '').toLowerCase().startsWith('application/json')) {
     return json({ error: 'unsupported_content_type' }, 415)
@@ -243,6 +252,13 @@ export async function onRequestPost(context) {
   const origin = new URL(request.url).origin
   const properties = sanitizeProperties(body.properties, origin, request)
   if (!properties) return json({ error: 'invalid_properties' }, 400)
+  const uuid = body.uuid === undefined ? crypto.randomUUID() : body.uuid
+  const timestamp = body.timestamp === undefined ? new Date().toISOString() : body.timestamp
+  if (typeof uuid !== 'string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(uuid)
+    || typeof timestamp !== 'string' || timestamp.length > 32
+    || !Number.isFinite(Date.parse(timestamp))) {
+    return json({ error: 'invalid_event_identity' }, 400)
+  }
 
   const rate = await claimAnalyticsRateSlot(env, request)
   if (!rate) return json({ error: 'measurement_unavailable' }, 503)
@@ -250,8 +266,11 @@ export async function onRequestPost(context) {
     return json({ error: 'rate_limited' }, 429, { 'Retry-After': String(rate.retryAfter) })
   }
 
-  const task = forward({ event, properties }).catch(() => {})
-  if (typeof waitUntil === 'function') waitUntil(task)
-  else await task
-  return json({ accepted: true }, 202)
+  try {
+    await forward({ event, properties, uuid, timestamp })
+    return json({ accepted: true }, 202)
+  } catch (_) {
+    console.warn('analytics_provider_unavailable')
+    return json({ error: 'provider_unavailable' }, 502)
+  }
 }

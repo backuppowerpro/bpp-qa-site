@@ -406,3 +406,15 @@
 
 /* Compact scope line reuses the hero supporting-copy treatment. */
 .guided-walk .page .guided-hero .guided-offer-inline { margin: 12px 0 0; color: var(--gold); font-size: 16px; line-height: 1.4; }
+
+/* The combined page reuses the saved estimate/card layout and existing form. */
+.guided-walk[data-active-screen="contact"] .guided-flow.form-card { padding: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.guided-walk[data-active-screen="contact"] .qw-progress { padding-inline: 20px; }
+.guided-walk [data-contact-text-later] { display: flex; justify-content: center; margin: 12px auto 0; text-align: center; }
+.guided-walk [data-contact-text-later]:disabled { color: var(--muted); cursor: default; }
+.guided-walk [data-estimate-status]:not(:empty) { padding: 20px; }
+.guided-walk [data-contact-card] .helper { margin: 10px 0 22px; }
+.guided-walk [data-screen="recovery"] > .guided-link { display: flex; }
+@media (min-width: 1024px) {
+  .guided-walk[data-active-screen="contact"] #mainPage { width: min(960px, calc(100vw - 64px)) !important; max-width: 960px !important; }
+}
