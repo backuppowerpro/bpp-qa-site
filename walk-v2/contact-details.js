@@ -546,11 +546,6 @@
     ctaLabelEl.textContent = options.submitLabel || 'See my estimate';
     var ready = part1Done();
     cta.disabled = submitting || !ready || Boolean(options.canSubmit && !options.canSubmit());
-    var textLaterButton = main.querySelector('[data-contact-text-later]');
-    if (textLaterButton) {
-      textLaterButton.hidden = editDetails || !options.estimatePreview;
-      textLaterButton.disabled = cta.disabled;
-    }
     if (ready && !submitting) closeDrop();
     if (unconfirmedAddressNote) {
       unconfirmedAddressNote.style.display = addrUnverified && ready ? '' : 'none';
@@ -708,10 +703,10 @@
   main.querySelector('form').addEventListener('submit', function (e) {
     e.preventDefault();
     closeDrop();
-    doSubmit(true, Boolean(e.submitter && e.submitter.hasAttribute('data-contact-text-later')));
+    doSubmit(true);
   });
 
-  async function doSubmit(smsGiven, textLater) {
+  async function doSubmit(smsGiven) {
     if (submitting || !part1Done() || (options.canSubmit && !options.canSubmit())) return;
     if (smsGiven) once('walk_v2_consent_checked');
     submitting = true;
@@ -822,7 +817,7 @@
     }
     if (options.estimatePreview && !editDetails) {
       payload.estimatePreviewHash = options.estimatePreview();
-      payload.photoChoice = textLater ? 'text_later' : 'upload';
+      payload.photoChoice = 'text_later';
     }
     try { await options.onSubmit(payload); }
     catch (_) { showError('Your details did not save. Please try again.'); }

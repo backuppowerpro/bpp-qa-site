@@ -5,7 +5,7 @@
 <script src="/qa-environment.js"></script>
 <link rel="stylesheet" href="/assets/css/bpp-money-fonts.css?v=62ed32bb5d1b" />
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-v+OKG3hiYk4g/0LvgFWARaPcf0Ky7q1QaAtK2mPAi0s='; script-src-attr 'none'; style-src 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-elem 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-hL/P+svSABhrj2mTPrFcxKmisVuuqZF6HTFrkWeiOQc='; script-src-attr 'none'; style-src 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-elem 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
 <script src="/walk-v2/token-bootstrap.js?v=5561db666347"></script>
 <link rel="stylesheet" href="/walk-v2/estimate-loading.css?v=2c40bac526b7" />
 <script src="/walk-v2/estimate-loading.js?v=d63c31c92d06"></script>
@@ -184,7 +184,7 @@
         </form>
         <p class="accepted-phone-status hidden" data-phone-status="" role="status"></p>
       </section>
-      <button class="btn range-primary-action" type="button" data-accept="">Yes, continue to photos</button>
+      <button class="btn range-primary-action" type="button" data-accept="">Yes, accept this range</button>
     </div>
   </section>
   <main id="rangePage">
@@ -207,7 +207,7 @@
           </div>
           <p class="scope-summary-copy" data-scope-summary-copy=""></p>
           <div class="scope-list" data-scope-list=""></div>
-          <button class="btn" type="button" data-accept-bottom="">Yes, continue to photos</button>
+          <button class="btn" type="button" data-accept-bottom="">Yes, accept this range</button>
           <button class="btn hidden" type="button" data-retry-handoff="">Continue with this saved setup</button>
         </div>
         <button class="link-btn qw-secondary-action" type="button" data-no="">Not yet</button>
@@ -283,8 +283,8 @@
     <span class="foot-process">Key reviews your setup, handles permitting, and coordinates installation and final inspection.</span>
   </footer>
 </div>
-<script src="/walk-v2/walk.js?v=3c06a729ce2e"></script>
-<script src="/walk-v2/save-for-later.js?v=9cb41d92624b"></script><script src="/walk-v2/guided-saved.js?v=92427d8fad81"></script><script src="/walk-v2/guided-estimate.js"></script><script src="/walk-v2/guided-range.js?v=0922f57543ac"></script><script src="/walk-v2/guided-photos.js?v=c71a9ed7752b"></script>
+<script src="/walk-v2/walk.js?v=cc96a0ac7570"></script>
+<script src="/walk-v2/save-for-later.js?v=9cb41d92624b"></script><script src="/walk-v2/guided-saved.js?v=c982d2dd6b23"></script><script src="/walk-v2/guided-estimate.js"></script><script src="/walk-v2/guided-range.js?v=cd9435434cea"></script><script src="/walk-v2/guided-photos.js?v=bd803d02a5b7"></script>
 <script>
 (function () {
   function legacyBoot() {
@@ -591,52 +591,17 @@
     var snapshot = v2().current_range_snapshot;
     var acceptedCurrent = Boolean(v2().accepted_range_snapshot_id)
       && v2().accepted_range_snapshot_id === snapshot.snapshot_id;
-    if (acceptedCurrent && v2().handoff_recorded === true) {
-      if (!renderScope(snapshot)) return;
-      revealRange();
-      scopeSummaryCopy.textContent = 'This range covers the permanent house-side connection, permit, and required inspection. It does not include the portable generator, fuel, placement, maintenance, or generator modifications. Operate the generator only within its capacity and manufacturer instructions.';
-      var firstName = String(view.first_name || '').trim();
-      var displayName = firstName.split(/\s+/)[0].replace(/(^|[\s'-])([a-z])/g, function (_, lead, letter) {
-        return lead + letter.toUpperCase();
-      });
-      var acceptedHeading = rangeCard.querySelector('[data-accepted-heading]');
-      acceptedHeading.textContent = displayName
-        ? "Thanks, " + displayName + ". Your setup is saved."
-        : "Your setup is saved.";
-      show(rangeCard.querySelector('[data-range-heading]'), false);
-      show(acceptedHeading, true);
-      show(rangeCard.querySelector('.range-next-step'), true);
-      rangeCard.querySelector('[data-basis]').textContent = '';
-      rangeCard.querySelector('.range-next-step').textContent = 'Thanks for sharing the details of your setup. Key will review it and handle the next step.';
-      if (isNewJourney()) rangeCard.querySelector('.range-next-step').textContent = 'Photos are next. Once Key has usable photos, he’ll send your exact proposal or explain what else is needed by the next business day.';
-      document.querySelector('.qw-range-hero').classList.add('is-accepted');
-      renderDelivery();
-      show(rangeCard, true);
-      show(revisionContext, false);
-      show(scope, true);
-      show(fitCard, true);
-      show(reasonCard, false);
-      show(options, false);
-      show(revision, false);
-      show(main.querySelector('[data-not-fit-terminal]'), false);
-      show(savedReturn, false);
-      document.querySelectorAll('[data-accept], [data-accept-bottom], [data-no]').forEach(function (button) {
-        button.classList.add('hidden');
-        button.hidden = true;
-      });
-      try { window.scrollTo(0, 0); var hero = document.querySelector('.qw-range-hero'); if (hero) hero.scrollIntoView({ block: 'start' }); } catch (_) {}
-      if (focusAcceptedHeadingOnRender) {
-        focusAcceptedHeadingOnRender = false;
-        acceptedHeading.focus({ preventScroll: true });
-      }
+    if (acceptedCurrent && (!handoffReviewRequired || v2().handoff_recorded === true)) {
+      emitAcceptedLeadOnce();
       WALK.ph('walk_v2_range_accepted_view', rangeAnalytics(snapshot, 'range_accepted', 'accepted'));
+      WALK.go('photos-later.html', t, null, true);
       return;
     }
     var standardActionsAvailable = !v2().accepted_range_snapshot_id;
     var newJourney = isNewJourney();
     document.querySelectorAll('[data-accept], [data-accept-bottom]').forEach(function (button) {
       button.textContent = newJourney
-        ? 'Yes, continue to photos'
+        ? 'Yes, accept this range'
         : 'Yes, prepare my exact proposal';
     });
     rangeCard.querySelector('.range-next-step').textContent = newJourney
@@ -732,9 +697,6 @@
     show(main.querySelector('[data-alt-50]'), observed.indexOf('30') !== -1 && observed.indexOf('50') !== -1 && pricingBasis === '30');
     show(main.querySelector('[data-alt-distance]'), DISTANCE_ORDER[v2().distance_band] > 1);
     if (!acceptedCurrent && !notFitClosed) trackRangePresented(snapshot);
-    if (v2().accepted_range_snapshot_id) {
-      finalizeHandoff(false);
-    }
   }
   function loadView() {
     return WALK.view(t).then(function (value) {

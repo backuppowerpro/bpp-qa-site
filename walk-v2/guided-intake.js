@@ -14,7 +14,7 @@
   var flow = document.querySelector('[data-guided-flow]');
   if (!flow) return;
   // An older cached core must not operate the current form or choose saved authority.
-  if (!window.WALK || !window.BPPContactDetails || !window.BPPSaveForLater
+  if (!window.WALK || WALK.textReplyOnly !== true || !window.BPPContactDetails || !window.BPPSaveForLater
       || !window.BPPGuidedEstimate || typeof window.__BPP_WALK_TOKEN !== 'string'
       || ['previewRange', 'acceptPreview', 'submitLeadBody', 'isGuidedJourney', 'guidedDestination', 'rememberJourneyState'].some(function (name) { return typeof WALK[name] !== 'function'; })) {
     document.documentElement.classList.remove('js');
@@ -215,7 +215,7 @@
     mountedContact = BPPContactDetails.mount(flow.querySelector('[data-screen="contact"]'), {
       entryURL: entryURL.href,
       token: state.token,
-      submitLabel: state.token ? 'Save my details' : contactFirstAnonymous() ? 'Continue' : 'Continue to photos',
+      submitLabel: state.token ? 'Save my details' : contactFirstAnonymous() ? 'Continue' : 'Accept my range',
       canSubmit: function () { return contactActive() && !state.pending && !state.busy && (state.token ? state.verified : eligible() && (contactFirstAnonymous() || Boolean(estimatePreview && previewDraft === JSON.stringify(draft())))); },
       walkDraft: state.token || contactFirstAnonymous() ? null : draft,
       estimatePreview: contactFirstAnonymous() ? null : function () { return estimatePreview && estimatePreview.preview_hash; },
@@ -237,7 +237,7 @@
     var body = state.pending;
     state.busy = true;
     recovery('Saving your request...', 'Keep this page open while we save your details.', null, false);
-    if (JSON.parse(body).walkDraft && window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.show(JSON.parse(body).photoChoice === 'text_later' ? 'saving' : 'photos');
+    if (JSON.parse(body).walkDraft && window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.show('saving');
     var response;
     try { response = await WALK.submitLeadBody(body); }
     catch (_) { response = null; }
@@ -278,34 +278,14 @@
               || acceptance.preview_hash !== original.estimatePreviewHash || !acceptance.snapshot_id
               || acceptance.accepted_range_snapshot_id !== acceptance.snapshot_id
               || acceptance.handoff_recorded !== true) throw new Error('acceptance_not_confirmed');
-          // Tracking follows the validated acceptance and cannot block photos.
+          // Tracking follows the validated acceptance and cannot block next steps.
           try {
             var acceptedMeta = acceptance.metaLeadEvent;
             if (acceptedMeta && acceptedMeta.eligible === true && acceptedMeta.eventName === 'Lead' && window.BPPMeta) {
               BPPMeta.trackLead(acceptedMeta.eventId);
             }
           } catch (_) {}
-          if (original.photoChoice === 'text_later') {
-            var latest = await WALK.view(token);
-            var current = latest.quote_walk_v2 || {};
-            var destination = WALK.guidedDestination(token, latest);
-            if (destination.reason === 'deeper' || destination.reason === 'submitted') {
-              clearPending(); WALK.routeFromState(token, latest, true); return;
-            }
-            if (destination.reason === 'photos') {
-              var review = current.photo_review || {};
-              var correction = review.current_correction;
-              var fields = { photo_followup: 'text_later', packet_revision: review.packet_revision,
-                correction_request_id: correction && !correction.resolved_at ? correction.id : null,
-                correction_revision: correction && !correction.resolved_at ? correction.revision : null };
-              var receipt = await WALK.stateAction(token, 'handoff', fields);
-              if (!WALK.guidedReceiptMatches(receipt, WALK.guidedReceiptContext(current), fields)) throw new Error('photo_followup_not_confirmed');
-            } else {
-              clearPending(); WALK.routeFromState(token, latest, true); return;
-            }
-            clearPending(); WALK.go('photos-later.html', token, null, true); return;
-          }
-          clearPending(); WALK.go('photos.html', token, null, true); return;
+          clearPending(); WALK.go('photos-later.html', token, null, true); return;
         } catch (error) {
           if (error && error.body && ['range_preview_changed', 'readiness_incomplete', 'stale_journey_version', 'range_not_current'].indexOf(error.body.error) !== -1) {
             clearPending(); WALK.go('range.html', token, null, true); return;

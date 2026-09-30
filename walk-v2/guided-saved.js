@@ -9,7 +9,7 @@
     var stack = element('div', '', 'stack');
     var main = element('main', '', 'page'); main.id = 'guidedSavedPage'; main.dataset.screenLabel = 'Quote walk: saved request';
     main.innerHTML = '<header class="site-head"><a class="lockup" href="https://qa.backuppowerpro.com" aria-label="Backup Power Pro"><img src="/assets/images/logo-white-v2.png" alt="Backup Power Pro"></a></header><div class="guided-flow body"><div class="qw-progress"><button type="button" class="qw-back" data-saved-back aria-label="Back"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m10 3-5 5 5 5"/></svg></button><p class="qw-position"><strong data-saved-position></strong></p></div><section class="guided-screen" data-saved-content></section><p class="guided-error" data-saved-error role="alert" hidden></p></div>';
-    main.querySelector('[data-saved-position]').textContent = { range: 'Estimate', photos: 'Photos', thankyou: 'Next steps', 'photos-later': 'Next steps' }[kind] || 'Your request';
+    main.querySelector('[data-saved-position]').textContent = { range: 'Estimate', photos: 'Next steps', thankyou: 'Next steps', 'photos-later': 'Next steps' }[kind] || 'Your request';
     var footer = document.querySelector('footer.foot'); if (footer) main.appendChild(footer.cloneNode(true));
     stack.appendChild(main); document.body.appendChild(stack);
     return main;
@@ -24,7 +24,7 @@
       if (original) { original.setAttribute('inert', ''); original.style.setProperty('display', 'none', 'important'); }
       var handler = kind === 'range' ? window.BPPGuidedRange : window.BPPGuidedPhotos;
       var compatibleCore = window.BPPSaveForLater && typeof BPPSaveForLater.mount === 'function'
-        && handler && typeof handler.mount === 'function' && window.WALK && typeof window.__BPP_WALK_TOKEN === 'string'
+        && handler && typeof handler.mount === 'function' && (kind === 'range' || handler.textReplyOnly === true) && window.WALK && WALK.textReplyOnly === true && typeof window.__BPP_WALK_TOKEN === 'string'
         && ['isGuidedJourney', 'guidedDestination', 'rememberJourneyState'].every(function (name) { return typeof WALK[name] === 'function'; });
       var token = compatibleCore ? WALK.token() : '';
       var priorGuided = document.body.classList.contains('guided-walk');
@@ -80,7 +80,7 @@
         try {
           if (!token || window.__BPP_INVALID_CAPABILITY_ENTRY) { var invalid = new Error('invalid_or_expired_return'); invalid.status = 410; throw invalid; }
           var view = await WALK.view(token);
-          if (!WALK.isGuidedJourney(view, token)) {
+          if (!WALK.isGuidedJourney(view, token) && kind !== 'photos-later') {
             if (window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.hide();
             clearBoot();
             if (!priorGuided) document.body.classList.remove('guided-walk');
@@ -102,15 +102,18 @@
             focus: function () { if (window.BPPQuoteWalkEstimateLoading) BPPQuoteWalkEstimateLoading.hide(); var heading = ctx.content.querySelector('h1,h2'); if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); } },
             guard: function () {
               var destination = WALK.guidedDestination(token, ctx.view);
-              var editingReceivedPhotos = kind === 'photos' && new URLSearchParams(window.location.search).get('edit') === 'photos' && ctx.review().submission_current === true;
-              var mustFollow = ['deeper', 'area', 'missing', 'correction', 'range'].indexOf(destination.reason) !== -1;
-              if ((kind === 'thankyou' || kind === 'photos-later') && ['photos', 'submitted'].indexOf(destination.reason) !== -1) mustFollow = true;
-              if (destination.reason === 'correction' && editingReceivedPhotos && destination.page === 'thankyou.html') mustFollow = false;
-              if (mustFollow && destination.page !== kind + '.html') { WALK.routeFromState(token, ctx.view, true); return false; }
+              if (!WALK.isGuidedJourney(ctx.view, token)) {
+                var state = ctx.state(), snapshot = state.current_range_snapshot || {};
+                var currentAcceptance = snapshot.status === 'available' && snapshot.snapshot_id && state.accepted_range_snapshot_id === snapshot.snapshot_id;
+                var photoBlocked = (state.blockers || (state.readiness || {}).input_blockers || []).some(function (blocker) { return /_photo$/.test(String(blocker)); }) || (!ctx.view.photo_count && !ctx.view.photo_received);
+                if (state.service_area_status === 'verified_out_of_area' || WALK.hasIncompleteInputs(ctx.view, token) || (!currentAcceptance && !photoBlocked)) { WALK.routeFromState(token, ctx.view, true); return false; }
+                return true;
+              }
+              if (destination.page !== kind + '.html' || destination.url) { WALK.routeFromState(token, ctx.view, true); return false; }
               return true;
             }
           };
-          main.querySelector('[data-saved-back]').onclick = function () { WALK.go(kind === 'photos' || kind === 'thankyou' || kind === 'photos-later' ? 'range.html' : 'index.html', token, kind === 'range' ? { edit: 'setup' } : null); };
+          main.querySelector('[data-saved-back]').onclick = function () { WALK.go('index.html', token, { edit: 'setup' }); };
           if (!ctx.guard()) return;
           await handler.mount(ctx);
           WALK.ph('walk_v2_screen_view', { screen: 'guided_' + kind });

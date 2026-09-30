@@ -1,7 +1,5 @@
-/* Same approved ending shell, separate photo-later route. */
+/* The approved ending shell reads every protected saved request, without sending. */
 (function () {
   'use strict';
-  BPPGuidedSaved.start('photos-later', function () {
-    WALK.go('thankyou.html', WALK.token(), null, true);
-  });
+  BPPGuidedSaved.start('photos-later');
 })();
