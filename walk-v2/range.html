@@ -5,7 +5,7 @@
 <script src="/qa-environment.js"></script>
 <link rel="stylesheet" href="/assets/css/bpp-money-fonts.css?v=62ed32bb5d1b" />
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-hL/P+svSABhrj2mTPrFcxKmisVuuqZF6HTFrkWeiOQc='; script-src-attr 'none'; style-src 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-elem 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-iFr+V/yuVcczlQJqNy+7bD2y9wJ0eSI7u00pllapuc8='; script-src-attr 'none'; style-src 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-elem 'self' 'sha256-KXmxIVFEunL1Cbcmy4rvqvR4fN94vpSDbDU0Pz2dL2U='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
 <script src="/walk-v2/token-bootstrap.js?v=5561db666347"></script>
 <link rel="stylesheet" href="/walk-v2/estimate-loading.css?v=2c40bac526b7" />
 <script src="/walk-v2/estimate-loading.js?v=d63c31c92d06"></script>
@@ -591,7 +591,10 @@
     var snapshot = v2().current_range_snapshot;
     var acceptedCurrent = Boolean(v2().accepted_range_snapshot_id)
       && v2().accepted_range_snapshot_id === snapshot.snapshot_id;
-    if (acceptedCurrent && (!handoffReviewRequired || v2().handoff_recorded === true)) {
+    // Keep an explicit acceptance alive until its persisted handoff completes.
+    // Ordinary accepted reads remain read-only and may open the finish page.
+    if (acceptedCurrent && (!finalizing || v2().handoff_recorded === true)
+        && (!handoffReviewRequired || v2().handoff_recorded === true)) {
       emitAcceptedLeadOnce();
       WALK.ph('walk_v2_range_accepted_view', rangeAnalytics(snapshot, 'range_accepted', 'accepted'));
       WALK.go('photos-later.html', t, null, true);
