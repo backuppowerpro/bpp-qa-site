@@ -37,6 +37,37 @@ function safeQuery(value) {
   return query
 }
 
+function stateAwareQuery(query) {
+  // Qualify only a bare street or its initial street-name fragment. Keep any
+  // supplied locality intact; this search hint never establishes eligibility.
+  if (!/^\d+[A-Za-z]?(?:-[A-Za-z0-9]+)?\s+\S/.test(query)
+      || query.includes(',') || /\b\d{5}(?:-\d{4})?\b/.test(query)) return query
+  const streetSuffix = '(?:aly|alley|ave|avenue|blvd|boulevard|cir|circle|ct|court|dr|drive|expy|expressway|hwy|highway|ln|lane|pkwy|parkway|pl|place|rd|road|route|rte|st|street|ter|terrace|trl|trail|way)'
+  const bareStreet = new RegExp(`\\b${streetSuffix}\\.?(?:\\s+(?:n|ne|e|se|s|sw|w|nw))?(?:\\s+(?:apt|apartment|unit|suite|ste|lot|floor|fl|#)\\s*[a-z0-9-]+)?$`, 'i')
+  const finalSuffix = bareStreet.exec(query)
+  const firstSuffix = new RegExp(`\\b${streetSuffix}\\.?(?=\\s|$)`, 'i').exec(query)
+  // Multiple suffix-like words are ambiguous, such as a full street plus CT.
+  if (finalSuffix && firstSuffix && finalSuffix.index === firstSuffix.index) return `${query}, South Carolina`
+  // A completed street followed by more text can include a city or state,
+  // even without commas. Never discard or contradict that trailing locality.
+  if (new RegExp(`\\b${streetSuffix}\\.?\\s+`, 'i').test(query)) return query
+  const fragment = query.replace(/^\d+[A-Za-z]?(?:-[A-Za-z0-9]+)?\s+/, '')
+  if (!/^[a-z'-]{3,}$/i.test(fragment)) return query
+  const stateName = /^(?:alabama|alaska|arizona|arkansas|california|colorado|connecticut|delaware|florida|georgia|hawaii|idaho|illinois|indiana|iowa|kansas|kentucky|louisiana|maine|maryland|massachusetts|michigan|minnesota|mississippi|missouri|montana|nebraska|nevada|ohio|oklahoma|oregon|pennsylvania|tennessee|texas|utah|vermont|virginia|washington|wisconsin|wyoming)$/i
+  return stateName.test(fragment) ? query : `${query}, South Carolina`
+}
+
+function southCarolinaFeature(feature) {
+  const regions = Array.isArray(feature && feature.context)
+    ? feature.context.filter(item => /^region\./i.test(String(item && item.id || '')))
+    : []
+  return regions.length > 0 && regions.every(region => {
+    const code = String(region && region.short_code || '').trim().toUpperCase()
+    return code ? code === 'US-SC'
+      : String(region && region.text || '').trim().toUpperCase() === 'SOUTH CAROLINA'
+  })
+}
+
 function boundedFeature(feature) {
   const context = Array.isArray(feature && feature.context)
     ? feature.context.slice(0, 12).map((item) => ({
@@ -83,7 +114,7 @@ export async function onRequestPost({ request, env }) {
   }
 
   const providerUrl = new URL(
-    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`,
+    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(stateAwareQuery(query))}.json`,
   )
   providerUrl.searchParams.set('access_token', accessToken)
   providerUrl.searchParams.set('country', 'us')
@@ -101,7 +132,7 @@ export async function onRequestPost({ request, env }) {
     if (!provider.ok) return json({ error: 'provider_unavailable' }, 502)
     const payload = await provider.json().catch(() => ({}))
     const features = Array.isArray(payload && payload.features)
-      ? payload.features.slice(0, 10).map(boundedFeature)
+      ? payload.features.slice(0, 10).filter(southCarolinaFeature).map(boundedFeature)
       : []
     return json({ features }, 200)
   } catch (_) {

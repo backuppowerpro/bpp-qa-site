@@ -330,7 +330,9 @@
     }
     add(full);
     var street = full.split(',')[0].trim();
-    if (/^\d+[A-Za-z]?(?:-[A-Za-z0-9]+)?\s+\S/.test(street)) add(street);
+    var locality = full.indexOf(',') === -1 ? '' : full.slice(full.indexOf(',') + 1).trim();
+    // Recovery must retain any supplied city/state/ZIP, including foreign ones.
+    if (!locality && /^\d+[A-Za-z]?(?:-[A-Za-z0-9]+)?\s+\S/.test(street)) add(street);
     return queries.slice(0, 3);
   }
   function mergeAddressPredictions(current, incoming) {
@@ -744,7 +746,9 @@
     event.preventDefault();
     phoneBeforeEdit = null;
     if (!phoneValid(candidate)) {
-      phoneFeedback('That number was not pasted. Your previous number is unchanged. Use one 10-digit mobile number, with an optional +1.');
+      phoneFeedback(phoneIn.value.trim()
+        ? 'That number was not pasted. Your previous number is unchanged. Use one 10-digit mobile number, with an optional +1.'
+        : 'That number was not pasted. Enter one 10-digit mobile number, with an optional +1.');
       return;
     }
     phoneIn.value = candidate;
