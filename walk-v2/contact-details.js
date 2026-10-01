@@ -139,6 +139,8 @@
   var activeOption = -1;
   var addressAnnouncement = main.querySelector('[data-address-announcement]');
   var phoneField = main.querySelector('[data-phone-field]');
+  var phoneError = phoneField.querySelector('[data-phone-error]');
+  var phoneAnnouncement = phoneField.querySelector('[data-phone-announcement]');
   var nameField = nameIn ? nameIn.closest('.field') : null;
   var addrField = main.querySelector('[data-addr-field]');
   var drop = main.querySelector('[data-addr-drop]');
@@ -477,14 +479,17 @@
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrop(); });
 
   function digits(v) { return (v || '').replace(/\D/g, ''); }
-  /* the 10 national digits. A US number is 10 digits; a leading 1 is the country code
-     (no US area code starts with 1), so strip it BEFORE taking 10. Without this, autofill
-     or a paste of "+1 864 555 0192" kept the 1 and chopped the real last digit, recording
-     (186) 455-5019 instead of (864) 555-0192. */
-  function natDigits(v) { var d = digits(v); if (d.length === 11 && d[0] === '1') d = d.slice(1); return d.slice(0, 10); }
-  function phoneValid(v) { var d = digits(v); return d.length === 10 || (d.length === 11 && d[0] === '1'); }
+  /* Validate the original input before removing supported formatting. Never shorten
+     extra digits or reinterpret an extension, country code or second number. */
+  function phoneValid(v) {
+    return typeof v === 'string' && /^(?:\+?1[\s.-]*)?(?:[2-9][0-9]{2}|\([2-9][0-9]{2}\))[\s.-]*[2-9][0-9]{2}[\s.-]*[0-9]{4}$/.test(v.trim());
+  }
+  function natDigits(v) { if (!phoneValid(v)) return ''; var d = digits(v); return d.length === 11 ? d.slice(1) : d; }
   function formatPhone(v) {
-    var d = natDigits(v);
+    var raw = String(v || '');
+    var d = phoneValid(raw) ? natDigits(raw) : digits(raw);
+    if (!phoneValid(raw) && (d.length >= 10 || d[0] === '1'
+        || !/^(?:[0-9]{0,3}|\([0-9]{3}\))[\s.-]*[0-9]{0,3}[\s.-]*[0-9]{0,4}$/.test(raw.trim()))) return raw;
     if (d.length > 6) return '(' + d.slice(0, 3) + ') ' + d.slice(3, 6) + '-' + d.slice(6);
     if (d.length > 3) return '(' + d.slice(0, 3) + ') ' + d.slice(3);
     return d;
@@ -573,6 +578,54 @@
   var lastSyncedName = '';
   var lastSyncedPhone = '';
   var lastSyncedAddress = '';
+  var phoneBeforeEdit = null;
+  function phoneCaret(value, count) {
+    if (!count) return 0;
+    for (var i = 0, seen = 0; i < value.length; i++) {
+      if (/[0-9]/.test(value[i]) && ++seen === count) return i + 1;
+    }
+    return value.length;
+  }
+  function phoneFeedback(message) {
+    phoneField.classList.toggle('has-error', Boolean(message));
+    phoneIn.setAttribute('aria-invalid', String(Boolean(phoneIn.value.trim()) && !phoneValid(phoneIn.value)));
+    if (phoneError) phoneError.textContent = message || 'Enter a valid 10-digit mobile number.';
+    if (phoneAnnouncement) phoneAnnouncement.textContent = message || '';
+  }
+  function phoneInsertionLimit(value) {
+    var raw = String(value || '').trim();
+    return !phoneValid(raw) && /^\+?1/.test(raw) ? 11 : 10;
+  }
+  function phoneEditValue(value, start, end, inserted) {
+    return value.slice(0, start) + inserted + value.slice(end);
+  }
+  function typedPhoneData(previous, event) {
+    if (!previous || previous.type !== 'insertText') return null;
+    if (typeof event.data === 'string') return event.data.length <= 1 ? event.data : null;
+    /* Safari can omit data for a keyboard edit. Recognize the one-character
+       replacement at the recorded selection, without treating autofill as typing. */
+    var prefix = previous.value.slice(0, previous.start);
+    var suffix = previous.value.slice(previous.end);
+    var value = phoneIn.value;
+    var length = value.length - prefix.length - suffix.length;
+    return length >= 0 && length <= 1 && value.slice(0, prefix.length) === prefix
+      && (!suffix || value.slice(-suffix.length) === suffix) ? value.slice(prefix.length, prefix.length + length) : null;
+  }
+  function formatTypedPhone(previousValue) {
+    var raw = phoneIn.value;
+    var previousIsEditable = phoneValid(previousValue)
+      || (/^[0-9().\s-]*$/.test(previousValue) && previousValue === formatPhone(digits(previousValue)))
+      || /^\+?1[0-9\s.-]*$/.test(previousValue);
+    if (!previousIsEditable || !/^[0-9+().\s-]*$/.test(raw) || (raw.indexOf('+') !== -1 && !/^\+1[0-9().\s-]*$/.test(raw))) return;
+    var cursorDigits = digits(raw.slice(0, phoneIn.selectionStart)).length;
+    var rawDigits = digits(raw);
+    var canonical = raw[0] === '+' ? '+' + rawDigits : rawDigits;
+    var formatted = formatPhone(canonical);
+    if (rawDigits.length === 11 && phoneValid(canonical)) cursorDigits = Math.max(0, cursorDigits - 1);
+    phoneIn.value = formatted;
+    var caret = phoneCaret(formatted, cursorDigits);
+    phoneIn.setSelectionRange(caret, caret);
+  }
   function inputMethod(event, previousValue, currentValue) {
     if (event && event.inputType === 'insertFromPaste') return 'paste';
     if (event && event.inputType === 'insertText'
@@ -604,8 +657,19 @@
       if (nameCursor !== null) nameIn.setSelectionRange(nameCursor, nameCursor);
     }
     var formattedPhone = formatPhone(rawPhone);
-    if (formattedPhone !== rawPhone) phoneIn.value = formattedPhone;
-    if (phoneValid(phoneIn.value)) phoneField.classList.remove('has-error');
+    if (formattedPhone !== rawPhone) {
+      var phoneCursor = document.activeElement === phoneIn ? phoneIn.selectionStart : null;
+      var phoneEnd = phoneIn.selectionEnd;
+      var countryRemoved = digits(rawPhone).length === 11 && phoneValid(rawPhone) ? 1 : 0;
+      var startDigits = phoneCursor === null ? 0 : Math.max(0, digits(rawPhone.slice(0, phoneCursor)).length - countryRemoved);
+      var endDigits = phoneEnd === null ? startDigits : Math.max(0, digits(rawPhone.slice(0, phoneEnd)).length - countryRemoved);
+      phoneIn.value = formattedPhone;
+      if (phoneCursor !== null) phoneIn.setSelectionRange(phoneCaret(formattedPhone, startDigits), phoneCaret(formattedPhone, endDigits));
+    }
+    if (rawPhone !== lastSyncedPhone) {
+      phoneFeedback(phoneIn.value.trim() && !phoneValid(phoneIn.value) && (trigger !== 'input' || digits(phoneIn.value).length >= 10)
+        ? 'Enter a valid 10-digit mobile number.' : '');
+    }
 
     var addressChanged = rawAddress !== lastSyncedAddress;
     if (addressChanged) {
@@ -635,13 +699,76 @@
     syncBrowserFilledValues('input');
   });
   nameIn.addEventListener('change', function () { syncBrowserFilledValues('change'); });
-  phoneIn.addEventListener('input', function () {
-    syncBrowserFilledValues('input');
+  phoneIn.addEventListener('keydown', function (event) {
+    if (!/^[0-9]$/.test(event.key) || event.ctrlKey || event.metaKey || event.altKey) return;
+    var candidate = phoneEditValue(phoneIn.value, phoneIn.selectionStart, phoneIn.selectionEnd, event.key);
+    if (digits(candidate).length > phoneInsertionLimit(phoneIn.value)) {
+      event.preventDefault();
+      phoneFeedback('That entry was not used. Phone numbers have 10 digits, with an optional +1.');
+    }
+  });
+  phoneIn.addEventListener('beforeinput', function (event) {
+    var start = phoneIn.selectionStart, end = phoneIn.selectionEnd;
+    phoneBeforeEdit = { value: phoneIn.value, start: start, end: end, type: event.inputType };
+    if (event.inputType === 'insertText' && typeof event.data === 'string' && event.data.length <= 1) {
+      var candidate = phoneEditValue(phoneIn.value, start, end, event.data);
+      if (!/^[0-9+().\s-]*$/.test(event.data) || digits(candidate).length > phoneInsertionLimit(phoneIn.value)) {
+        if (event.cancelable) event.preventDefault();
+        phoneFeedback('That entry was not used. Phone numbers have 10 digits, with an optional +1.');
+      }
+    }
+    if (start === end && /^deleteContent(?:Backward|Forward)$/.test(event.inputType)) {
+      var direction = event.inputType === 'deleteContentBackward' ? -1 : 1;
+      var at = direction < 0 ? start - 1 : start;
+      if (at >= 0 && at < phoneIn.value.length && !/[0-9]/.test(phoneIn.value[at])
+          && (phoneValid(phoneIn.value) || phoneIn.value === formatPhone(digits(phoneIn.value)))) {
+        while (at >= 0 && at < phoneIn.value.length && !/[0-9]/.test(phoneIn.value[at])) at += direction;
+        if (at >= 0 && at < phoneIn.value.length && event.cancelable) {
+          event.preventDefault();
+          var before = phoneIn.value;
+          phoneIn.value = before.slice(0, at) + before.slice(at + 1);
+          phoneIn.setSelectionRange(at, at);
+          formatTypedPhone(before);
+          syncBrowserFilledValues('input', event);
+          phoneFeedback('');
+          phoneBeforeEdit = null;
+        }
+      }
+    }
+  });
+  phoneIn.addEventListener('paste', function (event) {
+    if (!event.clipboardData) return;
+    var pasted = event.clipboardData.getData('text');
+    var start = phoneIn.selectionStart, end = phoneIn.selectionEnd;
+    var candidate = phoneEditValue(phoneIn.value, start, end, pasted);
+    event.preventDefault();
+    phoneBeforeEdit = null;
+    if (!phoneValid(candidate)) {
+      phoneFeedback('That number was not pasted. Your previous number is unchanged. Use one 10-digit mobile number, with an optional +1.');
+      return;
+    }
+    phoneIn.value = candidate;
+    phoneIn.setSelectionRange(start + pasted.length, start + pasted.length);
+    syncBrowserFilledValues('input', { inputType: 'insertFromPaste' });
+    phoneFeedback('');
+  });
+  phoneIn.addEventListener('input', function (event) {
+    var previous = phoneBeforeEdit;
+    phoneBeforeEdit = null;
+    var typed = typedPhoneData(previous, event);
+    if (typed !== null && (!/^[0-9+().\s-]*$/.test(typed) || digits(phoneIn.value).length > phoneInsertionLimit(previous.value))) {
+      phoneIn.value = previous.value;
+      phoneIn.setSelectionRange(previous.start, previous.end);
+      phoneFeedback('That entry was not used. Phone numbers have 10 digits, with an optional +1.');
+      return;
+    }
+    if (previous && (typed !== null || /^delete/.test(previous.type))) formatTypedPhone(previous.value);
+    syncBrowserFilledValues('input', event);
   });
   phoneIn.addEventListener('change', function () { syncBrowserFilledValues('change'); });
   phoneIn.addEventListener('blur', function () {
     syncBrowserFilledValues('blur');
-    if (phoneIn.value.trim() && !phoneValid(phoneIn.value)) phoneField.classList.add('has-error');
+    if (phoneIn.value.trim() && !phoneValid(phoneIn.value)) phoneFeedback('Enter a valid 10-digit mobile number.');
     refresh();
   });
   addrIn.addEventListener('input', function (event) {
