@@ -1,3 +1,5 @@
+import { photoReviewQueue, photoReviewQueueState, photoReviewWaiting, photoReviewQueueLoadState } from '../v3-app/src/review-queue.js';
+import { messageAttachmentPreviewText } from './message-attachments.js';
 // crm-left.jsx, Left panel: 5 fully-featured list views
 // All lenses consume the canonical DB-shape arrays directly. Views are derived
 // inline via filter/sort. No legacy adapters.
@@ -607,10 +609,12 @@ function moveAccent(act, move) {
 // navy otherwise, with Text as the secondary. NO Call button (Key rarely calls).
 // The row body opens the contact; the star + action buttons stop propagation.
 // Rendered only outside bulk-select so multi-select stays intact.
-function ExpandedContactRow({ c, sig, nextAction, nr, isPinned, active, dncSet, isGoldElected, onOpen, onTogglePin }) {
+function ExpandedContactRow({ c, sig, nextAction, nr, isPinned, active, dncSet, isGoldElected, onOpen, onTogglePin, reviewState, reviewNow }) {
   const permitAct = window.permitNextAction ? window.permitNextAction(c) : null;
   const s = sig || {};
-  const { move, act } = deriveRowModel(c, s, nextAction, nr, permitAct);
+  const model = deriveRowModel(c, s, nextAction, nr, permitAct);
+  const move = reviewState ? { label:reviewState.label, sub:photoReviewWaiting(reviewState.receivedAt, reviewNow) } : model.move;
+  const act = reviewState ? { tab:'contacts', label:'Review photos' } : model.act;
   const nm = contactName(c);
   const isMoney = act.tab === 'finance';          // gold is reserved for money
   const primaryIsText = act.tab === 'messages';   // the move itself is texting
@@ -867,6 +871,9 @@ function ContactsList({ contacts, messages, calls, onOpen, dncSet = new Set(), a
   const [quoteWalkV2Receipts, setQuoteWalkV2Receipts] = React.useState(
     () => window.CRM?.quoteWalkV2Receipts || {}
   );
+  const [quoteWalkV2ReceiptsStatus, setQuoteWalkV2ReceiptsStatus] = React.useState(
+    () => window.CRM?.quoteWalkV2ReceiptsStatus || { state:'idle' }
+  );
   React.useEffect(() => {
     let alive = true;
     window.CRM?.fetchPreReadsBulk?.().then(function (rows) {
@@ -886,6 +893,7 @@ function ContactsList({ contacts, messages, calls, onOpen, dncSet = new Set(), a
       const table = event?.detail?.table || '';
       if (!String(table).startsWith('quote_walk_v2_')) return;
       setQuoteWalkV2Receipts({ ...(window.CRM?.quoteWalkV2Receipts || {}) });
+      setQuoteWalkV2ReceiptsStatus(window.CRM?.quoteWalkV2ReceiptsStatus || { state:'idle' });
     };
     window.addEventListener('crm-data-changed', syncReceipts);
     return () => window.removeEventListener('crm-data-changed', syncReceipts);
@@ -1408,8 +1416,25 @@ function ContactsList({ contacts, messages, calls, onOpen, dncSet = new Set(), a
     ? [...(financeMapFor(stage)?.values() || [])].reduce((a, b) => a + b, 0)
     : null;
 
+  const reviewLoadState = photoReviewQueueLoadState(quoteWalkV2ReceiptsStatus, quoteWalkV2Receipts, proposalsStatus);
+  const reviewQueueRows = proposalsStatus.state === 'ready'
+    ? photoReviewQueue(contacts, quoteWalkV2Receipts, proposals, pinned) : [];
+  const retryReviewQueue = () => {
+    if (proposalsStatus.state !== 'ready') window.CRM?.__refetch?.();
+    window.CRM?.fetchQuoteWalkV2Receipts?.(true);
+  };
+  const reviewQueueMap = new Map(reviewQueueRows.map(row => [row.contact.id, row.state]));
+  const reviewQueueRanks = new Map(reviewQueueRows.map((row, index) => [row.contact.id, index]));
+  const [reviewNow, setReviewNow] = React.useState(Date.now);
+  React.useEffect(() => {
+    if (stage !== 'review_queue') return;
+    const timer = setInterval(() => setReviewNow(Date.now()), 60000);
+    return () => clearInterval(timer);
+  }, [stage]);
+
   const primaryLensOpts = [
     { value:'all',         label:'All' },
+    { value:'review_queue', label:'Review queue', count: reviewLoadState === 'ready' ? reviewQueueRows.length : null },
     ...(rowFactsReady && workQueueMap.size > 0 ? [{ value:'work_queue', label:'Work queue', count: workQueueMap.size }] : []),
     // Quote Desk always visible (CEO 2026-07-13): morning habit even when empty.
     { value:'ready_to_quote', label:'Quote Desk', count: quoteDeskDataReady ? quoteDeskVisibleMap.size : null },
@@ -1545,6 +1570,7 @@ function ContactsList({ contacts, messages, calls, onOpen, dncSet = new Set(), a
     // (so a snoozed customer never shows up in Today / Stuck / etc.)
     .filter(c => stage === 'snoozed' ? !!snoozeMap[c.id] : !snoozeMap[c.id])
     .filter(c => stage === 'all' ? true
+              : stage === 'review_queue' ? reviewQueueMap.has(c.id)
               : stage === 'work_queue' ? workQueueMap.has(c.id)
               : stage === 'ready_to_quote' ? quoteDeskVisibleMap.has(c.id)
               : stage === 'rescue' ? rescueMap.has(c.id)
@@ -1588,6 +1614,7 @@ function ContactsList({ contacts, messages, calls, onOpen, dncSet = new Set(), a
       return bodies.some(b => smartMatch(q, b));
     })
     .sort((a,b) => {
+      if (stage === 'review_queue') return reviewQueueRanks.get(a.id) - reviewQueueRanks.get(b.id);
       // Free-text search: float HEAD (name/address/tag/phone) matches above
       // message-body-only matches so a typed name surfaces that contact first
       // (Key 2026-06-20). headHitSet is null unless free-text searching, so the
@@ -1918,6 +1945,7 @@ function ContactsList({ contacts, messages, calls, onOpen, dncSet = new Set(), a
               <div style={{ fontSize:15, fontWeight:700, color:NAVY, marginTop:1, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
                 {isFinanceLens && financeLensTotal != null
                   ? <><span style={{ fontFamily: LENS_MONO }}>{formatMoneyCents(financeLensTotal)}</span>{'  ·  '}{filtered.length} {filtered.length === 1 ? 'client' : 'clients'}</>
+                  : stage === 'review_queue' && reviewLoadState !== 'ready' ? (reviewLoadState === 'error' ? 'Queue incomplete' : 'Checking current inquiries')
                   : <>{filtered.length} {filtered.length === 1 ? 'contact' : 'contacts'}</>}
               </div>
             </div>
@@ -1937,7 +1965,7 @@ function ContactsList({ contacts, messages, calls, onOpen, dncSet = new Set(), a
               }}>All contacts</button>
           </div>
         )}
-        {filtered.length === 0 && (!search.trim() || search === lensQuery) && stage !== 'ready_to_quote' && !(isFinanceLens && !commercialReady) && (
+        {filtered.length === 0 && (!search.trim() || search === lensQuery) && stage !== 'ready_to_quote' && stage !== 'review_queue' && !(isFinanceLens && !commercialReady) && (
           // Audit 2026-06-19: an empty group/filter is no longer a dead-end , it
           // offers a one-tap way back to All so the operator is never stuck.
           <EmptyState icon="contacts"
@@ -1962,6 +1990,13 @@ function ContactsList({ contacts, messages, calls, onOpen, dncSet = new Set(), a
             </div>
           </button>
         )}
+        {stage === 'review_queue' && <div role={reviewLoadState === 'error' ? 'alert' : 'status'} style={{ padding:'10px 18px', fontSize:13, color:MUTED }}>
+          <div>{reviewLoadState === 'ready' ? 'Photos are ready for Key’s review. Technical sufficiency is still a separate decision.'
+            : reviewLoadState === 'error' ? 'Review queue could not verify every inquiry. Showing verified photos only.'
+              : 'Review queue is checking current photo and quote records.'}</div>
+          {reviewLoadState === 'error' && <button type="button" onClick={retryReviewQueue} style={{ marginTop:14, minHeight:44, padding:'0 16px', borderRadius:8, border:'1px solid rgba(27,43,75,.2)', background:'white', color:NAVY, fontFamily:'inherit', fontWeight:700, cursor:'pointer' }}>Try again</button>}
+        </div>}
+        {stage === 'review_queue' && reviewLoadState === 'ready' && filtered.length === 0 && <div role="status" style={{ padding:'18px', color:MUTED }}>No accepted inquiries with verified photos are waiting for review.</div>}
         {filtered.map(c => {
           const sc = STAGE_COLORS[c.stage];
           const unread = messagesReady && (hasUnread(c.id) || hasMissedCall(c.id));
@@ -1970,6 +2005,7 @@ function ContactsList({ contacts, messages, calls, onOpen, dncSet = new Set(), a
           const sig = signalMap.get(c.id) || {};
           const rm = rowModelByContact.get(c.id) || {};   // Comp A: next-move + accent
           const quoteDeskReceipt = quoteWalkV2Receipts[String(c.id)];
+          const reviewState = photoReviewQueueState(c, quoteDeskReceipt, proposals);
           const quoteDeskLegacyReady = quoteDeskDataReady && window.CRM?.isQuoteDeskReady?.(
             c, quotePreReads[c.id], proposals
           ) === true;
@@ -1980,15 +2016,16 @@ function ContactsList({ contacts, messages, calls, onOpen, dncSet = new Set(), a
           // Truncated; relative time. Hidden when DNC pill or other signals
           // would already overflow the row.
           const last = sig.lastMsg;
-          const lastPreview = last && last.body
-            ? `${last.direction === 'out' ? 'You: ' : ''}${last.body.slice(0, 48)}${last.body.length > 48 ? '…' : ''}`
+          const lastPreviewBody = messageAttachmentPreviewText(last?.body);
+          const lastPreview = last && lastPreviewBody
+            ? `${last.direction === 'out' ? 'You: ' : ''}${lastPreviewBody.slice(0, 48)}${lastPreviewBody.length > 48 ? '…' : ''}`
             : null;
           // Starred (pinned) contacts render as an EXPANDED row carrying the
           // next-move + gold action (Key 2026-06-18, replaces the Working On
           // deck). Suppressed in bulk-select so the checkbox/long-press row
           // stays available for multi-select.
           if (isPinned && !bulkMode && rowFactsReady) {
-            return <ExpandedContactRow key={c.id} c={c} sig={sig} nextAction={nextActionByContact.get(c.id)} nr={needsReplySet.has(c.id)} isPinned={isPinned} active={activeContactId === c.id} dncSet={dncSet} isGoldElected={c.id === goldElectedId} onOpen={onOpen} onTogglePin={togglePin} />;
+            return <ExpandedContactRow key={c.id} c={c} sig={sig} nextAction={nextActionByContact.get(c.id)} nr={needsReplySet.has(c.id)} isPinned={isPinned} active={activeContactId === c.id} dncSet={dncSet} isGoldElected={c.id === goldElectedId} onOpen={onOpen} onTogglePin={togglePin} reviewState={reviewState} reviewNow={reviewNow} />;
           }
           return (
             // div role=button (not <button>), the hover preview portals
@@ -2077,6 +2114,7 @@ function ContactsList({ contacts, messages, calls, onOpen, dncSet = new Set(), a
                   {(() => {
                     const pill = c.do_not_contact
                       ? { label:'DNC', color:'#991B1B', bg:'#FEF2F2' }
+                      : reviewState ? { label:reviewState.label, color:NAVY, bg:'#EFF6FF' }
                       : rowFactsReady ? contactPriorityPill(c, sig, needsReplySet.has(c.id), permitNotStarted(c)) : null;
                     if (!pill) return null;
                     return <span style={{ fontSize:12, fontWeight:700, color:pill.color, background:pill.bg, padding:'1px 7px', borderRadius:20, flexShrink:0, whiteSpace:'nowrap' }}>{pill.label}</span>;
@@ -2088,7 +2126,7 @@ function ContactsList({ contacts, messages, calls, onOpen, dncSet = new Set(), a
                     MUTED for a calm "Follow up". Stage/city moved to avatar-hover +
                     the detail page. The .sub reason shows only on the expanded row. */}
                 <div style={{ fontSize:13, fontWeight:600, color: (rm.tier != null && rm.tier <= 4) ? NAVY : MUTED, marginTop:1, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
-                  {rowTruth || ((rm.move && rm.move.label) || 'Follow up')}
+                  {reviewState ? photoReviewWaiting(reviewState.receivedAt, reviewNow) : rowTruth || ((rm.move && rm.move.label) || 'Follow up')}
                 </div>
               </div>
               {/* Cadence column: days since last touch, quiet mono number.
@@ -4146,6 +4184,7 @@ function MessagesList({ messages, calls, contacts, onOpen, dncSet = new Set(), a
   ];
   const cleanBody = (body, isOut) => {
     if (!body) return '';
+    body=messageAttachmentPreviewText(body);
     if (isOut) {
       for (const [re, summary] of TEMPLATE_SUMMARIES) {
         if (re.test(body)) return summary;
@@ -4177,6 +4216,8 @@ function MessagesList({ messages, calls, contacts, onOpen, dncSet = new Set(), a
     if (!last) return '';
     const isOut = last.direction === 'out';
     const pre = isOut ? 'You: ' : '';
+    const previewBody=messageAttachmentPreviewText(last.body);
+    if(previewBody!==last.body)return pre+previewBody;
     if (last.kind === 'mms')    return <>{pre}<PreviewGlyph kind="camera" />Photo{last.body ? ' ' + cleanBody(last.body, isOut) : ''}</>;
     if (last.kind === 'note')   return 'Note: ' + (last.body || '');
     if (last.kind === 'system') return last.body || '';

@@ -8,17 +8,17 @@
 <meta name="robots" content="noindex">
 <!-- connect-src so the live invoice-view + checkout calls are allowed; img/style/font kept open for the DS + logo -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://api.stripe.com; form-action 'self';">
-<script src="/assets/js/bpp-analytics.js?v=4778878d007c"></script>
+<script src="/assets/js/bpp-analytics.js?v=c9db468254dd"></script>
 <script>document.documentElement.className += ' js'</script>
 <title>Invoice | Backup Power Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
 <!-- BPP design system: single source of truth. Invoice consumes it like the proposal does. -->
-<link rel="stylesheet" href="assets/css/bpp-ds.css?v=20260907a">
+<link rel="stylesheet" href="assets/css/bpp-ds.css?v=85adfde9b763">
 <style>
 /* tokens, reset, .page/.card/.pad, .eyebrow/.sec, .badge, .status, .btn-gold, .brand-bar, .signature,
    motion + comp-flag all come from bpp-ds.css. Only invoice-specific layout lives here. */
-:root{ --bg:#f4f6f9; }  /* neutral page, an on-brand variation (proposal uses cool grey, landing warm) */
+:root{ --bg:#f4f6f9; --text3:#5b6473; }  /* neutral page, an on-brand variation (proposal uses cool grey, landing warm) */
 
 /* invoice header: title row + meta */
 .inv-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
@@ -98,17 +98,18 @@ body.preview-mode #pay-btn{display:none!important}
   <span class="badge" id="inv-num-badge" style="background:rgba(255,255,255,.1);color:#fff">Invoice</span>
 </div>
 
-<div class="page" id="page">
+<div class="page" id="page" role="main">
 
   <!-- Loading state, replaced on load -->
   <div class="card pad" id="loading-card">
-    <div class="state-wrap">
+    <div class="state-wrap" role="status">
       <div class="state-spin"></div>
       <p>Loading your invoice...</p>
     </div>
   </div>
 
 </div>
+<div id="invoice-status" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script>
 // ── CONFIG (mirrors invoice.html exactly) ───────────────────────────
@@ -129,9 +130,9 @@ function fmtDate(v){
   catch(e){ return ''; }
 }
 
-var _toast=null,_toastTimer=null;
+var _toast=document.getElementById('invoice-status'),_toastTimer=null;
 function showToast(msg){
-  if(!_toast){ _toast=document.createElement('div'); _toast.className='toast'; document.body.appendChild(_toast); }
+  if(!_toast){ _toast=document.createElement('div'); _toast.className='toast'; _toast.setAttribute('role','status'); _toast.setAttribute('aria-live','polite'); _toast.setAttribute('aria-atomic','true'); document.body.appendChild(_toast); }
   _toast.textContent=msg;
   clearTimeout(_toastTimer);
   requestAnimationFrame(function(){ _toast.classList.add('show'); _toastTimer=setTimeout(function(){ _toast.classList.remove('show'); },4000); });
@@ -149,9 +150,9 @@ function showState(title,msg){
   wrap.appendChild(h2); wrap.appendChild(p);
   var actions=document.createElement('div'); actions.className='state-recovery-actions';
   var text=document.createElement('a'); text.className='btn-navy'; text.href='sms:+18648637800'; text.textContent='Text Key for a fresh link';
-  var call=document.createElement('a'); call.className='btn-ghost'; call.href='tel:+18648637800'; call.textContent='Call Key';
-  actions.appendChild(text); actions.appendChild(call); wrap.appendChild(actions);
+  actions.appendChild(text); wrap.appendChild(actions);
   card.appendChild(wrap); page.appendChild(card);
+  h2.tabIndex=-1;h2.focus();
   requestAnimationFrame(function(){ card.classList.add('in'); });
 }
 

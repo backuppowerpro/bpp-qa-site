@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="robots" content="noindex, nofollow" />
 <meta name="referrer" content="no-referrer" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self' 'sha256-HiwXUWS3jcHMAW2f4geAAfJ5MYyxBUQrfSfNvwQjCnI='; style-src 'self' 'sha256-uythJlsO9eQ5sY4hiKPFvh2WM8ypbCp4OGwb5TxakGM='; font-src 'self'; img-src 'self'; connect-src https://hfatblrcwytxvijjhpal.supabase.co" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self' 'sha256-eoTaQHjpYcckoNNWB3wVtTKnYmaZSfhXxC79TSsbd7Y='; style-src 'self' 'sha256-JI/icfqkmLbjaMrASQjBFa0Fq3cAutVJKS20FnSQF6I='; font-src 'self'; img-src 'self'; connect-src https://hfatblrcwytxvijjhpal.supabase.co" />
 <title>Backup Power Pro · Opening your quote</title>
 <link href="/assets/css/bpp-money-fonts.css" rel="stylesheet" integrity="sha384-NmPRtynqfaEkuTkw+YhyxU4ryJIyb5TjGnjs6wi4v0gnjH79bJeYMFWvLgN69rE3" crossorigin="anonymous" />
 <style>
@@ -53,11 +53,14 @@
   }
   body.is-error .loading { display: none; }
   body.is-error .err { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  a { color: var(--gold); }
+  .err > a:not(.btn) { display: inline-flex; align-items: center; min-height: 44px; }
+  a:focus-visible, button:focus-visible { outline: 3px solid #ffba00; outline-offset: 4px; }
   .foot { font-size: 12.5px; color: var(--gold); font-family: var(--head); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; margin-top: 6px; }
 </style>
 </head>
 <body>
-  <div class="wrap">
+  <main class="wrap">
     <img class="logo" src="/assets/images/logo-white-v2.png" alt="Backup Power Pro" />
     <div class="loading">
       <div class="spinner" role="status" aria-label="Loading your quote"></div>
@@ -65,14 +68,14 @@
       <p>One second while I pull up your saved walk.</p>
     </div>
     <div class="err" data-return-recovery>
-      <h1 data-recovery-title>Your saved Quote Walk could not be opened.</h1>
+      <h1 data-recovery-title tabindex="-1">Your saved Quote Walk could not be opened.</h1>
       <p data-recovery-copy>Your saved answers are unchanged.</p>
       <button class="btn" type="button" data-retry>Try again</button>
       <a class="btn" href="/walk-v2/?src=w" data-start-over>Start a new Quote Walk</a>
-      <a href="tel:+18648637800">Call or text Key</a>
+
       <span class="foot">Key Goodson · Backup Power Pro</span>
     </div>
-  </div>
+  </main>
 
 <script>
 (function () {
@@ -93,6 +96,7 @@
       : 'No Quote Walk was marked complete from this link. You can start again or contact Key.';
     retry.hidden = !temporary;
     document.body.classList.add('is-error');
+    title.focus({ preventScroll: true });
   }
   function openSavedWalk() {
     var currentAttempt = ++attempt;

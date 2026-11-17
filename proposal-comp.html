@@ -9,17 +9,18 @@
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co; form-action 'self';">
-<script src="/assets/js/bpp-analytics.js?v=4778878d007c"></script>
+<script src="/assets/js/bpp-analytics.js?v=c9db468254dd"></script>
 <script>document.documentElement.className += ' js'</script>
 <title>Proposal | Backup Power Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
 <!-- BPP design system: single source of truth (tokens, reset, primitives, modal, motion). Edit there to restyle every surface. -->
-<link rel="stylesheet" href="assets/css/bpp-ds.css?v=20260907a">
+<link rel="stylesheet" href="assets/css/bpp-ds.css?v=85adfde9b763">
 <style>
 /* tokens, reset, base, .page, .card/.pad, .eyebrow/.sec, .badge, modal system, base scroll-reveal,
    and confetti keyframes all live in assets/css/bpp-ds.css (single source of truth). Only the
    proposal-specific layout lives below. */
+:root{--text3:#5b6473}
 /* Interaction + device-reality (Operational DNA 6a): no tap delay / double-tap-zoom on the comp's custom controls. */
 .pom,.ack,.policy-link,.pom-learn,.sig-input,button,[role="button"]{touch-action:manipulation}
 /* Hide the page + sticky bar until the server proposal is bound, so the static
@@ -42,8 +43,9 @@ html:not(.js) .boot-spin{display:none}
 body.preview-mode{padding-top:34px}
 body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.approve-nav[href*="invoice"]{display:none!important}
 
-/* Page (base .page in bpp-ds.css). While the signature field is focused, add scroll runway so the field AND its cursive preview lift clear of the on-screen keyboard. */
-.kb .page{padding-bottom:calc(280px + env(safe-area-inset-bottom))}
+/* Keep the signature and preview clear of the keyboard. Retain this runway
+   after entry starts so blur cannot shift Approve between pointerdown and click. */
+.sig-runway .page{padding-bottom:calc(280px + env(safe-area-inset-bottom))}
 /* reserve room under the fixed sticky CTA so a short page (short viewport + POM off)
    can never park the footer/policy links under the bar with no scroll to hide it. */
 .page{padding-bottom:calc(82px + env(safe-area-inset-bottom))}
@@ -53,7 +55,7 @@ body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.appr
 /* House stays clearly visible up top (gradient is fully clear through ~35%), then fades to SOLID
    navy by 82% so the bright driveway/foreground is covered before the navy hero body, no seam.
    position 40% keeps the house body (not the sky) framed. */
-.streetview{position:relative;height:215px;background-color:var(--navy);overflow:hidden;
+.streetview{position:relative;min-height:215px;height:auto;display:flex;align-items:flex-end;background-color:var(--navy);overflow:hidden;
   --sv-img:none}
 /* Photo on its own layer so the professional-polish filter (Key 2026-07-17,
    "brighter, more professional") brightens ONLY the photo, never the navy
@@ -66,7 +68,7 @@ body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.appr
    sit low in the frame (below-grade lots, Key's own home 2026-07-17). */
 .streetview::after{content:'';position:absolute;inset:0;
   background:linear-gradient(to bottom,rgba(11,31,59,.10) 0%,rgba(11,31,59,0) 35%,rgba(11,31,59,.42) 62%,#0b1f3b 82%,#0b1f3b 100%)}
-.sv-addr{position:absolute;left:18px;bottom:12px;right:18px;z-index:2}
+.sv-addr{position:relative;min-width:0;width:100%;padding:12px 18px;z-index:2;overflow-wrap:anywhere;background:rgba(11,31,59,.86)}
 .sv-addr .lbl{font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.7);margin-bottom:2px}
 .sv-name{font-family:var(--font-display);font-size:29px;font-weight:900;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.6);line-height:1.05;letter-spacing:-.01em}
 .sv-addr-line{font-family:var(--font-body);font-size:12px;font-weight:600;color:rgba(255,255,255,.82);text-shadow:0 1px 6px rgba(0,0,0,.55);margin-top:4px}
@@ -80,6 +82,7 @@ body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.appr
 
 /* personal note */
 .note{display:flex;gap:13px;align-items:flex-start}
+.note>div{min-width:0;flex:1;overflow-wrap:anywhere}
 .note .av{width:44px;height:44px;border-radius:50%;background:var(--navy);color:var(--gold);font-family:var(--font-display);font-weight:900;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .note img.av{object-fit:cover;object-position:center 40%;box-shadow:0 2px 8px rgba(11,31,59,.18)}
 .note .txt{font-size:13px;color:var(--text2);line-height:1.6}
@@ -88,7 +91,7 @@ body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.appr
 .amp{margin-bottom:16px}
 .amp-label{font-family:var(--font-display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:7px}
 .amp-seg{display:flex;gap:8px}
-.amp-opt{flex:1;height:48px;border-radius:var(--r-sm);border:1.5px solid var(--border);background:#fff;font-family:var(--font-display);font-weight:800;font-size:15px;color:var(--navy);cursor:pointer;transition:background .15s,color .15s,border-color .15s;display:flex;align-items:center;justify-content:center}
+.amp-opt{flex:1;min-width:44px;min-height:48px;height:auto;padding:12px 14px;line-height:1.25;white-space:normal;overflow-wrap:break-word;border-radius:var(--r-sm);border:1.5px solid var(--border);background:#fff;font-family:var(--font-display);font-weight:800;font-size:15px;color:var(--navy);cursor:pointer;transition:border-color .15s;display:flex;align-items:center;justify-content:center}
 .amp-opt.active{background:var(--navy);color:#fff;border-color:var(--navy)}
 .amp-rec{margin-top:9px;font-size:11.5px;font-weight:700;color:var(--amber);display:flex;align-items:center;gap:5px}
 .amp-rec span{color:var(--gold);font-size:12px;line-height:1}
@@ -190,7 +193,7 @@ body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.appr
 .pom{margin-top:14px;border:1.5px solid rgba(255,186,0,.5);background:linear-gradient(160deg,#fffdf5,#fff);border-radius:var(--r-lg);padding:14px;cursor:pointer;transition:box-shadow .2s,border-color .2s}
 .pom.on{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,186,0,.14)}
 .pom-top{display:flex;align-items:center;gap:11px}
-.tgl{width:42px;height:25px;border-radius:20px;background:var(--control);position:relative;flex-shrink:0;transition:background .2s}
+.tgl{border:0;padding:0;cursor:pointer;width:42px;height:25px;border-radius:20px;background:var(--control);position:relative;flex-shrink:0;transition:background .2s}
 .pom.on .tgl{background:var(--gold)}
 .knob{position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .2s}
 .pom.on .knob{left:20px}
@@ -204,7 +207,7 @@ body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.appr
 .pom-surge-title{font-family:var(--font-display);font-weight:800;font-size:16px;color:var(--navy);line-height:1.15}
 .pom-surge-sub{font-size:12px;color:var(--amber);font-weight:700;margin-top:3px}
 .pom-surge-desc{font-size:12.5px;color:var(--text2);line-height:1.5;margin-top:11px}
-.pom-learn{color:var(--blue);font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
+.pom-learn{border:0;padding:0;background:none;font:inherit;min-height:24px;color:var(--blue);font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
 .pom-also{margin-top:13px;padding-top:12px;border-top:1px solid var(--line)}
 .pom-also-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:7px}
 .pom-also-items{display:flex;flex-wrap:wrap;gap:6px 16px}
@@ -218,21 +221,25 @@ body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.appr
 .review-auth{font-size:12px;color:var(--text3);font-weight:600}
 .badges{display:flex;flex-wrap:nowrap;gap:6px;margin-top:14px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .badges::-webkit-scrollbar{display:none}
+.badges:focus-visible,.tgl:focus-visible{outline:2px solid var(--navy);outline-offset:3px}
 
 /* close */
 .ack{display:flex;gap:11px;align-items:flex-start;padding:13px;border:1.5px solid var(--border);border-radius:var(--r-md);cursor:pointer;margin-bottom:14px;transition:border-color .15s,background .15s}
 .ack.on{border-color:var(--green);background:var(--ok-bg)}
-.ack-box{width:22px;height:22px;border-radius:6px;border:2px solid var(--control);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s}
+.ack-box{position:relative;width:24px;height:24px;border-radius:6px;border:2px solid var(--control);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s}
+.ack-box:has(.ack-input:focus-visible){outline:2px solid var(--navy);outline-offset:3px}
+.ack-box svg{pointer-events:none}
+.ack-input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
 .ack.on .ack-box{background:var(--green);border-color:var(--green)}
 .ack-box svg{opacity:0;transition:opacity .15s}
 .ack.on .ack-box svg{opacity:1}
 .ack-txt{font-size:13px;color:var(--text);line-height:1.45}
 .mandate-full{font-size:11px;color:var(--text3);line-height:1.55;margin-top:5px;font-weight:400}
 .ack-txt a{color:var(--blue);font-weight:600}
-.sig-label{font-family:var(--font-display);font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.sig-label{display:block;font-family:var(--font-display);font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px}
 .sig-hint{font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.5}
 .sig-input{width:100%;height:48px;font-size:16px;padding:0 14px;border:none;background:var(--fill);border-radius:var(--r-sm);font-family:var(--font-body);color:var(--text);box-shadow:inset 0 0 0 1px rgba(11,31,59,.08);scroll-margin-top:96px;scroll-margin-bottom:200px}
-.sig-input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--gold)}
+.sig-input:focus{outline:3px solid #1d4ed8;outline-offset:3px;box-shadow:inset 0 0 0 2px #1d4ed8,0 0 0 2px #fff}
 .sig-preview{min-height:46px;display:flex;align-items:center;justify-content:center;font-family:var(--font-script);font-size:32px;color:var(--navy);margin-top:8px;border-bottom:1.5px dashed var(--border)}
 .fineprint{font-size:11px;color:var(--text3);text-align:center;margin-top:8px;line-height:1.5}
 
@@ -242,7 +249,7 @@ body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.appr
 .charge-amount-line .zero-today{color:var(--green)}
 
 /* approve */
-.approve{width:100%;height:56px;border:none;border-radius:28px;background:var(--gold);color:var(--navy);font-family:var(--font-display);font-weight:800;font-size:17px;letter-spacing:-.01em;cursor:pointer;margin-top:18px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 22px rgba(255,186,0,.4);transition:transform .07s,background .2s,color .2s,box-shadow .2s}
+.approve{width:100%;min-height:56px;height:auto;padding:14px 18px;line-height:1.25;white-space:normal;overflow-wrap:anywhere;text-align:center;border:none;border-radius:28px;background:var(--gold);color:var(--navy);font-family:var(--font-display);font-weight:800;font-size:17px;letter-spacing:-.01em;cursor:pointer;margin-top:18px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 22px rgba(255,186,0,.4);transition:transform .07s,background .2s,color .2s,box-shadow .2s}
 .approve:active{transform:scale(.98)}
 .approve:disabled{background:var(--line);color:var(--muted);box-shadow:none;cursor:not-allowed}
 .approve-err{text-align:center;font-size:13px;color:var(--red);font-weight:600;margin-top:10px;line-height:1.5;min-height:0}
@@ -262,9 +269,10 @@ body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.appr
 .sticky.initializing{transition:none!important}
 /* Sticky scroll cue is NOT money. Gold is reserved for .approve (sign/pay).
    Navy secondary keeps appearance honest with "Review & sign below" scroll. */
-.sticky .s-btn{flex:1;min-height:48px;height:48px;border:none;border-radius:24px;background:var(--navy);color:#fff;font-family:var(--font-display);font-weight:800;font-size:15px;cursor:pointer;box-shadow:0 2px 12px rgba(11,31,59,.22)}
+.sticky .s-btn{flex:1;min-width:44px;min-height:48px;height:auto;padding:12px 14px;line-height:1.25;white-space:normal;overflow-wrap:break-word;border:none;border-radius:24px;background:var(--navy);color:#fff;font-family:var(--font-display);font-weight:800;font-size:15px;cursor:pointer;box-shadow:0 2px 12px rgba(11,31,59,.22)}
 @media (prefers-reduced-motion:reduce){.sticky,.sticky.hidden{transition:none!important}}
-.approve-nav{width:100%;min-height:56px;height:56px;border:none;border-radius:28px;background:var(--navy);color:#fff;font-family:var(--font-display);font-weight:800;font-size:17px;letter-spacing:-.01em;cursor:pointer;margin-top:18px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 22px rgba(11,31,59,.22);text-decoration:none}
+.approve-nav{width:100%;min-height:56px;height:auto;padding:14px 18px;line-height:1.25;white-space:normal;overflow-wrap:anywhere;text-align:center;border:none;border-radius:28px;background:var(--navy);color:#fff;font-family:var(--font-display);font-weight:800;font-size:17px;letter-spacing:-.01em;cursor:pointer;margin-top:18px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 22px rgba(11,31,59,.22);text-decoration:none}
+.approve>span,.approve-nav>span{min-width:0}
 /* .comp-flag now lives in bpp-ds.css (shared by every *-comp.html) */
 
 </style>
@@ -278,7 +286,7 @@ body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.appr
   <div class="tagline">Licensed Electrical Contractor · SC LIC #2942 · Upstate SC</div>
 </div>
 
-<div class="page">
+<div class="page" role="main">
 
   <!-- 1. HERO -->
   <div class="hero">
@@ -362,11 +370,11 @@ body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.appr
     </details>
 
     <!-- POM default OFF -->
-    <div class="pom" id="pom" role="switch" aria-checked="false" tabindex="0" onclick="togglePom()" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();togglePom()}">
+    <div class="pom" id="pom" onclick="togglePom()">
       <div class="pom-top">
-        <div class="tgl"><div class="knob"></div></div>
-        <div class="pom-title"><span>Peace of Mind Protection</span> <span class="pom-popular">Key recommends this</span></div>
-        <div class="pom-price">+$447<small>one-time</small></div>
+        <button class="tgl" id="pom-toggle" type="button" role="switch" aria-checked="false" aria-labelledby="pom-option-name" aria-describedby="pom-option-price"><span class="knob"></span></button>
+        <div class="pom-title"><span id="pom-option-name">Peace of Mind Protection</span> <span class="pom-popular">Key recommends this</span></div>
+        <div class="pom-price" id="pom-option-price">+$447<small>one-time</small></div>
       </div>
       <div class="pom-surge">
         <div class="pom-surge-row">
@@ -376,7 +384,7 @@ body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.appr
           </div>
           <img class="pom-surge-img" src="assets/images/home-square.jpg" alt="A Greenville home">
         </div>
-        <div class="pom-surge-desc">When the grid snaps back on after an outage, the spike can reach anything plugged in, your TV, fridge, HVAC boards, and computers. A whole-home surge protector guards every circuit at your panel, stopping that spike before it reaches them. <span class="pom-learn" role="button" tabindex="0" onclick="openPom(event)" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();openPom(event)}">What is surge protection?</span></div>
+        <div class="pom-surge-desc">When the grid snaps back on after an outage, the spike can reach anything plugged in, your TV, fridge, HVAC boards, and computers. A whole-home surge protector guards every circuit at your panel, stopping that spike before it reaches them. <button class="pom-learn" type="button" onclick="openPom(event)">What is surge protection?</button></div>
         <div class="pom-also">
           <div class="pom-also-label">Also included</div>
           <div class="pom-also-items">
@@ -420,7 +428,7 @@ body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.appr
     <div class="stars">★★★★★</div>
     <div class="review-txt">"KeyElectric is absolutely outstanding! From start to finish, my first experience with KeyElectric was exceptional. I chose them over two other electrical companies to install a portable generator inlet connected to the main breaker..."</div>
     <div class="review-auth">Dino S. · Google</div>
-    <div class="badges">
+    <div class="badges" tabindex="0" role="group" aria-label="Licensing, insurance and reviews">
       <span class="badge"><span style="color:var(--gold)">★</span> 4.9 · 100+ Google</span>
       <span class="badge">⚡ SC LIC #2942</span>
       <span class="badge">🛡️ Fully Insured</span>
@@ -450,21 +458,21 @@ body.preview-mode #close-card,body.preview-mode .sticky,body.preview-mode a.appr
          above the charge box it explains. -->
     <div class="tl-note" style="margin:0 0 10px">These two boxes keep us both protected. Standard for every install.</div>
 
-    <div class="ack" id="ack" style="margin-bottom:10px" role="checkbox" aria-checked="false" tabindex="0" onclick="toggleAck()" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleAck()}">
-      <div class="ack-box"><svg width="13" height="13" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg></div>
-      <div class="ack-txt">I've read and understood the <a href="/inlet-safety-instructions.html" target="_blank" rel="noopener" onclick="event.stopPropagation();openSafety(event);return false">Generator Safety Instructions</a> for a portable generator inlet install.</div>
+    <div class="ack" id="ack" style="margin-bottom:10px" onclick="toggleAck()">
+      <div class="ack-box"><input class="ack-input" type="checkbox" id="ack-input" aria-labelledby="ackText"><svg width="13" height="13" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg></div>
+      <div class="ack-txt" id="ackText">I've read and understood the <a href="/inlet-safety-instructions.html" target="_blank" rel="noopener" onclick="event.stopPropagation();openSafety(event);return false">Generator Safety Instructions</a> for a portable generator inlet install.</div>
     </div>
 
     <!-- Card-on-file authorization (required). Amount line + variant text bound from server numbers in JS. -->
     <div class="charge-amount-line" id="chargeAmountLine"></div>
-    <div class="ack" id="mandate" role="checkbox" aria-checked="false" tabindex="0" onclick="toggleMandate()" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleMandate()}">
-      <div class="ack-box"><svg width="13" height="13" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg></div>
+    <div class="ack" id="mandate" onclick="toggleMandate()">
+      <div class="ack-box"><input class="ack-input" type="checkbox" id="mandate-input" aria-labelledby="mandateText"><svg width="13" height="13" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg></div>
       <div class="ack-txt" id="mandateText"></div>
     </div>
 
-    <div class="sig-label">Sign to approve</div>
-    <div class="sig-hint">This is your electronic signature, edit if needed.</div>
-    <input class="sig-input" id="sig" type="text" placeholder="Type your full name to sign" oninput="onSig()" autocomplete="name" value="">
+    <label class="sig-label" for="sig">Sign to approve</label>
+    <div class="sig-hint" id="signature-hint">This is your electronic signature, edit if needed.</div>
+    <input class="sig-input" id="sig" type="text" placeholder="Type your full name to sign" oninput="onSig(event)" autocomplete="name" aria-required="true" aria-describedby="signature-hint" value="">
     <div class="sig-preview" id="sigPrev"></div>
     <div class="fineprint">By checking the box above and tapping Approve, you adopt the name shown as your electronic signature and agree to be legally bound by this proposal under the federal ESIGN Act and applicable state e-signature law.</div>
 
@@ -593,6 +601,7 @@ var REQUIRE_DEPOSIT=true;   // P.require_deposit !== false
 var isPreview=new URLSearchParams(window.location.search).get('preview')==='1';
 function previewModeActive(){return isPreview||new URLSearchParams(window.location.search).get('preview')==='1';}
 var submitting=false;
+var signatureDeliberate=false;
 var signStatusUncertain=false;
 var depositCancellationUnconfirmed=true;
 var depositAuthorizationWasReset=false;
@@ -890,7 +899,7 @@ function renderMandate(){
 function syncPom(){
   var p=document.getElementById('pom');
   p.classList.toggle('on',pomOn);
-  p.setAttribute('aria-checked',pomOn?'true':'false');
+  document.getElementById('pom-toggle').setAttribute('aria-checked',pomOn?'true':'false');
   var pp=p.querySelector('.pom-popular');
   if(pp){ pp.style.display=RECOMMEND_POM?'inline-block':'none'; if(RECOMMEND_POM) pp.textContent='Key recommends this'; }
   // POM is added to the total, so it lifts both the deposit and the balance.
@@ -903,9 +912,27 @@ function lockScroll(){_scrollLock=window.scrollY||window.pageYOffset||0;var b=do
 function unlockScroll(){var b=document.body;b.style.position='';b.style.top='';b.style.left='';b.style.right='';b.style.width='';window.scrollTo(0,_scrollLock);}
 // Generic modal open/close with focus management + scroll lock
 var _lastFocus=null;
-function openModal(id,e){if(e&&e.stopPropagation)e.stopPropagation();_lastFocus=document.activeElement;lockScroll();var ov=document.getElementById(id);ov.classList.add('open');var x=ov.querySelector('.modal-x');if(x)x.focus();}
-function closeModal(id){var ov=document.getElementById(id);ov.classList.remove('open');unlockScroll();if(_lastFocus&&_lastFocus.focus)try{_lastFocus.focus();}catch(_){}}
-function closeAnyModal(){var ov=document.querySelector('.modal-overlay.open');if(ov){ov.classList.remove('open');unlockScroll();if(_lastFocus&&_lastFocus.focus)try{_lastFocus.focus();}catch(_){}}}
+var _modalBackground=[];
+function openModal(id,e){
+  if(e&&e.stopPropagation)e.stopPropagation();
+  _lastFocus=document.activeElement;lockScroll();
+  var ov=document.getElementById(id);
+  _modalBackground=[];
+  Array.prototype.forEach.call(document.body.children,function(node){
+    if(node===ov||node.tagName==='SCRIPT')return;
+    _modalBackground.push({node:node,wasInert:node.hasAttribute('inert')});
+    node.setAttribute('inert','');
+  });
+  ov.classList.add('open');
+  var x=ov.querySelector('.modal-x');if(x)x.focus();
+}
+function closeModal(id){
+  var ov=document.getElementById(id);ov.classList.remove('open');unlockScroll();
+  _modalBackground.forEach(function(item){if(!item.wasInert)item.node.removeAttribute('inert');});
+  _modalBackground=[];
+  if(_lastFocus&&_lastFocus.focus)try{_lastFocus.focus();}catch(_){}
+}
+function closeAnyModal(){var ov=document.querySelector('.modal-overlay.open');if(ov)closeModal(ov.id);}
 // Esc closes; Tab is trapped inside the open modal so keyboard focus cannot wander to the inert page behind the scrim (Operational DNA 6a, desktop keyboard discipline).
 document.addEventListener('keydown',function(e){
   var ov=document.querySelector('.modal-overlay.open');
@@ -946,21 +973,23 @@ function renderAmp(){
   recompute();
 }
 function setAmp(amp){chosenAmp=amp;renderAmp();}
-function toggleAck(){ackOn=!ackOn;var a=document.getElementById('ack');a.classList.toggle('on',ackOn);a.setAttribute('aria-checked',ackOn?'true':'false');validate()}
-function toggleMandate(){mandateOn=!mandateOn;var m=document.getElementById('mandate');m.classList.toggle('on',mandateOn);m.setAttribute('aria-checked',mandateOn?'true':'false');validate()}
+function toggleAck(){ackOn=!ackOn;var a=document.getElementById('ack');a.classList.toggle('on',ackOn);document.getElementById('ack-input').checked=ackOn;validate()}
+function toggleMandate(){mandateOn=!mandateOn;var m=document.getElementById('mandate');m.classList.toggle('on',mandateOn);document.getElementById('mandate-input').checked=mandateOn;validate()}
 // Keep the signature field above the on-screen keyboard: pull it toward the top once focused.
 function focusSig(){
   if(window.BPPStickyCTA) window.BPPStickyCTA.hideForTarget();
   var s=document.getElementById('sig');
   if(s)s.focus();
 }
-function onSig(){
+function onSig(event){
   var v=document.getElementById('sig').value.trim();
+  // Deliberate browser input includes paste, speech and IME, not scripted events.
+  if(event)signatureDeliberate=event.isTrusted&&Array.from(v).length>=2;
   document.getElementById('sigPrev').textContent=v;
   validate();
 }
 function validate(){
-  var nameOk=document.getElementById('sig').value.trim().length>2;
+  var nameOk=Array.from(document.getElementById('sig').value.trim()).length>=2&&signatureDeliberate;
   // Approve unlocks only when BOTH the safety ack AND the card-on-file
   // authorization are checked (plus a valid signature).
   document.getElementById('approve').disabled=!authorizationGateReady()||depositCancellationUnconfirmed||!(nameOk&&ackOn&&mandateOn&&!submitting);
@@ -1007,7 +1036,7 @@ function showClosedProposal(row){
   bindData(row);
   showState(expired?'⏰':'🚫',expired?'This quote has expired':'This proposal is closed',
     expired?'Text or call Key for a refreshed proposal. The current proposal cannot be signed.':'This proposal is no longer active. Reach Key if you have questions.',
-    '<a class="approve-nav" href="tel:+18648637800"><span>Call Key (864) 863-7800</span></a>');
+    '');
 }
 function resetAuthorizationForRevisedContract(row){
   submitting=false;
@@ -1016,9 +1045,10 @@ function resetAuthorizationForRevisedContract(row){
   ackOn=false;
   mandateOn=false;
   var ack=document.getElementById('ack');
-  if(ack){ack.classList.remove('on');ack.setAttribute('aria-checked','false');}
+  if(ack){ack.classList.remove('on');document.getElementById('ack-input').checked=false;}
   var mandate=document.getElementById('mandate');
-  if(mandate){mandate.classList.remove('on');mandate.setAttribute('aria-checked','false');}
+  if(mandate){mandate.classList.remove('on');document.getElementById('mandate-input').checked=false;}
+  signatureDeliberate=false;
   var sig=document.getElementById('sig');
   if(sig)sig.value='';
   var sigPrev=document.getElementById('sigPrev');
@@ -1038,9 +1068,10 @@ function resetDepositAcceptanceAuthorization(message){
   ackOn=false;
   mandateOn=false;
   var ack=document.getElementById('ack');
-  if(ack){ack.classList.remove('on');ack.setAttribute('aria-checked','false');}
+  if(ack){ack.classList.remove('on');document.getElementById('ack-input').checked=false;}
   var mandate=document.getElementById('mandate');
-  if(mandate){mandate.classList.remove('on');mandate.setAttribute('aria-checked','false');}
+  if(mandate){mandate.classList.remove('on');document.getElementById('mandate-input').checked=false;}
+  signatureDeliberate=false;
   var sig=document.getElementById('sig');
   if(sig)sig.value='';
   var sigPrev=document.getElementById('sigPrev');
@@ -1161,7 +1192,7 @@ function approve(){
     return;
   }
   var name=document.getElementById('sig').value.trim();
-  if(name.length<2||!ackOn||!mandateOn){ approveError('Please complete all fields above.'); return; }
+  if(Array.from(name).length<2||!signatureDeliberate||!ackOn||!mandateOn){ approveError('Please complete all fields above.'); return; }
   submitting=true; approveError('');
   if(btn) btn.disabled=true;
   if(lbl) lbl.textContent='Submitting...';
@@ -1279,7 +1310,7 @@ function approve(){
   var sig=document.getElementById('sig');
   if(!sig)return;
   function ensureSigVisible(){
-    if(!sig.isConnected)return;
+    if(!sig.isConnected||document.activeElement!==sig)return;
     var r=sig.getBoundingClientRect(),h=window.innerHeight;
     // only scroll if the field is off-screen / too low / jammed under the header
     if(r.top>h*0.42 || r.bottom>h-8 || r.top<70){
@@ -1288,7 +1319,7 @@ function approve(){
     }
   }
   sig.addEventListener('focus',function(){
-    document.body.classList.add('kb');            // adds bottom runway so the field lifts high enough
+    document.body.classList.add('kb','sig-runway'); // runway persists through review and approval
     setTimeout(ensureSigVisible,300);             // wait for the keyboard to start animating up
   });
   sig.addEventListener('blur',function(){document.body.classList.remove('kb');});
@@ -1458,6 +1489,7 @@ function bindData(row){
   var hero=document.querySelector('.sv-name'); if(hero) hero.textContent=FULL||'Your proposal';
   var addrLine=document.querySelector('.sv-addr-line'); if(addrLine) addrLine.textContent=addr;
   var note=document.querySelector('.note-name'); if(note) note.textContent=FIRST||'Hi';
+  signatureDeliberate=false;
   var sig=document.getElementById('sig'); if(sig) sig.value='';
   // Dates: "Prepared by ... <prepared>", "Pricing held through <expiry>", and the
   // expiry note. Prepared = sent_at || created_at; expiry = expires_at || prepared+14d.
@@ -1561,7 +1593,7 @@ function showUnpaidDepositNotAccepted(row){
   if(hasCheckoutReturnHint())scrubCheckoutReturnHints(false);
   showState('⚠️','Proposal not accepted',
     'Payment was not confirmed, so this proposal was not accepted. Ask Key for a refreshed proposal, then review it, check each acknowledgment, enter your name, and accept again.',
-    '<a class="approve-nav" href="tel:+18648637800"><span>Call Key</span></a>'
+    ''
     +'<div style="margin-top:14px;font-size:13px;color:var(--text3)">You can also text (864) 863-7800 for a refreshed proposal.</div>');
 }
 // Signed but the card/deposit step was not finished. Offer a one-tap return to checkout.
@@ -1923,7 +1955,7 @@ function bootProposal(row){
     setTimeout(function(){ try{ if(document.body.classList.contains('booting')){ showState('⏳','One moment',"I'm pulling up your proposal. If it doesn't load, refresh or text Key at (864) 863-7800."); } }catch(_){} }, 11000);
     var token=new URLSearchParams(window.location.search).get('token');
     if(!token){ showState('🔗','Proposal link not found','This isn\'t the personal link Key texted you. Text or call Key at (864) 863-7800 and he will send a fresh one.',
-      '<a class="approve-nav" href="tel:+18648637800"><span>Call Key (864) 863-7800</span></a>'
+      ''
       +'<a class="approve-nav" style="margin-top:10px;background:transparent;color:var(--navy);box-shadow:inset 0 0 0 1.5px rgba(11,31,59,.22)" href="sms:+18648637800"><span>Text Key</span></a>'); return; }
     var ctrl=new AbortController();
     var timer=setTimeout(function(){ctrl.abort();},10000);
@@ -1953,10 +1985,10 @@ function bootProposal(row){
           return;
         }
         if(res.status===404||res.status===400) showState('🔗','Proposal not found','This link may be invalid or expired. Reach Key and he will send a fresh one.',
-          '<a class="approve-nav" href="tel:+18648637800"><span>Call Key (864) 863-7800</span></a>'
+          ''
           +'<a class="approve-nav" style="margin-top:10px;background:transparent;color:var(--navy);box-shadow:inset 0 0 0 1.5px rgba(11,31,59,.22)" href="sms:+18648637800"><span>Text Key</span></a>');
         else showState('⚠️','Could not load your proposal','Please refresh, or reach Key if it keeps failing.',
-          '<a class="approve-nav" href="tel:+18648637800"><span>Call Key (864) 863-7800</span></a>');
+          '');
         return;
       }
       P=row; P.token=row.token||token;
@@ -1987,7 +2019,7 @@ function bootProposal(row){
       }
       var st=(row.status||'').toLowerCase();
       if(st==='cancelled'||st==='declined'){ if(hasCheckoutReturnHint())scrubCheckoutReturnHints(false);showState('🚫','This proposal is closed','This proposal has been cancelled. Reach Key with any questions.',
-        '<a class="approve-nav" href="tel:+18648637800"><span>Call Key (864) 863-7800</span></a>'); return; }
+        ''); return; }
       if(row.superseded_by && !row.signed_at){ if(hasCheckoutReturnHint())scrubCheckoutReturnHints(false);showState('📄','This quote was replaced','A newer version of your quote was sent. Please use that link, the price and details may have changed.',
         '<a class="approve-nav" href="sms:+18648637800"><span>Text Key for the current quote</span></a>'); return; }
       if(st==='approved'){ showApproved(row); return; }

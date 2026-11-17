@@ -1,7 +1,7 @@
 /* A link-saving control only. Never creates a lead, accepts a range or sends a message. */
 (function () {
   'use strict';
-  var PUBLIC_START = 'https://qa.backuppowerpro.com/walk-v2/';
+  var PUBLIC_START = new URL('/walk-v2/', window.location.href).href;
   var TOKEN_PATTERN = /^[a-zA-Z0-9_-]{32,160}$/;
   var dialog;
   var opener;
@@ -62,9 +62,10 @@
     var message = modal.querySelector('[data-copy-message]');
     var copyButton = modal.querySelector('[data-save-copy]');
     input.value = url;
+    modal.querySelector('#qw-save-title').textContent = state.mode === 'public' ? 'Save for later' : 'Save for later';
     modal.querySelector('[data-save-explanation]').textContent = state.mode === 'protected'
       ? 'Keep this private link to return to your saved request. Anyone with the link can open it.'
-      : 'Keep this link somewhere you can find it when you are home. You will start with your generator outlet.';
+      : 'This general link starts Quote Walk with your generator outlet. It contains none of your details or photos. Your current answers stay on this page.';
     message.textContent = '';
     copyButton.textContent = 'Copy link';
     function result(copied) {
@@ -100,6 +101,12 @@
       var button = root.querySelector('[data-save-button]');
       var hint = root.querySelector('[data-save-hint]');
       var status = root.querySelector('[data-save-status]');
+      var prompt = document.createElement('p');
+      prompt.className = 'save-row-prompt';
+      prompt.textContent = 'Need more time?';
+      root.insertBefore(prompt, button);
+      root.classList.add('save-row-template');
+      if (!button.querySelector('svg')) button.insertAdjacentHTML('afterbegin', '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m9 10 6-3M9 14l6 3"/></svg>');
       var label = document.createElement('span');
       label.textContent = 'Save for later';
       Array.from(button.childNodes).forEach(function (node) { if (node.nodeType === 3) node.remove(); });
@@ -112,10 +119,11 @@
         var url = preparedLink(state);
         button.disabled = !url;
         if (copiedURL !== url) copiedURL = '';
-        label.textContent = copiedURL ? 'Copied' : 'Save for later';
-        hint.textContent = state.pending ? "We're checking whether your details saved."
+        var generalStart = state.mode === 'public' && root.hasAttribute('data-save-start');
+        label.textContent = copiedURL ? 'Copied' : generalStart ? 'Save for later' : 'Save for later';
+        hint.textContent = state.pending ? (state.pendingNotSent ? 'Your request has not been sent. Keep this page open.' : "We're checking whether your details saved.")
           : state.mode === 'protected' ? (state.hint || 'Keep your private link to return to your saved request.')
-          : state.mode === 'public' ? (root.hasAttribute('data-save-compact') ? 'Not at your generator?' : 'Need more time? Save this link to start again later.')
+          : state.mode === 'public' ? ''
           : 'Load your saved request to prepare its return link.';
       }
       button.type = 'button';

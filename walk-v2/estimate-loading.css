@@ -5,6 +5,12 @@
 .qw-estimate-wait header { display: flex; align-items: center; min-height: 56px; padding: 0 20px; background: #0b1f3b; }
 .qw-estimate-wait header img { width: auto; height: 28px; max-width: 100%; }
 .qw-estimate-wait-card { margin: 24px 20px; padding: 24px 20px; border-radius: 20px; background: #fff; box-shadow: 0 12px 34px rgba(11,31,59,.14); }
-.qw-estimate-wait-card h1 { margin: 0; font: 700 24px/1.2 Inter, Arial, sans-serif; letter-spacing: -.02em; }
+.qw-estimate-wait-card h1 { margin: 0; font-family: var(--head, Outfit, Inter, Arial, sans-serif); font-size: 24px; font-weight: 700; line-height: 1.2; letter-spacing: -.02em; }
+.qw-estimate-wait-card h1:focus { outline: 3px solid #005fcc; outline-offset: 4px; }
 .qw-estimate-wait-card p { margin: 12px 0 0; font-size: 16px; line-height: 1.5; color: #526074; }
 @media(min-width:480px) { .qw-estimate-wait-shell { margin: 28px auto; min-height: 0; border-radius: 24px; overflow: hidden; } }
+@media(min-width:1024px) {
+  .qw-estimate-wait-shell { box-sizing: border-box; width: min(960px, calc(100vw - 64px)); padding: 22px; border-radius: 28px; box-shadow: 0 18px 48px rgba(11,31,59,.12), inset 0 0 0 1px rgba(11,31,59,.06); }
+  .qw-estimate-wait header { min-height: 64px; padding-inline: 30px; border-radius: 18px; }
+  .qw-estimate-wait-card { box-sizing: border-box; width: min(680px, 100%); margin: 24px auto; padding-inline: 28px; }
+}

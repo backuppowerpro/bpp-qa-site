@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- MVP freeze 2026-07-16: the quote walk is the only public page. The old
-     marketing/blog/city URLs are frozen off the site; listing them here would
-     just advertise 404s. Restore the full sitemap from git when the site
-     re-expands (git revert of the freeze commit). -->
+<!-- The canonical quote entry and public guide download are acquisition destinations.
+     Customer documents, saved requests, utility pages and frozen marketing
+     routes are not sitemap entries. Omit lastmod until a publication timestamp
+     is verified, rather than presenting a private edit as a live update. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://qa.backuppowerpro.com/walk-v2/</loc>
-    <lastmod>2026-07-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://qa.backuppowerpro.com/generator-guide/</loc>
   </url>
 </urlset>

@@ -1,68 +1,160 @@
+# Search exclusion supplements existing token and operator authorization.
+
 /proposal.html
   Content-Security-Policy: frame-ancestors 'none'
   X-Frame-Options: DENY
+  X-Robots-Tag: noindex, nofollow
 
 /proposal
   Content-Security-Policy: frame-ancestors 'none'
   X-Frame-Options: DENY
+  X-Robots-Tag: noindex, nofollow
 
 /proposal-customer-mvp.html
   Content-Security-Policy: frame-ancestors 'none'
   X-Frame-Options: DENY
+  X-Robots-Tag: noindex, nofollow
 
 /proposal-customer-mvp
   Content-Security-Policy: frame-ancestors 'none'
   X-Frame-Options: DENY
+  X-Robots-Tag: noindex, nofollow
 
 /proposal-comp.html
   Content-Security-Policy: frame-ancestors 'none'
   X-Frame-Options: DENY
+  X-Robots-Tag: noindex, nofollow
 
 /proposal-comp
   Content-Security-Policy: frame-ancestors 'none'
   X-Frame-Options: DENY
+  X-Robots-Tag: noindex, nofollow
 
 /invoice.html
   Content-Security-Policy: frame-ancestors 'none'
   X-Frame-Options: DENY
+  X-Robots-Tag: noindex, nofollow
 
 /invoice
   Content-Security-Policy: frame-ancestors 'none'
   X-Frame-Options: DENY
+  X-Robots-Tag: noindex, nofollow
 
 /invoice-v4.html
   Content-Security-Policy: frame-ancestors 'none'
   X-Frame-Options: DENY
+  X-Robots-Tag: noindex, nofollow
 
 /invoice-v4
   Content-Security-Policy: frame-ancestors 'none'
   X-Frame-Options: DENY
+  X-Robots-Tag: noindex, nofollow
 
 /invoice-comp.html
   Content-Security-Policy: frame-ancestors 'none'
   X-Frame-Options: DENY
+  X-Robots-Tag: noindex, nofollow
 
 /invoice-comp
   Content-Security-Policy: frame-ancestors 'none'
   X-Frame-Options: DENY
+  X-Robots-Tag: noindex, nofollow
 
 /receipt.html
   Content-Security-Policy: frame-ancestors 'none'
   X-Frame-Options: DENY
+  X-Robots-Tag: noindex, nofollow
 
 /receipt
   Content-Security-Policy: frame-ancestors 'none'
   X-Frame-Options: DENY
+  X-Robots-Tag: noindex, nofollow
 
 /w/*
   Content-Security-Policy: frame-ancestors 'none'
   X-Frame-Options: DENY
   Referrer-Policy: no-referrer
+  X-Robots-Tag: noindex, nofollow
 
 /walk-v2/*
   Content-Security-Policy: frame-ancestors 'none'
   X-Frame-Options: DENY
   Referrer-Policy: no-referrer
+
+/pre-read
+  X-Robots-Tag: noindex, nofollow
+
+/pre-read.html
+  X-Robots-Tag: noindex, nofollow
+
+/sub-job/*
+  X-Robots-Tag: noindex, nofollow
+
+/subs/apply/*
+  X-Robots-Tag: noindex, nofollow
+
+/unsubscribe/*
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/connection.html
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/connection
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/distance.html
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/distance
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/generator-needed.html
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/generator-needed
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/incomplete.html
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/incomplete
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/location.html
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/location
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/outlet.html
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/outlet
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/photos-later.html
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/photos-later
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/photos.html
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/photos
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/range.html
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/range
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/thankyou.html
+  X-Robots-Tag: noindex, nofollow
+
+/walk-v2/thankyou
+  X-Robots-Tag: noindex, nofollow
 
 /*
   Content-Security-Policy: default-src 'none'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://hfatblrcwytxvijjhpal.supabase.co/storage/v1/object/sign/; font-src 'self'; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'none'; child-src 'none'; frame-src https://js.stripe.com https://hooks.stripe.com; media-src 'self' blob:; form-action 'self'; frame-ancestors 'none'; sandbox allow-scripts allow-same-origin allow-forms allow-modals allow-downloads

@@ -37,7 +37,8 @@
   // A plain visit starts the next owner test. Explicit return links and
   // in-walk address corrections still belong to their original run.
   var plainLanding = /^\/walk-v2\/(?:index\.html)?$/.test(current.pathname)
-    && !valid(supplied) && !current.searchParams.has('area') && !current.searchParams.has('edit');
+    && !valid(supplied) && !current.searchParams.has('area') && !current.searchParams.has('edit')
+    && current.searchParams.get('estimate') !== 'received';
   try {
     if (plainLanding && sessionStorage.getItem('bpp:owner-test') === '1') store('');
   } catch (_) {}
@@ -47,6 +48,20 @@
   window.__BPP_INVALID_CAPABILITY_ENTRY = current.searchParams.has('t') && !valid(supplied);
 
   window.__BPP_CAPABILITY_ENTRY = Boolean(current.searchParams.has('t') || stored);
+
+  // A return request can share the public entry URL. Exclude that document
+  // from search without changing its credential, storage or navigation.
+  if (window.__BPP_CAPABILITY_ENTRY) {
+    try {
+      var robots = document.querySelector('meta[name="robots"]');
+      if (!robots) {
+        robots = document.createElement('meta');
+        robots.name = 'robots';
+        document.head.appendChild(robots);
+      }
+      robots.content = 'noindex,nofollow';
+    } catch (_) {}
+  }
 
   if (current.searchParams.has('t')) {
     current.searchParams.delete('t');

@@ -8,6 +8,42 @@
 .guided-saved .guided-screen button { min-height: 44px; }
 .guided-saved [hidden] { display: none !important; }
 .guided-saved .guided-screen p { font-size: 16px; line-height: 1.55; }
+.guided-saved .guided-remaining-photos { margin: 12px 0 18px; padding-left: 24px; font-size: 16px; line-height: 1.55; }
+.guided-remaining-photos li + li { margin-top: 10px; }
+.guided-saved .guided-panel-receipt { position: relative; padding: 16px 16px 16px 54px; border: 1px solid #bdd7c9; border-radius: 16px; background: #edf7f0; color: #24513b; }
+.guided-panel-receipt::before { content: '\2713'; position: absolute; left: 16px; top: 18px; font-weight: 800; }
+.guided-saved .guided-remaining-photos { padding: 0; list-style: none; }
+.guided-saved .guided-remaining-photos li { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; padding: 16px; border: 1px solid #ead8b2; border-radius: 16px; background: #fff8ec; }
+.guided-remaining-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: #fff; color: #0b1f3b; }
+.guided-remaining-icon svg { width: 32px; height: 32px; }
+.guided-remaining-photos li > div { min-width: 0; overflow-wrap: anywhere; }
+.guided-remaining-photos strong, .guided-remaining-photos li > div > span { display: block; }
+.guided-remaining-photos strong { color: #0b1f3b; font-family: var(--head, Outfit, sans-serif); }
+.guided-remaining-photos li > div > span { margin-top: 4px; color: #46566b; }
+.guided-review-expectation { color: #46566b; }
+/* A confirmed initial request needs only its receipt and next step. */
+.guided-walk [data-estimate-confirmation][data-confirmation-layout="minimal"] .guided-received-title { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; color: var(--navy, #0b1f3b); font: 700 24px/1.25 var(--head, Outfit, sans-serif); font-size: 24px !important; }
+.guided-walk [data-estimate-confirmation][data-confirmation-layout="minimal"] .guided-received-title:focus { outline: none !important; }
+.guided-received-check { flex: 0 0 28px; display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #fff3c4; color: #946400; font: 700 19px/1 var(--body, Inter, sans-serif); }
+.guided-walk [data-estimate-confirmation][data-confirmation-layout="minimal"] .guided-received-next { margin: 0; color: var(--navy, #0b1f3b); }
+.guided-walk [data-estimate-confirmation][data-confirmation-layout="minimal"] .guided-received-guide { margin: 12px 0 0; color: var(--muted, #46566b); overflow-wrap: anywhere; }
+.guided-walk [data-estimate-confirmation][data-confirmation-layout="minimal"] .guided-received-guide-link { display: inline-flex; align-items: center; min-height: 44px; margin-top: 4px; color: var(--navy, #0b1f3b); text-decoration: underline; text-underline-offset: 3px; }
+.guided-received-guide-link:focus-visible { outline: 3px solid var(--navy, #0b1f3b); outline-offset: 3px; border-radius: 3px; }
+/* Reuse the approved form choice and secondary action inside the receipt. */
+.guided-walk .guided-sms-confirmation { margin-top: 16px; min-width: 0; }
+.guided-walk .guided-sms-confirmation .guided-communication-choices { min-inline-size: 0; margin: 0; padding: 0; border: 0; }
+.guided-walk .guided-sms-confirmation legend { padding: 0; margin: 0 0 2px; font: 600 16px/1.4 var(--head, Outfit, sans-serif); color: var(--navy, #0b1f3b); }
+.guided-walk .guided-sms-confirmation .guided-sms-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; margin-top: 8px; }
+.guided-walk .guided-sms-actions > button { min-height: 44px; max-width: 100%; }
+.guided-walk .guided-sms-actions > .qw-secondary-action { margin: 0 !important; }
+.guided-walk .guided-sms-actions > .qw-secondary-action:disabled { color: #536174 !important; text-decoration: none !important; cursor: default; }
+.guided-walk .guided-sms-actions > .guided-link { padding: 8px 0; font: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.guided-walk .guided-sms-actions > .guided-link:disabled { color: #536174; text-decoration: none; cursor: default; }
+.guided-walk .guided-sms-confirmation .guided-sms-status,
+.guided-walk .guided-sms-confirmation .guided-error { margin: 8px 0 0; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.guided-walk .guided-sms-confirmation :is(button,input,a,[tabindex]):focus-visible { outline: 3px solid #005fcc; outline-offset: 3px; }
+.guided-walk .guided-sms-confirmation .qw-secondary-action:focus-visible { outline: 3px solid #005fcc !important; outline-offset: 3px !important; }
+.guided-walk .guided-sms-confirmation [role]:empty { display: none; }
 .guided-error { color: #a1251b; font-size: 16px; line-height: 1.5; }
 .qw-guided-boot { margin: 40px auto; padding: 24px; max-width: 620px; font: 16px/1.55 Inter, sans-serif; color: #0b1f3b; }
 .qw-guided-boot button, .qw-guided-boot a { display: block; min-height: 44px; padding: 10px 0; color: #0b1f3b; font: inherit; }
@@ -24,6 +60,9 @@
 .guided-helpful summary { cursor: pointer; min-height: 44px; font-size: 16px; line-height: 1.5; }
 .guided-helpful summary strong, .guided-helpful summary span { display: block; }
 .guided-helpful summary span { margin-top: 5px; color: #4d5a6e; }
+.guided-package-summary { color: #243b52; font-size: 17px; line-height: 1.5; }
+.guided-package-details { margin: 12px 0 0; padding: 10px 14px; }
+.guided-optional-photos { margin-top: 22px; }
 .guided-helpful figure { display: grid; grid-template-columns: 88px 1fr; align-items: start; gap: 14px; margin: 20px 0 0; }
 .guided-helpful img { width: 88px; height: 88px; object-fit: contain; border-radius: 8px; background: #fff; }
 .guided-helpful figcaption { font-size: 16px; line-height: 1.5; }
@@ -71,7 +110,15 @@
 .guided-saved .guided-estimate-card .guided-range-basis { margin: 10px 0 0; color: #fff; font-weight: 600; }
 .guided-saved .guided-range-layout .guided-range-caption { margin: 8px 0 0; color: #4d5a6e; font-size: 16px; line-height: 1.45; }
 .guided-saved .guided-estimate-card .guided-range-caption { color: #dbe5f2; }
+.guided-estimate-card .guided-range-price-row { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 8px 12px; align-items: center; }
+.guided-saved .guided-estimate-card .guided-range-price-row .guided-amount,
+.guided-walk [data-screen="contact"] .guided-estimate-card .guided-range-price-row .guided-amount { flex: 0 1 auto; max-width: 100%; font-size: clamp(20px,5.6vw,32px); line-height: 1.2; overflow-wrap: normal; }
+.guided-saved .guided-estimate-card .guided-range-price-row .guided-range-basis { flex: 0 1 auto; min-width: 0; max-width: 100%; width: auto; margin: 0; text-align: left; white-space: normal; font-size: 14px; line-height: 1.5; }
+.guided-saved .guided-estimate-card .guided-range-caption.guided-range-explanation,
+.guided-walk [data-screen="contact"] .guided-estimate-card .guided-range-caption.guided-range-explanation { display: block; margin: 14px 0 0; color: #dbe5f2; font-size: 16px; line-height: 1.5; }
 .guided-saved .guided-estimate-card .guided-range-condition { margin: 16px 0 0; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.2); color: #dbe5f2; }
+.guided-saved .guided-estimate-card .guided-power-guide-teaser { margin: 16px 0 0; color: inherit; font-size: 16px; line-height: 1.5; }
+.guided-estimate-card .guided-power-guide-teaser .guided-link { color: inherit; }
 .guided-saved .guided-range-card h2 { margin: 0; font-size: 22px !important; line-height: 1.25; }
 .guided-saved .guided-range-next > p { margin: 10px 0 0; color: #4d5a6e; }
 .guided-saved .guided-range-next .cta { margin: 18px 0 0; }
@@ -86,6 +133,13 @@
 .guided-range-included .guided-scope-icon { display: grid; place-items: center; color: #0b1f3b; margin: 0; }
 .guided-range-included .guided-scope-icon svg { width: 28px; height: 28px; }
 .guided-saved .guided-range-included .guided-range-guarantee { margin-top: 12px; padding: 16px; grid-template-columns: 60px minmax(0,1fr); gap: 12px; border: 1px solid #f1d591; border-radius: 12px; background: #fff8ec; align-items: start; }
+/* Give included descriptions the full card width on the narrowest screens. */
+@media(max-width:359px) {
+  .guided-saved .guided-range-included.guided-scope-always-visible { padding-inline: 16px; }
+  .guided-saved .guided-package-details .guided-range-guarantee,
+  .guided-saved .guided-scope-always-visible > .guided-scope-row { grid-template-columns: minmax(0,1fr); }
+  .guided-saved .guided-scope-always-visible > .guided-range-guarantee { padding: 16px 8px; }
+}
 .guided-range-utilities { display: flex; flex-direction: column; align-items: center; text-align: center; }
 .guided-range-utilities .guided-save { margin-top: 0; }
 .guided-range-utilities > .guided-link { margin-top: 4px; }
@@ -122,3 +176,7 @@
 /* Reserve a square without clipping the add label when text is enlarged. */
 .guided-photo-gallery .guided-upload-action::before { content: ""; grid-area: 1 / 1; width: 100%; aspect-ratio: 1; pointer-events: none; }
 .guided-saved .guided-photo-gallery .guided-add-label { grid-area: 1 / 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-width: 0; padding: 8px 0; font: inherit; color: inherit; }
+
+/* Standalone saved-request pages share the outlet task-card shape and shadow. */
+.guided-saved .guided-flow.form-card{border-radius:20px;background:#fff;box-shadow:0 18px 44px rgba(11,31,59,.14),0 4px 12px rgba(11,31,59,.06),inset 0 0 0 1px rgba(11,31,59,.07)}
+@media(min-width:1024px){.guided-saved .guided-flow.form-card{border-radius:22px;padding:28px}}

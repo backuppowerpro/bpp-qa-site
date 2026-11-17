@@ -1,0 +1,94 @@
+@font-face{font-family:Inter;src:url('assets/Inter.ttf') format('truetype');font-display:swap}@font-face{font-family:Inter;src:url('assets/InterSemi.ttf') format('truetype');font-weight:600 800;font-display:swap}@font-face{font-family:Outfit;src:url('assets/Outfit.ttf') format('truetype');font-display:swap}@font-face{font-family:Outfit;src:url('assets/OutfitBold.ttf') format('truetype');font-weight:700;font-display:swap}*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}body{margin:0;background:#eef1f6;color:#0b1f3b;font-family:Inter,Arial,sans-serif;line-height:1.6}a{color:inherit}button,a,input{touch-action:manipulation}a:focus-visible,summary:focus-visible{outline:3px solid #1a6fc4;outline-offset:4px;border-radius:4px}.skip{position:absolute;left:-9999px}.skip:focus{left:16px;top:8px;background:white;padding:8px;z-index:5}.masthead{background:#0b1f3b;color:white}.nav{max-width:1040px;min-height:80px;margin:auto;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px}.brand img{width:190px;max-width:100%;height:auto;display:block}.site-link{font-size:14px;text-decoration:none;border-bottom:1px solid #67788f;padding:6px 0}.site-link:hover{border-color:#ffba00}.wrap{max-width:1040px;margin:auto;padding:0 28px}.intro{padding:50px 0 34px;max-width:800px}.eyebrow{font-size:12px;letter-spacing:1.8px;font-weight:600;text-transform:uppercase;color:#52637b;margin:0 0 10px}h1,h2,h3{font-family:Outfit,Arial,sans-serif;line-height:1.12}h1{font-size:clamp(32px,5.4vw,52px);font-weight:700;letter-spacing:-.9px;max-width:720px;margin:0 0 18px}p{margin:0 0 18px}.lede{font-size:17px;max-width:650px;color:#42546c}.downloads{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0 12px}.button{display:inline-flex;flex-direction:column;justify-content:center;align-items:flex-start;min-height:64px;border:1px solid #bdc7d4;border-radius:10px;padding:11px 20px;text-decoration:none;background:white;font-size:15px;font-weight:600;line-height:1.4;transition:transform .12s,box-shadow .12s}.button small{font-size:12px;font-weight:400;color:#52637b}.button.primary{background:#ffba00;border-color:#ffba00}.button.primary small{color:#4b3c10}.button:hover{box-shadow:0 4px 12px #0b1f3b16;transform:translateY(-1px)}.micro{font-size:13px;color:#52637b}.readbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:20px 0;border-top:1px solid #cbd4e0;border-bottom:1px solid #cbd4e0;margin-bottom:24px}.readbar h2{font-size:23px;margin:0}.readbar a{font-size:14px}.contents{margin-bottom:26px;max-width:820px}.contents summary{cursor:pointer;font-weight:600;padding:8px 0}.contents ol{columns:2;column-gap:35px;margin:8px 0;padding-left:22px}.contents li{padding:6px 0;break-inside:avoid;font-size:14px}.reader{max-width:820px;margin:auto}.guide-page{margin:0 0 30px;scroll-margin-top:20px}.page-top{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#52637b;letter-spacing:1px;margin-bottom:9px}.page-top a{font-size:12px;letter-spacing:0;padding:5px 0}.page-paper{position:relative;box-shadow:0 5px 24px #0b1f3b15;background:white}.page-paper img{display:block;width:100%;height:auto}.page-link{position:absolute;border-radius:2px}.page-link:hover{background:#ffba0030;box-shadow:0 0 0 1px #b28400}.page-link:focus-visible{background:#ffba0066;outline:3px solid #155f9f;outline-offset:0}.cta{max-width:820px;margin:48px auto 0;background:#0b1f3b;color:white;border-radius:18px;padding:34px}.cta .eyebrow{color:#ffcc39}.cta h2{font-size:32px;max-width:600px;margin:0 0 15px}.cta p{max-width:620px;color:#dbe3ef;font-size:16px}.cta .button{align-items:center;min-height:52px;color:#0b1f3b}.footer{max-width:1040px;margin:auto;padding:32px 28px;display:flex;gap:18px;justify-content:space-between;flex-wrap:wrap;color:#52637b;font-size:12px}.footer div{display:flex;gap:18px}.text-page{max-width:820px;margin:32px auto;background:white;border:1px solid #d2dbe6;border-radius:12px;padding:32px;scroll-margin-top:20px}.text-page h2{font-size:30px}.text-page h3{font-size:22px;margin:26px 0 10px}.text-page p{font-size:17px}.text-page .figure-description{font-size:14px;color:#52637b;font-style:italic}.text-page table{width:100%;border-collapse:collapse;font-size:14px}.text-page th,.text-page td{text-align:left;padding:10px 7px;border-bottom:1px solid #d5dce5}.text-page th{font-weight:600}.text-page .source-link{font-size:14px}.text-page ul{padding-left:22px}.review-note{position:fixed;bottom:10px;right:10px;background:#fff;border:1px solid #a7b5c8;font-size:11px;padding:5px 9px;box-shadow:0 3px 9px #0001;border-radius:5px}@media(max-width:600px){.nav{min-height:68px;padding:17px 20px}.brand img{width:160px}.site-link{font-size:12px}.wrap{padding:0 16px}.intro{padding:32px 4px 26px}h1{letter-spacing:-.5px}.lede{font-size:16px}.downloads{gap:9px}.button{flex:1 1 150px;padding:12px 14px;font-size:14px;min-height:70px}.contents ol{columns:1}.page-top{padding:0 4px}.cta{padding:26px 23px;margin-top:30px}.cta h2{font-size:28px}.cta .button{display:inline-flex;min-width:190px}.footer{padding:26px 20px}.readbar{gap:10px}.text-page{padding:23px 17px}.text-page p{font-size:16px}.text-page table{font-size:12px}.text-page th,.text-page td{padding:8px 3px}.page-link{min-width:0}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.button{transition:none}}@media print{.masthead,.intro,.readbar,.contents,.cta,.footer,.page-top,.review-note{display:none}.wrap,.reader{max-width:none;padding:0}.guide-page{margin:0;break-after:page}.page-paper{box-shadow:none}.page-link{display:none}.text-page{border:none;margin:0;padding:0;break-after:page}body{background:white}}
+
+.link-0-0{left:28.2680%;top:94.9495%;width:13.9355%;height:1.5152%}.link-0-1{left:8.4967%;top:61.4899%;width:82.8431%;height:3.2828%}.link-0-2{left:8.4967%;top:64.8990%;width:82.8431%;height:3.2828%}.link-0-3{left:8.4967%;top:68.3081%;width:82.8431%;height:3.2828%}.link-0-4{left:8.4967%;top:71.7172%;width:82.8431%;height:3.2828%}.link-0-5{left:8.4967%;top:75.1263%;width:82.8431%;height:3.2828%}.link-0-6{left:8.4967%;top:78.5354%;width:82.8431%;height:3.2828%}.link-0-7{left:8.4967%;top:81.9444%;width:82.8431%;height:3.2828%}.link-0-8{left:8.4967%;top:85.3535%;width:82.8431%;height:3.2828%}.link-1-0{left:28.2680%;top:94.9495%;width:13.9355%;height:1.5152%}.link-1-1{left:5.7190%;top:92.1717%;width:18.8478%;height:1.7677%}.link-1-2{left:27.0177%;top:92.1717%;width:11.2423%;height:1.7677%}.link-1-3{left:40.7110%;top:92.1717%;width:15.3685%;height:1.7677%}.link-2-0{left:28.2680%;top:94.9495%;width:13.9355%;height:1.5152%}.link-2-1{left:5.7190%;top:92.1717%;width:15.3552%;height:1.7677%}.link-2-2{left:23.5251%;top:92.1717%;width:17.9336%;height:1.7677%}.link-3-0{left:28.2680%;top:94.9495%;width:13.9355%;height:1.5152%}.link-3-1{left:5.7190%;top:92.1717%;width:15.6943%;height:1.7677%}.link-3-2{left:23.8642%;top:92.1717%;width:11.6994%;height:1.7677%}.link-4-0{left:28.2680%;top:94.9495%;width:13.9355%;height:1.5152%}.link-4-1{left:5.7190%;top:92.1717%;width:17.5418%;height:1.7677%}.link-4-2{left:25.7118%;top:92.1717%;width:11.1852%;height:1.7677%}.link-4-3{left:39.3479%;top:92.1717%;width:15.2432%;height:1.7677%}.link-5-0{left:28.2680%;top:94.9495%;width:13.9355%;height:1.5152%}.link-5-1{left:5.7190%;top:92.1717%;width:18.3209%;height:1.7677%}.link-5-2{left:26.4909%;top:92.1717%;width:15.9065%;height:1.7677%}.link-6-0{left:28.2680%;top:94.9495%;width:13.9355%;height:1.5152%}.link-6-1{left:7.1895%;top:37.1212%;width:16.9935%;height:2.7778%}.link-6-2{left:25.3268%;top:24.1162%;width:65.3595%;height:3.5354%}.link-6-3{left:7.1895%;top:58.7121%;width:16.9935%;height:2.7778%}.link-6-4{left:25.3268%;top:45.7071%;width:65.3595%;height:3.5354%}.link-6-5{left:7.1895%;top:80.3030%;width:16.9935%;height:2.7778%}.link-6-6{left:25.3268%;top:67.2980%;width:65.3595%;height:3.5354%}.link-6-7{left:5.7190%;top:92.1717%;width:19.6120%;height:1.7677%}.link-6-8{left:27.7819%;top:92.1717%;width:7.6273%;height:1.7677%}.link-6-9{left:37.8602%;top:92.1717%;width:6.1759%;height:1.7677%}.link-7-0{left:28.2680%;top:94.9495%;width:13.9355%;height:1.5152%}.link-7-1{left:5.7190%;top:92.1717%;width:17.4491%;height:1.7677%}.link-7-2{left:25.6190%;top:92.1717%;width:22.2365%;height:1.7677%}.link-8-0{left:28.2680%;top:94.9495%;width:13.9355%;height:1.5152%}.link-8-1{left:6.8627%;top:35.6061%;width:39.2157%;height:2.7778%}.link-8-2{left:52.2876%;top:85.3535%;width:39.2157%;height:4.5455%}
+/* Reuse approved readiness landing rail, owner card, logo and pill CTA. */
+body{background:#fff;color:#0b1f3b}
+.nav,.wrap,.footer{width:min(1180px,calc(100% - 80px));max-width:none;margin-inline:auto;padding-inline:0}
+.nav{min-height:0;padding-block:18px}
+.brand img{width:300px;height:auto}
+.intro{margin:36px 0 28px;padding:28px;border-radius:16px;background:#f5f8fc}
+h1{font-family:Outfit,sans-serif;font-size:40px;font-weight:700;line-height:1.12;letter-spacing:-.025em;margin:0}
+.lede{font-size:16px;line-height:1.65;max-width:620px;margin:16px 0 20px}
+.downloads{gap:12px;display:flex;flex-wrap:wrap}
+.button{font-family:Outfit,sans-serif;font-size:18px;font-weight:700;line-height:1.25;min-height:54px;border-radius:999px;padding:15px 23px;display:inline-flex;align-items:center;justify-content:center;flex:none;text-decoration:none}
+.button.primary{background:#ffba00;border-color:#ffba00;color:#0b1f3b}
+.button:not(.primary){background:white;border:1px solid #dfe5ed;color:#0b1f3b}
+.button:hover{background:#fff4cc}
+.button.primary:hover{background:#ffc31f}
+.micro{font-size:12px;line-height:1.5;color:#4d5a6e;margin:12px 0 0}
+.readbar{border:0;margin:0 auto 8px;padding:0;max-width:820px;justify-content:flex-end}
+.readbar a{font-size:13px;min-height:44px;display:inline-flex;align-items:center}
+.contents{max-width:820px;margin:0 auto 18px}
+.contents summary{padding:10px 0;min-height:44px;font-size:14px}
+.reader{max-width:820px}
+.page-top{margin-bottom:8px}
+.page-top a{min-height:44px;display:inline-flex;align-items:center}
+.page-paper{box-shadow:0 2px 8px #0b1f3b12}
+.cta{max-width:none;margin:36px 0 0;border-radius:16px;padding:28px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.cta h2{font-size:28px;line-height:1.2;margin:0}
+.cta p{font-size:16px;line-height:1.6;margin:8px 0 0}
+.cta .button{white-space:nowrap;min-height:54px}
+.footer{padding-block:20px;font-size:12px;border-top:1px solid #dfe5ed;margin-top:28px}
+.footer a{min-height:44px;display:inline-flex;align-items:center}
+.text-page{border-color:#dfe5ed;border-radius:16px}
+@media(max-width:900px){
+ .nav,.wrap,.footer{width:calc(100% - 48px)}
+ .nav{padding:18px 0 16px}
+ .brand img{width:225px}
+ .intro{margin:24px 0 16px;padding:23px}
+ h1{font-size:clamp(24px,6.4vw,31px);line-height:1.18}
+ .lede{margin:14px 0 20px}
+ .button{min-height:54px;font-size:18px}
+ .downloads{flex-direction:column}
+ .downloads .button{width:100%}
+ .cta{display:block;padding:23px}
+ .cta h2{font-size:26px}
+ .cta .button{margin-top:20px;width:100%;min-width:0;white-space:normal}
+ .footer{padding-block:20px}
+}
+@media(max-width:350px){.nav,.wrap,.footer{width:calc(100% - 36px)}.intro{padding:20px}.button{font-size:17px;padding-inline:13px}.cta{padding:20px}}
+@media print{.intro,.readbar,.contents,.cta,.footer{display:none}.wrap{width:100%;margin:0}}
+.intro{max-width:none}
+/* Owner refinement: top download card shares the guide's reading width. */
+.intro{max-width:820px;margin-inline:auto}
+
+/* Align the guide header with the download card and PDF. */
+.nav{max-width:820px}
+
+/* Shared compact quote-walk frame. PDFs and their link geometry remain unchanged. */
+html{background:#fafbfc}body{width:calc(100% - 32px);max-width:760px;margin:24px auto;background:#fff;border-radius:20px;box-shadow:0 18px 44px #0b1f3b14;padding-top:16px;overflow-x:clip}
+.masthead{margin:0 16px;border-radius:18px}.nav{width:calc(100% - 48px);max-width:none;padding:18px 0;min-height:64px}.brand img{width:230px}.wrap,.footer{width:calc(100% - 48px);max-width:none;padding-inline:0}.intro{max-width:none;margin:24px 0 16px;padding:0;border:0;border-radius:0;background:transparent}h1{font-size:32px;line-height:1.15}.lede{margin:12px 0 16px;line-height:1.55}.downloads{margin:16px 0 10px;gap:10px}.button{font-size:17px;min-height:50px;padding:13px 20px}.micro{margin:8px 0}.readbar{margin:0 0 8px;padding:0;border:0}.contents{margin:0 0 16px}.reader{max-width:none}.guide-page{margin-bottom:24px}.page-top{margin-bottom:5px}.cta{margin:24px 0 0;padding:24px}.cta h2{font-size:28px}.footer{padding-block:24px}.text-page{padding:20px 0;border:0;box-shadow:none;margin:20px 0}
+@media(max-width:600px){body{width:calc(100% - 16px);margin:10px auto;padding-top:10px}.masthead{margin:0 10px;border-radius:14px}.nav,.wrap,.footer{width:calc(100% - 32px)}.brand img{width:210px}.nav{gap:12px;padding-block:16px;flex-wrap:wrap}.site-link{font-size:12px}.intro{margin-top:20px;padding:0}h1{font-size:28px}.button{font-size:15px;flex:1 1 145px;padding:13px 15px}.cta{padding:20px}.cta h2{font-size:25px}}
+@media print{body{width:100%;max-width:none;margin:0;padding:0;box-shadow:none}.wrap{width:100%}}
+
+.intro{padding:20px;background:linear-gradient(120deg,#eef3f9,#fff8e4);border-radius:14px;margin-bottom:12px}.guide-owner{display:flex;align-items:center;gap:12px;margin:14px 0 16px}.guide-owner img{width:56px;height:64px;object-fit:cover;object-position:center 30%;border-radius:9px}.guide-owner strong,.guide-owner span{display:block}.guide-owner strong{font:600 16px/1.4 Outfit,sans-serif}.guide-owner span{font-size:12px;color:#536174}.readbar{padding:0!important;margin:0 0 4px!important;min-height:0!important}.contents{margin-bottom:10px!important}.reader{margin-top:0!important}.intro .lede{font-size:16px}.intro h1{font-size:30px}@media(max-width:600px){.intro{padding:16px}.intro h1{font-size:26px}.intro .button{flex-basis:100%}.intro .micro{font-size:12px}}
+
+.readbar{float:right}.readbar a{min-height:36px}.contents{padding:0!important;margin:0 0 10px!important}.contents summary{padding:8px 0}.reader{clear:both}.guide-page{padding:0!important}.page-top{padding-block:0!important;min-height:0!important}
+
+/* Round only the displayed sheets, preserving PDF downloads. */
+.page-paper{border-radius:14px;overflow:hidden}.page-paper img{border-radius:14px}
+
+/* The opening and first sheet form one continuous visual guide cover. */
+.intro{margin-bottom:0!important;border-radius:14px 14px 0 0!important}.reader #page-1{margin-top:0!important}.reader #page-1 .page-paper,.reader #page-1 .page-paper img{border-radius:0 0 14px 14px!important}.reader #page-1 .page-paper{box-shadow:none}.intro .micro a{white-space:nowrap;text-underline-offset:3px}
+
+/* Meet the rendered cover's top-edge colors without a reset seam. */
+.intro{background:linear-gradient(90deg,rgb(236,242,249),rgb(239,243,246) 25%,rgb(242,245,241) 50%,rgb(245,245,240) 75%,rgb(248,244,236))!important}
+
+/* Separate rounded cover, with related colors rather than a fused surface. */
+.intro{margin-bottom:20px!important;border-radius:14px!important}.reader #page-1 .page-paper,.reader #page-1 .page-paper img{border-radius:14px!important}.reader #page-1 .page-paper{box-shadow:0 5px 24px #0b1f3b15}
+
+/* Accessibility: preserve PDF artwork while providing usable hit targets. */
+.page-link{min-width:24px;min-height:24px}
+.mobile-guide-contents{display:none}
+@media(max-width:600px){
+ #page-1 .page-link{display:none}
+ .mobile-guide-contents{display:block;margin-top:8px;font-size:14px}
+ .mobile-guide-contents summary{min-height:44px;display:list-item;align-content:center;cursor:pointer}
+ .mobile-guide-contents nav{display:grid;gap:4px}
+ .mobile-guide-contents a{display:flex;align-items:center;min-height:44px;padding:8px 12px;border-radius:8px;color:#0b1f3b;background:#f5f8fc}
+}
+
+/* Make the accessible reading option discoverable without adding another button. */
+.intro .text-reading-option{display:flex;align-items:center;justify-content:center;min-height:44px;width:fit-content;margin:4px auto 0;padding:8px 12px;color:#0b1f3b;font-size:15px;font-weight:600;line-height:1.4;text-decoration:underline;text-underline-offset:3px}
+.intro .text-reading-option:focus-visible{outline:3px solid #2d69ad;outline-offset:3px;border-radius:4px}
+.intro .text-reading-option+.micro{margin-top:4px;text-align:center}

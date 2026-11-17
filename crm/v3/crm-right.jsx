@@ -1,10 +1,18 @@
+import { readSmsSendEligibility } from './sms-send-eligibility.js';
+import { useSmsSendEligibility } from '../v3-app/src/sms-send-eligibility.jsx';
+import { crmActionButtonStyle } from '../v3-app/src/crm-action-style.js';
+import { guidedPhotoDraftSummary, guidedReadinessBlockerSummary } from '../v3-app/src/guided-photo-display.js';
+import { photoReviewQueueState } from '../v3-app/src/review-queue.js';
 import { copyProposalWithRecovery, deliverySyncMessage, operatorDocumentPreviewUrl, proposalCopyRecoveryPending, promoteDocumentAfterDelivery, reconcileProposalEmailReceipt } from './money-link-delivery.js';
 import { applyProposalLifecycleReceipt, mutateProposalLifecycle } from './proposal-lifecycle.js';
 import { applyInvoiceLifecycleReceipt, mutateInvoiceLifecycle } from './invoice-lifecycle.js';
 import { deleteDraftMoneyDocument } from './money-document-operation.js';
 import { proposalDeliveryPending, sendManualSmsWithReceipt } from './manual-sms-operation.js';
+import { prepareMessageAttachments, restoreMessageAttachmentDraft, clearMessageAttachmentDraft,
+  retainMessageAttachmentDraft, messageAttachmentDraftIntent, messageAttachmentFiles, messageAttachmentOperatorError, useMessageAttachmentHistory } from './message-attachments.js';
 import { createCrmProposalWithRecovery } from './proposal-create-operation.js';
 import { useGuidedPhotoReview, GuidedProtectedPhoto, guidedPhotoStatus } from '../v3-app/src/guided-photo-review.jsx';
+import { ContactConsentSection, useProjectContactRead } from '../v3-app/src/contact-consent.jsx';
 
 // crm-right.jsx - Right panel: contact detail, 5 fully-featured tabs.
 // Consumes canonical DB-shape arrays directly. Each tab filters by contact_id inline.
@@ -1086,18 +1094,32 @@ function qwv2OperatorText(value) {
   return String(value).replace(/_/g, ' ').trim();
 }
 
+function qwv2OperatorDate(value) {
+  if (!value || !Number.isFinite(Date.parse(value))) return 'Not recorded';
+  return `${formatDate(value, { month:'short', day:'numeric', year:'numeric' })}, ${formatTime(value)}`;
+}
+
 function qwv2ObjectLine(value, keys) {
   if (!value || typeof value !== 'object') return '';
   return keys.map(key => qwv2OperatorText(value[key])).filter(Boolean).join(' · ');
 }
 
-function QuoteWalkOperatorCard({ contact, receipt, bumpData }) {
+function QuoteWalkOperatorCard({ contact, receipt, bumpData, onOpenTab }) {
   const projection = window.CRM?.quoteWalkV2OperatorProjection?.(receipt);
   const display = window.CRM?.quoteWalkV2OperatorDisplay?.(projection);
   const [claiming, setClaiming] = React.useState(false);
   const [claimError, setClaimError] = React.useState('');
   const claimInFlightRef = React.useRef(false);
   const review = useGuidedPhotoReview(contact, receipt, bumpData);
+  const mediaName = id => {
+    const mime = projection?.media?.find(item => item.id === id)?.mime_type;
+    return typeof mime === 'string' && mime.startsWith('image/') ? 'photo'
+      : typeof mime === 'string' && mime.startsWith('video/') ? 'video' : 'media';
+  };
+  const initialPhotoVisible = review.packet?.valid && review.packet.initial_photo_evidence?.initial_panel_photo_saved;
+  const initialFeedbackVisible = initialPhotoVisible && review.messageOrigin === 'initial';
+  const draftMediaToShow = review.packet?.valid && (review.packet.newer_photo_draft || !review.packet.latest_submission)
+    ? review.packet.draft_media_ids.filter(id => !initialPhotoVisible || id !== review.packet.initial_photo_evidence.initial_panel_photo_media_id) : [];
   if (!projection || projection.availability !== 'available') return null;
 
   const claim = async () => {
@@ -1138,22 +1160,31 @@ function QuoteWalkOperatorCard({ contact, receipt, bumpData }) {
     <InfoSection title="Quote Walk">
       {review.packet && <>
         <InfoLineRow label="Photo review" value={<span>{guidedPhotoStatus(review.packet)}</span>} />
+        {initialPhotoVisible && <>
+          <InfoLineRow allowFocusRing label="Initial panel photo" value={<GuidedProtectedPhoto contactId={contact.id}
+            mediaId={review.packet.initial_photo_evidence.initial_panel_photo_media_id} label="Open initial panel photo" />} />
+          {review.message && initialFeedbackVisible && <InfoLineRow label="Review result" value={<span role="status" aria-live="polite">{review.message}</span>} />}
+          {review.initialIntent && <InfoLineRow stackOnPhone label="Key’s photo decision" value={<span>Inspect this image before marking it sufficient. Other quote requirements still apply.</span>}
+            actions={<GoldActionBtn disabled={review.ineligible} ariaDisabled={review.busy} onClick={review.reviewInitial}>{review.busy ? 'Saving...' : 'Initial photo is sufficient'}</GoldActionBtn>} />}
+          {!review.packet.can_continue && <InfoLineRow stackOnPhone label="Clarification" value={<span>Open the existing conversation to write a specific request.</span>}
+            actions={<GoldActionBtn secondary disabled={review.disabled} onClick={() => onOpenTab?.('messages')}>Open conversation for clarification</GoldActionBtn>} />}
+        </>}
         {(review.packet.valid ? review.packet.latest_submission?.media_ids || [] : []).map((id, index) => (
-          <InfoLineRow key={'submitted-' + id} label={'Submitted photo ' + (index + 1)}
-            value={<GuidedProtectedPhoto contactId={contact.id} mediaId={id} label={'Open submitted photo ' + (index + 1)} />} />
+          <InfoLineRow allowFocusRing key={'submitted-' + id} label={'Submitted ' + mediaName(id) + ' ' + (index + 1)}
+            value={<GuidedProtectedPhoto contactId={contact.id} mediaId={id} label={'Open submitted ' + mediaName(id) + ' ' + (index + 1)} />} />
         ))}
-        <InfoLineRow label="Uploaded draft" value={`${review.packet.draft_media_ids?.length || 0} images, ${review.packet.pending_uploads?.length || 0} pending uploads${review.packet.newer_photo_draft ? '. Newer changes have not been submitted.' : ''}`} />
-        {review.packet.valid && review.packet.newer_photo_draft && review.packet.draft_media_ids.map((id, index) => (
-          <InfoLineRow key={'draft-' + id} label={'Unsubmitted draft ' + (index + 1)}
-            value={<GuidedProtectedPhoto contactId={contact.id} mediaId={id} label={'Open draft photo ' + (index + 1)} />} />
+        <InfoLineRow label="Uploaded draft" value={guidedPhotoDraftSummary(review.packet, projection.media)} />
+        {draftMediaToShow.map((id, index) => (
+          <InfoLineRow allowFocusRing key={'draft-' + id} label={'Unsubmitted draft ' + (index + 1)}
+            value={<GuidedProtectedPhoto contactId={contact.id} mediaId={id} label={'Open draft ' + mediaName(id) + ' ' + (index + 1)} />} />
         ))}
         {review.packet.current_correction && <InfoLineRow label="Requested correction" value={<span>{review.packet.current_correction.request_text}</span>} />}
         {review.packet.valid && (review.packet.manual_review?.attachment_ids || []).map((id, index) => (
-          <InfoLineRow key={'reviewed-text-' + id} label={'Reviewed text photo ' + (index + 1)} value={
+          <InfoLineRow allowFocusRing key={'reviewed-text-' + id} label={'Reviewed text photo ' + (index + 1)} value={
             <GuidedProtectedPhoto contactId={contact.id} mediaId={id} textPhoto label={'Open reviewed text photo ' + (index + 1)} />} />
         ))}
         {review.packet.current_acceptance_id && !review.packet.manual_review_current && review.packet.manual_photo_candidates.map((photo, index) => (
-          <InfoLineRow key={'text-' + photo.attachment_id} label={'Received text photo ' + (index + 1)} value={<>
+          <InfoLineRow allowFocusRing key={'text-' + photo.attachment_id} label={'Received text photo ' + (index + 1)} value={<>
             <label style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44 }}><input type="checkbox" checked={review.selected.includes(photo.attachment_id)} disabled={review.busy}
               onChange={() => review.togglePhoto(photo.attachment_id)} /> Reviewed this image </label>
             <GuidedProtectedPhoto contactId={contact.id} mediaId={photo.attachment_id} textPhoto label={'Open texted photo ' + (index + 1)} />
@@ -1171,7 +1202,7 @@ function QuoteWalkOperatorCard({ contact, receipt, bumpData }) {
             disabled={review.busy} value={review.correction} onChange={event => review.setCorrection(event.target.value)} />}
             actions={<GoldActionBtn disabled={review.disabled || !review.correction.trim()} onClick={() => review.decide('needs_correction')}>Save correction request</GoldActionBtn>} />
         </>}
-        {review.message && <InfoLineRow label="Review result" value={<span>{review.message}</span>} />}
+        {review.message && !initialFeedbackVisible && <InfoLineRow label="Review result" value={<span role="status" aria-live="polite">{review.message}</span>} />}
       </>}
       <InfoLineRow
         label="Current step"
@@ -1181,13 +1212,13 @@ function QuoteWalkOperatorCard({ contact, receipt, bumpData }) {
           qwv2OperatorText(projection.journey.currentStep),
         ].filter(Boolean).join(' · ') || 'Quote Walk'}
       />
-      <InfoLineRow label="Last activity" value={qwv2OperatorText(projection.journey.lastActivityAt) || 'Not recorded'} />
+      <InfoLineRow label="Last activity" value={Number.isFinite(Date.parse(projection.journey.lastActivityAt))
+        ? <time dateTime={projection.journey.lastActivityAt}>{qwv2OperatorDate(projection.journey.lastActivityAt)}</time>
+        : 'Not recorded'} />
       {!projection.history && <InfoLineRow label="Next action" value={qwv2OperatorText(display?.nextAction) || 'None'} />}
       <InfoLineRow
         label="Readiness blockers"
-        value={projection.blockers.all.length
-          ? projection.blockers.all.map(qwv2OperatorText).join(', ')
-          : 'None'}
+        value={<span>{guidedReadinessBlockerSummary(review.packet, projection.blockers.all, qwv2OperatorText)}</span>}
       />
       <InfoLineRow
         label="Observed connections"
@@ -1217,7 +1248,7 @@ function QuoteWalkOperatorCard({ contact, receipt, bumpData }) {
       {projection.media.map((media, index) => (
         <InfoLineRow
           key={'qwv2-media-' + (media.id || index)}
-          label={'Photo ' + (index + 1)}
+          label={mediaName(media.id).replace(/^./, letter => letter.toUpperCase()) + ' ' + (index + 1)}
           value={qwv2ObjectLine(media, ['kind', 'panel_id', 'status', 'provenance']) || 'Recorded'}
         />
       ))}
@@ -1245,6 +1276,7 @@ function QuoteWalkOperatorCard({ contact, receipt, bumpData }) {
 
 // ── Contact Overview ──────────────────────────────────────────────
 function ContactOverview({ contact, events, permits = [], proposals = [], materials = [], invoices = [], messages = [], calls = [], bumpData, onOpenTab }) {
+  const projectContactRead = useProjectContactRead(contact.id);
   const [note, setNote] = React.useState(contact.notes || '');
   const [noteSaving, setNoteSaving] = React.useState(false);
   const [noteSaved, setNoteSaved] = React.useState(false);
@@ -1403,6 +1435,10 @@ function ContactOverview({ contact, events, permits = [], proposals = [], materi
     : null;
   const showNextStepCard = nextStep && nextStep.state !== 'front_half';
 
+  const quoteWalkReceipt = window.CRM?.quoteWalkV2Receipts?.[String(contact.id)];
+  const reviewQueueState = photoReviewQueueState(contact, quoteWalkReceipt, proposals);
+  const reviewCardRef = React.useRef(null);
+
   // Hero NEXT signpost (slice 1, Comp v2): the single next action surfaced on the
   // recognition hero so the one thing to do stays visible at the top even though
   // the full DO NEXT card now sits below Contact. Reuses the SAME nextStep engine
@@ -1411,6 +1447,13 @@ function ContactOverview({ contact, events, permits = [], proposals = [], materi
   // prefers a needs-reply nudge (NEVER for a do-not-contact contact, TCPA; archived
   // front-half has no next action) over the bare stage verb.
   const heroNext = React.useMemo(() => {
+    if (reviewQueueState) return 'Review photos';
+    if (nextStep?.state === 'front_half' && window.CRM?.quoteWalkV2ReceiptMode?.(quoteWalkReceipt) === 'unavailable'
+        && (!!preRead?.id || !!quoteWalkReceipt)) return 'Quote Walk details unavailable';
+    if (nextStep?.state === 'front_half' && window.CRM?.quoteWalkV2ReceiptMode?.(quoteWalkReceipt) === 'v2'
+        && window.CRM?.quoteWalkV2ReceiptVerdict?.(quoteWalkReceipt)?.ready !== true) {
+      return quoteWalkReceipt.guided_photo_packet?.can_continue ? 'Check remaining quote requirements' : 'Review Quote Walk details';
+    }
     if (nextStep && nextStep.state === 'complete') return null;
     if (nextStep && nextStep.state !== 'front_half') {
       if (nextStep.state === 'permit_blocked' || nextStep.state === 'permit_rejected') return 'Resolve permit blocker';
@@ -1431,13 +1474,12 @@ function ContactOverview({ contact, events, permits = [], proposals = [], materi
     }
     const v = (typeof stageActionVerbFor === 'function') ? stageActionVerbFor(contact.stage) : null;
     return (v && v !== 'Move forward') ? v : null;
-  }, [contact, nextStep, messages]);
+  }, [contact, nextStep, messages, reviewQueueState, quoteWalkReceipt, preRead]);
 
   // Quote Desk (2026-07-13): when a walk / pre-read is ready and there is no
   // live proposal, promote firm-quote SMS + one-tap draft proposal into DO NEXT
   // instead of the bare "Send proposal" stage verb (which only opened the
   // empty creator). Walk showed a range; Key still sends the firm number.
-  const quoteWalkReceipt = window.CRM?.quoteWalkV2Receipts?.[String(contact.id)];
   const quoteWalkMode = window.CRM?.quoteWalkV2ReceiptMode?.(quoteWalkReceipt) || 'unavailable';
   const legacyQuoteReady = quoteWalkMode === 'legacy'
     && typeof window.CRM?.isQuoteDeskReady === 'function'
@@ -1451,7 +1493,9 @@ function ContactOverview({ contact, events, permits = [], proposals = [], materi
     && !contact.archived
     && quoteDeskState?.actionable
   );
-  const frontHalfVerb = (!showQuoteDesk && nextStep && nextStep.state === 'front_half' && !contact.archived && typeof stageActionVerbFor === 'function')
+  const blockFrontHalfStageAction = quoteWalkMode === 'v2'
+    || (quoteWalkMode === 'unavailable' && (!!preRead?.id || !!quoteWalkReceipt));
+  const frontHalfVerb = (!showQuoteDesk && !reviewQueueState && !blockFrontHalfStageAction && nextStep && nextStep.state === 'front_half' && !contact.archived && typeof stageActionVerbFor === 'function')
     ? stageActionVerbFor(contact.stage) : null;
   const frontHalfPrimary = !!(frontHalfVerb && frontHalfVerb !== 'Move forward');
 
@@ -1486,7 +1530,7 @@ function ContactOverview({ contact, events, permits = [], proposals = [], materi
   const KNOW_CHIP = { display:'inline-flex', alignItems:'center', padding:'6px 11px', background:'#f7f8fa', border:'1px solid #eef0f4', borderRadius:100, fontSize:13, fontWeight:600, color:NAVY };
 
   return (
-    <div style={{ flex:1, overflowY:'auto', minHeight:0, padding:'0 16px var(--tabbar-clear, calc(env(safe-area-inset-bottom, 0px) + 92px))' }}>
+    <div style={{ flex:1, overflowY:'auto', minHeight:0, padding:'0 16px calc(env(safe-area-inset-bottom, 0px) + 100px)' }}>
       {/* 1. HERO , who + where, the 2-second recognition. */}
       <ContactHero contact={contact} proposals={proposals} nextItem={heroNext} />
 
@@ -1535,6 +1579,8 @@ function ContactOverview({ contact, events, permits = [], proposals = [], materi
           the two can never diverge. Navy, NOT gold (it navigates/advances, it does not
           commit money , Comp R1 + one-gold-per-screen). The chevron signifies the tap.
           Suppressed when Quote Desk owns this contact. */}
+      {reviewQueueState && <button type="button" onClick={() => reviewCardRef.current?.scrollIntoView({ block:'start' })}
+        style={{ marginTop:12, width:'100%', minHeight:48, padding:'13px 15px', background:NAVY, color:'#fff', border:0, borderRadius:12, fontFamily:'inherit', fontSize:15, fontWeight:700, textAlign:'left', cursor:'pointer' }}>Review photos</button>}
       {frontHalfPrimary && (
         <button
           onClick={() => performContactStageAction(contact, { onOpenTab, bumpData })}
@@ -1596,7 +1642,7 @@ function ContactOverview({ contact, events, permits = [], proposals = [], materi
         </button>
       )}
       {quoteWalkMode === 'v2' && (
-        <QuoteWalkOperatorCard contact={contact} receipt={quoteWalkReceipt} bumpData={bumpData} />
+        <div ref={reviewCardRef}><QuoteWalkOperatorCard contact={contact} receipt={quoteWalkReceipt} bumpData={bumpData} onOpenTab={onOpenTab} /></div>
       )}
       {/* The old "No install scheduled" pill lived here. Deleted (Key Q10
           2026-06-09): that state is exactly the Next-step card's
@@ -1686,7 +1732,7 @@ function ContactOverview({ contact, events, permits = [], proposals = [], materi
           preserved; only the hero moved up to the top block and the three
           enrichment rows moved into Setup. */}
       <div style={{ fontSize:11, fontWeight:700, color:MUTED, textTransform:'uppercase', letterSpacing:'0.1em', marginTop:16, marginBottom:-4 }}>Contact</div>
-      <ContactInfoSection contact={contact} bumpData={bumpData} onOpenTab={onOpenTab} hideStageCta={showNextStepCard || showQuoteDesk || frontHalfPrimary} />
+      <ContactInfoSection contact={contact} projectContactRead={projectContactRead} bumpData={bumpData} onOpenTab={onOpenTab} hideStageCta={showNextStepCard || showQuoteDesk || frontHalfPrimary || blockFrontHalfStageAction} />
       {/* Install spec + Permits cards only render once a proposal is
           signed. Before that, the contact view stays clean - Inlet/
           Interlock + permit workflow are noise until there's a real
@@ -1741,6 +1787,7 @@ function ContactOverview({ contact, events, permits = [], proposals = [], materi
           {(latestSigned || permits.length > 0) && <div id="permits-anchor"><PermitsCard permits={permits} contact={contact} bumpData={bumpData} /></div>}
         </>
       )}
+      <ContactConsentSection read={projectContactRead} InfoRow={InfoLineRow} navy={NAVY} muted={MUTED} />
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
     </div>
   );
@@ -1771,11 +1818,14 @@ window.MediaCard = MediaCard;
 // the strokes onto the original image at full resolution and returns
 // a PNG blob via onSave. Pointer-events handle mouse/touch/pen alike.
 function PhotoAnnotateModal({ photo, onClose, onSave }) {
+  const media = window.BPPPrivateMedia.useSource(photo.url, photo.contact_id);
   const imgRef = React.useRef(null);
   const canvasRef = React.useRef(null);
   const [strokes, setStrokes] = React.useState([]); // [[{x,y},...]]
   const [drawing, setDrawing] = React.useState(false);
   const [imgLoaded, setImgLoaded] = React.useState(false);
+  const [imageFailed, setImageFailed] = React.useState(false);
+  React.useEffect(() => { setImgLoaded(false); setImageFailed(false); }, [media.url]);
   const [color, setColor] = React.useState('#dc2626');
   const [thickness, setThickness] = React.useState(4);
   const [saving, setSaving] = React.useState(false);
@@ -1865,7 +1915,7 @@ function PhotoAnnotateModal({ photo, onClose, onSave }) {
     setSaving(true);
     try {
       const img = imgRef.current;
-      if (!img) { setSaving(false); return; }
+      if (!img || !media.url || media.failed || !imgLoaded) { setSaving(false); return; }
       const W = img.naturalWidth || img.width;
       const H = img.naturalHeight || img.height;
       const dRect = img.getBoundingClientRect();
@@ -1928,12 +1978,14 @@ function PhotoAnnotateModal({ photo, onClose, onSave }) {
         </div>
         {/* Image + canvas overlay */}
         <div style={{ position:'relative', overflow:'auto', minHeight:0, flex:1, display:'flex', alignItems:'center', justifyContent:'center', background:'#0b1f3b' }}>
+          {(media.failed || imageFailed) && <div role="img" aria-label="Photo unavailable" style={{ color:'#fff', padding:24 }}>Photo unavailable</div>}
           <img
             ref={imgRef}
-            src={photo.url}
+            src={media.url || undefined}
             alt=""
             crossOrigin="anonymous"
             onLoad={() => setImgLoaded(true)}
+            onError={() => { setImgLoaded(false); setImageFailed(true); }}
             style={{ maxWidth:'80vw', maxHeight:'70vh', display:'block', userSelect:'none', pointerEvents:'none' }}
           />
           <canvas
@@ -2222,16 +2274,10 @@ const SMALL_COPY_ICON = (
 //      every InfoLineRow fits cleanly on one line at any width.
 // Apple Contacts / Stripe Dashboard pattern. No more text-pill buttons
 // wrapping below the value with awkward whitespace gaps.
-function GoldActionBtn({ onClick, href, target, children, disabled = false }) {
-  const style = {
-    height:44, padding:'0 14px', borderRadius:8,
-    background: GOLD, color:NAVY, border:'none',
-    fontSize:13, fontWeight:600, fontFamily:'inherit',
-    cursor:'pointer', display:'inline-flex', alignItems:'center', justifyContent:'center', gap:6,
-    textDecoration:'none', whiteSpace:'nowrap',
-  };
+function GoldActionBtn({ onClick, href, target, children, disabled = false, secondary = false, ariaDisabled = false }) {
+  const style = crmActionButtonStyle({ secondary, navy:NAVY, gold:GOLD });
   if (href) return <a href={href} target={target} rel={target ? 'noopener noreferrer' : undefined} style={style}>{children}</a>;
-  return <button onClick={onClick} disabled={disabled} style={style}>{children}</button>;
+  return <button onClick={onClick} disabled={disabled} aria-disabled={ariaDisabled || undefined} style={style}>{children}</button>;
 }
 
 // remake-2: 16px @ 1.8 stroke per the comp's .iact svg spec.
@@ -2293,7 +2339,7 @@ const CopyBtn = ({ onClick }) => <IconActionBtn icon={ICON_COPY} onClick={onClic
 // an install Key can pull the ~10 homes to mail in one tap. Tool auto-runs on ?address=.
 const NeighborsIconBtn = ({ onClick }) => <IconActionBtn icon={ICON_NEIGHBORS} onClick={onClick} ariaLabel="Find neighbors to mail" />;
 
-function InfoLineRow({ label, value, valueColor, mono, actions }) {
+function InfoLineRow({ label, value, valueColor, mono, actions, stackOnPhone = false, allowFocusRing = false }) {
   // CRM remake-2 (approved comp comps/contact-panel-v2.html, the .irow atom):
   // label OVER value. 11px caps #9ca3af label, 15px ink value (JetBrains Mono
   // for numerics via `mono`), min-height 52, hairline navy divider, 44px
@@ -2301,18 +2347,19 @@ function InfoLineRow({ label, value, valueColor, mono, actions }) {
   // the long-address truncation state); JSX values (tag chips, inline
   // editors) keep normal flow so they can wrap.
   const isPlain = typeof value === 'string' || typeof value === 'number';
+  const stacked = stackOnPhone && window.innerWidth < 480;
   return (
-    <div style={{ display:'flex', alignItems:'center', gap:12, padding:'6px 0', borderTop:'1px solid rgba(27,43,75,0.08)', minHeight:52 }}>
+    <div style={{ display:'flex', flexDirection:stacked ? 'column' : 'row', alignItems:stacked ? 'stretch' : 'center', gap:12, padding:'6px 0', borderTop:'1px solid rgba(27,43,75,0.08)', minHeight:52 }}>
       <span style={{ flex:1, minWidth:0 }}>
         <span style={{ display:'block', fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.1em' }}>{label}</span>
         <span style={{
           display:'block', fontSize:15, color: valueColor || NAVY, marginTop:1,
-          whiteSpace: isPlain ? 'nowrap' : 'normal', overflow:'hidden', textOverflow:'ellipsis',
+          whiteSpace: isPlain ? 'nowrap' : 'normal', overflow:allowFocusRing ? 'visible' : 'hidden', textOverflow:'ellipsis',
           ...(mono ? { fontFamily:"'JetBrains Mono', monospace", fontVariantNumeric:'tabular-nums' } : {}),
         }}>{value}</span>
       </span>
       {actions && (
-        <div style={{ display:'inline-flex', gap:6, flexShrink:0, alignItems:'center' }}>
+        <div style={{ display:'inline-flex', gap:6, flexShrink:0, alignItems:'center', ...(stacked ? { alignSelf:'flex-start' } : {}) }}>
           {actions}
         </div>
       )}
@@ -2375,6 +2422,7 @@ function PhotosSection({ contact, bare = false }) {
   // because `.*` doesn't anchor at a host boundary). hostname.endsWith()
   // requires the dot to make `xtwilio.com` not match `twilio.com`.
   const isTrustedMediaUrl = (raw) => {
+    if (window.BPPPrivateMedia?.parse(raw)) return true;
     if (!raw || typeof raw !== 'string') return false;
     try {
       const u = new URL(raw);
@@ -2401,7 +2449,7 @@ function PhotosSection({ contact, bare = false }) {
       .filter(p => p.contact_id === contact.id)
       .filter(p => isTrustedMediaUrl(p.url))
       .map(p => ({
-        id: p.id, url: p.url, path: p.storage_path, uploaded_at: p.uploaded_at,
+        id: p.id, contact_id: p.contact_id, url: p.url, path: p.storage_path, uploaded_at: p.uploaded_at,
         annotated: !!p.annotated, photo_kind: p.photo_kind || 'other',
         uploaded_by: p.uploaded_by || 'key',
       }));
@@ -2409,43 +2457,17 @@ function PhotosSection({ contact, bare = false }) {
   const [uploading, setUploading] = React.useState(false);
   const fileInputRef = React.useRef(null);
 
-  // One-time migration: any leftover bpp_v3_job_photos:{id} localStorage
-  // entries from before the DB cutover get inserted into job_photos so
-  // Key doesn't lose photos he uploaded in the old system. Idempotent
-  // because we delete the localStorage key after upserting + dedupe by
-  // storage_path on the DB side (path is contact+timestamp scoped).
-  React.useEffect(() => {
-    if (!CRM.__db) return;
-    const key = `bpp_v3_job_photos:${contact.id}`;
+  // Historical device-only photos remain readable without inserting old public
+  // URLs into the private-media table. Keep the original cache for owner recovery.
+  const devicePhotos = React.useMemo(() => {
     let legacy;
-    try { legacy = JSON.parse(localStorage.getItem(key) || '[]'); }
-    catch { legacy = []; }
-    if (!Array.isArray(legacy) || legacy.length === 0) return;
-    const rows = legacy
-      .filter(p => p && p.url && isTrustedMediaUrl(p.url))
-      .map(p => ({
-        contact_id: contact.id,
-        url: p.url,
-        storage_path: p.path || null,
-        uploaded_at: p.uploaded_at || new Date().toISOString(),
-        annotated: !!p.annotated,
-        photo_kind: 'other',
-        uploaded_by: 'key',
-      }));
-    if (rows.length === 0) {
-      try { localStorage.removeItem(key); } catch {}
-      return;
-    }
-    (async () => {
-      const { error } = await CRM.__db.from('job_photos').insert(rows);
-      if (!error) {
-        try { localStorage.removeItem(key); } catch {}
-        console.log(`[CRM] migrated ${rows.length} legacy job photos for contact ${contact.id}`);
-      } else {
-        console.warn('[CRM] job photo legacy migration failed:', error.message);
-      }
-    })();
-  }, [contact.id]);
+    try { legacy = JSON.parse(localStorage.getItem(`bpp_v3_job_photos:${contact.id}`) || '[]'); }
+    catch (_) { legacy = []; }
+    if (!Array.isArray(legacy)) return [];
+    const saved = new Set(jobPhotos.map(photo => photo.url));
+    return legacy.filter(photo => photo && isTrustedMediaUrl(photo.url) && !window.BPPPrivateMedia.parse(photo.url) && !saved.has(photo.url))
+      .map((photo, index) => ({ id: 'device:' + index, url: photo.url, uploaded_at: photo.uploaded_at || '', source: 'device' }));
+  }, [contact.id, tick, jobPhotos]);
 
   const smsPhotos = React.useMemo(() => {
     const out = [];
@@ -2466,24 +2488,14 @@ function PhotosSection({ contact, bare = false }) {
     const tagged = [
       ...jobPhotos.map(p => ({ ...p, source: 'job', sent_at: p.uploaded_at })),
       ...smsPhotos,
+      ...devicePhotos.map(photo => ({ ...photo, sent_at: photo.uploaded_at })),
     ];
     return tagged.sort((a,b) => (b.sent_at||'').localeCompare(a.sent_at||'')).slice(0, 48);
-  }, [jobPhotos, smsPhotos]);
+  }, [jobPhotos, smsPhotos, devicePhotos]);
 
   const onPick = () => fileInputRef.current?.click();
   const onFileChange = async (e) => {
-    // ⚠️ KNOWN SURFACE - message-media bucket is fully public (per
-    // F12 of 2026-05-01 security audit). Anyone with the URL can view
-    // forever. Mitigation today: contact-id-scoped paths are UUID-
-    // unguessable, but the URL leaks via Twilio MMS carrier logs and
-    // ends up in message_body for the lifetime of the thread. See
-    // wiki/Operations/Message Media Bucket.md for the migration plan
-    // (private bucket + signed URLs at render time).
-    //
-    // Multi-file: Key picks several install photos at once from his library.
-    // Validate all first, then upload sequentially (the 4-byte random suffix
-    // keeps paths unique even on same-millisecond uploads, same guard as the
-    // sub-photo-upload edge fn). One summary toast at the end.
+    // Upload through the owner-authorized endpoint; durable rows keep private refs.
     const files = Array.from(e.target.files || []);
     e.target.value = '';
     if (files.length === 0) return;
@@ -2497,14 +2509,9 @@ function PhotosSection({ contact, bare = false }) {
     try {
       for (const file of files) {
         try {
-          const safeName = file.name.replace(/[^\w.-]/g, '_').slice(0, 60);
-          const rnd = Array.from(crypto.getRandomValues(new Uint8Array(4))).map(b => b.toString(16).padStart(2, '0')).join('');
-          const path = `crm-job-photos/${contact.id}/${Date.now()}-${rnd}-${safeName}`;
-          const { error: upErr } = await CRM.__db.storage.from('message-media').upload(path, file, { contentType: file.type });
-          if (upErr) throw upErr;
-          const { data: pub } = CRM.__db.storage.from('message-media').getPublicUrl(path);
-          const url = pub?.publicUrl;
-          if (!url) throw new Error('No public URL returned');
+          const uploaded = await uploadCrmMediaRecord(file, contact.id, 'job-photo');
+          const url = uploaded.url;
+          const path = uploaded.path;
           // Insert row to job_photos so realtime fans out to every other
           // device viewing this contact. The realtime handler in
           // crm-data.js refetches the table and the photo appears.
@@ -2536,7 +2543,7 @@ function PhotosSection({ contact, bare = false }) {
     // Confirm first; the blob delete below is permanent, no undo.
     const ok = await window.confirmAction?.({
       title: 'Remove this photo?',
-      body: 'Deletes the photo and its stored file permanently. This cannot be undone.',
+      body: 'Deletes the photo from the CRM permanently. This cannot be undone.',
       confirmLabel: 'Remove',
       destructive: true,
     });
@@ -2545,7 +2552,7 @@ function PhotosSection({ contact, bare = false }) {
     const { error: delErr } = await CRM.__db.from('job_photos').delete().eq('id', id);
     if (delErr) { window.showToast?.(`Remove failed: ${delErr.message}`); return; }
     // Best-effort blob delete so storage doesn't keep paying for it.
-    if (removed.path && CRM.__db.storage) {
+    if (removed.path && !window.BPPPrivateMedia.parse(removed.url) && CRM.__db.storage) {
       try {
         const { error } = await CRM.__db.storage.from('message-media').remove([removed.path]);
         if (error) console.warn('[CRM] photo blob delete failed:', error.message);
@@ -2565,13 +2572,9 @@ function PhotosSection({ contact, bare = false }) {
     if (!annotatedBlob || !CRM.__db) return;
     setUploading(true);
     try {
-      const rnd2 = Array.from(crypto.getRandomValues(new Uint8Array(4))).map(b => b.toString(16).padStart(2, '0')).join('');
-      const path = `crm-job-photos/${contact.id}/${Date.now()}-${rnd2}-annotated.png`;
-      const { error: upErr } = await CRM.__db.storage.from('message-media').upload(path, annotatedBlob, { contentType: 'image/png' });
-      if (upErr) throw upErr;
-      const { data: pub } = CRM.__db.storage.from('message-media').getPublicUrl(path);
-      const url = pub?.publicUrl;
-      if (!url) throw new Error('No public URL');
+      const uploaded = await uploadCrmMediaRecord(annotatedBlob, contact.id, 'annotation', 'image/png');
+      const url = uploaded.url;
+      const path = uploaded.path;
       const { error: insErr } = await CRM.__db.from('job_photos').insert({
         contact_id: contact.id,
         url, storage_path: path,
@@ -2598,16 +2601,16 @@ function PhotosSection({ contact, bare = false }) {
       <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={onFileChange} style={{ display:'none' }} />
       {allPhotos.length === 0 ? (
         <div style={{ fontSize:13, color:MUTED, padding:'4px 0', marginBottom:8 }}>
-          Add job photos here, or send/receive photos in the SMS thread. Note: anyone with the photo URL can view it, don't include sensitive info in filenames.
+          Add job photos here, or send/receive photos in the SMS thread.
         </div>
       ) : (
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(84px, 1fr))', gap:8, marginBottom:10 }}>
           {allPhotos.map(p => (
             <div key={p.id} style={{ position:'relative' }}>
-              <MmsImg url={p.url} title={p.source === 'job' ? 'Job photo (private)' : (p.caption || 'From SMS')} />
+              <MmsImg url={p.url} contactId={contact.id} title={p.source === 'job' ? 'Job photo' : p.source === 'device' ? 'Saved on this device; not synced' : (p.caption || 'From SMS')} />
               {/* Annotate pencil - top-left so the remove × stays
                   visible in its top-right corner without overlap. */}
-              <button onClick={(e) => { e.preventDefault(); setAnnotating(p); }}
+              {p.source !== 'device' && <button onClick={(e) => { e.preventDefault(); setAnnotating(p); }}
                 title="Annotate" aria-label="Annotate photo"
                 style={{
                   position:'absolute', top:0, left:0, width:44, height:44, padding:0,
@@ -2620,6 +2623,7 @@ function PhotosSection({ contact, bare = false }) {
                   lineHeight:1, display:'flex', alignItems:'center', justifyContent:'center',
                 }}>✎</span>
               </button>
+              }
               {p.source === 'job' && (
                 <button onClick={() => removeJobPhoto(p.id)} title="Remove photo" aria-label="Remove photo" style={{
                   position:'absolute', top:0, right:0, width:44, height:44, padding:0,
@@ -2633,11 +2637,11 @@ function PhotosSection({ contact, bare = false }) {
                   }}>×</span>
                 </button>
               )}
-              {p.source === 'sms' && (
-                <span title="From SMS" style={{
+              {(p.source === 'sms' || p.source === 'device') && (
+                <span title={p.source === 'device' ? 'Saved on this device; not synced' : 'From SMS'} style={{
                   position:'absolute', bottom:4, left:4, padding:'1px 5px', borderRadius:4,
                   background:'rgba(11,31,59,0.7)', color:'white', fontSize:12, fontWeight:600,
-                }}>SMS</span>
+                }}>{p.source === 'device' ? 'On this device' : 'SMS'}</span>
               )}
               {/* Sub-uploaded badge: shows installer name on photos a sub
                   uploaded from the /sub/ portal. Lets Key spot at a glance
@@ -2708,7 +2712,7 @@ function PhotosSection({ contact, bare = false }) {
 
 // Wraps ContactInfoRows with a real edit form. Click "Edit" → inline form
 // with name + phone + address fields. Submit → updates contacts table.
-function ContactInfoSection({ contact, bumpData, onOpenTab, hideStageCta }) {
+function ContactInfoSection({ contact, projectContactRead, bumpData, onOpenTab, hideStageCta }) {
   const [editing, setEditing] = React.useState(false);
   // Listen for the overflow menu's "Edit contact" action.
   React.useEffect(() => {
@@ -2825,7 +2829,7 @@ function ContactInfoSection({ contact, bumpData, onOpenTab, hideStageCta }) {
               }}
             >Edit</button>
           </div>
-          <ContactInfoRows contact={contact} bumpData={bumpData} onOpenTab={onOpenTab} hideStageCta={hideStageCta} />
+          <ContactInfoRows contact={contact} projectContactRead={projectContactRead} bumpData={bumpData} onOpenTab={onOpenTab} hideStageCta={hideStageCta} />
         </div>
       </div>
     );
@@ -2951,7 +2955,8 @@ async function performContactStageAction(contact, opts) {
   } finally { _stageActionInFlight.delete(contact.id); }
 }
 
-function ContactInfoRows({ contact, bumpData, onOpenTab, hideStageCta }) {
+function ContactInfoRows({ contact, projectContactRead, bumpData, onOpenTab, hideStageCta }) {
+  const ownedProjectContact = projectContactRead?.contactID === contact.id ? projectContactRead : { data:null };
   const phoneFmt = formatPhone(contact.phone);
   // Show the full address as it was entered. The previous "Street · Jurisdiction"
   // form (e.g. "109 Suzanna Drive · Spartanburg") truncated City/State/ZIP - and
@@ -3085,6 +3090,8 @@ function ContactInfoRows({ contact, bumpData, onOpenTab, hideStageCta }) {
           Add email
         </GhostAddRow>
       )}
+      {ownedProjectContact.data?.project_email && <InfoLineRow label="Project email" value={ownedProjectContact.data.project_email}
+        actions={<CopyBtn onClick={() => copy(ownedProjectContact.data.project_email, 'Project email')} />} />}
       {contact.address ? (
         <InfoLineRow
           label="Address"
@@ -3992,7 +3999,7 @@ async function __manualEmailIntentLocation(intent) {
 }
 function __manualEmailIntentIdentity(payload) {
   const vars = payload.variables || {};
-  return {
+  const identity = {
     template: payload.template,
     contact_id: payload.contact_id,
     to_email: payload.to_email,
@@ -4001,6 +4008,12 @@ function __manualEmailIntentIdentity(payload) {
       || vars.certificate_url || vars.owner_guide_url || vars.retry_url
       || vars.quote_num || vars.invoice_num || vars.receipt_num || payload.subject,
   };
+  if (payload.recipient_authority === 'bpp_project_email') {
+    delete identity.to_email;
+    identity.recipient_authority = 'bpp_project_email';
+    identity.project_pre_read_id = payload.project_pre_read_id;
+  }
+  return identity;
 }
 function __manualEmailStoredRecord(signature, storageKey) {
   let record = __manualEmailClientKeys.get(signature) || null;
@@ -4015,6 +4028,34 @@ function __manualEmailStoredRecord(signature, storageKey) {
 async function __manualEmailRememberedPayload(intent) {
   const { signature, storageKey } = await __manualEmailIntentLocation(intent);
   return __manualEmailStoredRecord(signature, storageKey)?.payload || null;
+}
+async function __manualEmailRememberedAttempt(intent) {
+  const location = await __manualEmailIntentLocation(intent);
+  const record = __manualEmailStoredRecord(location.signature, location.storageKey);
+  return record ? { ...location, ...record } : null;
+}
+async function __manualEmailPendingProjectAttempt({ template, contact_id, document_id, subject }) {
+  if (!document_id) return null;
+  const records = [...__manualEmailClientKeys.values()];
+  try {
+    for (let index = 0; index < (globalThis.sessionStorage?.length || 0); index += 1) {
+      const key = globalThis.sessionStorage.key(index);
+      if (key?.startsWith(__MANUAL_EMAIL_INTENT_PREFIX)) {
+        try { records.push(JSON.parse(globalThis.sessionStorage.getItem(key))); } catch (_) {}
+      }
+    }
+  } catch (_) {}
+  let pending = null;
+  for (const record of records) {
+    const payload = record?.payload;
+    if (payload?.recipient_authority !== 'bpp_project_email' || payload.contact_id !== contact_id
+      || payload.document_id !== document_id || payload.template !== template || payload.subject !== subject) continue;
+    const attempt = await __manualEmailRememberedAttempt(__manualEmailIntentIdentity(payload));
+    if (!attempt) continue;
+    if (pending && pending.key !== attempt.key) return { conflict: true };
+    pending = attempt;
+  }
+  return pending;
 }
 async function __manualEmailAttempt(intent, confirmedPayload) {
   const { signature, storageKey, intentKey } = await __manualEmailIntentLocation(intent);
@@ -4194,6 +4235,7 @@ async function sendCompletionEmail(contact, packet) {
 }
 
 function AdvanceJobCard({ contact, data, bumpData, onOpenTab }) {
+  const reviewPermission = useSmsSendEligibility(contact, 'review_request');
   const [busy, setBusy] = React.useState(false);
   const C = window.CRM || {};
   const next = (typeof C.advanceJobNext === 'function') ? C.advanceJobNext(contact, data || {}) : null;
@@ -4293,7 +4335,7 @@ function AdvanceJobCard({ contact, data, bumpData, onOpenTab }) {
   const isInstalled = (next.doneSteps || []).some(s => s.step === 'installed');
   const canAskReview = isInstalled && !askedReview && !contact.do_not_contact && !!contact.phone;
   const reviewBtn = canAskReview ? (
-    <button style={ghostBtn} disabled={busy}
+    <button style={{...ghostBtn,opacity:busy || !reviewPermission.allowed ? .55 : 1}} disabled={busy || !reviewPermission.allowed} title={reviewPermission.message}
       onClick={() => run(() => C.advanceJobSendReview(contact), 'Review request sent')}>
       {busy ? 'Sending...' : 'Send review request'}
     </button>
@@ -4361,6 +4403,7 @@ function AdvanceJobCard({ contact, data, bumpData, onOpenTab }) {
         </div>
       )}
       {reviewBtn}
+      {canAskReview && !reviewPermission.allowed && <div role="status" style={{fontSize:12,color:MUTED,lineHeight:1.4,marginTop:6}}>{reviewPermission.message}</div>}
       {packetBtn}
     </CardShell>
   );
@@ -5971,7 +6014,7 @@ function FinanceOverflowMenu({ items }) {
 // his face. Self-contained (brand hex inline, reuses FinanceOverflowMenu). It
 // RECORDS an external payment via the parent's onRecord (record-payment edge
 // fn); it never charges a card (that is the Key-gated charge flow).
-function MoneyCard({ firstName, tierText, dueAmount, totalAmount, paidAmount, partial, signedWhen, paid, paidMethod, paidDate, onRecord, onEdit, onSendReceipt, onSendPartialReceipt, sending, overflow, awaitingDeposit, depositAmount, depositOfTotal, depositRate, onSendDepositLink }) {
+function MoneyCard({ firstName, tierText, dueAmount, totalAmount, paidAmount, partial, signedWhen, paid, paidMethod, paidDate, onRecord, onEdit, onSendReceipt, onSendPartialReceipt, sending, overflow, awaitingDeposit, depositAmount, depositOfTotal, depositRate, onSendDepositLink, smsDisabled, smsBlockedReason }) {
   const NV = '#0b1f3b', GD = '#ffba00', INK = '#1a2a42', MUT = '#6b7280';
   const [sheet, setSheet] = React.useState(false);
   const [method, setMethod] = React.useState('Cash');
@@ -6060,7 +6103,7 @@ function MoneyCard({ firstName, tierText, dueAmount, totalAmount, paidAmount, pa
         </div>
         <div style={{ ...moneyBig, fontSize: 40, lineHeight: 1.05, margin: '6px 0 2px' }}>{money(depositAmount)}</div>
         <div style={{ fontSize: 13, color: MUT, marginBottom: 16 }}>{[`${pct}% deposit on ` + money(depositOfTotal), signedWhen, 'not booked until paid'].filter(Boolean).join('  ·  ')}</div>
-        <button style={{ ...navyBtn, background: GD, color: NV }} onClick={onSendDepositLink}>
+        <button style={{ ...navyBtn, background: GD, color: NV, opacity:smsDisabled ? .55 : 1 }} disabled={smsDisabled} title={smsBlockedReason} onClick={onSendDepositLink}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           Send deposit link
         </button>
@@ -6123,6 +6166,7 @@ function MoneyCard({ firstName, tierText, dueAmount, totalAmount, paidAmount, pa
 }
 
 function ContactFinance({ contact, proposals, invoices, highlightId }) {
+  const smsPermission = useSmsSendEligibility(contact);
   // 2026-05-26 audit: sort by sent_at desc with created_at fallback so
   // drafts (sent_at=null) still get ordered by recency relative to other
   // drafts. Previously sent_at fell back to created_at in the mapper,
@@ -6418,7 +6462,6 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
       window.showToast?.('This proposal was replaced. Use the current proposal.');
       return;
     }
-    if (!contact?.email) { window.showToast?.('No email on contact, add one first'); return; }
     // In-flight guard: a double-tap must not fire two identical customer emails
     // (irreversible). Set before the confirm so a second tap is blocked at once;
     // cleared in finally on every exit (including cancel).
@@ -6426,6 +6469,9 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
     sendingEmailRef.current = true;
     setSendingEmail(true);
     try {
+    const projectRead = await CRM.fetchBppProjectContact?.(contact.id) || { data: null, error: 'project_contact_unavailable' };
+    const project = projectRead.data;
+    let recipientChoice = '';
     // #202: the Key-confirm is a real preview, built AFTER subject/url/amount
     // resolve (just before the send below), so Key reviews exactly what is
     // going out (recipient, subject, amount, doc number, the linked page),
@@ -6552,15 +6598,47 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
       variables.amount = fmtC(dueC);
       variables.retry_url = url || invoiceUrl(invoice) || '';
     }
-    const currentPayload = {
+    const pendingProject = await __manualEmailPendingProjectAttempt({ template, contact_id,
+      document_id: proposal?.id || invoice?.id, subject });
+    if (pendingProject?.conflict) { window.showToast?.('More than one project email attempt needs reconciliation. Review the prior attempts before sending.'); return; }
+    if (pendingProject) {
+      recipientChoice = 'bpp_project_email';
+    } else if (project?.project_email && project.preference_id && Number(project.revision) > 0) {
+      const choose = await window.confirmAction?.({
+        title: 'Choose the email address',
+        body: <label>Email address
+          <select defaultValue="" onChange={e => { recipientChoice = e.target.value; }}
+            style={{ width:'100%', height:44, padding:'0 12px', fontSize:16, fontFamily:'inherit', border:'1px solid rgba(11,31,59,0.15)', borderRadius:8, background:'white', color:NAVY, outline:'none', boxSizing:'border-box' }}>
+            <option value="">Choose an address</option>
+            <option value="bpp_project_email">Project email: {project.project_email}</option>
+            {contact.email && <option value="contact_email">Contact email: {contact.email}</option>}
+          </select>
+        </label>,
+        confirmLabel: 'Review email',
+      });
+      if (!choose) return;
+      if (!recipientChoice) { window.showToast?.('Choose an email address before reviewing.'); return; }
+    } else {
+      if (!contact.email) { window.showToast?.(projectRead.error ? 'Could not load project email. Try again.' : 'No email address is available.'); return; }
+      recipientChoice = 'contact_email';
+    }
+    const currentPayload = pendingProject?.payload || {
       template,
       contact_id,
       document_id: proposal?.id || invoice?.id,
       subject,
       variables,
       trigger_source: 'crm_v3_finance_action',
+      ...(recipientChoice === 'bpp_project_email' ? {
+        recipient_authority: 'bpp_project_email',
+        project_pre_read_id: project.pre_read_id,
+        project_preference_id: project.preference_id,
+        expected_project_preference_revision: Number(project.revision),
+        expected_recipient: project.project_email,
+      } : {}),
     };
     const emailIntent = __manualEmailIntentIdentity({ ...currentPayload, to_email: contact.email });
+    const rememberedAttempt = await __manualEmailRememberedAttempt(emailIntent);
     const sendPayload = await __manualEmailRememberedPayload(emailIntent) || currentPayload;
     const sendVariables = sendPayload.variables || {};
     const sendUrl = sendVariables[`${template}_url`] || sendVariables.certificate_url || sendVariables.invoice_url || sendVariables.receipt_url || null;
@@ -6597,10 +6675,31 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
     // rather than blocking the whole send flow.
     let emailPreviewUrl = null;
     let dryRunWarning = null;
+    let previewRecipient = contact.email;
+    const projectMode = sendPayload.recipient_authority === 'bpp_project_email';
     try {
-      const { data: dry } = await CRM.__invokeFn('send-email', {
-        body: { ...sendPayload, dry_run: true },
+      const { data: dry, error: dryError } = await CRM.__invokeFn('send-email', {
+        body: { ...sendPayload, dry_run: true, ...(projectMode && rememberedAttempt ? {
+          idempotency_key: rememberedAttempt.key, manual_intent_key: rememberedAttempt.intentKey,
+        } : {}) },
       });
+      if (projectMode) {
+        const proof = dry?.recipient_review;
+        if (dryError || dry?.ok !== true || proof?.contract !== 'bpp-manual-email-recipient-v1'
+          || proof.authority !== 'bpp_project_email' || proof.contact_id !== contact_id
+          || proof.pre_read_id !== sendPayload.project_pre_read_id || proof.preference_id !== sendPayload.project_preference_id
+          || Number(proof.revision) !== sendPayload.expected_project_preference_revision
+          || proof.to !== dry.to || String(proof.to).toLowerCase() !== sendPayload.expected_recipient.toLowerCase()) {
+          window.showToast?.('Project email review is stale or unavailable. Review the current address before sending.');
+          return;
+        }
+        previewRecipient = proof.to;
+        if (dry.completed === true && typeof dry.sent === 'string' && dry.sent.trim()) {
+          __finishManualEmailAttempt(rememberedAttempt);
+          window.showToast?.(`Email already sent to ${previewRecipient}.`);
+          return;
+        }
+      }
       if (dry?.html) {
         emailPreviewUrl = URL.createObjectURL(new Blob([dry.html], { type: 'text/html' }));
       }
@@ -6609,7 +6708,9 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
           ? `This email still contains sample data ("${dry.sample_hit}") and would be REFUSED on send.`
           : `This email has unresolved placeholders (${(dry.unresolved_placeholders || []).slice(0, 3).join(', ')}) and would be REFUSED on send.`;
       }
-    } catch (_) { /* dry-run is a preview enhancement, never blocks the send flow */ }
+    } catch (_) {
+      if (projectMode) { window.showToast?.('Could not verify project email. Try again before sending.'); return; }
+    }
     const pvLabel = { fontSize:11, fontWeight:700, color:MUTED, minWidth:54, textTransform:'uppercase', letterSpacing:'0.04em', flexShrink:0 };
     const pvVal = { fontSize:13, color:NAVY, wordBreak:'break-word' };
     const safePagePreviewUrl = operatorDocumentPreviewUrl(sendUrl);
@@ -6618,7 +6719,7 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
         <div style={{ fontSize:12.5, color:MUTED, lineHeight:1.45 }}>Review before it sends. This goes out by email via Resend.</div>
         {dryRunWarning && <div style={{ background:'#FDEEEE', border:'1px solid #F2C4C1', borderRadius:8, padding:'8px 10px', fontSize:12, color:'#8A241D', lineHeight:1.4 }}>{dryRunWarning}</div>}
         <div style={{ background:'#F8F8F6', border:'1px solid #EBEBEA', borderRadius:8, padding:'10px 12px', display:'flex', flexDirection:'column', gap:7 }}>
-          <div style={{ display:'flex', gap:8 }}><span style={pvLabel}>To</span><span style={{ ...pvVal, fontWeight:600 }}>{contact.email}</span></div>
+          <div style={{ display:'flex', gap:8 }}><span style={pvLabel}>To</span><span style={{ ...pvVal, fontWeight:600 }}>{previewRecipient}</span></div>
           <div style={{ display:'flex', gap:8 }}><span style={pvLabel}>Subject</span><span style={pvVal}>{sendPayload.subject}</span></div>
           {amountVal && <div style={{ display:'flex', gap:8 }}><span style={pvLabel}>{amountLabel}</span><span style={{ ...pvVal, fontFamily:"'JetBrains Mono','DM Mono',monospace" }}>{amountVal}</span></div>}
           {docNum && <div style={{ display:'flex', gap:8 }}><span style={pvLabel}>Doc #</span><span style={{ ...pvVal, fontFamily:"'JetBrains Mono','DM Mono',monospace" }}>{docNum}</span></div>}
@@ -6701,7 +6802,7 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
       return;
     }
     __finishManualEmailAttempt(dispatchAttempt);
-    window.showToast?.(`Email sent to ${contact.email}`);
+    window.showToast?.(`Email sent to ${previewRecipient}`);
     } finally {
       sendingEmailRef.current = false;
       setSendingEmail(false);
@@ -6874,6 +6975,7 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
         invoke: CRM.__invokeFn,
         scope: linkKind === 'inv' ? 'invoice-link' : linkKind === 'prop' ? 'proposal-link' : 'money-link',
         contactId: contact.id,
+        recipientPhone: contact.phone,
         body,
         semanticId: liveProposal?.id || linkKind,
         proposalId: liveProposal?.id || '',
@@ -7013,20 +7115,20 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
     // code now states the truth. Overflow items keep their tones (the menu
     // renderer reads them).
     const primary = deliveryPending
-      ? { label:'Check delivery', onClick:() => sendLink(linkUrl, false, proposal), icon:SendIcon }
+      ? { label:'Check delivery', onClick:async () => { if(typeof CRM.__refetch!=='function'){window.showToast?.('Delivery records could not be refreshed. No text was sent.');return;} try{await CRM.__refetch();window.showToast?.('Refreshed delivery records. No text was sent.');}catch(_){window.showToast?.('Delivery records could not be refreshed. No text was sent.');} }, icon:SendIcon }
       : copyPending
         ? { label:'Finish copy record', onClick:() => copyLink(linkUrl, proposal), icon:CopyIcon }
         : onMarkPaid
       ? { label:'Mark paid', onClick:onMarkPaid }
       : (showSend && linkUrl)
-          ? { label:'Send', onClick:() => sendLink(linkUrl, false, proposal), icon:SendIcon }
+          ? { label:'Send', disabled:!smsPermission.allowed, onClick:() => sendLink(linkUrl, false, proposal), icon:SendIcon }
           : null;
     const confirmThen = (cfg, fn) => async () => { const ok = await window.confirmAction?.(cfg); if (ok) fn(); };
     const overflowItems = recoveryLocked ? [] : [
       // When Mark paid takes the primary slot (an unpaid invoice), Send got
       // displaced , keep the SMS-resend reachable here so Key can still re-text
       // an unpaid invoice's link, exactly like the old two-row layout offered.
-      (showSend && linkUrl && onMarkPaid) && { label:'Send link', onClick:() => sendLink(linkUrl, false, proposal) },
+      (showSend && linkUrl && onMarkPaid) && { label:'Send link', disabled:!smsPermission.allowed, onClick:() => sendLink(linkUrl, false, proposal) },
       (showCopy && linkUrl) && { label:'Copy link', onClick:() => copyLink(linkUrl, proposal) },
       (showView && linkUrl) && { label:'View as customer', onClick:() => viewAsCustomer(linkUrl) },
       ...(paymentReceipts || []).map(payment => ({
@@ -7084,11 +7186,11 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
     // screen's one gold (the top "+ New proposal") is never challenged.
     const isPaidAction = primary && primary.label === 'Mark paid';
     const primaryBtn = primary && (
-      <button onClick={primary.onClick} aria-label={primary.label}
+      <button onClick={primary.onClick} aria-label={primary.label} disabled={primary.disabled} title={primary.disabled ? smsPermission.message : undefined}
         style={{ height:44, padding:'0 18px', borderRadius:100, flexShrink:0,
           background: isPaidAction ? '#10b981' : NAVY, color:'white', border:'none',
           fontSize:13, fontWeight:700, fontFamily:'inherit', cursor:'pointer', whiteSpace:'nowrap',
-          display:'inline-flex', alignItems:'center', justifyContent:'center', gap:6 }}>
+          display:'inline-flex', alignItems:'center', justifyContent:'center', gap:6, opacity:primary.disabled ? .55 : 1 }}>
         {primary.icon}{primary.label}
       </button>
     );
@@ -7498,7 +7600,7 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
       ].filter(Boolean)
     : [
         { label: 'View proposal', onClick: () => viewAsCustomer(proposalUrl(moneyProposal)) },
-        liveInv && invoiceUrl(liveInv) && { label: 'Send payment link', onClick: () => sendLink(invoiceUrl(liveInv), false) },
+        liveInv && invoiceUrl(liveInv) && { label: 'Send payment link', disabled:!smsPermission.allowed, onClick: () => sendLink(invoiceUrl(liveInv), false) },
         liveInv && invoiceUrl(liveInv) && { label: sendingEmail ? 'Sending…' : 'Email invoice', onClick: () => emailDoc({ template: 'invoice', contact_id: contact.id, invoice: liveInv }), disabled: sendingEmail },
         // Booking-tone deposit receipt, only once a deposit/partial is actually in
         // (isPartial = paid > 0 but balance remains). Shows the honest remaining balance.
@@ -7512,6 +7614,7 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
 
   return (
     <div style={{ flex:1, overflowY:'auto', minHeight:0, padding:'12px 16px var(--tabbar-clear, calc(env(safe-area-inset-bottom, 0px) + 92px))' }}>
+      {!smsPermission.allowed && <div role="status" style={{fontSize:12,color:MUTED,lineHeight:1.4,marginBottom:10}}>{smsPermission.message}</div>}
       {/* Post-sign money surface: the one card Key acts on in the field. */}
       {moneyProposal && (
         <MoneyCard
@@ -7537,6 +7640,8 @@ function ContactFinance({ contact, proposals, invoices, highlightId }) {
           depositAmount={Math.round(depositDueCents) / 100}
           depositOfTotal={Math.round(mpFullCents) / 100}
           depositRate={mpDepositRate}
+          smsDisabled={!smsPermission.allowed}
+          smsBlockedReason={smsPermission.message}
           onSendDepositLink={() => moneyProposal && sendLink(proposalUrl(moneyProposal), true, moneyProposal)}
         />
       )}
@@ -8265,18 +8370,23 @@ function ScheduledMessagesStrip({ contactId }) {
     <div style={{ margin:'8px 16px 0', display:'flex', flexDirection:'column', gap:6, flexShrink:0 }}>
       {mine.map(m => (
         <div key={m.id} style={{
-          display:'flex', alignItems:'center', gap:10,
+          display:'flex', alignItems:'center', gap:10, flexWrap:m.deliveryPending?'wrap':undefined,
           padding:'8px 10px',
           background:'#EFF6FF', border:'1px solid #BFDBFE', borderRadius:8,
           fontSize:12, color:'#1E40AF',
         }}>
           <span style={{ fontSize:13 }}>⏰</span>
-          <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ fontWeight:700 }}>Scheduled · {niceTime(m.at)}</div>
+          <div style={{ flex:m.deliveryPending?'1 1 180px':1, minWidth:0 }}>
+            <div style={{ fontWeight:700 }}>{m.deliveryPending ? 'Delivery unconfirmed · check thread' : m.permissionBlocked ? 'Scheduled · paused' : 'Scheduled · '+niceTime(m.at)}</div>
             <div style={{ color:'#1E3A8A', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', marginTop:1 }}>{m.body || '(media-only)'}</div>
+            {m.deliveryPending && <div role="status" style={{fontSize:12,color:'#92400e',marginTop:3}}>{m.deliveryPendingReason || 'Delivery is unconfirmed. Check delivery before any retry.'}</div>}
+            {m.permissionBlocked && !m.deliveryPending && <div role="status" style={{fontSize:12,color:'#92400e',marginTop:3}}>Not sent. {m.attachmentIntent ? messageAttachmentOperatorError(m.blockedReason || 'Text permission must be checked.') : m.blockedReason || 'Text permission must be checked.'}</div>}
           </div>
+          {m.deliveryPending && <button type="button" onClick={async()=>{const result=await window.checkScheduledMessageDelivery?.(m.id);window.showToast?.(result?.status==='sent'?'The earlier send is confirmed. No new text was sent.':result?.error || 'Delivery is still unconfirmed. No new text was sent.');}}
+            style={{fontFamily:'inherit',fontSize:11,fontWeight:700,minHeight:44,padding:'4px 10px',background:'white',border:'1px solid #BFDBFE',borderRadius:6,color:NAVY,cursor:'pointer'}}>Check delivery</button>}
           <button
             onClick={() => {
+              if(m.deliveryPending){window.cancelScheduledMessage?.(m.id);window.showToast?.('Reminder dismissed. Delivery may already have occurred. Check the thread.');return;}
               // Snapshot the whole queue item so a mis-tapped Cancel is
               // recoverable: a queued customer text destroyed with no undo is a
               // comms-trust failure (audit 2026-06-22). 5s undo re-queues the
@@ -8286,19 +8396,20 @@ function ScheduledMessagesStrip({ contactId }) {
               window.showToast?.('Scheduled message cancelled', {
                 duration: 5000,
                 undo: () => window.scheduleMessage?.({
-                  contactId: snap.contactId, body: snap.body, atIso: snap.at,
+                  contactId: snap.contactId, recipientPhone:snap.recipientPhone, body: snap.body, atIso: snap.at,
                   mediaUrls: snap.mediaUrls || [], fileLinks: snap.fileLinks || [],
+                  ...(snap.attachmentIntent ? {attachmentIntent:snap.attachmentIntent} : {}),
                 }),
               });
             }}
-            aria-label="Cancel scheduled message"
+            aria-label={m.deliveryPending ? "Dismiss pending delivery reminder" : "Cancel scheduled message"}
             style={{
               fontSize:11, fontWeight:700, color:'#991B1B',
               background:'white', border:'1px solid #FECACA', borderRadius:6,
               padding:'4px 10px', minHeight:44, display:'inline-flex', alignItems:'center', justifyContent:'center',
               flexShrink:0, cursor:'pointer', fontFamily:'inherit',
             }}
-          >Cancel</button>
+          >{m.deliveryPending ? 'Dismiss' : 'Cancel'}</button>
         </div>
       ))}
     </div>
@@ -8312,7 +8423,7 @@ function ScheduledMessagesStrip({ contactId }) {
 // preventDefault keeps the compose textarea focused so the mobile keyboard
 // never drops on send. Scheduled sends survive reload via the localStorage
 // queue + 60s poller in crm-shared.jsx.
-function SendButton({ onSend, onSchedule, sending }) {
+function SendButton({ onSend, onSchedule, sending, disabled = false, blockedReason }) {
   const [menuOpen, setMenuOpen] = React.useState(false);
   // CM-31: explicit press-scale on the single most-tapped control. The global
   // button:active scale could be suppressed here by touchAction:none + the
@@ -8337,6 +8448,7 @@ function SendButton({ onSend, onSchedule, sending }) {
     return () => { document.removeEventListener('pointerdown', onDoc); document.removeEventListener('keydown', onKey); };
   }, [menuOpen]);
   React.useEffect(() => () => { if (holdTimer.current) clearTimeout(holdTimer.current); }, []);
+  React.useEffect(() => { if (disabled) { setMenuOpen(false); setPressed(false); if(holdTimer.current)clearTimeout(holdTimer.current); } }, [disabled]);
 
   const tomorrowAt = (hour, minute = 0) => {
     const d = new Date();
@@ -8360,6 +8472,7 @@ function SendButton({ onSend, onSchedule, sending }) {
   const pad = n => String(n).padStart(2, '0');
   const toLocalDT = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   const customSchedule = () => {
+    if(disabled)return;
     const el = dtRef.current;
     if (!el) return;
     el.min = toLocalDT(new Date());
@@ -8367,6 +8480,7 @@ function SendButton({ onSend, onSchedule, sending }) {
     try { el.showPicker ? el.showPicker() : el.focus(); } catch (_) { el.focus(); }
   };
   const onSchedulePicked = (e) => {
+    if(disabled)return;
     const v = e.target.value;
     if (!v) return;
     const at = new Date(v); // datetime-local value is local time
@@ -8380,6 +8494,7 @@ function SendButton({ onSend, onSchedule, sending }) {
 
   const clearHold = () => { if (holdTimer.current) { clearTimeout(holdTimer.current); holdTimer.current = null; } };
   const onPointerDown = (e) => {
+    if(disabled)return;
     // preventDefault keeps the compose textarea focused (no keyboard drop).
     e.preventDefault();
     setPressed(true);
@@ -8395,7 +8510,7 @@ function SendButton({ onSend, onSchedule, sending }) {
     clearHold();
     setPressed(false);
     // Short press (released before the hold fired, menu not already open) = send.
-    if (!openedByHold.current && !menuOpen) onSend?.();
+    if (!disabled && !openedByHold.current && !menuOpen) onSend?.();
   };
   // Pointer left/cancelled before release: drop the hold timer AND the press.
   const onPressCancel = () => { clearHold(); setPressed(false); };
@@ -8417,14 +8532,16 @@ function SendButton({ onSend, onSchedule, sending }) {
            detail===0 and NO pointer events. Route that to send so the focused
            button is not a dead control. detail>=1 (mouse/touch click) already
            sent via onPointerUp, so the guard prevents a double-send. */
-        onClick={(e) => { if (e.detail === 0 && !menuOpen && !openedByHold.current) onSend?.(); }}
+        onClick={(e) => { if (!disabled && e.detail === 0 && !menuOpen && !openedByHold.current) onSend?.(); }}
         aria-label={sending ? 'Sending message' : 'Send (hold to schedule)'}
         aria-busy={sending ? true : undefined}
-        title="Tap to send · hold to schedule"
+        aria-describedby={disabled && blockedReason ? 'sms-permission-status' : undefined}
+        disabled={disabled}
+        title={disabled ? blockedReason : "Tap to send · hold to schedule"}
         style={{
           position:'relative',
           width:44, minHeight:44, borderRadius:8,
-          background:GOLD, color:NAVY, border:'none', cursor:'pointer',
+          background:GOLD, color:NAVY, border:'none', cursor:disabled ? 'default' : 'pointer', opacity:disabled ? .5 : 1,
           display:'flex', alignItems:'center', justifyContent:'center',
           touchAction:'none', userSelect:'none', WebkitUserSelect:'none',
           transform: (pressed && !reduceMotion) ? 'scale(0.94)' : 'scale(1)',
@@ -8497,14 +8614,11 @@ function SendButton({ onSend, onSchedule, sending }) {
   );
 }
 
-// Upload a File/Blob to the public message-media bucket via the crm-media-upload
-// edge function. The CRM holds only the anon/publishable key, and the bucket
-// grants INSERT to authenticated/service_role ONLY (the hardening locked anon
-// writes since the bucket is publicly readable and the key ships in the
-// frontend). So the function does the SERVICE-ROLE write and hands back the
-// public URL. scope picks the path prefix (message | job-photo | annotation).
+// Upload through the owner-authorized endpoint. Job photos and annotations
+// return durable private refs. Message uploads return bound draft descriptors;
+// provider access is created only by the authorized dispatch path.
 // Throws with the server's reason on failure so callers can show a real toast.
-async function uploadCrmMedia(fileOrBlob, contactId, scope, contentTypeOverride) {
+async function uploadCrmMediaRecord(fileOrBlob, contactId, scope, contentTypeOverride, draftId) {
   const contentType = contentTypeOverride || fileOrBlob.type || 'application/octet-stream';
   const dataBase64 = await new Promise((resolve, reject) => {
     const r = new FileReader();
@@ -8513,17 +8627,40 @@ async function uploadCrmMedia(fileOrBlob, contactId, scope, contentTypeOverride)
     r.readAsDataURL(fileOrBlob);
   });
   const { data, error } = await CRM.__invokeFn('crm-media-upload', {
-    body: { contactId, contentType, scope, dataBase64 },
+    body: { contactId, contentType, scope, dataBase64, filename: fileOrBlob.name || 'annotated.png', ...(draftId ? {draftId} : {}) },
   });
   if (error || !data || data.ok === false || !data.url) {
     let detail = data?.error || error?.message || 'upload failed';
     try { const eb = error?.context ? await error.context.json() : null; if (eb?.error) detail = eb.error; } catch (_) {}
     throw new Error(detail);
   }
-  return data.url;
+  if (scope === 'job-photo' || scope === 'annotation') {
+    const mediaId = window.BPPPrivateMedia.parse(data.url);
+    if (!mediaId || data.mediaRef?.schema !== 'bpp_private_media_ref_v1' || data.mediaRef?.media_id !== mediaId || data.mediaRef?.contact_id !== contactId) throw new Error('Private photo upload was not confirmed');
+  }
+  return data;
+}
+
+async function uploadCrmMedia(fileOrBlob, contactId, scope, contentTypeOverride) {
+  return (await uploadCrmMediaRecord(fileOrBlob, contactId, scope, contentTypeOverride)).url;
+}
+
+function MessageAttachmentPreview({attachment,contactId,style}) {
+  const media=window.BPPPrivateMedia.useSource(attachment.url,contactId);
+  return <img src={media.url || undefined} alt={attachment.name} style={style || {width:52,height:52,borderRadius:6,objectFit:'cover'}} />;
+}
+
+function MessageFileLink({url:reference,contactId}) {
+  const media=window.BPPPrivateMedia.useSource(reference,contactId);
+  const style={display:'flex',alignItems:'center',gap:5,minHeight:44,padding:'0 10px',color:'inherit',textDecoration:'underline'};
+  return media.url ? <a href={media.url} target="_blank" rel="noopener noreferrer" style={style}>📎 pdf</a>
+    : <div style={style}>📎 pdf <span>can't open here</span></div>;
 }
 
 function ContactMessages({ contact, thread, isDnc }) {
+  const projectedThread = useMessageAttachmentHistory(React, thread, contact.id);
+  const attachmentContactRef = React.useRef(contact.id);
+  const smsPermission = useSmsSendEligibility(contact);
   const draftKey = 'draft:' + contact.id;
   const quoteCtxKey = 'quoteContext:' + contact.id;
   const [quoteCtx, setQuoteCtx] = React.useState(() => {
@@ -8564,8 +8701,8 @@ function ContactMessages({ contact, thread, isDnc }) {
   };
   // Sort thread chronologically (DB is unordered)
   const sortedThread = React.useMemo(
-    () => [...thread].sort((a,b) => (a.sent_at||'').localeCompare(b.sent_at||'')),
-    [thread]
+    () => [...projectedThread].sort((a,b) => (a.sent_at||'').localeCompare(b.sent_at||'')),
+    [projectedThread]
   );
 
   const [msg, setMsg] = React.useState(() => sessionStorage.getItem(draftKey) || '');
@@ -8574,6 +8711,8 @@ function ContactMessages({ contact, thread, isDnc }) {
   // kind='note' rows still RENDER in the thread as the yellow note bubble.
   const [localMsgs, setLocalMsgs] = React.useState([]); // optimistic-sent messages
   const [attachments, setAttachments] = React.useState([]);
+  const [attachmentDraftContact,setAttachmentDraftContact]=React.useState(null);
+  const attachmentDraftLoading=attachmentDraftContact!==contact.id;
   const [templates, setTemplates] = React.useState(loadTemplates);
   const [editingTemplates, setEditingTemplates] = React.useState(false);
   // Auto-reply suggestions - Claude reads thread + Key's last 20 outbound
@@ -8726,9 +8865,23 @@ function ContactMessages({ contact, thread, isDnc }) {
   // Reset locals when contact changes - also revoke any in-flight blob URLs
   // so switching contacts mid-attachment doesn't leak.
   React.useEffect(() => {
+    attachmentContactRef.current = contact.id;
+    let active = true;
     setMsg(sessionStorage.getItem(draftKey) || '');
     setLocalMsgs([]);
     setAttachments(prev => { prev.forEach(a => revokeAndForget(a.url)); return []; });
+    restoreMessageAttachmentDraft(contact.id).then(async record => {
+      if (!active || !record) return;
+      setAttachments(record.attachments);
+      setMsg(current => current || record.body);
+      const attachmentIntent=messageAttachmentDraftIntent(record);
+      if(!attachmentIntent)return;
+      const recovered=await sendManualSmsWithReceipt({invoke:CRM.__invokeFn,scope:'conversation',contactId:contact.id,
+        recipientPhone:contact.phone,body:record.body,attachmentIntent,recoveryOnly:true});
+      if(active && recovered.ok){await clearMessageAttachmentDraft(contact.id,record.draftId,{body:record.body,attachmentIntent});setAttachments([]);setMsg(current=>current===record.body?'':current);}
+      else if(active && (recovered.recoveredDifferentIntent || recovered.knownUnsent))window.showToast?.(recovered.error);
+    }).finally(()=>{if(active)setAttachmentDraftContact(contact.id);});
+    return () => { active = false; if(attachmentContactRef.current===contact.id)attachmentContactRef.current=null; };
   }, [contact.id]);
 
   // Key that changes whenever THIS contact's set of UNREAD inbound messages
@@ -8819,11 +8972,12 @@ function ContactMessages({ contact, thread, isDnc }) {
   //   bodyMediaUrls pulls the renderable public URLs back out for the bubble.
   // Dead api.twilio.com links (inbound tokens) are skipped; those render from
   // comm_attachments instead.
-  const stripMediaTokens = (s) => (s || '').replace(/^(?:\[media:[^\]]*\]\s*)+/i, '').trim();
+  const stripMediaTokens = (s) => (s || '').replace(/^(?:\[(?:media|file):[^\]]*\]\s*)+/i, '').trim();
   const bodyMediaUrls = (s) => {
     const out = []; const re = /\[media:([^\]]+)\]/gi; let mm;
     while ((mm = re.exec(s || ''))) {
       const u = (mm[1] || '').trim();
+      if(window.BPPPrivateMedia?.parse(u)){out.push(u);continue;}
       // Hostname ALLOWLIST, not a scheme-only check. An inbound MMS body is
       // attacker-controlled free text, so a literal [media:https://attacker/
       // beacon.gif] typed by a customer would otherwise render as an <img> and
@@ -9052,6 +9206,8 @@ function ContactMessages({ contact, thread, isDnc }) {
       window.showToast?.('Text is over the 1,600-character limit');
       return false;
     }
+    const permission = await readSmsSendEligibility({contactId:contact.id,phone:contact.phone});
+    if (!permission.allowed) { window.showToast?.(permission.message); return false; }
     return true;
   };
   const sendingRef = React.useRef(false);
@@ -9065,6 +9221,7 @@ function ContactMessages({ contact, thread, isDnc }) {
   // + dispatches. Set true alongside the ref, cleared everywhere the ref is.
   const [sending, setSending] = React.useState(false);
   const send = async () => {
+    if(attachmentDraftLoading)return;
     const body = msg.trim();
     // Snapshot attachments up front: the compose clears immediately (optimistic),
     // so the upload loop below + a failure-rollback both need the originals.
@@ -9107,34 +9264,24 @@ function ContactMessages({ contact, thread, isDnc }) {
     // 2026-06-20 "when I send a message the keyboard disappears").
     try { taRef.current && taRef.current.focus({ preventScroll: true }); } catch (_) {}
     if (!CRM.__invokeFn) {
+      setLocalMsgs(m=>m.filter(x=>x.id!==tempId));
+      if(attachmentContactRef.current===contact.id){setMsg(body);setAttachments(atts);}
       window.showToast?.('Supabase not loaded, message not sent');
       sendingRef.current = false;
       setSending(false);
       return;
     }
     try {
-      // Upload any attachments to the PUBLIC message-media bucket so Twilio can
-      // fetch them (same bucket inbound MMS lands in). Images go out as true
-      // MMS via mediaUrls; non-image files (a permit PDF, a receipt) ride as a
-      // tappable https link appended to the text, which delivers reliably over
-      // SMS without depending on carrier MMS support for arbitrary file types.
-      const mediaUrls = [];
-      const fileLinks = [];
-      for (const a of atts) {
-        if (!a.file) continue;
-        // The anon CRM client cannot write to message-media directly (bucket is
-        // authenticated/service-only); uploadCrmMedia routes through the
-        // service-role crm-media-upload fn and returns the public URL.
-        const url = await uploadCrmMedia(a.file, contact.id, 'message');
-        if (a.type === 'image') mediaUrls.push(url); else fileLinks.push(url);
-      }
-      const finalBody = body + (fileLinks.length ? (body ? '\n' : '') + fileLinks.join('\n') : '');
+      const attachmentIntent = await prepareMessageAttachments({ contactId: contact.id, body, attachments: atts,
+        upload: (file, contactId, draftId) => uploadCrmMediaRecord(file, contactId, 'message', undefined, draftId) });
+      if (attachmentContactRef.current !== contact.id) throw Error('The conversation changed. The original draft was kept.');
       const sent = await sendManualSmsWithReceipt({
         invoke: CRM.__invokeFn,
         scope: 'conversation',
         contactId: contact.id,
-        body: finalBody,
-        mediaUrls,
+        recipientPhone: contact.phone,
+        body,
+        ...(attachmentIntent ? {attachmentIntent} : {}),
         testMode: CRM.__testMode === true,
       });
       if (!sent.ok) {
@@ -9144,11 +9291,11 @@ function ContactMessages({ contact, thread, isDnc }) {
         // error.context.json() so failures show the real reason (Twilio code,
         // DNC block, rate-limit) instead of the wrapper's generic message.
         setLocalMsgs(m => m.filter(x => x.id !== tempId));
-        setMsg(body);
-        if (atts.length) setAttachments(atts);
-        window.showToast?.(`Send failed: ${sent.error}`);
+        if(!sent.identityChanged && attachmentContactRef.current===contact.id){setMsg(body);if(atts.length)setAttachments(atts);}
+        window.showToast?.(`Send failed: ${attachmentIntent ? messageAttachmentOperatorError(sent.error, {retrySafe:sent.retrySafe===true && sent.ambiguous!==true && sent.providerContacted!==true}) : sent.error}`);
         return;
       }
+      if(attachmentIntent)await clearMessageAttachmentDraft(contact.id,attachmentIntent.draft_id,{body,attachmentIntent});
       window.showToast?.('Sent');
       sendRetryRef.current = 0; // clean send, reset the retry nonce
       // Stamp the optimistic bubble with the persisted row's id + server time so
@@ -9182,12 +9329,11 @@ function ContactMessages({ contact, thread, isDnc }) {
       } catch (_) {}
     } catch (e) {
       setLocalMsgs(m => m.filter(x => x.id !== tempId));
-      setMsg(body);
-      if (atts.length) setAttachments(atts);
+      if(attachmentContactRef.current===contact.id){setMsg(body);if(atts.length)setAttachments(atts);}
       // Ambiguous throw (attachment upload, or an unexpected error): do NOT bump
       // the nonce , if a send did slip out, the same key lets the idempotency
       // guard suppress a duplicate on retry (audit 2026-06-22).
-      window.showToast?.(`Send failed: ${e.message || e}`);
+      window.showToast?.(`Send failed: ${atts.length ? messageAttachmentOperatorError(e.message || e) : e.message || e}`);
     } finally {
       sendingRef.current = false;
       setSending(false);
@@ -9347,7 +9493,7 @@ function ContactMessages({ contact, thread, isDnc }) {
   };
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', flex:1, minHeight:0, position:'relative', background:'#F8F8F6' }}>
+    <div className="bpp-tabbar-content-pad" style={{ display:'flex', flexDirection:'column', flex:1, minHeight:0, position:'relative', background:'#F8F8F6' }}>
       {/* sms-01 desktop reading column (Claude Design comp 099b4334-5531-4e2a,
           chosen columnWidth 640, comfortable density). On a wide desktop panel
           the thread + composer stretched full-width so outbound bubbles ran
@@ -9369,6 +9515,12 @@ function ContactMessages({ contact, thread, isDnc }) {
             free space above the messages so they sit just above the composer;
             when the thread overflows it collapses to 0 and scrolls normally. */}
         <div style={{ marginTop: 'auto' }} aria-hidden="true" />
+        {allMsgs.length === 0 && !isDnc && !searchOpen && (
+          <div style={{ flex:1, minHeight:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', overflow:'hidden', textAlign:'center', color:MUTED, pointerEvents:'none' }}>
+            <div style={{ fontSize:13, fontWeight:500 }}>Quiet thread.</div>
+            <div style={{ fontSize:12, marginTop:2 }}>{contactName(contact)} hasn't messaged yet.</div>
+          </div>
+        )}
         {Object.entries(grouped).map(([day, dayMsgs]) => (
           <div key={day}>
             {/* Day separator (comp: messages-page-v2 .day-mark): quiet mono
@@ -9472,7 +9624,7 @@ function ContactMessages({ contact, thread, isDnc }) {
                     opacity: m.status === 'canceled' ? 0.45 : 1,
                   }}>
                     {m.attachments?.map((a,i) => a.type==='image'
-                      ? <img key={i} src={a.url} alt={a.name} style={{ width:'100%', maxWidth:200, borderRadius:8, display:'block', marginBottom: m.body?5:0 }}/>
+                      ? <MessageAttachmentPreview key={i} attachment={a} contactId={contact.id} style={{ width:'100%', maxWidth:200, borderRadius:8, display:'block', marginBottom: m.body?5:0 }}/>
                       : <div key={i} style={{ background:'rgba(255,255,255,0.15)', borderRadius:6, padding:'5px 9px', fontSize:11, display:'flex', alignItems:'center', gap:5, marginBottom: m.body?5:0 }}>📎 {a.name} <span style={{opacity:0.6}}>{a.size}</span></div>
                     )}
                     {/* Inbound MMS attachments fetched from comm_attachments:
@@ -9533,17 +9685,18 @@ function ContactMessages({ contact, thread, isDnc }) {
                       return (
                         <div style={{ marginBottom: _txt ? 6 : 0, display:'grid', gridTemplateColumns: urls.length === 1 ? '1fr' : 'repeat(2, 1fr)', gap:4 }}>
                           {urls.map((url, i) => (
-                            <MmsImg key={i} url={url} single={urls.length === 1} />
+                            <MmsImg key={i} url={url} contactId={contact.id} single={urls.length === 1} />
                           ))}
                         </div>
                       );
                     })()}
+                    {messageAttachmentFiles(m.body).map((url,i)=><MessageFileLink key={'private-file-'+i} url={url} contactId={contact.id} />)}
                     {(() => {
                       // Strip the leading [media:URL] tokens twilio-webhook prepends to
                       // inbound MMS bodies: the photo renders from comm_attachments above,
                       // so the raw token (a dead api.twilio.com link) must not show as text
                       // (audit 2026-06-20). The token stays in storage for PhotosSection.
-                      const _db = (m.body || '').replace(/^(?:\[media:[^\]]*\]\s*)+/i, '').trim();
+                      const _db = (m.body || '').replace(/^(?:\[(?:media|file):[^\]]*\]\s*)+/i, '').trim();
                       return _db ? <span style={{ padding: m.attachments?.length ? '0 5px' : 0, whiteSpace:'pre-wrap', wordBreak:'break-word' }}>{linkify(_db)}</span> : null;
                     })()}
                     {(() => {
@@ -9554,7 +9707,7 @@ function ContactMessages({ contact, thread, isDnc }) {
                       const hasAtt = (m.attachments?.length || 0) > 0;
                       const hasGallery = m.kind === 'mms' && (mmsAtt[m.id] || []).length > 0;
                       const hasBodyMedia = m.kind === 'mms' && (mmsAtt[m.id] || []).length === 0 && bodyMediaUrls(m.body).length > 0;
-                      const txt = (m.body || '').replace(/^(?:\[media:[^\]]*\]\s*)+/i, '').trim();
+                      const txt = (m.body || '').replace(/^(?:\[(?:media|file):[^\]]*\]\s*)+/i, '').trim();
                       if (hasAtt || hasGallery || hasBodyMedia || txt) return null;
                       return <span style={{ fontStyle:'italic', opacity:0.55, fontSize:13 }}>{m.kind === 'mms' ? 'Photo unavailable' : '(no message text)'}</span>;
                     })()}
@@ -9603,12 +9756,12 @@ function ContactMessages({ contact, thread, isDnc }) {
           {attachments.map((a,i) => (
             <div key={i} style={{ position:'relative' }}>
               {a.type==='image'
-                ? <img src={a.url} alt={a.name} style={{ width:52, height:52, borderRadius:6, objectFit:'cover' }}/>
+                ? <MessageAttachmentPreview attachment={a} contactId={contact.id} />
                 : <div style={{ width:52, height:52, borderRadius:6, background:'white', border:'1px solid rgba(11,31,59,0.12)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>📎</div>}
               {/* CM-18: keep the 16px red dot, but the clickable area is a 44px
                   transparent hit-slop (the dot is an inner span positioned to the
                   same top-right corner) so a shaky thumb can remove a wrong photo. */}
-              <button onClick={()=>setAttachments(a => a.filter((_,j) => j !== i))} aria-label="Remove attachment" style={{ position:'absolute', top:-14, right:-14, width:44, height:44, borderRadius:'50%', background:'transparent', border:'none', padding:0, cursor:'pointer', display:'flex', alignItems:'flex-start', justifyContent:'flex-end', fontFamily:'inherit' }}>
+              <button onClick={()=>setAttachments(list => {const next=list.filter((_,j)=>j!==i);if(next.length)retainMessageAttachmentDraft(contact.id,msg,next).catch(()=>{});else if(list[i]?.draftId)clearMessageAttachmentDraft(contact.id,list[i].draftId);return next;})} aria-label="Remove attachment" style={{ position:'absolute', top:-14, right:-14, width:44, height:44, borderRadius:'50%', background:'transparent', border:'none', padding:0, cursor:'pointer', display:'flex', alignItems:'flex-start', justifyContent:'flex-end', fontFamily:'inherit' }}>
                 <span aria-hidden="true" style={{ width:16, height:16, marginTop:10, marginRight:10, borderRadius:'50%', background:'#dc2626', border:'2px solid white', color:'white', fontSize:12, display:'flex', alignItems:'center', justifyContent:'center', lineHeight:1 }}>✕</span>
               </button>
             </div>
@@ -9619,7 +9772,7 @@ function ContactMessages({ contact, thread, isDnc }) {
       {isDnc && (
         <div style={{ margin:'8px 16px 12px', padding:'12px 14px', background:'#FEF2F2', border:'1px solid #FECACA', borderRadius:8, flexShrink:0 }}>
           <div style={{ fontSize:12, fontWeight:700, color:'#991B1B', marginBottom:3 }}>Compose disabled</div>
-          <div style={{ fontSize:11, color:'#991B1B', lineHeight:1.5 }}>This contact is marked do-not-contact. Remove the flag to message them.</div>
+          <div style={{ fontSize:11, color:'#991B1B', lineHeight:1.5 }}>Texting is blocked by the current do-not-contact setting.</div>
         </div>
       )}
 
@@ -9684,6 +9837,7 @@ function ContactMessages({ contact, thread, isDnc }) {
       )}
 
       <ScheduledMessagesStrip contactId={contact.id} />
+      {!isDnc && !smsPermission.allowed && <div role="status" id="sms-permission-status" className="bpp-thread-col" style={{padding:"8px 16px 0",fontSize:12,color:MUTED,lineHeight:1.4,flexShrink:0}}>{smsPermission.message}</div>}
 
       {/* Compose. v10.1.27: padding-bottom uses --vvs which collapses to 0
           when the keyboard is open (visualViewport.height < 600), restoring
@@ -9822,8 +9976,11 @@ function ContactMessages({ contact, thread, isDnc }) {
           </div>
           <SendButton
             sending={sending}
+            disabled={sending || !smsPermission.allowed || attachmentDraftLoading}
+            blockedReason={smsPermission.message}
             onSend={send}
             onSchedule={async (atIso) => {
+              if(attachmentDraftLoading)return;
               const body = msg.trim();
               const atts = [...attachments];
               if (!body && !atts.length) return;
@@ -9843,24 +10000,19 @@ function ContactMessages({ contact, thread, isDnc }) {
                 setMsg('');
                 setAttachments([]);
                 sessionStorage.removeItem(draftKey);
-                // Upload attachments NOW, at schedule time, to durable public URLs.
-                // File objects do not survive JSON.stringify into the localStorage
-                // queue, so we store plain URL strings the runner can send later.
-                // Same image/file split as send(): images go MMS, files ride as links.
-                let mediaUrls = [], fileLinks = [];
+                let attachmentIntent;
                 try {
-                  for (const a of atts) {
-                    if (!a.file) continue;
-                    const url = await uploadCrmMedia(a.file, contact.id, 'message');
-                    if (a.type === 'image') mediaUrls.push(url); else fileLinks.push(url);
-                  }
+                  attachmentIntent = await prepareMessageAttachments({contactId:contact.id,body,attachments:atts,
+                    upload:(file,contactId,draftId)=>uploadCrmMediaRecord(file,contactId,'message',undefined,draftId)});
+                  if(attachmentContactRef.current!==contact.id)throw Error('The conversation changed. The original draft was kept.');
                 } catch (e) {
-                  // Upload failed: restore the composer so nothing is lost; do not schedule.
-                  setMsg(body); setAttachments(atts);
-                  window.showToast?.(`Couldn't attach for scheduling: ${e.message || e}`);
+                  if(attachmentContactRef.current===contact.id){setMsg(body);setAttachments(atts);}
+                  window.showToast?.(`Couldn't attach for scheduling: ${atts.length ? messageAttachmentOperatorError(e.message || e) : e.message || e}`);
                   return;
                 }
-                window.scheduleMessage?.({ contactId: contact.id, body, atIso, mediaUrls, fileLinks });
+                const scheduled=await window.scheduleMessage?.({ contactId: contact.id, recipientPhone:contact.phone, body, atIso, ...(attachmentIntent?{attachmentIntent}:{}) });
+                if(!scheduled?.ok) { if(attachmentContactRef.current===contact.id){setMsg(body);setAttachments(atts);} window.showToast?.(scheduled?.error || 'Text could not be scheduled.'); return; }
+                if(attachmentIntent)await clearMessageAttachmentDraft(contact.id,attachmentIntent.draft_id,{body,attachmentIntent});
                 const niceTime = new Date(atIso).toLocaleString(undefined, { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
                 window.showToast?.('Scheduled for ' + niceTime);
               } finally {
@@ -9871,12 +10023,7 @@ function ContactMessages({ contact, thread, isDnc }) {
         </div>
       )}
 
-      {allMsgs.length === 0 && !isDnc && !searchOpen && (
-        <div style={{ position:'absolute', top:'40%', left:0, right:0, textAlign:'center', color:MUTED, pointerEvents:'none' }}>
-          <div style={{ fontSize:13, fontWeight:500 }}>Quiet thread.</div>
-          <div style={{ fontSize:12, marginTop:2 }}>{contactName(contact)} hasn't messaged yet.</div>
-        </div>
-      )}
+
       {/* CM-2: no-results state so a search that matches nothing doesn't read
           as a blank/broken thread. */}
       {searchOpen && threadQuery.trim() && matchCount === 0 && (
@@ -10009,13 +10156,15 @@ function CallAudio({ src, onPlayback }) {
 // treatment (mirrors CallAudio's "Recording unavailable"). When it fails we
 // also drop the wrapping link, since the target URL is the thing that 404'd.
 // Resets when the url changes (a thread switch reuses the same component).
-function MmsImg({ url, single, title }) {
+function MmsImg({ url: durableURL, single, title, contactId }) {
+  const media = window.BPPPrivateMedia.useSource(durableURL, contactId);
+  const url = media.url;
   // A falsy url (no safe URL resolved, e.g. only an untrusted source_url that
   // the allowlist rejected) starts failed, so the photo shows the fallback tile
   // instead of silently vanishing or rendering a src-less <img>.
   const [failed, setFailed] = React.useState(!url);
   React.useEffect(() => { setFailed(!url); }, [url]);
-  if (failed) {
+  if (failed || media.failed) {
     return (
       <div role="img" aria-label="Photo unavailable" title={title} style={{
         width:'100%', maxWidth: single ? 220 : '100%', aspectRatio: single ? '4 / 3' : '1',

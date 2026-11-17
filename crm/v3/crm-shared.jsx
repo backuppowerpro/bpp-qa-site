@@ -1,8 +1,10 @@
+import { readSmsSendEligibility } from './sms-send-eligibility.js';
+import { fetchBrowserPropertyImage as fetchOperatorPropertyImage } from './background-read-admission.js';
+import { validateMessageAttachmentIntent, messageAttachmentReceiptMatches, messageAttachmentMessageMatches, messageAttachmentKnownUnsent, messageAttachmentActorId, messageAttachmentOperatorError } from './message-attachments.js';
 // crm-shared.jsx, primitives, icons, nav bar
 // Exports: NavBar, TabIcon, ContactAvatar, StatusPill, GoldDot, fmt
 
 import {
-  fetchOperatorPropertyImage,
   isCompletePropertyAddress,
   propertyImageIdentity,
 } from '../v3-app/src/property-image.js';
@@ -1989,24 +1991,46 @@ function readSchedQueue() {
   try { return JSON.parse(localStorage.getItem(SCHED_KEY) || '[]') || []; }
   catch { return []; }
 }
-function writeSchedQueue(q) {
-  try { localStorage.setItem(SCHED_KEY, JSON.stringify(q || [])); } catch {}
+function writeSchedQueue(q, verify = false) {
+  let saved=false;
+  try { const encoded=JSON.stringify(q || []);localStorage.setItem(SCHED_KEY, encoded);saved=!verify || localStorage.getItem(SCHED_KEY)===encoded; } catch {}
   window.dispatchEvent(new CustomEvent('crm-scheduled-msg-changed'));
+  return saved;
 }
-function scheduleMessage({ contactId, body, atIso, mediaUrls = [], fileLinks = [] }) {
+async function scheduleMessage({ contactId, recipientPhone, body, atIso, mediaUrls = [], fileLinks = [], attachmentIntent }) {
+  let intent;
+  let operatorId;
+  try {
+    if (attachmentIntent !== undefined) {
+      intent=validateMessageAttachmentIntent(attachmentIntent);
+      if(mediaUrls.length || fileLinks.length)throw Error('Conflicting attachment intent');
+      operatorId=await messageAttachmentActorId();
+    }
+  } catch(_){return {ok:false,error:'Attachment could not be verified. Keep this draft and try again.'};}
+  const contact=(window.CRM?.contacts || []).find(c=>c.id===contactId);
+  const eligibility=await readSmsSendEligibility({contactId,phone:recipientPhone || contact?.phone});
+  if(!eligibility.allowed) {
+    window.showToast?.(eligibility.message, {kind:'error'});
+    return {ok:false,permissionBlocked:true,error:eligibility.message};
+  }
+  if(!Number.isFinite(Date.parse(atIso)))return {ok:false,error:'Choose a valid time.'};
+  if(intent && await messageAttachmentActorId()!==operatorId)return {ok:false,error:'Attachment identity changed. The original draft was kept.'};
   const q = readSchedQueue();
   q.push({
     id: 'sched_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
-    contactId, body,
-    // Plain public-URL strings (uploaded at schedule time): images ride as MMS
-    // mediaUrls, non-image files append to the body as links. JSON-safe, unlike
+    contactId, body, recipientPhone:eligibility.recipientPhone,
+    // Historical URL queues keep their original image/file fields. New private
+    // attachment intent contains stable IDs only. Both remain JSON-safe, unlike
     // the old File-bearing `attachments` which silently became {} in storage.
     mediaUrls: Array.isArray(mediaUrls) ? mediaUrls : [],
     fileLinks: Array.isArray(fileLinks) ? fileLinks : [],
+    ...(intent ? {attachmentIntent:intent,operatorId} : {}),
     at: atIso,
     createdAt: new Date().toISOString(),
   });
-  writeSchedQueue(q);
+  const saved=writeSchedQueue(q,!!intent);
+  if(intent && !saved)return {ok:false,error:'The message could not be saved for later. The original draft was kept.'};
+  return {ok:true};
 }
 // [5]: a durable cancelled-id tombstone so Cancel is authoritative even when an
 // item is already mid-fire inside a tick loop. Before this, cancelScheduledMessage
@@ -2036,6 +2060,36 @@ function cancelScheduledMessage(id) {
   tombstoneSched(id); // authoritative , honored even mid-fire by the runner
   writeSchedQueue(readSchedQueue().filter(x => x.id !== id));
 }
+async function checkScheduledMessageDelivery(id) {
+  const item=readSchedQueue().find(m=>m.id===id && m.deliveryPending);
+  if(!item || typeof window.CRM?.__db?.rpc!=='function')return {ok:false,error:'Delivery records are unavailable. No new text was sent.'};
+  const key=item.attachmentIntent && item.dispatchKey || `v3-sched-${item.id}`;
+  let timer;
+  try {
+    const operatorId=item.attachmentIntent ? await messageAttachmentActorId() : undefined;
+    if(item.attachmentIntent && operatorId!==item.operatorId)return {ok:false,error:'Delivery records are unavailable. No new text was sent.'};
+    const response=await Promise.race([
+      window.CRM.__db.rpc(item.attachmentIntent ? 'bpp_operator_manual_message_attachment_recovery_by_key' : 'native_operator_manual_message_recovery_by_key',{p_idempotency_key:key}),
+      new Promise(resolve=>{timer=setTimeout(()=>resolve({error:{message:'receipt_timeout'}}),8000);}),
+    ]);
+    const receipt=response?.data;
+    if(item.attachmentIntent && await messageAttachmentActorId()!==operatorId)return {ok:false,error:'Delivery records are unavailable. No new text was sent.'};
+    const finalBody=(item.body || '')+((item.fileLinks || []).length?((item.body?'\n':'')+item.fileLinks.join('\n')):'');
+    if(response?.error || receipt?.ok!==true || receipt.found!==true || receipt.requested_idempotency_key!==key
+      || (!item.attachmentIntent && receipt.contact_id!==item.contactId) || receipt.frozen_phone!==item.recipientPhone
+      || (item.attachmentIntent ? !messageAttachmentReceiptMatches(receipt,{contactId:item.contactId,recipientPhone:item.recipientPhone,operatorId,body:finalBody,attachmentIntent:item.attachmentIntent,allowCanonicalContact:true}) : receipt.message_body!==finalBody))
+      return {ok:false,error:'Delivery is still unconfirmed. No new text was sent.'};
+    if(receipt.status==='sent'){
+      if(item.attachmentIntent && !messageAttachmentMessageMatches(receipt.message || {id:receipt.message_id,contact_id:receipt.contact_id},item.contactId,receipt.canonical_contact_id))
+        return {ok:false,error:'Delivery is still unconfirmed. No new text was sent.'};
+      writeSchedQueue(readSchedQueue().filter(m=>m.id!==id));
+      window.dispatchEvent(new CustomEvent('crm-data-changed'));
+      return {ok:true,status:'sent'};
+    }
+    return {ok:true,status:receipt.status,error:receipt.status==='failed'?'The earlier send failed. No new text was sent.':'Delivery is still unconfirmed. No new text was sent.'};
+  }catch(_){return {ok:false,error:'Delivery records could not be checked. No new text was sent.'};}
+  finally{clearTimeout(timer);}
+}
 // One-shot mount at app load: runs the queue every 60s. Idempotent:
 // __schedRunning guards against double-init from React strict-mode
 // double-invoke.
@@ -2043,24 +2097,12 @@ function startScheduledQueueRunner() {
   if (typeof window === 'undefined') return;
   if (window.__bppSchedRunning) return;
   window.__bppSchedRunning = true;
-  // A queued message is removed from the queue BEFORE the send is confirmed
-  // (so a slow send can't double-fire). Before 2026-06-22 a transient failure
-  // (5xx, rate-limit, network blip) OR a contact that became DNC after
-  // scheduling just toasted and the message was permanently dropped, silently.
-  // Now: transient failures re-queue with a capped backoff so a blip never
-  // loses Key's message; a PERMANENT failure (DNC / STOP / invalid recipient)
-  // is surfaced and NOT re-queued, because retrying it can never succeed and a
-  // blind re-queue would loop forever against a do-not-contact contact.
+  // Only a definite failure before provider contact can retry automatically.
+  // Any uncertain outcome keeps the same local key, draft and media for
+  // read-only reconciliation; it is never presented as sent or auto-resumed.
   const MAX_SCHED_TRIES = 3;
-  // [6]: a due item is now KEPT in the queue (marked inFlightAt) for the
-  // duration of its send and removed ONLY after a confirmed result, so closing
-  // the tab before a send is dispatched no longer permanently drops the text.
-  // A send that began but never resolved (tab closed/crashed mid-send) is
-  // detected as a STALE inFlight on a later tick and SURFACED to Key, never
-  // auto-resent: send-sms's idempotency guard is only a ~60s in-memory window,
-  // so a silent resend minutes later could double-text the customer (durable
-  // server-side idempotency is the Key-gated fix, docs/OPEN-DECISIONS.md). Key
-  // checks the thread (ground truth) and resends only if it truly did not go.
+  // A tab can close during transport. A stale in-flight entry is held as
+  // unconfirmed instead of issuing another message or dropping its draft.
   const STALE_INFLIGHT_MS = 3 * 60_000;
   // Per-tab guard so an overlapping tick (a send slower than the 60s interval)
   // can't pick the same id twice within this tab.
@@ -2072,24 +2114,34 @@ function startScheduledQueueRunner() {
   const removeSched = (id) => writeSchedQueue(readSchedQueue().filter(x => x.id !== id));
   const releaseInFlight = (id) => writeSchedQueue(readSchedQueue().map(x => x.id === id ? { ...x, inFlightAt: null } : x));
   const requeueTransient = (m, reason) => {
+    if(readCancelledSched().has(m.id)){removeSched(m.id);return;}
     const tries = (m.tries || 0) + 1;
     // Drop this id's current (in-flight) copy first so a retry never leaves a
     // duplicate now that items live in the queue until confirmed.
     const base = readSchedQueue().filter(x => x.id !== m.id);
     if (tries >= MAX_SCHED_TRIES) {
+      // New private media remains recoverable when preparation cannot finish.
+      if(m.attachmentIntent)base.push({...m,tries,inFlightAt:null,permissionBlocked:true,blockedReason:reason});
       writeSchedQueue(base); // give up after the cap, never silently:
-      window.showToast?.(`Scheduled text to ${schedContactName(m.contactId)} failed after ${tries} tries: ${reason}. Not retrying.`, { kind: 'error', duration: 14000 });
+      window.showToast?.(m.attachmentIntent
+        ? `Scheduled text to ${schedContactName(m.contactId)} failed after ${tries} tries. Automatic retries stopped. ${messageAttachmentOperatorError(reason)}`
+        : `Scheduled text to ${schedContactName(m.contactId)} failed after ${tries} tries: ${reason}. Not retrying.`, { kind: 'error', duration: 14000 });
       return;
     }
-    base.push({ ...m, tries, inFlightAt: null, at: new Date(Date.now() + tries * 2 * 60_000).toISOString() });
+    base.push({ ...m, tries, inFlightAt: null, at: new Date(Date.now() + tries * 2 * 60_000).toISOString(),
+      ...(m.attachmentIntent ? {dispatchKey:`v3-sched-${m.id}-retry-${tries}`} : {}) });
     writeSchedQueue(base);
     window.showToast?.(`Scheduled text to ${schedContactName(m.contactId)} didn't send, retrying (${tries}/${MAX_SCHED_TRIES}).`, { kind: 'error', duration: 7000 });
   };
-  const failPermanent = (m, reason) => {
-    // Permanent (DNC etc.): correct outcome is to NOT send; remove it and make
-    // sure Key knows it didn't go out instead of dropping it in silence.
-    removeSched(m.id);
-    window.showToast?.(`Scheduled text to ${schedContactName(m.contactId)} not sent: ${reason}`, { kind: 'error', duration: 14000 });
+  const blockPermission = (m, reason) => {
+    if(readCancelledSched().has(m.id)){removeSched(m.id);return;}
+    writeSchedQueue(readSchedQueue().map(x=>x.id===m.id?{...x,inFlightAt:null,permissionBlocked:true,blockedReason:reason}:x));
+    window.showToast?.(`Scheduled text not sent: ${m.attachmentIntent ? messageAttachmentOperatorError(reason) : reason}`,{kind:'error',duration:10000});
+  };
+  const holdDelivery = (m, reason='Delivery is unconfirmed. Check delivery before any retry.') => {
+    if(readCancelledSched().has(m.id)){removeSched(m.id);return;}
+    writeSchedQueue(readSchedQueue().map(x=>x.id===m.id?{...x,inFlightAt:null,deliveryPending:true,deliveryPendingReason:reason}:x));
+    window.showToast?.(reason,{kind:'error',duration:10000});
   };
   const tick = async () => {
     const now = Date.now();
@@ -2104,7 +2156,7 @@ function startScheduledQueueRunner() {
     const stale = q.filter(m => m.inFlightAt && (now - Date.parse(m.inFlightAt)) > STALE_INFLIGHT_MS);
     if (stale.length) {
       const staleIds = new Set(stale.map(m => m.id));
-      writeSchedQueue(q.filter(m => !staleIds.has(m.id)));
+      writeSchedQueue(q.map(m => staleIds.has(m.id)?{...m,inFlightAt:null,deliveryPending:true,deliveryPendingReason:'The previous send did not return a receipt. Check delivery before any retry.'}:m));
       for (const m of stale) {
         untombstoneSched(m.id);
         window.showToast?.(`A scheduled text to ${schedContactName(m.contactId)} may not have finished sending. Check the thread and resend if it isn't there.`, { kind: 'error', duration: 16000 });
@@ -2113,6 +2165,8 @@ function startScheduledQueueRunner() {
     }
     const due = q.filter(m =>
       Date.parse(m.at) <= now &&
+      !m.deliveryPending &&       // uncertain sends require read-only reconciliation
+      !m.permissionBlocked &&     // preserve blocked draft/media; never auto-resume
       !m.inFlightAt &&            // not already being sent
       !inProcess.has(m.id) &&     // not picked by this tab's current loop
       !cancelled.has(m.id)
@@ -2130,37 +2184,62 @@ function startScheduledQueueRunner() {
         // irreversible send: drop it and clear its tombstone.
         if (readCancelledSched().has(m.id)) { removeSched(m.id); untombstoneSched(m.id); continue; }
         if (!window.CRM?.__invokeFn) { releaseInFlight(m.id); continue; } // data layer not ready: retry next tick, no try burned
-        const idempotencyKey = `v3-sched-${m.id}`;
-        // Media uploaded at schedule time: images send as MMS mediaUrls, files
-        // append to the body as links (mirrors the immediate send() path).
+        if(m.attachmentIntent && await messageAttachmentActorId()!==m.operatorId){blockPermission(m,'Attachment identity changed. The original draft was kept.');continue;}
+        // Queue identity is frozen when enqueued. Old unbound queues fail closed.
+        const eligibility=await readSmsSendEligibility({contactId:m.contactId,phone:m.recipientPhone});
+        // Cancellation wins even when it arrives during the async permission read.
+        if(readCancelledSched().has(m.id)){removeSched(m.id);continue;}
+        if(!eligibility.allowed){blockPermission(m,eligibility.message);continue;}
+        const idempotencyKey = m.attachmentIntent && m.dispatchKey || `v3-sched-${m.id}`;
+        // Historical URL snapshots retain their original wire payload. New intent
+        // is resolved by the server only now, after current authorization.
         const mediaUrls = Array.isArray(m.mediaUrls) ? m.mediaUrls : [];
         const fileLinks = Array.isArray(m.fileLinks) ? m.fileLinks : [];
         const finalBody = (m.body || '') + (fileLinks.length ? ((m.body ? '\n' : '') + fileLinks.join('\n')) : '');
+        let attachmentIntent;
+        try {
+          if(m.attachmentIntent!==undefined){attachmentIntent=validateMessageAttachmentIntent(m.attachmentIntent);if(mediaUrls.length||fileLinks.length)throw Error('Conflicting attachment intent');}
+        } catch(_){blockPermission(m,'Attachment could not be verified. Keep this draft and try again.');continue;}
+        if(attachmentIntent && await messageAttachmentActorId()!==m.operatorId){blockPermission(m,'Attachment identity changed. The original draft was kept.');continue;}
+        if(readCancelledSched().has(m.id)){removeSched(m.id);continue;}
         const { data, error } = await window.CRM.__invokeFn('send-sms', {
-          body: { contactId: m.contactId, body: finalBody, mediaUrls, idempotencyKey },
+          body: { contactId: m.contactId, expectedPhone:eligibility.recipientPhone, body: finalBody,
+            ...(attachmentIntent ? {attachmentIntent} : {mediaUrls}), idempotencyKey },
         });
+        if(attachmentIntent && await messageAttachmentActorId()!==m.operatorId){holdDelivery(m);continue;}
+        if(data?.accepted_ambiguous===true || data?.persistence_pending===true){holdDelivery(m);continue;}
         if (error || (data && data.success === false)) {
           // Classify the failure. A DNC/STOP/invalid-recipient is PERMANENT
           // (retrying can never succeed); a 5xx / rate-limit / network error is
           // TRANSIENT and worth a backed-off retry.
-          let status = 0, reason = '';
+          let status = 0, reason = '', detail=data;
           try { status = (error && error.context && error.context.status) || 0; } catch (_) {}
           try {
             if (data && data.success === false) reason = data.error || '';
-            else if (error && error.context) { const b = await error.context.json(); reason = (b && b.error) || ''; }
+            else if (error && error.context) { const b = await error.context.json(); detail=b;reason = (b && b.error) || ''; }
           } catch (_) {}
           if (!reason) reason = (error && error.message) || 'unknown error';
+          if(attachmentIntent && await messageAttachmentActorId()!==m.operatorId){holdDelivery(m);continue;}
+          const expectedAttachment={contactId:m.contactId,recipientPhone:m.recipientPhone,operatorId:m.operatorId,
+            body:finalBody,attachmentIntent,idempotencyKey};
+          const boundFailure=!attachmentIntent || detail?.requested_idempotency_key===idempotencyKey
+            && messageAttachmentReceiptMatches(detail,expectedAttachment);
           const permanent = status === 403 || status === 400 || status === 404 ||
             /do not contact|do_not_contact|unsubscrib|opted out|\bstop\b|21610|invalid|not found|no phone/i.test(reason);
-          if (permanent) failPermanent(m, reason);
-          else requeueTransient(m, reason);
-        } else {
+          if(detail?.accepted_ambiguous===true || detail?.persistence_pending===true || detail?.provider_contacted===true)holdDelivery(m);
+          else if(!boundFailure)holdDelivery(m);
+          else if (permanent) blockPermission(m, reason);
+          else if(attachmentIntent ? messageAttachmentKnownUnsent(detail,expectedAttachment) : detail?.definite_failure===true && detail?.provider_contacted===false && detail?.retry_safe===true)requeueTransient(m,reason);
+          else holdDelivery(m);
+        } else if(data?.success===true && typeof data.message?.id==='string' && data.message.id
+          && (!attachmentIntent || messageAttachmentReceiptMatches(data,{contactId:m.contactId,recipientPhone:eligibility.recipientPhone,operatorId:m.operatorId,body:finalBody,attachmentIntent})
+            && messageAttachmentMessageMatches(data.message,m.contactId))) {
           removeSched(m.id); // [6] confirmed sent: now safe to drop from the queue
           window.showToast?.(`Scheduled text sent`);
-        }
+        } else { holdDelivery(m); }
       } catch (e) {
-        // Network/runtime error reaching the edge fn: transient, retry with backoff.
-        requeueTransient(m, e.message || String(e));
+        // Transport loss cannot establish whether the provider accepted the send.
+        holdDelivery(m);
       } finally {
         inProcess.delete(m.id);
       }
@@ -2755,7 +2834,7 @@ Object.assign(window, {
   safeSetItem, isAddressableStreet, copyText,
   useContactPropertyImage, propertyImageIdentity,
   readSnoozeMap, snoozeContact, unsnoozeContact, isSnoozed, snoozedUntil,
-  readSchedQueue, scheduleMessage, cancelScheduledMessage, startScheduledQueueRunner,
+  readSchedQueue, scheduleMessage, cancelScheduledMessage, checkScheduledMessageDelivery, startScheduledQueueRunner,
   usePinned, readPinnedSet, useHScrollFade,
   // iOS Phase 1 shell primitives, consumed bare in crm-app.jsx and
   // (LargeTitleHeader / IosNavBar / SegmentedControl) in crm-left.jsx and

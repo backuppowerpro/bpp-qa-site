@@ -1,0 +1,10 @@
+/* Reuse the approved landing and outlet presentation, scoped away from later quote screens. */
+body.readiness-landing-active #mainPage > :not(#screen-readiness-landing) { display: none !important; }
+body:not(.readiness-landing-active) #screen-readiness-landing { display: none; }
+.guided-walk[data-first-phase-landing][data-active-screen="connection"] .guided-hero,
+.guided-walk[data-first-phase-landing][data-active-screen="connection"] .guided-offer-proof { display: none; }
+.guided-walk[data-first-phase-landing][data-active-screen="connection"] .intro-card { display: contents; }
+.guided-walk[data-first-phase-landing][data-active-screen="connection"] .guided-flow { max-width: 620px; margin-inline: auto; }
+.guided-walk[data-first-phase-landing][data-active-screen="connection"] .guided-screen > h2 { font-size: 28px !important; font-weight: 800; line-height: 1.2; }
+@media (max-width: 900px) { #screen-readiness-landing .rl-hero-photo > figcaption { width: min(600px, calc(100% - 48px)); margin-inline: auto; } }
+@media (max-width: 350px) { #screen-readiness-landing .rl-hero-photo > figcaption { width: calc(100% - 36px); } }

@@ -3,16 +3,17 @@
 <head>
 <meta name="robots" content="noindex,nofollow,noarchive">
 <script src="/qa-environment.js"></script>
+<meta name="robots" content="noindex,nofollow" />
 <link rel="stylesheet" href="/assets/css/bpp-money-fonts.css?v=62ed32bb5d1b" />
 <meta name="referrer" content="strict-origin-when-cross-origin">
 
 
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-VoU61azup7DvYiub2mqytb+SOy7vjbXyq5ELeyBdmM4='; script-src-attr 'none'; style-src 'self' 'sha256-RBxNw82cxFglLIavi3DswWwTukkDQpAtYrJqUpEsXJU='; style-src-elem 'self' 'sha256-RBxNw82cxFglLIavi3DswWwTukkDQpAtYrJqUpEsXJU='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
-<script src="/assets/js/bpp-analytics.js?v=4778878d007c"></script>
-<script src="/walk-v2/token-bootstrap.js?v=5561db666347"></script>
-<script src="/walk-v2/no-js-bootstrap.js?v=47a946524088"></script>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-VoU61azup7DvYiub2mqytb+SOy7vjbXyq5ELeyBdmM4='; script-src-attr 'none'; style-src 'self' 'sha256-ryn9Nz9uk6AG4OSOOlP8VPfDvVbt1gQvnuhG+NigYXU='; style-src-elem 'self' 'sha256-RBxNw82cxFglLIavi3DswWwTukkDQpAtYrJqUpEsXJU='; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/walk-v2/token-bootstrap.js?v=e257fb84c862"></script>
+<script src="/assets/js/bpp-analytics.js?v=c9db468254dd"></script>
+<script src="/walk-v2/no-js-bootstrap.js?v=3ef9fc17b297"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
 <title>Backup Power Pro · Quote Walk · Step 1</title>
 <link rel="icon" href="/favicon.png" type="image/png" />
@@ -610,12 +611,15 @@
     }
     .state-label { display: none; }
   }
+
+/* Suppress duplicate answer echo, not actionable save errors. */
+.echo:not(.is-error){position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip-path:inset(50%);white-space:nowrap;border:0!important}
 </style>
 <link rel="stylesheet" href="/walk-v2/mobile-canvas.css?v=aac4d845b250" />
-<link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
+<link rel="stylesheet" href="/walk-v2/no-js-recovery.css?v=3d4e0f8b92ec" />
 </head>
 <body>
-<div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to continue this Quote Walk. Your saved answers remain on file. Turn it on and reload, or call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
+<div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to continue this Quote Walk. Your saved answers remain on file. Turn it on and reload.</div>
 <div class="stack" id="stack">
 
   <!-- ============ MAIN PAGE (mobile, interactive) ============ -->
@@ -727,7 +731,7 @@
 
 </div>
 
-<script src="/walk-v2/walk.js?v=cc96a0ac7570"></script>
+<script src="/walk-v2/walk.js?v=b326339cd8e7"></script>
 <script>
 
 (function () {

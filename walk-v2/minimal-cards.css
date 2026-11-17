@@ -1,0 +1,19 @@
+/* The same task card progresses from saved photo to contact to receipt. */
+.guided-walk .initial-panel-photo [data-initial-range-choice] {
+  margin: 20px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.guided-walk .initial-panel-photo [data-initial-range-choice] > h2,
+.guided-walk .initial-panel-photo [data-initial-range-choice] > p:not([data-initial-range-hint]) { display: none; }
+.guided-walk .initial-panel-photo [data-initial-range-choice] .cta { margin: 0; }
+.guided-walk .initial-panel-photo [data-initial-range-hint] {
+  margin: 9px 0 0;
+  text-align: center;
+  color: #46566b;
+  font-size: 14px;
+  line-height: 1.5;
+}

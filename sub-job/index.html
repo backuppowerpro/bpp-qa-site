@@ -40,7 +40,7 @@
     --line-soft: #e8ecf2;
     --ink: #0b1f3b;
     --muted: #4f5b6e;
-    --faint: #6d7889;
+    --faint: #4f5b6e;
 
     --green: #067a4e;
     --green-bg: #e9f7f0;
@@ -324,9 +324,15 @@
   /* toast */
   .ok-toast { position:fixed; bottom:calc(96px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); background:var(--green); color:#fff; padding:10px 18px; border-radius:8px; font-size:14px; font-weight:600; box-shadow:0 4px 12px rgba(0,0,0,0.2); z-index:1000; max-width:88%; text-align:center; }
   .ok-toast.err { background:var(--red); }
+
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex="0"]:focus-visible, [tabindex="-1"]:focus { outline:3px solid #005fcc !important; outline-offset:3px !important; box-shadow:0 0 0 3px #fff !important; }
+  h1, h2, h3, input, button { scroll-margin-top:100px; }
 </style>
 </head>
 <body>
+<main>
+<p class="sr-only" id="jobStatus" role="status" aria-live="polite" aria-atomic="true"></p>
   <div class="app">
     <div class="topbar">
       <span class="brand">Your job</span>
@@ -476,7 +482,7 @@
           <p class="seclabel">Install photos</p>
           <p class="note" id="fullInstallLede">The work is done? Add your install photos here. Your first photo starts the getting-paid step, where you finish the rest and submit for payout.</p>
           <div class="qc" id="fullQc"><!-- install_qc slot rows rendered here --></div>
-          <div class="perr" id="fullQcErr" hidden><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg> <span id="fullQcErrText">That photo did not upload, tap Add to try again. Nothing else was lost.</span></div>
+          <div class="perr" id="fullQcErr" role="alert" hidden><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg> <span id="fullQcErrText">That photo did not upload, tap Add to try again. Nothing else was lost.</span></div>
         </div>
       </div>
     </section>
@@ -522,18 +528,18 @@
 
         <p class="seclabel">Confirm the work</p>
         <p class="note" style="margin:0 0 12px;">Check these once the work is truly done. They lock in when you check them, and they release your payout. Key handles customer sign-off; you do not need to call or text the homeowner.</p>
-        <button type="button" class="attest" data-attest="confirm_client_approval">
+        <button type="button" class="attest" aria-pressed="false" aria-disabled="false" data-attest="confirm_client_approval">
           <span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4 4 10-10"/></svg></span>
           <span class="t">The install is finished on site and ready for Key's quality check.</span>
         </button>
-        <button type="button" class="attest" data-attest="confirm_work_done">
+        <button type="button" class="attest" aria-pressed="false" aria-disabled="false" data-attest="confirm_work_done">
           <span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4 4 10-10"/></svg></span>
           <span class="t">The install is done and I tested it to the best of my ability.</span>
         </button>
 
         <p class="seclabel">Job photos</p>
         <div class="qc" id="qc"><!-- slot rows rendered from photo_slots --></div>
-        <div class="perr" id="perr" hidden><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg> <span id="perrText">That photo did not upload, tap Add to try again.</span></div>
+        <div class="perr" id="perr" role="alert" hidden><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg> <span id="perrText">That photo did not upload, tap Add to try again.</span></div>
       </section>
     </div>
 
@@ -625,6 +631,7 @@
     </div>
   </div>
 
+</main>
 <script>
 (function () {
   'use strict';
@@ -658,6 +665,7 @@
   var hasData = false;
   var offerSettled = false;    // accept/decline in flight or done, do not re-render over it
   var lastLoadedTs = null;
+  var slotBusy = {};    // kind + slot -> picker or upload in progress
 
   // ------- helpers -------
   function esc(s) {
@@ -695,6 +703,10 @@
     var el = document.createElement('div');
     el.className = 'ok-toast' + (isErr ? ' err' : '');
     el.textContent = msg;
+    el.setAttribute('aria-hidden', 'true');
+    document.getElementById('jobStatus').setAttribute('role', isErr ? 'alert' : 'status');
+    document.getElementById('jobStatus').setAttribute('aria-live', isErr ? 'assertive' : 'polite');
+    document.getElementById('jobStatus').textContent = msg;
     document.body.appendChild(el);
     setTimeout(function () { el.remove(); }, 3200);
   }
@@ -738,10 +750,15 @@
       if (accept === 'image/*') input.capture = 'environment';
       input.style.display = 'none';
       document.body.appendChild(input);
+      var settled = false;
+      function finish(file) {
+        if (settled) return;
+        settled = true; input.remove(); resolve(file || null);
+      }
+      input.oncancel = function () { finish(null); };
       input.onchange = function () {
         var f = input.files && input.files[0];
-        input.remove();
-        resolve(f || null);
+        finish(f);
       };
       input.click();
     });
@@ -1137,10 +1154,14 @@
         '<div class="qrow ' + (done ? 'done' : '') + '" data-slot="' + esc(s.code) + '" data-kind="' + esc(s.kind) + '" data-req="' + (s.is_required ? '1' : '0') + '">' +
           '<span class="thumb">' + SLOT_ICON + SLOT_OK + '</span>' +
           '<span class="qt"><span class="n">' + esc(s.label) + '</span><span class="' + statusCls + '">' + status + '</span></span>' +
-          '<button class="addbtn" type="button"><svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg>' + (done ? 'Replace' : 'Add') + '</button>' +
+          '<button class="addbtn" type="button" aria-label="' + (done ? 'Replace ' : 'Add ') + esc(s.label) + '"><svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg>' + (done ? 'Replace' : 'Add') + '</button>' +
         '</div>';
     }).join('');
     box.querySelectorAll('.qrow').forEach(function (row) {
+      var button = row.querySelector('.addbtn');
+      button.disabled = !!slotBusy[row.dataset.kind + ':' + row.dataset.slot];
+      button.setAttribute('aria-busy', button.disabled ? 'true' : 'false');
+      button.setAttribute('aria-describedby', 'fullQcErr');
       row.querySelector('.addbtn').addEventListener('click', function () { onSlotAdd(row); });
     });
   }
@@ -1326,6 +1347,9 @@
       var key = a.dataset.attest;
       a.classList.toggle('on', !!attestOn[key]);
       a.classList.toggle('busy', !!attestBusy[key]);
+      a.setAttribute('aria-pressed', attestOn[key] ? 'true' : 'false');
+      a.setAttribute('aria-disabled', (attestOn[key] || attestBusy[key] || paidSubmitted) ? 'true' : 'false');
+      a.setAttribute('aria-busy', attestBusy[key] ? 'true' : 'false');
       if (a.dataset.wired) return;
       a.dataset.wired = '1';
       a.addEventListener('click', function () { onAttestTap(a); });
@@ -1334,9 +1358,10 @@
 
   function onAttestTap(a) {
     var key = a.dataset.attest;
-    if (attestOn[key] || attestBusy[key]) return; // stamped-once, cannot un-check
+    if (paidSubmitted || data.status === 'pass_submitted' || attestOn[key] || attestBusy[key]) return; // stamped-once, cannot un-check
     attestBusy[key] = true;
     a.classList.add('busy');
+    renderAttestations();
     postAction(key).then(function (r) {
       return r.json().then(function (j) { return { ok: r.ok, j: j, status: r.status }; });
     }).then(function (out) {
@@ -1345,14 +1370,17 @@
       if (out.ok && out.j && out.j.ok) {
         attestOn[key] = true;
         a.classList.add('on');
+        toast(a.querySelector('.t').textContent + ' Confirmed.');
       } else {
         // most common: install photos not uploaded yet (409). Name it.
         toast(out.j && out.j.error ? out.j.error : 'Could not confirm yet. Add your install photos first.', true);
       }
+      renderAttestations();
       refreshSubmitGate();
     }).catch(function () {
       attestBusy[key] = false;
       a.classList.remove('busy');
+      renderAttestations();
       toast('Network error. Try again.', true);
     });
   }
@@ -1377,10 +1405,14 @@
         '<div class="qrow ' + (done ? 'done' : '') + '" data-slot="' + esc(s.code) + '" data-kind="' + esc(s.kind) + '" data-req="' + (s.is_required ? '1' : '0') + '">' +
           '<span class="thumb">' + SLOT_ICON + SLOT_OK + '</span>' +
           '<span class="qt"><span class="n">' + esc(s.label) + '</span><span class="' + statusCls + '">' + status + '</span></span>' +
-          '<button class="addbtn" type="button"><svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg>' + (done ? 'Replace' : 'Add') + '</button>' +
+          '<button class="addbtn" type="button" aria-label="' + (done ? 'Replace ' : 'Add ') + esc(s.label) + '"><svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg>' + (done ? 'Replace' : 'Add') + '</button>' +
         '</div>';
     }).join('');
     qcBox.querySelectorAll('.qrow').forEach(function (row) {
+      var button = row.querySelector('.addbtn');
+      button.disabled = data.status === 'pass_submitted' || !!slotBusy[row.dataset.kind + ':' + row.dataset.slot];
+      button.setAttribute('aria-busy', slotBusy[row.dataset.kind + ':' + row.dataset.slot] ? 'true' : 'false');
+      button.setAttribute('aria-describedby', 'perr');
       row.querySelector('.addbtn').addEventListener('click', function () { onSlotAdd(row); });
     });
   }
@@ -1389,20 +1421,52 @@
     var slot = row.dataset.slot;
     var kind = row.dataset.kind; // install_qc | inspection_pass
     var btn = row.querySelector('.addbtn');
+    var busyKey = kind + ':' + slot;
+    if (btn.disabled || slotBusy[busyKey] || (paidSubmitted && row.closest('#qc')) || !data || ['accepted', 'permit_submitted', 'install_submitted'].indexOf(data.status) < 0) return;
+    var restoreFocus = document.activeElement === btn;
+    var group = row.closest('#fullQc') ? document.getElementById('fullQc') : qcBox;
+    function matchingButton() {
+      var match = [].slice.call(group.querySelectorAll('.qrow')).find(function (candidate) { return candidate.dataset.slot === slot && candidate.dataset.kind === kind; });
+      return match && match.querySelector('.addbtn');
+    }
+    function finishBusy() {
+      delete slotBusy[busyKey];
+      document.querySelectorAll('.qrow').forEach(function (candidate) {
+        if (candidate.dataset.slot !== slot || candidate.dataset.kind !== kind) return;
+        var target = candidate.querySelector('.addbtn');
+        target.disabled = data.status === 'pass_submitted' || (paidSubmitted && !!candidate.closest('#qc'));
+        target.setAttribute('aria-busy', 'false');
+      });
+    }
+    function restoreUploadFocus() {
+      if (!restoreFocus || (document.activeElement !== document.body && document.activeElement !== btn)) return;
+      var target = matchingButton();
+      if (!target || !target.getClientRects().length) {
+        var visibleRow = [].slice.call(document.querySelectorAll('.qrow')).find(function (candidate) { return candidate.dataset.slot === slot && candidate.dataset.kind === kind && candidate.getClientRects().length; });
+        target = visibleRow && visibleRow.querySelector('.addbtn');
+      }
+      if (target && !target.disabled && target.getClientRects().length) target.focus();
+    }
     perr.hidden = true;
+    document.getElementById('fullQcErr').hidden = true;
 
     // The inspection_pass_proof upload is the gated submit. Guard it client-side so
     // the sub gets a named blocker instead of a raw 409 (the server still hard-gates).
     if (kind === 'inspection_pass') {
       var blocker = submitBlocker();
-      if (blocker) { showPerr(blocker); return; }
+      if (blocker) { showPerr(blocker, row); return; }
     }
 
+    slotBusy[busyKey] = true;
     pickImage('image/*').then(function (file) {
-      if (!file) return;
-      if (file.size > 15 * 1024 * 1024) { showPerr('That photo is over 15 MB. Try a smaller one, nothing else was lost.'); return; }
+      if (!file) { finishBusy(); restoreUploadFocus(); return; }
+      if (['accepted', 'permit_submitted', 'install_submitted'].indexOf(data.status) < 0) { finishBusy(); return; }
+      restoreFocus = restoreFocus && (document.activeElement === document.body || document.activeElement === btn);
+      if (file.size > 15 * 1024 * 1024) { finishBusy(); showPerr('That photo is over 15 MB. Try a smaller one, nothing else was lost.', row); restoreUploadFocus(); return; }
       var origLabel = btn.textContent;
       btn.disabled = true; btn.textContent = '...';
+      btn.setAttribute('aria-busy', 'true');
+      toast('Uploading ' + row.querySelector('.qt .n').textContent + '.');
       // If this is the inspection_pass proof, the primary should also reflect submitting.
       var isSubmit = (kind === 'inspection_pass');
       if (isSubmit) { submitBtn.classList.add('busy'); submitBtn.innerHTML = '<span class="spin"></span><span>Submitting...</span>'; }
@@ -1411,41 +1475,59 @@
       }).then(function (r) {
         return r.json().then(function (j) { return { ok: r.ok, j: j, status: r.status }; });
       }).then(function (out) {
+        finishBusy();
         if (out.ok && out.j && out.j.ok) {
           // mark this row done
           row.classList.add('done');
           var st = row.querySelector('.qt span:last-child');
           if (st) { st.className = 's'; st.textContent = 'Uploaded'; }
           btn.disabled = false; btn.textContent = 'Replace';
+          btn.setAttribute('aria-label', 'Replace ' + row.querySelector('.qt .n').textContent);
+          toast(row.querySelector('.qt .n').textContent + ' uploaded.');
           if (out.j.status === 'pass_submitted') {
             lockPaidSubmitted();
           } else {
             // pull fresh slot state so the gate + counts are exact
-            refresh();
+            refresh().then(function () {
+              restoreUploadFocus();
+            });
           }
         } else {
           btn.disabled = false; btn.textContent = origLabel;
           if (isSubmit) resetSubmitBtn();
           // server named the blocker (missing slots / attestations): surface it
           var msg = out.j && out.j.error ? out.j.error : 'That photo did not upload, tap Add to try again.';
-          showPerr(msg);
+          showPerr(msg, row);
+          restoreUploadFocus();
         }
       }).catch(function () {
+        finishBusy();
         btn.disabled = false; btn.textContent = origLabel;
         if (isSubmit) resetSubmitBtn();
-        showPerr('Network error, tap Add to try again. Nothing was lost.');
+        showPerr('Network error, tap Add to try again. Nothing was lost.', row);
+        restoreUploadFocus();
       });
     });
   }
 
-  function showPerr(msg) {
-    document.getElementById('perrText').textContent = msg;
-    perr.hidden = false;
+  function showPerr(msg, row) {
+    var current = row && [].slice.call(document.querySelectorAll('.qrow')).find(function (candidate) {
+      return candidate.dataset.slot === row.dataset.slot && candidate.dataset.kind === row.dataset.kind && candidate.getClientRects().length;
+    });
+    if ((row && !current) || (!row && !els.paid.getClientRects().length)) {
+      toast(msg, true);
+      return;
+    }
+    var full = current && current.closest('#fullQc');
+    var error = full ? document.getElementById('fullQcErr') : perr;
+    document.getElementById(full ? 'fullQcErrText' : 'perrText').textContent = msg;
+    error.hidden = false;
   }
 
   // What still blocks the pass_submitted submit (mirror of the server hard-gate),
   // returns a human blocker string or '' when clear.
   function submitBlocker() {
+    if (Object.keys(slotBusy).length) return 'Wait for your photo upload to finish first.';
     if (!attestOn.confirm_client_approval || !attestOn.confirm_work_done) {
       return 'Check both boxes above first (ready for Key\'s QC, work done and tested).';
     }
@@ -1512,7 +1594,8 @@
     stepPaid.className = 'step current';
     stepPaid.querySelector('.node').innerHTML = '<span class="d"></span>';
     // lock attestations visually
-    document.querySelectorAll('.attest').forEach(function (a) { a.classList.add('busy'); });
+    document.querySelectorAll('.attest').forEach(function (a) { a.classList.add('busy'); a.setAttribute('aria-disabled', 'true'); });
+    qcBox.querySelectorAll('.addbtn').forEach(function (button) { button.disabled = true; button.setAttribute('aria-busy', 'false'); });
   }
 
   function unlockPaidForRework() {

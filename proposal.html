@@ -3,12 +3,13 @@
 <head>
 <meta name="robots" content="noindex,nofollow,noarchive">
 <script src="/qa-environment.js"></script>
+<meta name="robots" content="noindex,nofollow" />
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://js.stripe.com 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://api.stripe.com https://maps.googleapis.com https://*.google.com; frame-src https://js.stripe.com https://www.google.com;">
-<script src="/assets/js/bpp-analytics.js?v=4778878d007c"></script>
+<script src="/assets/js/bpp-analytics.js?v=c9db468254dd"></script>
 <title>Proposal | Backup Power Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
@@ -18,7 +19,7 @@
 :root {
   --navy:#0b1f3b; --navy2:#1a3a5c; --gold:#ffba00;
   --green:#059669; --red:#dc2626; --border:#e4e8f0;
-  --bg:#eef1f7; --text:#1a2a42; --text2:#4a5568; --text3:#6b7280;
+  --bg:#eef1f7; --text:#1a2a42; --text2:#4a5568; --text3:#5b6473;
   --blue:#1d4ed8;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -71,7 +72,7 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
 /* ── HERO CARD ──────────────────────────────────────── */
 .hero-card{background:var(--navy);border-radius:20px;padding:28px 28px 24px;color:#fff;margin-bottom:16px;position:relative;overflow:hidden}
 .hero-footer-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.09);flex-wrap:wrap}
-.hero-date-text{font-size:11px;color:rgba(255,255,255,.42);font-weight:600;letter-spacing:.04em;font-family:'Outfit',sans-serif}
+.hero-date-text{font-size:11px;color:#aeb7c4;font-weight:600;letter-spacing:.04em;font-family:'Outfit',sans-serif}
 .expires-badge{font-size:10px;font-weight:700;letter-spacing:.04em;padding:3px 10px;background:rgba(255,186,0,.15);border-radius:20px;color:var(--gold);white-space:nowrap}
 .hero-title{font-family:'Outfit',sans-serif;font-size:28px;font-weight:900;line-height:1.1;margin-bottom:6px}
 .hero-sub{font-size:14px;color:rgba(255,255,255,.72);line-height:1.5}
@@ -128,7 +129,7 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
 .anchor-vs-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:14px}
 .anchor-col{flex:1;text-align:center}
 .anchor-col-label{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
-.anchor-price-old{font-family:'Outfit',sans-serif;font-size:30px;font-weight:900;color:#94a3b8;position:relative;display:inline-block}
+.anchor-price-old{font-family:'Outfit',sans-serif;font-size:30px;font-weight:900;color:#657086;position:relative;display:inline-block}
 
 .anchor-vs-badge{background:#fff;border-radius:20px;padding:5px 12px;font-family:'Outfit',sans-serif;font-size:11px;font-weight:800;color:var(--text3);flex-shrink:0;box-shadow:0 2px 8px rgba(11,31,59,.1)}
 .anchor-price-new{font-family:'Outfit',sans-serif;font-size:32px;font-weight:900;color:var(--green)}
@@ -144,8 +145,10 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
 .review-slide{position:absolute;top:0;left:0;right:0;opacity:0;visibility:hidden;transition:opacity .45s ease;pointer-events:none}
 .review-slide.active{opacity:1;visibility:visible;pointer-events:auto}
 .carousel-dots{display:flex;justify-content:center;gap:6px;margin-top:12px;margin-bottom:2px}
-.carousel-dot{width:6px;height:6px;border-radius:50%;background:#cbd5e1;border:none;padding:0;cursor:pointer;transition:background .3s}
-.carousel-dot.active{background:var(--navy)}
+.carousel-dot{width:44px;height:44px;display:grid;place-items:center;background:none;border:none;padding:0;cursor:pointer}
+.carousel-dot::before{content:"";width:6px;height:6px;border-radius:50%;background:#657086;transition:background .3s}
+.carousel-dot.active::before{background:var(--navy)}
+.carousel-pause{display:block;margin:8px auto 0;min-height:44px;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--navy);font:600 12px Inter,sans-serif;cursor:pointer}
 
 /* ── AMP TOGGLE ─────────────────────────────────────── */
 .amp-toggle-wrap{margin-bottom:16px}
@@ -154,7 +157,7 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
 .amp-toggle-btn{flex:1;padding:12px 0;border-radius:10px;border:none;background:transparent;color:var(--text2);font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;text-align:center}
 .amp-toggle-btn.active{background:var(--navy);color:#fff;box-shadow:0 2px 10px rgba(11,31,59,.25)}
 .amp-toggle-btn:not(.active):hover{background:#e2e8f0}
-.amp-toggle-btn .amp-sub{font-size:10px;font-weight:500;opacity:.7;display:block;margin-top:2px}
+.amp-toggle-btn .amp-sub{font-size:10px;font-weight:500;opacity:1;display:block;margin-top:2px}
 
 /* ── PRICING TABLE ──────────────────────────────────── */
 .price-table{width:100%;border-collapse:collapse;font-size:14px}
@@ -177,26 +180,26 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
 .investment-head h2{font-family:'Outfit',sans-serif;font-size:16px;font-weight:800;color:var(--navy)}
 .investment-head-icon{width:32px;height:32px;border-radius:8px;background:#fffbeb;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .investment-items{padding:4px 20px 0}
-.pom-divider-bar{background:var(--gold);padding:7px 20px;display:flex;align-items:center;justify-content:space-between;font-family:'Outfit',sans-serif;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#7a4a00}
+.pom-divider-bar{background:var(--gold);padding:7px 20px;display:flex;align-items:center;justify-content:space-between;font-family:'Outfit',sans-serif;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--navy)}
 .pom-section{background:linear-gradient(135deg,#0b1f3b 0%,#1a3a5c 100%);padding:18px 20px;cursor:pointer;transition:background .2s}
 .pom-section:hover{background:linear-gradient(135deg,#0f2a50 0%,#1e4570 100%)}
 .pom-top-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
 .pom-title{font-family:'Outfit',sans-serif;font-size:15px;font-weight:900;color:#fff;flex:1}
 .pom-price-label{font-family:'Outfit',sans-serif;font-size:20px;font-weight:900;color:var(--gold);text-align:right;flex-shrink:0}
-.pom-price-sub{font-size:10px;color:rgba(255,255,255,.4);font-weight:600;text-align:right}
+.pom-price-sub{font-size:10px;color:#c2cbd7;font-weight:600;text-align:right}
 .pom-features-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .pom-feature-pill{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 11px;display:flex;align-items:flex-start;gap:8px}
 .pom-feature-pill-title{font-size:12px;font-weight:700;color:#fff;line-height:1.3}
-.pom-feature-pill-desc{font-size:11px;color:rgba(255,255,255,.5);line-height:1.4;margin-top:2px}
+.pom-feature-pill-desc{font-size:11px;color:#c2cbd7;line-height:1.4;margin-top:2px}
 .investment-total-section{padding:14px 20px 16px;border-top:1px solid #f0f3f8;display:flex;align-items:center;justify-content:space-between}
 .investment-total-label{font-family:'Outfit',sans-serif;font-size:17px;font-weight:800;color:var(--navy)}
 .investment-per-day{text-align:center;padding:0 20px 14px;font-size:13px;color:var(--text3)}
 @media(max-width:480px){.pom-features-grid{grid-template-columns:1fr}}
 .pom-body{padding:16px 18px 18px;position:relative}
 .pom-body::before{content:'';position:absolute;top:0;right:0;width:140px;height:140px;background:radial-gradient(circle,rgba(255,186,0,.08),transparent 70%)}
-.surge-toggle-track{width:52px;height:32px;border-radius:16px;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.2);cursor:pointer;position:relative;transition:all .25s;flex-shrink:0}
+.surge-toggle-track{padding:0;width:52px;height:44px;border-radius:22px;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.2);cursor:pointer;position:relative;transition:all .25s;flex-shrink:0}
 .surge-toggle-track.on{background:var(--gold);border-color:var(--gold)}
-.surge-toggle-knob{width:24px;height:24px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:transform .25s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.surge-toggle-knob{width:24px;height:24px;border-radius:50%;background:#fff;position:absolute;top:8px;left:2px;transition:transform .25s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
 .surge-toggle-track.on .surge-toggle-knob{transform:translateX(20px)}
 .pom-feature{display:flex;align-items:flex-start;gap:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 12px}
 .pom-feature-title{font-size:12px;font-weight:700;color:#fff;margin-bottom:2px}
@@ -237,8 +240,10 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
 .ack-row{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:#f8f9fb;border-radius:10px;margin-bottom:12px;cursor:pointer;transition:box-shadow .15s,background .15s;user-select:none;-webkit-user-select:none;min-height:48px;box-shadow:0 1px 6px rgba(11,31,59,.07)}
 .ack-row:hover{background:#f1f4f9;box-shadow:0 2px 10px rgba(11,31,59,.1)}
 .ack-row.checked{background:#f0fdf4;box-shadow:0 2px 10px rgba(5,150,105,.12)}
-.ack-row:focus{outline:2px solid var(--blue);outline-offset:2px}
-.ack-box{width:28px;height:28px;border-radius:7px;border:2px solid #cbd5e1;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:0;transition:all .15s}
+.ack-box:has(.ack-input:focus-visible){outline:2px solid var(--blue);outline-offset:3px}
+.ack-box svg{pointer-events:none}
+.ack-input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.ack-box{position:relative;width:28px;height:28px;border-radius:7px;border:2px solid #cbd5e1;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:0;transition:all .15s}
 .ack-row.checked .ack-box{background:var(--green);border-color:var(--green)}
 .ack-text{font-size:14px;color:var(--text);line-height:1.5}
 .ack-text a{color:var(--navy);font-weight:600;text-decoration:underline;display:inline-flex;align-items:center;min-height:44px;padding:0 2px;margin:-11px 0}
@@ -247,7 +252,7 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
 .form-label .req{color:var(--red)}
 .name-input{width:100%;padding:12px 14px;border:none;border-radius:8px;font-size:16px;font-family:'Inter',sans-serif;color:var(--text);outline:none;transition:box-shadow .15s;background:#f8f9fb;box-shadow:0 1px 6px rgba(11,31,59,.07)}
 .name-input:focus,.name-input:focus-visible{box-shadow:0 0 0 3px rgba(255,186,0,.45),0 1px 6px rgba(11,31,59,.07);background:#fff}
-.approve-btn:focus-visible,:where(button, a[href], input, select, [role="button"]):focus-visible{outline:2px solid var(--gold,#ffba00);outline-offset:2px}
+.approve-btn:focus-visible,:root :where(button, a[href], input, select, [role="button"]):focus-visible{outline:3px solid var(--blue,#1d4ed8);outline-offset:3px;box-shadow:0 0 0 2px #fff}
 .sig-preview{font-family:'Dancing Script',cursive;font-size:28px;color:var(--navy);text-align:center;padding:12px 0 4px;min-height:48px;opacity:.7;transition:opacity .2s}
 .sig-preview:empty{opacity:0}
 .name-hint{font-size:12px;color:var(--text3);margin-top:6px}
@@ -384,7 +389,7 @@ body.preview-mode a.approve-btn[href],body.preview-mode button[onclick^="payDepo
 <link rel="icon" href="/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.jpg">
 <script src="assets/js/bpp-financing.js?v=20260907a"></script>
-<link rel="stylesheet" href="assets/css/bpp-financing.css?v=20260907a">
+<link rel="stylesheet" href="assets/css/bpp-financing.css?v=4d6e3e61dba1">
 </head>
 <body>
 <noscript><div class="preview-bar" data-preview-banner="true">Preview unavailable, JavaScript is off, no customer action can occur</div><div class="preview-watermark" data-preview-watermark="true" aria-hidden="true"><span>Preview unavailable</span></div><div style="max-width:620px;margin:70px auto 24px;padding:18px;border:1px solid #ffba00;border-radius:14px;background:#fff8e6;color:#0b1f3b;text-align:center;font:600 16px/1.55 system-ui,sans-serif;">This proposal did not load. Turn on JavaScript and reload, or call (864) 863-7800.</div></noscript>
@@ -404,7 +409,7 @@ body.preview-mode a.approve-btn[href],body.preview-mode button[onclick^="payDepo
 <footer class="site-footer">
   <div class="cred-company">Backup Power Pro <span style="font-weight:400;font-size:13px;color:var(--text3)">by Key Electric LLC</span></div>
   <div class="cred-address">22 Kimbell CT, Greenville SC 29617</div>
-  <div class="cred-address"><a href="tel:8648637800">(864) 863-7800</a> &nbsp;&middot;&nbsp; <a href="https://qa.backuppowerpro.com">backuppowerpro.com</a></div>
+  <div class="cred-address">(864) 863-7800 &nbsp;&middot;&nbsp; <a href="https://qa.backuppowerpro.com">backuppowerpro.com</a></div>
   <div class="cred-license">SC Electrical Contractor License #2942 &nbsp;&middot;&nbsp; Fully Licensed &amp; Insured</div>
 </footer>
 
@@ -421,7 +426,6 @@ let customItemsOn = [];
 let ackScope = false;
 let ackSafety = false;
 let signerIdentityConfirmed = false;
-let signerIdentityTypedCharacters = 0;
 let historyAuthorizationResetPending = false;
 let isPreview = false;
 let signStatusUncertain = false;
@@ -611,7 +615,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         '</div>' +
         (latestUrl
           ? '<a href="' + latestUrl + '" style="display:inline-block;background:var(--gold);color:var(--navy);font-family:Outfit,sans-serif;font-weight:800;font-size:15px;padding:12px 24px;border-radius:100px;text-decoration:none">View latest quote &rarr;</a>'
-          : '<a href="tel:8648637800" style="display:inline-block;background:var(--gold);color:var(--navy);font-family:Outfit,sans-serif;font-weight:800;font-size:15px;padding:12px 24px;border-radius:100px;text-decoration:none">Call (864) 863-7800</a>') +
+          : 'Call (864) 863-7800') +
       '</div>';
     return;
   }
@@ -675,7 +679,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   var _pstatus = String(P.status || '').toLowerCase();
   if (_pstatus === 'cancelled' || _pstatus === 'declined') {
     if (hasCheckoutReturnHint()) scrubCheckoutReturnHints(false);
-    document.getElementById('main').innerHTML = '<div style="text-align:center;padding:60px 20px"><div style="font-size:48px;margin-bottom:16px">🚫</div><div style="font-family:Outfit,sans-serif;font-size:22px;font-weight:800;color:var(--navy);margin-bottom:8px">Proposal Closed</div><div style="font-size:14px;color:var(--text3);max-width:360px;margin:0 auto">This proposal is no longer active. Please contact Backup Power Pro at <a href="tel:8648637800" style="color:var(--blue);font-weight:600">(864) 863-7800</a> if you have questions.</div></div>';
+    document.getElementById('main').innerHTML = '<div style="text-align:center;padding:60px 20px"><div style="font-size:48px;margin-bottom:16px">🚫</div><div style="font-family:Outfit,sans-serif;font-size:22px;font-weight:800;color:var(--navy);margin-bottom:8px">Proposal Closed</div><div style="font-size:14px;color:var(--text3);max-width:360px;margin:0 auto">This proposal is no longer active. Please contact Backup Power Pro at (864) 863-7800 if you have questions.</div></div>';
     return;
   }
   // A signed-but-deposit-required proposal is NOT approved (the deposit is not in
@@ -1056,10 +1060,10 @@ function renderProposal() {
     <div class="amp-toggle-wrap reveal">
       <div class="amp-toggle-label">Choose Your Setup <span style="font-weight:400;font-size:11px;color:var(--text3)">(match your generator's output)</span></div>
       <div class="amp-toggle">
-        <button class="amp-toggle-btn ${chosenAmp === '30' ? 'active' : ''}" onclick="switchAmp('30')">
+        <button class="amp-toggle-btn ${chosenAmp === '30' ? 'active' : ''}" type="button" aria-pressed="${chosenAmp === '30'}" onclick="switchAmp('30')">
           30 Amp<span class="amp-sub">${P.amp_type === '30' ? '⭐ Recommended for your specific setup' : 'Standard'}</span>
         </button>
-        <button class="amp-toggle-btn ${chosenAmp === '50' ? 'active' : ''}" onclick="switchAmp('50')">
+        <button class="amp-toggle-btn ${chosenAmp === '50' ? 'active' : ''}" type="button" aria-pressed="${chosenAmp === '50'}" onclick="switchAmp('50')">
           50 Amp<span class="amp-sub">${P.amp_type === '50' ? '⭐ Recommended for your specific setup' : 'More circuits'}</span>
         </button>
       </div>
@@ -1135,7 +1139,7 @@ function renderProposal() {
           <div class="anchor-col">
             <div class="anchor-col-label">Outage-Ready Connection System</div>
             <div class="anchor-price-new" id="anchor-our-price">${fmt(baseTotal)}</div>
-            <div style="font-size:11px;color:var(--green);font-weight:600;margin-top:4px">total · everything included</div>
+            <div style="font-size:11px;color:#067a52;font-weight:600;margin-top:4px">total · everything included</div>
           </div>
         </div>
       </div>
@@ -1147,41 +1151,42 @@ function renderProposal() {
           <div class="review-slide active review-card-inner">
             <div class="review-stars">★★★★★</div>
             <div class="review-text">"Key Electric installed a 50-amp Generator inlet box along with a panel interlock system in our home. I was impressed by Key's attention to detail, professionalism, and organization. Key explained the process, reorganized and relabeled the breakers, ensured everything met code, and provided a full system walkthrough of the generator connection and panel interlock system. I highly recommend Key Electric for any of your residential and commercial electrical needs."</div>
-            <div class="review-author">Jim J., Liberty, SC &nbsp;·&nbsp; <span style="color:#4285F4">Google</span></div>
+            <div class="review-author">Jim J., Liberty, SC &nbsp;·&nbsp; <span style="color:#245ab5">Google</span></div>
           </div>
 
           <div class="review-slide review-card-inner">
             <div class="review-stars">★★★★★</div>
             <div class="review-text">"KeyElectric is absolutely outstanding! From start to finish, my first experience with KeyElectric was exceptional. I chose them over two other electrical companies to install a portable generator inlet connected to the main breaker and to add whole-house surge protection."</div>
-            <div class="review-author">Dino S., Greenville, SC &nbsp;·&nbsp; <span style="color:#4285F4">Google</span></div>
+            <div class="review-author">Dino S., Greenville, SC &nbsp;·&nbsp; <span style="color:#245ab5">Google</span></div>
           </div>
 
           <div class="review-slide review-card-inner">
             <div class="review-stars">★★★★★</div>
             <div class="review-text">"My experience with Key Electric was outstanding. From the moment we saw their advertising video on Facebook, to our first contact and all subsequent communications, their proposal and approval process, and their installation, Key Electric did a great job. The owner, Key Goodson, was very polite and courteous at all times, very personable, friendly and knowledgeable. It was just a great experience and I highly recommend Key Electric!"</div>
-            <div class="review-author">Dwellion H., Greenville, SC &nbsp;·&nbsp; <span style="color:#4285F4">Google</span></div>
+            <div class="review-author">Dwellion H., Greenville, SC &nbsp;·&nbsp; <span style="color:#245ab5">Google</span></div>
           </div>
 
           <div class="review-slide review-card-inner">
             <div class="review-stars">★★★★★</div>
             <div class="review-text">"Outstanding service, competent, on time, quick response, professional installation, clean, organized, safety a priority. Highly recommend! Will use again."</div>
-            <div class="review-author">Mark M., Greenville, SC &nbsp;·&nbsp; <span style="color:#4285F4">Google</span></div>
+            <div class="review-author">Mark M., Greenville, SC &nbsp;·&nbsp; <span style="color:#245ab5">Google</span></div>
           </div>
 
           <div class="review-slide review-card-inner">
             <div class="review-stars">★★★★★</div>
             <div class="review-text">"Key showed up on time and installed my generator inlet. Work was professional and price was reasonable."</div>
-            <div class="review-author">Chris B., Greenville, SC &nbsp;·&nbsp; <span style="color:#4285F4">Google</span></div>
+            <div class="review-author">Chris B., Greenville, SC &nbsp;·&nbsp; <span style="color:#245ab5">Google</span></div>
           </div>
 
           <div class="review-slide review-card-inner">
             <div class="review-stars">★★★★★</div>
             <div class="review-text">"Key moved/wired several breakers, drilled through a brick wall, mounted a generator outlet and installed an interlock. He was very responsive, excellent communication and was very reasonable about an unexpected issue discovered while doing the job. The work was very professional and no mess left behind. Highly recommended."</div>
-            <div class="review-author">Chris A., Greenville, SC &nbsp;·&nbsp; <span style="color:#4285F4">Google</span></div>
+            <div class="review-author">Chris A., Greenville, SC &nbsp;·&nbsp; <span style="color:#245ab5">Google</span></div>
           </div>
 
         </div>
         <div class="carousel-dots" id="carousel-dots"></div>
+        <button class="carousel-pause" type="button" id="carousel-pause">Pause reviews</button>
         <div class="proof-rating-row">
           <svg width="14" height="14" viewBox="0 0 24 24" style="flex-shrink:0"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
           <span style="font-size:13px;font-weight:700;color:var(--text)">4.9</span>
@@ -1214,11 +1219,11 @@ function renderProposal() {
 
       <div class="pom-section" id="pom-card" onclick="togglePom()">
         <div class="pom-top-row">
-          <div class="surge-toggle-track ${pomOn ? 'on' : ''}" id="pom-toggle" style="flex-shrink:0"><div class="surge-toggle-knob"></div></div>
+          <button class="surge-toggle-track ${pomOn ? 'on' : ''}" id="pom-toggle" type="button" role="switch" aria-checked="${pomOn}" aria-labelledby="pom-option-name" aria-describedby="pom-option-price" style="flex-shrink:0"><span class="surge-toggle-knob"></span></button>
           <span style="font-size:18px">🛡️</span>
-          <div class="pom-title">Peace of Mind Protection Package</div>
+          <div class="pom-title" id="pom-option-name">Peace of Mind Protection Package</div>
           <div>
-            <div class="pom-price-label">+$${P.pom_price || 447}</div>
+            <div class="pom-price-label" id="pom-option-price">+$${P.pom_price || 447}</div>
             <div class="pom-price-sub">one-time</div>
           </div>
         </div>
@@ -1285,17 +1290,19 @@ function renderProposal() {
         <p>${requireDeposit ? 'Check the two items below and type your name. Your payment confirms the spot; I pull the permit and book your date.' : 'Check the two items below and type your name. Once confirmed, I pull the permit and text you to schedule. Price stays locked. No payment until the job is done.'}</p>
       </div>
       <div class="sign-card-body">
-        <div class="ack-row" id="ack-row-scope" role="checkbox" tabindex="0" aria-checked="false">
+        <div class="ack-row" id="ack-row-scope">
           <div class="ack-box" id="ack-box-scope">
+            <input class="ack-input" type="checkbox" id="ack-input-scope" aria-labelledby="ack-text-scope">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polyline points="2,6 5,9 10,3"/></svg>
           </div>
-          <span class="ack-text">I've reviewed the scope and pricing and I'm ready to move forward.</span>
+          <span class="ack-text" id="ack-text-scope">I've reviewed the scope and pricing and I'm ready to move forward.</span>
         </div>
-        <div class="ack-row" id="ack-row-safety" role="checkbox" tabindex="0" aria-checked="false">
+        <div class="ack-row" id="ack-row-safety">
           <div class="ack-box" id="ack-box-safety">
+            <input class="ack-input" type="checkbox" id="ack-input-safety" aria-labelledby="ack-text-safety">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polyline points="2,6 5,9 10,3"/></svg>
           </div>
-          <span class="ack-text">I've read the <a href="javascript:void(0)" id="safety-link">Generator Safety Instructions</a>.</span>
+          <span class="ack-text" id="ack-text-safety">I've read the <a href="javascript:void(0)" id="safety-link">Generator Safety Instructions</a>.</span>
         </div>
         ${requireDeposit ? `
         <div style="margin-top:20px">
@@ -1332,7 +1339,7 @@ function renderProposal() {
         <div style="margin-top:22px;padding-top:18px;border-top:1px solid var(--border)">
           <label class="form-label" for="signer-name" style="font-size:13px;margin-bottom:6px;letter-spacing:0;text-transform:none;font-weight:600;color:var(--navy)">Your full name <span class="req">*</span></label>
           <p style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.5" id="signer-hint">Typing your name confirms this proposal.</p>
-          <input class="name-input" id="signer-name" type="text" placeholder="Full name" autocomplete="off" data-lpignore="true" data-1p-ignore="true" value="" onbeforeinput="recordSignerKeystroke(event)" oninput="confirmSignerIdentity(event)" aria-required="true" aria-describedby="signer-hint">
+          <input class="name-input" id="signer-name" type="text" placeholder="Full name" autocomplete="name" data-lpignore="true" data-1p-ignore="true" value="" oninput="confirmSignerIdentity(event)" aria-required="true" aria-describedby="signer-hint">
           <div class="sig-preview" id="sig-preview"></div>
           <div class="name-hint" style="text-align:center">Legally binding electronic signature under the ESIGN Act.</div>
         </div>
@@ -1340,9 +1347,9 @@ function renderProposal() {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           <span id="approve-btn-label">${daysLeft <= 0 ? 'Price Lock Ended' : (requireDeposit ? `Confirm &amp; Pay ${fmt(depositAmt)} Deposit` : `Confirm &amp; Lock Price, ${fmt(calcTotal(chosenAmp))}`)}</span>
         </button>
-        ${daysLeft <= 0 ? `<div style="text-align:center;font-size:12px;color:var(--navy);margin-top:10px;line-height:1.6;font-weight:600">Your 30-day price lock has ended. Text or call Key at <a href="tel:8648637800" style="color:var(--gold)">(864) 863-7800</a> and I'll get you a current price.</div>` : `<div style="text-align:center;font-size:12px;color:var(--text3);margin-top:12px;line-height:1.6">
+        ${daysLeft <= 0 ? `<div style="text-align:center;font-size:12px;color:var(--navy);margin-top:10px;line-height:1.6;font-weight:600">Your 30-day price lock has ended. Text or call Key at (864) 863-7800 and I'll get you a current price.</div>` : `<div style="text-align:center;font-size:12px;color:var(--text3);margin-top:12px;line-height:1.6">
           ${requireDeposit ? 'Secure checkout next. Card or bank transfer.' : 'No payment today. Billed on completion.'}</div>`}
-        <div id="approve-err" style="font-size:12px;color:var(--red);margin-top:10px;min-height:16px;text-align:center"></div>
+        <div id="approve-err" role="alert" aria-atomic="true" style="font-size:12px;color:var(--red);margin-top:10px;min-height:16px;text-align:center"></div>
       </div>
     </div>
 
@@ -1381,21 +1388,17 @@ function wireAckRow(rowId, boxId, key) {
     validateForm();
   };
   row.addEventListener('click', function(e) {
-    if (e.target.tagName === 'A') return;
+    if (e.target.closest('a')) return;
     toggle();
   });
-  row.addEventListener('keydown', function(e) {
-    if (e.target !== row || (e.key !== ' ' && e.key !== 'Enter')) return;
-    e.preventDefault();
-    toggle();
-  });
+
 }
 
 function updateAckVisual(rowId, boxId, checked) {
   const row = document.getElementById(rowId);
   const box = document.getElementById(boxId);
   const svg = box.querySelector('svg');
-  row.setAttribute('aria-checked', checked ? 'true' : 'false');
+  box.querySelector('input').checked = checked;
   if (checked) { row.classList.add('checked'); svg.style.display = ''; }
   else { row.classList.remove('checked'); svg.style.display = 'none'; }
 }
@@ -1527,7 +1530,9 @@ function priceRowIncluded(name, desc, img, bullets) {
 function switchAmp(amp) {
   chosenAmp = amp;
   document.querySelectorAll('.amp-toggle-btn').forEach(b => {
-    b.classList.toggle('active', b.textContent.trim().startsWith(amp === '30' ? '30' : '50'));
+    const selected = b.textContent.trim().startsWith(amp === '30' ? '30' : '50');
+    b.classList.toggle('active', selected);
+    b.setAttribute('aria-pressed', String(selected));
   });
   renderPricing();
   updateApproveBtn();
@@ -1542,7 +1547,7 @@ function renderCustomItems() {
   if (!items.length) { mount.innerHTML = ''; return; }
   const html = items.map((item, idx) => {
     const on = customItemsOn[idx] !== false;
-    return `<div onclick="toggleCustomItem(${idx})" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;background:${on ? 'var(--light-blue)' : '#f8f9fb'};border-radius:10px;margin-bottom:8px;border:1.5px solid ${on ? 'rgba(11,31,59,.18)' : 'transparent'};transition:all .15s;user-select:none">
+    return `<button id="custom-option-${idx}" type="button" role="checkbox" aria-checked="${on}" onclick="toggleCustomItem(${idx})" style="width:100%;font:inherit;text-align:left;display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;background:${on ? 'var(--light-blue)' : '#f8f9fb'};border-radius:10px;margin-bottom:8px;border:1.5px solid ${on ? 'rgba(11,31,59,.18)' : 'transparent'};transition:all .15s;user-select:none">
       <div style="width:22px;height:22px;border-radius:50%;border:2px solid ${on ? 'var(--navy)' : '#c8cdd8'};background:${on ? 'var(--navy)' : '#fff'};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s">
         ${on ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
       </div>
@@ -1550,7 +1555,7 @@ function renderCustomItems() {
         <div style="font-size:14px;font-weight:600;color:${on ? 'var(--navy)' : 'var(--text3)'};${on ? '' : 'text-decoration:line-through'}">${esc(item.title || 'Additional service')}</div>
       </div>
       <div style="font-family:'Outfit',sans-serif;font-size:16px;font-weight:800;color:${on ? 'var(--navy)' : 'var(--text3)'}">${fmt(item.price || 0)}</div>
-    </div>`;
+    </button>`;
   }).join('');
   mount.innerHTML = `<div style="margin-bottom:16px">
     <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Extra Services, Select What You'd Like</div>
@@ -1559,8 +1564,10 @@ function renderCustomItems() {
 }
 
 function toggleCustomItem(idx) {
+  const restoreFocus = document.activeElement?.id === `custom-option-${idx}`;
   customItemsOn[idx] = !customItemsOn[idx];
   renderPricing();
+  if (restoreFocus) document.getElementById(`custom-option-${idx}`)?.focus({preventScroll:true});
   updateApproveBtn();
   saveSelections();
 }
@@ -1570,7 +1577,7 @@ function togglePom() {
   const card = document.getElementById('pom-card');
   const track = document.getElementById('pom-toggle');
   if (card) { card.style.boxShadow = pomOn ? 'inset 3px 0 0 rgba(255,186,0,.9), 0 0 0 1px rgba(255,186,0,.25)' : ''; }
-  if (track) track.classList.toggle('on', pomOn);
+  if (track) { track.classList.toggle('on', pomOn); track.setAttribute('aria-checked', String(pomOn)); }
   renderPricing();
   updateApproveBtn();
   saveSelections();
@@ -1587,16 +1594,11 @@ function updateSigPreview() {
   if (preview) preview.textContent = name;
 }
 
-function recordSignerKeystroke(event) {
-  if (event?.isTrusted && event.inputType === 'insertText' && typeof event.data === 'string' && event.data.length === 1) {
-    signerIdentityTypedCharacters += 1;
-  }
-}
-
 function confirmSignerIdentity(event) {
   const name = (event?.target?.value || '').trim();
-  if (!event?.target?.value) signerIdentityTypedCharacters = 0;
-  signerIdentityConfirmed = Boolean(event?.isTrusted && signerIdentityTypedCharacters >= 3 && name.length >= 3);
+  // A deliberate browser input may come from typing, paste, speech, or an IME.
+  // Scripted input still cannot confirm identity; consent and final approval remain required.
+  signerIdentityConfirmed = Boolean(event?.isTrusted && Array.from(name).length >= 2);
   updateSigPreview();
   validateForm();
 }
@@ -1714,7 +1716,6 @@ function resetDepositAcceptanceAuthorization(message) {
   approving = false;
   signStatusUncertain = false;
   signerIdentityConfirmed = false;
-  signerIdentityTypedCharacters = 0;
   ackScope = false;
   ackSafety = false;
   renderProposal();
@@ -2191,7 +2192,6 @@ function resetAuthorizationForRevisedContract(row) {
   approving = false;
   signStatusUncertain = false;
   signerIdentityConfirmed = false;
-  signerIdentityTypedCharacters = 0;
   P = row;
   ackScope = false;
   ackSafety = false;
@@ -2242,7 +2242,7 @@ async function reconcileSignFailure(btn, err) {
         showError(
           'Proposal not accepted',
           'Payment was not confirmed, so this proposal was not accepted. Ask Key for a refreshed proposal, then review it, check each acknowledgment, enter your name, and accept again.',
-          { label: 'Call Key', href: 'tel:+18648637800' }
+          null
         );
         return;
       }
@@ -2378,7 +2378,7 @@ async function approveProposal() {
           showError(
             'Proposal not accepted',
             'Payment was not confirmed, so this proposal was not accepted. Ask Key for a refreshed proposal, then review it, check each acknowledgment, enter your name, and accept again.',
-            { label: 'Call Key', href: 'tel:+18648637800' }
+            null
           );
           return;
         }
@@ -2445,7 +2445,7 @@ function renderApproved() {
     showError(
       'Proposal not accepted',
       'Payment was not confirmed, so this proposal was not accepted. Ask Key for a refreshed proposal, then review it, check each acknowledgment, enter your name, and accept again.',
-      { label: 'Call Key', href: 'tel:+18648637800' }
+      null
     );
     return;
   }
@@ -2625,7 +2625,7 @@ function renderApproved() {
         <div class="next-step-item"><div class="next-step-num">4</div><div class="next-step-text"><strong>State electrical inspection</strong><span>We schedule and coordinate the inspection. You're officially code-compliant and outage-ready.</span></div></div>
         <div style="text-align:center;margin-top:16px;padding-top:16px">
           <div style="font-size:14px;color:var(--text2);margin-bottom:4px">Questions? Call or text Key anytime</div>
-          <a href="tel:8648637800" style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:800;color:var(--navy);text-decoration:none">(864) 863-7800</a>
+          (864) 863-7800
         </div>
       </div>
     </div>
@@ -2806,6 +2806,8 @@ async function downloadPDF() {
   try {
     const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' });
     const pdf = new jspdf.jsPDF({ unit: 'mm', format: 'letter', orientation: 'portrait' });
+    pdf.setProperties({ title: 'Backup Power Pro proposal', author: 'Backup Power Pro' });
+    pdf.setLanguage('en');
     const pageW = 215.9, marginX = 12, marginY = 10, contentW = pageW - (marginX * 2);
     const img = canvas.toDataURL('image/jpeg', 0.98);
     const h = (canvas.height * contentW) / canvas.width;
@@ -2837,6 +2839,7 @@ function initReviewCarousel() {
     const dot = document.createElement('button');
     dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
     dot.setAttribute('aria-label', 'Review ' + (i + 1));
+    if(i === 0) dot.setAttribute('aria-current', 'true');
     dot.addEventListener('click', () => goTo(i));
     dotsWrap.appendChild(dot);
   });
@@ -2846,10 +2849,18 @@ function initReviewCarousel() {
     slides[current].classList.remove('active');
     current = (idx + slides.length) % slides.length;
     slides[current].classList.add('active');
-    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+    dots.forEach((d, i) => {
+      d.classList.toggle('active', i === current);
+      if(i === current) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current');
+    });
   }
 
-  setInterval(() => goTo(current + 1), 7000);
+  let paused = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pause = document.getElementById('carousel-pause');
+  const syncPause = () => { pause.textContent = paused ? 'Play reviews' : 'Pause reviews'; };
+  pause.addEventListener('click', () => { paused = !paused; syncPause(); });
+  syncPause();
+  setInterval(() => { if(!paused) goTo(current + 1); }, 7000);
 }
 
 // ── ERROR ─────────────────────────────────────────────────────
@@ -2881,14 +2892,12 @@ function showError(title, msg, action) {
     text.className = 'approve-btn';
     text.href = 'sms:+18648637800';
     text.textContent = 'Text Key for a fresh link';
-    const call = document.createElement('a');
-    call.className = 'dl-btn';
-    call.href = 'tel:+18648637800';
-    call.textContent = 'Call Key';
-    actions.appendChild(text); actions.appendChild(call); wrap.appendChild(actions);
+    actions.appendChild(text); wrap.appendChild(actions);
   }
   main.appendChild(wrap);
   syncAuthorizationGateUI();
+  h2.tabIndex = -1;
+  h2.focus();
 }
 
 window.addEventListener('pageshow', (event) => {

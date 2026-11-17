@@ -6,13 +6,25 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="robots" content="noindex,nofollow" />
+<meta name="referrer" content="no-referrer" />
 <title>Email preferences · Backup Power Pro</title>
 <link rel="icon" type="image/png" href="/assets/images/apple-touch-icon.jpg" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
 <style>
-  :root { --navy: #0b1f3b; --gold: #ffba00; --ink: #14172a; --muted: #6b7280; --bg: #f4f6fa; --card: #ffffff; --ring: rgba(11,31,59,0.07); }
+  @font-face { font-family:Inter;src:url('/assets/fonts/bpp-money/inter-latin-400-700.woff2') format('woff2');font-weight:400 700;font-display:swap; }
+  @font-face { font-family:Outfit;src:url('/assets/fonts/bpp-money/outfit-latin-400-900.woff2') format('woff2');font-weight:400 900;font-display:swap; }
+  [hidden] { display:none !important; }
+  .ghost,.submit { min-height:44px; }
+  .guide-access { display:inline-flex;align-items:center;min-height:44px;padding:8px 0;color:var(--navy);overflow-wrap:anywhere; }
+  h1,h2,.ident,.row label,.danger,.foot,.submit,.ghost { overflow-wrap:anywhere; }
+  .row label { min-width:0; }
+  .ident-email { overflow-wrap:anywhere; }
+  #saved:focus { outline:3px solid #8a5a00;outline-offset:3px; }
+
+  a:focus-visible,button:focus-visible { outline:3px solid #8a5a00;outline-offset:3px; }
+  .saved[data-error="true"] { background:#fff5f5;color:#7f1d1d;border-color:#b91c1c; }
+  @media (prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none !important; } }
+
+  :root { --navy: #0b1f3b; --gold: #ffba00; --ink: #14172a; --muted: #5b6473; --bg: #f4f6fa; --card: #ffffff; --ring: rgba(11,31,59,0.07); }
   * { box-sizing: border-box; }
   body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   .wrap { max-width: 600px; margin: 0 auto; padding: 32px 20px 60px; }
@@ -24,19 +36,21 @@
   .ident { background: var(--bg); border: 1px solid var(--ring); border-radius: 10px; padding: 14px 16px; margin: 0 0 24px 0; font-size: 14px; color: var(--ink); }
   .ident strong { color: var(--navy); font-weight: 600; }
   .group { margin: 0 0 28px 0; padding: 0; border: none; }
-  .group h3 { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.16em; text-transform: uppercase; color: #8a5a00; margin: 0 0 14px 0; }
+  .group h2 { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.16em; text-transform: uppercase; color: #8a5a00; margin: 0 0 14px 0; }
   .row { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--ring); }
   .row:last-child { border-bottom: none; }
   .row label { flex: 1; cursor: pointer; }
   .row .name { font-weight: 600; color: var(--ink); display: block; margin-bottom: 4px; }
   .row .desc { font-size: 14px; color: var(--muted); line-height: 1.5; }
-  .switch { position: relative; width: 44px; height: 26px; flex-shrink: 0; }
-  .switch input { opacity: 0; width: 0; height: 0; }
-  .switch .slider { position: absolute; inset: 0; background: #d4d8e0; border-radius: 100px; transition: 0.18s; cursor: pointer; }
-  .switch .slider::before { content: ""; position: absolute; height: 20px; width: 20px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: 0.18s; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+  .switch { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
+  .switch input { position:absolute;inset:0;opacity:0;width:44px;height:44px;margin:0;z-index:2;cursor:pointer; }
+  .switch input:disabled { cursor:default; }
+  .switch input:disabled + .slider { opacity:.65; }
+  .switch .slider { position: absolute; inset: 9px 0; box-shadow:inset 0 0 0 1.5px var(--navy); background: #d4d8e0; border-radius: 100px; transition: 0.18s; cursor: pointer; }
+  .switch .slider::before { content: "";box-sizing:border-box;border:1.5px solid var(--navy); position: absolute; height: 20px; width: 20px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: 0.18s; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
   .switch input:checked + .slider { background: var(--gold); }
   .switch input:checked + .slider::before { transform: translateX(18px); }
-  .switch input:focus + .slider { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .switch input:focus-visible + .slider { outline:3px solid var(--navy);outline-offset:3px; }
   /* Save prefs is commit, not money: navy primary (gold stays on switches). Pill radius matches DS .btn-gold. */
   .submit { display: block; width: 100%; min-height: 48px; padding: 14px 22px; background: var(--navy); color: #fff; border: none; border-radius: 28px; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 4px 14px rgba(11,31,59,0.22); transition: transform 0.12s, box-shadow 0.12s; }
   .submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(11,31,59,0.28); }
@@ -49,18 +63,22 @@
   .foot { padding: 18px 28px; background: #fafbfc; border-top: 1px solid var(--ring); border-radius: 0 0 12px 12px; font-size: 11px; color: var(--muted); text-align: center; }
   .saved { display: none; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; padding: 12px 16px; border-radius: 8px; margin-bottom: 18px; font-size: 14px; font-weight: 600; }
   .saved.visible { display: block; }
+  @media (max-width:400px) { .wrap { padding:20px 12px 36px; } .card { padding:28px 20px; } .top { padding:18px 20px; } .row { gap:10px; } }
+  @media (max-width:360px) { h1 { font-size:22px; } }
 </style>
 </head>
 <body>
 
-<div class="wrap">
+<main class="wrap">
   <div class="top">Backup Power <span class="pro">Pro</span></div>
   <div class="card">
 
     <h1>Email preferences</h1>
-    <p class="subtitle">Control which BPP emails land in your inbox.</p>
+    <noscript><style>#saved,#retry-load,#prefs-body { display:none !important; }</style><p>JavaScript is needed to verify this email link and save your preference. This page cannot submit a new preference while JavaScript is off. Please enable JavaScript and reload, or reply to the BPP email to request an opt-out. Your guide remains available below.</p></noscript>
+    <p class="subtitle">Stop categories of BPP promotional email. This page never signs you up again.</p>
 
-    <div id="saved" class="saved" role="status">Saved. Your preferences are updated.</div>
+    <div id="saved" class="saved visible" role="status" aria-live="polite" tabindex="-1">Loading your email preferences…</div>
+    <button id="retry-load" class="ghost" type="button" hidden>Try loading again</button>
 
     <div id="cold-gate" class="ident" hidden style="background:#fff8e0;border-color:rgba(255,186,0,0.45);">
       <strong>Open this page from the link in your BPP email.</strong><br />
@@ -72,15 +90,15 @@
       <span id="ident-email" style="color:var(--muted);"></span>
     </div>
 
-    <div id="prefs-body">
+    <div id="prefs-body" hidden>
     <fieldset class="group">
-      <h3>Transactional</h3>
-      <p style="font-size:13px;color:var(--muted);margin:-8px 0 14px;">Required for service. Includes proposals, invoices, install confirmations, permit signatures, and warranty notices. We can't turn these off, but you can pause them by texting STOP to (864) 863-7800.</p>
+      <h2>Project messages</h2>
+      <p style="font-size:13px;color:var(--muted);margin:-8px 0 14px;">These controls only stop promotional email. They do not change project-message or text choices.</p>
     </fieldset>
 
     <form id="prefs" novalidate>
       <fieldset class="group">
-        <h3>Lifecycle check-ins</h3>
+        <h2>Lifecycle check-ins</h2>
         <div class="row">
           <label for="seasonal">
             <span class="name">Storm-season reminders</span>
@@ -98,7 +116,7 @@
       </fieldset>
 
       <fieldset class="group">
-        <h3>Updates</h3>
+        <h2>Updates</h2>
         <div class="row">
           <label for="referrals">
             <span class="name">Neighbor note</span>
@@ -115,119 +133,93 @@
         </div>
       </fieldset>
 
-      <button class="submit" id="save" type="submit">Save preferences</button>
-      <button class="ghost" id="optout" type="button">Unsubscribe from all marketing</button>
+      <button class="submit" id="save" type="submit" disabled>Save preferences</button>
+      <button class="ghost" id="optout" type="button" disabled>Unsubscribe from all marketing</button>
 
       <div class="danger">
-        Note · We'll always send you transactional emails (your install info, permit doc, invoice, warranty). Unsubscribing only stops the lifecycle + marketing messages above.
+        Previously stopped categories stay stopped. You can still view or download any guide you already received.
       </div>
     </form>
     </div>
+    <p><a class="guide-access" href="/generator-guide/" referrerpolicy="no-referrer">View your guide</a></p>
   </div>
 
   <div class="foot">
     Backup Power Pro · SC Licensed Electrician · Greenville, SC<br />
     Questions? Text Key at (864) 863-7800 or reply to any email.
   </div>
-</div>
+</main>
 
 <script>
 (function() {
+  'use strict';
   const params = new URLSearchParams(window.location.search);
-  const cid = params.get('cid');
-  const ident = document.getElementById('ident');
-  const identName = document.getElementById('ident-name');
-  const identEmail = document.getElementById('ident-email');
+  const hasToken = params.has('token');
+  const token = params.get('token');
+  const cid = hasToken ? null : params.get('cid');
+  const keys = ['seasonal','anniversary','referrals','guides'];
   const saved = document.getElementById('saved');
   const form = document.getElementById('prefs');
   const optout = document.getElementById('optout');
   const save = document.getElementById('save');
-  const coldGate = document.getElementById('cold-gate');
-  const prefsBody = document.getElementById('prefs-body');
-
-  const ENDPOINT = 'https://hfatblrcwytxvijjhpal.supabase.co/functions/v1/email-preferences';
-
-  if (!cid) {
-    if (coldGate) coldGate.removeAttribute('hidden');
-    if (prefsBody) prefsBody.setAttribute('hidden', '');
+  const retry = document.getElementById('retry-load');
+  const body = document.getElementById('prefs-body');
+  const endpoint = 'https://hfatblrcwytxvijjhpal.supabase.co/functions/v1/email-preferences';
+  let loaded = false;
+  let stopped = false;
+  let busy = false;
+  let lastPreferences = {};
+  function say(message, error) { saved.textContent=message;saved.dataset.error=String(!!error);saved.classList.add('visible'); }
+  function controls() { save.disabled=!loaded||busy||stopped;optout.disabled=!loaded||busy||stopped; }
+  function apply(state) {
+    if (!state || state.ok!==true || typeof state.unsubscribed!=='boolean' || !state.preferences || !keys.every(key=>typeof state.preferences[key]==='boolean')) throw new Error('invalid_response');
+    stopped=state.unsubscribed;lastPreferences={...state.preferences};
+    keys.forEach(key=>{ const input=document.getElementById(key);input.checked=state.preferences[key];input.disabled=busy||!state.preferences[key]||stopped; });
+    document.getElementById('ident').hidden=false;
+    document.getElementById('ident-name').textContent=typeof state.name==='string'?state.name:'Manage preferences';
+    document.getElementById('ident-email').textContent=typeof state.email==='string'?state.email:'';
+    optout.textContent=stopped?'Unsubscribed':'Unsubscribe from all marketing';
+    body.hidden=false;loaded=true;controls();
   }
-
-  // Hydrate identity if cid present
-  if (cid) {
-    fetch(ENDPOINT + '?cid=' + encodeURIComponent(cid))
-      .then(function(r) { return r.ok ? r.json() : null; })
-      .then(function(d) {
-        if (!d) return;
-        ident.removeAttribute('hidden');
-        identName.textContent = d.name || 'Manage preferences';
-        identEmail.textContent = d.email || '';
-        // Apply saved prefs to checkboxes
-        if (d.preferences) {
-          ['seasonal', 'anniversary', 'referrals', 'guides'].forEach(function(k) {
-            const el = document.getElementById(k);
-            if (el && k in d.preferences) el.checked = !!d.preferences[k];
-          });
-        }
-      })
-      .catch(function() {});
+  function statusError(status) {
+    if(status===410)return 'This email link has expired. Please use a current link from your BPP email.';
+    if(status===400||status===404)return 'This email link could not be verified. Please use the link in your BPP email.';
+    if(status===409)return 'Your email record changed while saving. Your preference was not confirmed. Please try again.';
+    return 'Your email preference was not confirmed. Please try again.';
   }
-
-  function showSaved() {
-    saved.classList.add('visible');
-    setTimeout(function() { saved.classList.remove('visible'); }, 4000);
+  async function request(url,options) {
+    const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),12000);
+    try{const response=await fetch(url,{credentials:'omit',referrerPolicy:'no-referrer',cache:'no-store',...options,signal:controller.signal});
+      let state;try{state=await response.json();}catch(_){throw {status:response.status};}
+      if(!response.ok||state.ok!==true)throw {status:response.status};
+      return state;
+    }finally{clearTimeout(timer);}
   }
-
-  function collect() {
-    return {
-      seasonal: document.getElementById('seasonal').checked,
-      anniversary: document.getElementById('anniversary').checked,
-      referrals: document.getElementById('referrals').checked,
-      guides: document.getElementById('guides').checked,
-    };
-  }
-
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    if (!cid) { saved.textContent = 'Open this page from the link in your BPP email, or text STOP to (864) 863-7800.'; saved.classList.add('visible'); return; }
-    save.disabled = true;
-    save.textContent = 'Saving…';
-    fetch(ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cid: cid, preferences: collect() })
-    }).then(function(r) {
-      save.disabled = false;
-      save.textContent = 'Save preferences';
-      if (r.ok) showSaved();
-      else { saved.textContent = 'Hmm, something went wrong. Try again or text Key at (864) 863-7800.'; saved.classList.add('visible'); }
-    });
-  });
-
-  optout.addEventListener('click', function() {
-    if (!cid) {
-      saved.textContent = 'Open this page from the link in your BPP email, or text STOP to (864) 863-7800.';
-      saved.classList.add('visible');
-      return;
+  async function load(event) {
+    const userInitiated=!!event;
+    if(busy)return;
+    retry.hidden=true;loaded=false;busy=true;controls();say('Loading your email preferences…',false);
+    if((hasToken&&(!token||params.getAll('token').length!==1))||(!hasToken&&!cid)) {
+      busy=false;say('Open this page from the link in your BPP email. We could not verify your current email preference.',true);
+      document.getElementById('cold-gate').hidden=false;controls();if(userInitiated)saved.focus({preventScroll:true});return;
     }
-    if (!confirm('Stop all marketing + lifecycle emails? You\'ll still get transactional emails for any active install or quote.')) return;
-    optout.disabled = true;
-    optout.textContent = 'Unsubscribing…';
-    fetch(ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cid: cid, optout_all_marketing: true })
-    }).then(function(r) {
-      if (r.ok) {
-        document.querySelectorAll('input[type="checkbox"]').forEach(function(c) { c.checked = false; });
-        saved.textContent = 'Unsubscribed. We won\'t send marketing or lifecycle emails anymore.';
-        saved.classList.add('visible');
-        optout.textContent = 'Unsubscribed';
-      } else {
-        optout.disabled = false;
-        optout.textContent = 'Unsubscribe from all marketing';
-      }
-    });
-  });
+    const query=hasToken?'?token='+encodeURIComponent(token):'?cid='+encodeURIComponent(cid);
+    try { const state=await request(endpoint+query);busy=false;apply(state);say(stopped?'You are unsubscribed from marketing email. Your guide stays available.':'Uncheck any category you want to stop, then save.',false);if(userInitiated)saved.focus({preventScroll:true}); }
+    catch(error) { busy=false;controls();say(statusError(error.status),true);retry.hidden=error.status===400||error.status===404||error.status===410;if(userInitiated)saved.focus({preventScroll:true}); }
+  }
+  async function persist(payload) {
+    if(!loaded||busy||stopped)return;
+    const trigger=payload.optout_all_marketing===true?optout:save;
+    busy=true;controls();say('Saving your email preference…',false);
+    keys.forEach(key=>{document.getElementById(key).disabled=true;});
+    const identity=hasToken?{token:token}:{cid:cid};
+    try { const state=await request(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...identity,...payload})});busy=false;apply(state);say(stopped?'Unsubscribed. Your marketing email preference is saved. Your guide stays available.':'Saved. Previously stopped categories remain off.',false);saved.focus({preventScroll:true}); }
+    catch(error) { busy=false;controls();keys.forEach(key=>{const input=document.getElementById(key);input.disabled=stopped||lastPreferences[key]===false;});say(statusError(error.status),true);if(trigger&&!trigger.disabled&&typeof trigger.focus==='function')trigger.focus({preventScroll:true}); }
+  }
+  form.addEventListener('submit',function(event){event.preventDefault();const preferences={};keys.forEach(key=>{preferences[key]=document.getElementById(key).checked;});persist({preferences:preferences});});
+  optout.addEventListener('click',function(){persist({optout_all_marketing:true});});
+  retry.addEventListener('click',load);
+  load();
 })();
 </script>
 

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900" role="img" aria-labelledby="title desc">
+  <title id="title">Closed meter and electrical panel combination, schematic illustration</title>
+  <desc id="desc">A round electricity meter and a closed rectangular electrical panel beside it in one enclosure. No wiring or live parts are shown. This is an example illustration, not a photograph of an installation.</desc>
+  <rect width="900" height="900" fill="#f1f4f7"/>
+  <g fill="none" stroke="#b4bfcb" stroke-width="8">
+    <path d="M74 156h752M74 284h752M74 412h752M74 540h752M74 668h752M74 796h752"/>
+  </g>
+  <g stroke="#46566b" stroke-width="8" stroke-linejoin="round">
+    <path d="M420 32h60v164h-60z" fill="#aeb8c2"/>
+    <rect x="208" y="185" width="484" height="514" rx="12" fill="#c6ced6"/>
+    <rect x="220" y="197" width="460" height="490" rx="6" fill="#dce1e6"/>
+    <path d="M450 197v490" fill="none"/>
+    <circle cx="332" cy="333" r="86" fill="#b2bdc8"/>
+    <circle cx="332" cy="333" r="67" fill="#eef2f6"/>
+    <rect x="299" y="312" width="66" height="26" rx="3" fill="#6f7d8c" stroke-width="4"/>
+    <path d="M300 362h64M313 377h38" stroke-width="4"/>
+    <rect x="470" y="221" width="185" height="432" rx="6" fill="#b7c1cb"/>
+    <path d="M489 240h148v394H489z" fill="#c6ced6" stroke-width="3"/>
+    <path d="M628 411v49" stroke="#0b1f3b" stroke-width="10" stroke-linecap="round"/>
+    <rect x="497" y="274" width="108" height="50" rx="3" fill="#f1f4f7" stroke-width="3"/>
+    <path d="M510 289h82M510 307h52" stroke-width="3"/>
+    <path d="M292 700v154M330 700v154" fill="none" stroke-width="12"/>
+  </g>
+  <g fill="#46566b">
+    <circle cx="235" cy="215" r="5"/><circle cx="665" cy="215" r="5"/>
+    <circle cx="235" cy="671" r="5"/><circle cx="665" cy="671" r="5"/>
+  </g>
+</svg>

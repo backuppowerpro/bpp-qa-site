@@ -1,8 +1,10 @@
+import { readSmsSendEligibility } from './sms-send-eligibility.js';
+import { browserBackgroundReads, fetchBrowserReceiptMap } from './background-read-admission.js';
+import { reviewInitialPhoto } from '../v3-app/src/review-queue.js';
 
 import {
   consumeQuoteWalkV2HandoffReceipt,
   fetchQuoteWalkV2OperatorReceipt,
-  fetchQuoteWalkV2ReceiptMap,
   markQuoteWalkV2OperatorNotificationSeen,
   quoteWalkV2OperatorDisplay,
   quoteWalkV2OperatorProjection,
@@ -22,7 +24,7 @@ import { createCrmProposalWithRecovery } from './proposal-create-operation.js';
 // One contact column list for BOTH fetch paths (initial + refresh). The two
 // lists drifted on 2026-06-10 (refresh lacked ai_summary) and the AI summary
 // card silently vanished after any data refresh; never maintain two copies.
-var CONTACT_COLS = 'id, name, phone, email, address, stage, status, do_not_contact, pricing_tier, created_at, notes, archived, pinned, tags, assigned_installer, installer_pay, install_date, ai_summary, ai_summary_updated_at, panel_location, amperage, availability_notes, generator, stripe_customer_id, stripe_payment_method_id, card_brand, card_last4, pom_inspection, run_ft_estimate, subdivision, current_line, lead_channel, lead_source';
+var CONTACT_COLS = 'id, name, phone, email, address, stage, status, do_not_contact, pricing_tier, created_at, notes, archived, pinned, tags, assigned_installer, installer_pay, install_date, ai_summary, ai_summary_updated_at, panel_location, amperage, availability_notes, generator, stripe_customer_id, stripe_payment_method_id, card_brand, card_last4, pom_inspection, run_ft_estimate, subdivision, current_line, lead_channel, lead_source, owner_test_run';
 // crm-data.js, Live data layer.
 // Initializes window.CRM with empty arrays, then asynchronously fetches
 // from Supabase and dispatches 'crm-data-ready' so crm-app.jsx can re-render.
@@ -1112,6 +1114,8 @@ async function advanceJobSendReview(contact) {
   if (contact.do_not_contact) return { ok:false, error:'on do-not-contact' };
   if (!contact.phone) return { ok:false, error:'no phone on file' };
   if ((contact.notes || '').includes('__review_asked:')) return { ok:false, error:'already asked' };
+  const eligibility=await readSmsSendEligibility({contactId:contact.id,phone:contact.phone,purpose:'review_request'});
+  if(!eligibility.allowed)return {ok:false,permissionBlocked:true,error:eligibility.message};
   const { data, error } = await window.CRM.__invokeFn('auto-review-ask', { body: { contact_id: contact.id } });
   if (error) return { ok:false, error: (error.message || String(error)) };
   if (!data || !data.sent) {
@@ -1167,14 +1171,34 @@ const _draftGenInFlight = new Set();
 // answer, not visibly fill themselves in after an operator pans to a tab.
 var _preReadCache = new Map();
 
+// Separate operational authority. This never changes contacts.email.
+async function fetchBppProjectContact(contactId, preReadId = null) {
+  if (TEST_MODE) return { data: window.CRM?.__testBppProjectContacts?.[contactId] || null, error: null };
+  if (!window.CRM?.__db || !contactId) return { data: null, error: 'project_contact_unavailable' };
+  try {
+    const result = await window.CRM.__db.rpc('native_operator_bpp_project_contact_v1', {
+      p_contact_id: contactId, p_pre_read_id: preReadId,
+    });
+    if (result.error) return { data: null, error: 'project_contact_unavailable' };
+    const data = result.data;
+    if (data && (data.contract !== 'bpp-project-contact-v1' || data.contact_id !== contactId
+      || (preReadId && data.pre_read_id !== preReadId))) return { data: null, error: 'project_contact_invalid' };
+    return { data: data || null, error: null };
+  } catch (_) { return { data: null, error: 'project_contact_unavailable' }; }
+}
+
 function fetchPreRead(contactId) {
+  const authGeneration = __authGeneration;
+  if (!__operatorLeaseCurrent(authGeneration)) return Promise.resolve(null);
   var key = String(contactId || '');
   if (!key) return Promise.resolve(null);
   if (_preReadCache.has(key)) return Promise.resolve(_preReadCache.get(key));
   var request = fetchPreReadFresh(contactId).then(function (data) {
+    if (!__operatorLeaseCurrent(authGeneration)) return null;
     _preReadCache.set(key, data || null);
     return data || null;
   }).catch(function () {
+    if (!__operatorLeaseCurrent(authGeneration)) return null;
     _preReadCache.set(key, null);
     return null;
   });
@@ -1214,15 +1238,25 @@ async function fetchPreReadFresh(contactId) {
 // walk verdict). Latest-per-contact wins via the created_at desc order.
 var _preReadsBulkCache = null;
 var _preReadsBulkPromise = null;
+var _preReadsBulkErrors = new WeakMap();
 
 function fetchPreReadsBulk(force) {
+  const authGeneration = __authGeneration;
+  if (!__operatorLeaseCurrent(authGeneration)) return Promise.resolve({});
   if (!force && _preReadsBulkCache) return Promise.resolve(_preReadsBulkCache);
   if (!force && _preReadsBulkPromise) return _preReadsBulkPromise;
-  var request = fetchPreReadsBulkFresh().then(function (map) {
+  var request = browserBackgroundReads.schedule(() => {
+    if (!__operatorLeaseCurrent(authGeneration)) throw new Error('operator_unavailable');
+    return fetchPreReadsBulkFresh();
+  }).then(function (map) {
+    if (!__operatorLeaseCurrent(authGeneration)) return {};
     _preReadsBulkCache = map || {};
+    _preReadsBulkErrors.set(_preReadsBulkCache, null);
     return _preReadsBulkCache;
-  }).catch(function () {
+  }).catch(function (error) {
+    if (!__operatorLeaseCurrent(authGeneration)) return {};
     _preReadsBulkCache = {};
+    _preReadsBulkErrors.set(_preReadsBulkCache, error?.message || 'pre_reads_unavailable');
     return _preReadsBulkCache;
   }).finally(function () {
     if (_preReadsBulkPromise === request) _preReadsBulkPromise = null;
@@ -1239,38 +1273,55 @@ async function fetchPreReadsBulkFresh() {
   // TEST_MODE serves synthetic fixtures (the real per-contact query is stubbed
   // to [] by __makeStubDb); production always falls through to the real query.
   if (TEST_MODE) return (window.CRM && window.CRM.__testPreReads) || {};
-  if (!window.CRM?.__db) return {};
+  if (!window.CRM?.__db) throw new Error('operator_database_unavailable');
   try {
     var q = await window.CRM.__db
       .from('property_pre_reads')
       .select('id, contact_id, confirmed_panel_room, confirmed_generator_spot, customer_run_ft_estimate, distance_band, photo_received_at, gift_requested_at, thankyou_at, completion_notified_at, connection_status, generator_ownership_status, generator_needed_active, created_at')
       .order('created_at', { ascending: false })
       .limit(1000);
-    if (q.error || !q.data) return {};
+    if (q.error || !q.data) throw new Error(q.error?.message || 'pre_reads_unavailable');
     var byContact = {};
     for (var i = 0; i < q.data.length; i++) {
       var r = q.data[i];
       if (r && r.contact_id && !(r.contact_id in byContact)) byContact[r.contact_id] = r;
     }
     return byContact;
-  } catch (_) { return {}; }
+  } catch (error) { throw error; }
 }
 
 var _quoteWalkV2ReceiptPromise = null;
 
+function setQuoteWalkV2ReceiptsStatus(state) {
+  window.CRM.quoteWalkV2ReceiptsStatus = { state };
+  window.dispatchEvent(new CustomEvent('crm-data-changed', {
+    detail: { table: 'quote_walk_v2_operator_receipt' },
+  }));
+}
+
 async function fetchQuoteWalkV2Receipts(force) {
-  if (!force && _quoteWalkV2ReceiptPromise) return _quoteWalkV2ReceiptPromise;
+  const authGeneration = __authGeneration;
+  if (!__operatorLeaseCurrent(authGeneration)) return {};
+  if (_quoteWalkV2ReceiptPromise) return _quoteWalkV2ReceiptPromise;
+  setQuoteWalkV2ReceiptsStatus('loading');
   var request = fetchPreReadsBulk(force).then(function (preReads) {
-    return fetchQuoteWalkV2ReceiptMap(window.CRM && window.CRM.__db, preReads);
+    if (!__operatorLeaseCurrent(authGeneration)) throw new Error('operator_unavailable');
+    // Bind failure to this exact read, even when another forced read settles.
+    var preReadError = _preReadsBulkErrors.get(preReads);
+    if (preReadError) throw new Error(preReadError);
+    return fetchBrowserReceiptMap(window.CRM && window.CRM.__db, preReads);
   }).then(function (receipts) {
+    if (!__operatorLeaseCurrent(authGeneration)) return {};
     window.CRM.quoteWalkV2Receipts = receipts || {};
-    window.dispatchEvent(new CustomEvent('crm-data-changed', {
-      detail: { table: 'quote_walk_v2_operator_receipt' },
-    }));
+    setQuoteWalkV2ReceiptsStatus(Object.values(receipts || {}).some(function (receipt) {
+      return receipt?.error && receipt.error !== 'not_found';
+    }) ? 'error' : 'ready');
     return window.CRM.quoteWalkV2Receipts;
   }).catch(function () {
-    window.CRM.quoteWalkV2Receipts = {};
-    return window.CRM.quoteWalkV2Receipts;
+    if (!__operatorLeaseCurrent(authGeneration)) return {};
+    // Retain the last verified rows while a read-only retry reconnects.
+    setQuoteWalkV2ReceiptsStatus('error');
+    return window.CRM.quoteWalkV2Receipts || {};
   }).finally(function () {
     if (_quoteWalkV2ReceiptPromise === request) _quoteWalkV2ReceiptPromise = null;
   });
@@ -1279,6 +1330,8 @@ async function fetchQuoteWalkV2Receipts(force) {
 }
 
 async function fetchQuoteWalkV2ReceiptForContact(contactId, force) {
+  const authGeneration = __authGeneration;
+  if (!__operatorLeaseCurrent(authGeneration)) return { error: 'operator_unavailable' };
   var contactKey = String(contactId || '');
   if (!contactKey) return { error: 'contact_id_missing' };
   if (!force && window.CRM.quoteWalkV2Receipts
@@ -1288,10 +1341,12 @@ async function fetchQuoteWalkV2ReceiptForContact(contactId, force) {
   var receipt;
   try {
     var preRead = await fetchPreRead(contactKey);
+    if (!__operatorLeaseCurrent(authGeneration)) return { error: 'operator_unavailable' };
     receipt = preRead && preRead.id
       ? await fetchQuoteWalkV2OperatorReceipt(
           window.CRM && window.CRM.__db,
-          preRead.id
+          preRead.id,
+          contactKey
         )
       : { error: 'not_found' };
   } catch (error) {
@@ -1301,6 +1356,7 @@ async function fetchQuoteWalkV2ReceiptForContact(contactId, force) {
         : 'operator_receipt_failed',
     };
   }
+  if (!__operatorLeaseCurrent(authGeneration)) return { error: 'operator_unavailable' };
   window.CRM.quoteWalkV2Receipts = Object.assign(
     {},
     window.CRM.quoteWalkV2Receipts || {},
@@ -1343,6 +1399,9 @@ async function claimQuoteWalkV2Handoff(contact) {
   if (!verdict.ready) {
     return { ok: false, error: verdict.message, verdict: verdict };
   }
+  if (receipt.contact_id !== String(contact.id)) {
+    return { ok: false, error: 'The Quote Walk receipt does not belong to this contact. Refresh before continuing.' };
+  }
   var result = await consumeQuoteWalkV2HandoffReceipt(
     window.CRM && window.CRM.__db,
     receipt
@@ -1375,27 +1434,47 @@ async function claimQuoteWalkV2Handoff(contact) {
 async function reviewGuidedQuoteWalkPhotos(contactId, intent, textPhotos = false) {
   if (!contactId || !intent) return { ok: false, error: 'No submitted photo packet selected.' };
   const current = await fetchQuoteWalkV2ReceiptForContact(contactId, true);
+  const contact = window.CRM?.contacts?.find(c => String(c.id) === String(contactId));
+  if (!contact || contact.archived || contact.do_not_contact || contact.owner_test_run) return { ok:false, error:'This contact is not eligible for photo review.' };
   if (current?.contact_id !== contactId || current.pre_read_id !== intent.p_pre_read_id) {
     return { ok: false, error: 'The photo packet does not belong to this contact. Refresh before continuing.' };
   }
   // Preserve the caller's exact intent on retry. SQL validates freshness and replay.
-  const result = await (textPhotos ? reviewQuoteWalkV2TextPhotos : reviewQuoteWalkV2GuidedPhotos)(window.CRM?.__db, intent);
+  const reviewer = textPhotos === 'initial' ? reviewInitialPhoto : textPhotos ? reviewQuoteWalkV2TextPhotos : reviewQuoteWalkV2GuidedPhotos;
+  const result = await reviewer(window.CRM?.__db, intent);
   if (!result.ok) return result;
   const refreshed = await fetchQuoteWalkV2ReceiptForContact(contactId, true);
   return { ...result, receipt: refreshed, refreshFailed: !!refreshed?.error };
 }
 
 async function loadGuidedQuoteWalkPhoto(contactId, mediaId, textPhoto = false) {
+  const generation = __authGeneration;
+  const operator = __verifiedOperator;
   const db = window.CRM?.__db;
-  if (!db?.functions?.invoke) throw new Error('Protected photo connection is unavailable.');
-  const result = await db.functions.invoke('get-recording', {
-    body: textPhoto ? { action: 'read_message_attachment', attachment_id: mediaId, contact_id: contactId }
-      : { action: 'read_contact_media', media_id: mediaId, contact_id: contactId },
+  if (!__operatorLeaseCurrent(generation) || !operator || !db?.auth?.getSession) throw new Error('Protected photo connection is unavailable.');
+  const current = await db.auth.getSession();
+  const session = current?.data?.session;
+  if (!__operatorLeaseCurrent(generation) || __verifiedOperator !== operator || current?.error
+      || session?.user?.id !== operator.id || session?.access_token !== operator.accessToken
+      || !Number.isFinite(session?.expires_at) || session.expires_at * 1000 <= Date.now()) throw new Error('Protected photo connection is unavailable.');
+  // FunctionsClient parses image/video MIME responses as text. Read the
+  // protected response as binary while retaining its validated content type.
+  const response = await fetch(SUPABASE_URL + '/functions/v1/get-recording', {
+    method: 'POST', headers: { Authorization: 'Bearer ' + session.access_token,
+      apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify(textPhoto ? { action: 'read_message_attachment', attachment_id: mediaId, contact_id: contactId }
+      : { action: 'read_contact_media', media_id: mediaId, contact_id: contactId }),
+    cache: 'no-store', credentials: 'omit',
   });
-  if (result.error || !(result.data instanceof Blob) || !result.data.type.startsWith('image/')) {
-    throw new Error('Photo could not be loaded.');
+  if (!response.ok) throw new Error('Photo or video could not be loaded.');
+  const blob = await response.blob();
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'video/mp4', 'video/quicktime', 'video/webm'];
+  if (!__operatorLeaseCurrent(generation) || __verifiedOperator !== operator
+      || !(blob instanceof Blob) || !allowedTypes.includes(blob.type.toLowerCase())
+      || blob.size < 1 || blob.size > 15 * 1024 * 1024) {
+    throw new Error('Photo or video could not be loaded.');
   }
-  return result.data;
+  return blob;
 }
 
 // ── Quote Desk (lead → firm quote speed, 2026-07-13) ───────────────────
@@ -2094,6 +2173,7 @@ function mapContact(r) {
     // pull the column (defensive, usePinned uses this as source of
     // truth so missing it would silently de-star everyone).
     pinned: !!r.pinned,
+    owner_test_run: !!r.owner_test_run,
     // contacts.tags column (migration 20260509150000). Replaces the
     // localStorage tag map so labels sync between desktop and mobile.
     // Default to empty array if missing.
@@ -2655,6 +2735,7 @@ window.CRM = {
   materials: [],
   readiness: [],
   quoteWalkV2Receipts: {},
+  quoteWalkV2ReceiptsStatus: { state:'idle' },
   stageHistory: [],
   jurisdictions: [
     // The 4 BPP service-area jurisdictions, matching BPP_JURISDICTIONS in
@@ -2692,6 +2773,7 @@ window.CRM = {
   isQuoteDeskReady,
   proposalHasFirmFacts,
   fetchPreRead,
+  fetchBppProjectContact,
   peekPreRead,
   fetchPreReadsBulk,
   peekPreReadsBulk,
@@ -2794,45 +2876,135 @@ async function __fetchDncPhoneSet(db) {
 // DNC snapshot for read-only continuity. While it is displayed,
 // contactsLoadFailed remains true, so customer actions remain fail-closed
 // until the live safety read succeeds again.
-const CONTACT_SNAPSHOT_KEY = 'bpp_v3_contacts_snapshot_v1';
+const LEGACY_CONTACT_SNAPSHOT_KEY = 'bpp_v3_contacts_snapshot_v1';
+const CONTACT_SNAPSHOT_PREFIX = 'bpp_v3_contacts_snapshot_v2:' + encodeURIComponent(SUPABASE_URL) + ':';
+let __authGeneration = 0;
+let __verifiedOperator = null;
+let __observedAuthSession = null;
+
+function __purgeContactSnapshots() {
+  try {
+    localStorage.removeItem(LEGACY_CONTACT_SNAPSHOT_KEY);
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(CONTACT_SNAPSHOT_PREFIX)) localStorage.removeItem(key);
+    }
+  } catch (_) { /* Storage availability never grants access. */ }
+}
+
+// Never migrate an unbound customer snapshot into an operator's trusted cache.
+try { localStorage.removeItem(LEGACY_CONTACT_SNAPSHOT_KEY); } catch (_) {}
+
+function __operatorLeaseCurrent(generation) {
+  return TEST_MODE || generation === __authGeneration && !!__verifiedOperator && CRM.authed === true;
+}
+
+function __clearOperatorAccess(generation) {
+  if (generation !== undefined && generation !== __authGeneration) return;
+  __authGeneration += 1;
+  browserBackgroundReads.reset();
+  __verifiedOperator = null;
+  try { window.BPPPrivateMedia?.clear(); } catch (_) {}
+  __loadInFlight = null;
+  __purgeContactSnapshots();
+  for (const channel of __realtimeChannels) {
+    try { Promise.resolve(__db.removeChannel(channel)).catch(() => {}); } catch (_) {}
+  }
+  __realtimeChannels = [];
+  for (const key of ['contacts', 'dncPhones', 'events', 'proposals', 'invoices', 'messages',
+    'calls', 'permits', 'materials', 'readiness', 'stageHistory', 'jobPhotos', 'contactPhotos', 'installers', 'lines']) CRM[key] = [];
+  CRM.quoteWalkV2Receipts = {};
+  CRM.quoteWalkV2ReceiptsStatus = { state: 'idle' };
+  CRM.domainStatus = createDomainStatusMap(['contacts', 'proposals', 'money', 'messages', 'workspace', 'operatorMetadata']);
+  CRM.contactsFromSnapshot = false;
+  CRM.contactsLoadFailed = true;
+  CRM.criticalLoadFailed = false;
+  CRM.authed = false;
+  CRM.loaded = true;
+  _preReadCache.clear();
+  _preReadsBulkCache = null;
+  _preReadsBulkPromise = null;
+  _quoteWalkV2ReceiptPromise = null;
+  __paidByInvoice = {};
+  __paymentsByInvoice = {};
+  window.dispatchEvent(new CustomEvent('crm-data-ready', { detail: { authed: false } }));
+  window.dispatchEvent(new CustomEvent('crm-data-changed', { detail: { table: 'authorization' } }));
+}
+
+async function __boundedOperatorAuth(request) {
+  let timer;
+  try {
+    return await Promise.race([
+      Promise.resolve().then(request),
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('Operator verification unavailable')), 8000); }),
+    ]);
+  } finally { clearTimeout(timer); }
+}
+
+async function __verifyOperatorAccess(generation) {
+  try {
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) throw new Error('offline');
+    const restored = await __boundedOperatorAuth(() => __db.auth.getSession());
+    const session = restored?.data?.session;
+    if (generation !== __authGeneration) return false;
+    if (restored?.error || !session?.user?.id || !session.access_token
+        || !Number.isFinite(session.expires_at) || session.expires_at * 1000 <= Date.now()) throw new Error('session unavailable');
+    __observedAuthSession = { id: session.user.id, accessToken: session.access_token };
+    const identity = await __boundedOperatorAuth(() => __db.auth.getUser(session.access_token));
+    if (generation !== __authGeneration) return false;
+    if (identity?.error || identity?.data?.user?.id !== session.user.id) throw new Error('identity unavailable');
+    const permission = await __boundedOperatorAuth(() => __db.rpc('is_bpp_operator'));
+    if (generation !== __authGeneration) return false;
+    if (permission?.error || permission?.data !== true) throw new Error('operator denied');
+    const latest = await __boundedOperatorAuth(() => __db.auth.getSession());
+    if (generation !== __authGeneration) return false;
+    if (latest?.error || !Number.isFinite(latest?.data?.session?.expires_at)
+        || latest.data.session.expires_at * 1000 <= Date.now()
+        || latest?.data?.session?.access_token !== session.access_token
+        || latest?.data?.session?.user?.id !== identity.data.user.id) throw new Error('session changed');
+    __verifiedOperator = { id: identity.data.user.id, accessToken: session.access_token };
+    return true;
+  } catch (_) {
+    __clearOperatorAccess(generation);
+    return false;
+  }
+}
 
 function __readContactSnapshot() {
+  if (!__verifiedOperator || !CRM.authed) return null;
+  const key = CONTACT_SNAPSHOT_PREFIX + __verifiedOperator.id;
   try {
-    const saved = JSON.parse(localStorage.getItem(CONTACT_SNAPSHOT_KEY) || 'null');
-    if (!saved || saved.version !== 1 || !Array.isArray(saved.contacts) || saved.contacts.length === 0) return null;
-    if (!saved.contacts.every(c => c && c.id)) return null;
-    return {
-      contacts: saved.contacts,
-      dncPhones: Array.isArray(saved.dncPhones) ? saved.dncPhones : [],
-    };
+    const saved = JSON.parse(localStorage.getItem(key) || 'null');
+    if (!saved) return null;
+    if (saved.version !== 2 || saved.project !== SUPABASE_URL || saved.operatorID !== __verifiedOperator.id
+        || !Array.isArray(saved.contacts) || !saved.contacts.every(c => c && c.id)) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    return { contacts: saved.contacts, dncPhones: Array.isArray(saved.dncPhones) ? saved.dncPhones : [] };
   } catch (_) {
+    try { localStorage.removeItem(key); } catch (_) {}
     return null;
   }
 }
 
 function __saveContactSnapshot(contacts, dncPhones) {
+  if (!__verifiedOperator || !CRM.authed || TEST_MODE) return;
   try {
-    localStorage.setItem(CONTACT_SNAPSHOT_KEY, JSON.stringify({
-      version: 1,
-      savedAt: Date.now(),
-      contacts: Array.isArray(contacts) ? contacts : [],
+    localStorage.setItem(CONTACT_SNAPSHOT_PREFIX + __verifiedOperator.id, JSON.stringify({
+      version: 2, project: SUPABASE_URL, operatorID: __verifiedOperator.id,
+      savedAt: Date.now(), contacts: Array.isArray(contacts) ? contacts : [],
       dncPhones: Array.isArray(dncPhones) ? dncPhones : [],
     }));
-  } catch (_) {
-    // Snapshot storage is a continuity improvement, never a hard dependency.
-  }
+  } catch (_) { /* Snapshot storage is never authorization. */ }
 }
 
 function __showCachedContacts(snapshot, detail) {
-  if (!snapshot) return false;
+  if (!snapshot || !__verifiedOperator || !CRM.authed) return false;
   CRM.contacts = snapshot.contacts;
   CRM.dncPhones = snapshot.dncPhones;
   CRM.contactsFromSnapshot = true;
   CRM.contactsLoadFailed = true;
-  CRM.authed = true;
-  // During a normal boot this snapshot is useful continuity, but it is not
-  // enough to declare the CRM ready: proposals, messages, and invoices plus
-  // payments still need to settle before their empty states are truthful.
   if (!detail || detail.deferReady !== true) {
     CRM.loaded = true;
     window.dispatchEvent(new CustomEvent('crm-data-ready', { detail: Object.assign({ authed: true, cached: true }, detail || {}) }));
@@ -3144,34 +3316,43 @@ function __loadTestFixtures() {
 
 async function loadLiveData() {
   if (TEST_MODE) {
-    if (TEST_CONTACTS_FAILURE) {
-      __markFixtureDomainsReady();
-      CRM.domainStatus.contacts = {
-        state: 'error', error: 'Synthetic contacts failure', attempts: 1,
-        startedAt: Date.now(), settledAt: Date.now(), source: 'synthetic-fixture',
-      };
-      if (!__showCachedContacts(__readContactSnapshot(), { testContactsFailure: true })) {
-        CRM.contacts = [];
-        CRM.dncPhones = [];
-        CRM.contactsFromSnapshot = false;
-        CRM.contactsLoadFailed = true;
-        CRM.authed = true;
-        CRM.loaded = true;
-        window.dispatchEvent(new CustomEvent('crm-data-ready', { detail: { authed: true, testContactsFailure: true } }));
+    const releaseBackgroundReads = browserBackgroundReads.holdEssentialReads();
+    try {
+      if (TEST_CONTACTS_FAILURE) {
+        __markFixtureDomainsReady();
+        CRM.domainStatus.contacts = {
+          state: 'error', error: 'Synthetic contacts failure', attempts: 1,
+          startedAt: Date.now(), settledAt: Date.now(), source: 'synthetic-fixture',
+        };
+        if (!__showCachedContacts(__readContactSnapshot(), { testContactsFailure: true })) {
+          CRM.contacts = [];
+          CRM.dncPhones = [];
+          CRM.contactsFromSnapshot = false;
+          CRM.contactsLoadFailed = true;
+          CRM.authed = true;
+          CRM.loaded = true;
+          window.dispatchEvent(new CustomEvent('crm-data-ready', { detail: { authed: true, testContactsFailure: true } }));
+        }
+        return;
       }
+      __loadTestFixtures();
       return;
-    }
-    __loadTestFixtures();
-    return;
+    } finally { releaseBackgroundReads(); }
   }
   if (__loadInFlight) return __loadInFlight;
-  __loadInFlight = (async () => {
-    try { await _loadLiveDataInner(); } finally { __loadInFlight = null; }
-  })();
-  return __loadInFlight;
+  const releaseBackgroundReads = browserBackgroundReads.holdEssentialReads();
+  const request = _loadLiveDataInner();
+  __loadInFlight = request;
+  try { await request; } finally {
+    releaseBackgroundReads();
+    if (__loadInFlight === request) __loadInFlight = null;
+  }
+  return request;
 }
 
 async function _loadLiveDataInner() {
+  const authGeneration = __authGeneration;
+  const canApply = () => __operatorLeaseCurrent(authGeneration);
   window.__bppBootMark?.('live data load started');
   if (!__db) {
     console.warn('[CRM] supabase-js not loaded, staying in empty state');
@@ -3179,28 +3360,19 @@ async function _loadLiveDataInner() {
   }
   // Tear down any pre-existing channels from a prior call. Safe no-op on
   // first run (array is empty).
-  for (const ch of __realtimeChannels) {
-    try { await __db.removeChannel(ch); } catch (_) { /* ignore */ }
-  }
+  const previousChannels = __realtimeChannels;
   __realtimeChannels = [];
-
-  // A Capacitor WebView can occasionally leave session restoration pending
-  // forever after the OS suspends the app. Bound this one bootstrap boundary
-  // so the operator gets a recoverable signed-out state instead of an endless
-  // loading spinner. The table reads below already have their own timeouts.
-  const sessionResult = await Promise.race([
-    __db.auth.getSession(),
-    new Promise((_, reject) => setTimeout(() => reject(new Error('Session restoration timed out after 8000ms')), 8000)),
-  ]);
-  const { data: { session } } = sessionResult;
-  window.__bppBootMark?.('session available');
-  if (!session) {
-    window.CRM.authed = false;
-    window.CRM.loaded = true;
-    window.dispatchEvent(new CustomEvent('crm-data-ready', { detail: { authed: false } }));
-    return;
+  for (const ch of previousChannels) {
+    try { await __db.removeChannel(ch); } catch (_) { /* ignore */ }
+    if (authGeneration !== __authGeneration) return;
   }
+
+  // A browser session is authentication only. Verify the server identity and
+  // operator permission before reading or displaying any protected snapshot.
+  if (!await __verifyOperatorAccess(authGeneration)) return;
+  if (authGeneration !== __authGeneration) return;
   window.CRM.authed = true;
+  window.__bppBootMark?.('operator verified');
 
   // Restore a previously verified list while the fresh live read runs. This
   // is deliberately read-only: the normal safety gate remains closed until
@@ -3237,6 +3409,7 @@ async function _loadLiveDataInner() {
   });
 
   const critical = await contactsProgressive.critical;
+  if (!canApply()) return;
   window.__bppBootMark?.('Contacts safety domain settled');
   const contactsDomain = critical.domains.contacts;
 
@@ -3273,12 +3446,14 @@ async function _loadLiveDataInner() {
   // merge and avoids drift bugs. Components re-render via crm-data-changed.
   __realtimeChannels.push(__db.channel('v3-contacts')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'contacts' }, async () => {
+      if (!canApply()) return;
       try {
         const [contactsResult, dncResult] = await Promise.all([
           __db.from('contacts').select(CONTACT_COLS)
             .order('created_at', { ascending: false }).limit(500),
           __fetchDncPhoneSet(__db),
         ]);
+        if (!canApply()) return;
         const { data, error } = contactsResult;
         if (error || dncResult.error) {
           window.CRM.contactsLoadFailed = true;
@@ -3307,6 +3482,7 @@ async function _loadLiveDataInner() {
   let __moneyRealtimeRequest = 0;
   __realtimeChannels.push(__db.channel('v3-messages')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, async () => {
+      if (!canApply()) return;
       const request = ++__messagesRealtimeRequest;
       try {
         const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
@@ -3318,6 +3494,7 @@ async function _loadLiveDataInner() {
         const { data, error } = await __db.from('messages')
           .select(MSG_COLS)
           .gte('created_at', since).order('created_at', { ascending: false }).limit(2000);
+        if (!canApply()) return;
         if (error) { console.warn('[CRM] realtime messages refetch failed:', error.message); return; }
         if (request !== __messagesRealtimeRequest) return;
         window.CRM.messages = applyLocalReads((data || []).map(mapMessage));
@@ -3335,6 +3512,7 @@ async function _loadLiveDataInner() {
   // in stale state until the next online/visibility reconcile.
   __realtimeChannels.push(__db.channel('v3-invoices')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'invoices' }, async () => {
+      if (!canApply()) return;
       const request = ++__moneyRealtimeRequest;
       try {
         const { data, error } = await __db.from('invoices')
@@ -3344,9 +3522,10 @@ async function _loadLiveDataInner() {
 // If those columns ever get added, expand the SELECT and the mapper.
 'id, token, document_number, contact_id, proposal_id, total, status, created_at, due_at, payment_terms, paid_at, payment_method, line_items, creator_version, show_property_image')
           .order('created_at', { ascending: false }).limit(500);
+        if (!canApply()) return;
         if (error) { console.warn('[CRM] realtime invoices refetch failed:', error.message); return; }
         const paymentsResult = await fetchPaidRows();
-        if (!paymentsResult?.ok) return;
+        if (!canApply() || !paymentsResult?.ok) return;
         if (request !== __moneyRealtimeRequest) return;
         applyPaidRows(paymentsResult.data);
         window.CRM.invoices = (data || []).map(mapInvoice);
@@ -3364,14 +3543,16 @@ async function _loadLiveDataInner() {
   // re-map paid_cents in place so the Money Card's remaining balance updates live.
   __realtimeChannels.push(__db.channel('v3-payments')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, async () => {
+      if (!canApply()) return;
       const request = ++__moneyRealtimeRequest;
       try {
         const { data, error } = await __db.from('invoices')
           .select('id, token, document_number, contact_id, proposal_id, total, status, created_at, due_at, payment_terms, paid_at, payment_method, line_items, creator_version, show_property_image')
           .order('created_at', { ascending: false }).limit(500);
+        if (!canApply()) return;
         if (error) { console.warn('[CRM] realtime payment invoice refetch failed:', error.message); return; }
         const paymentsResult = await fetchPaidRows();
-        if (!paymentsResult?.ok) return;
+        if (!canApply() || !paymentsResult?.ok) return;
         if (request !== __moneyRealtimeRequest) return;
         applyPaidRows(paymentsResult.data);
         window.CRM.invoices = (data || []).map(mapInvoice);
@@ -3386,6 +3567,7 @@ async function _loadLiveDataInner() {
 
   __realtimeChannels.push(__db.channel('v3-proposals')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'proposals' }, async () => {
+      if (!canApply()) return;
       const request = ++__proposalsRealtimeRequest;
       try {
         // SELECT must match the initial bulk loader (line 569). Earlier
@@ -3399,6 +3581,7 @@ async function _loadLiveDataInner() {
         const { data, error } = await __db.from('proposals')
           .select('id, token, document_number, contact_id, pricing_tier, total, signed_total, amp_type, selected_amp, status, copied_at, created_at, viewed_at, signed_at, sent_at, approved_at, creator_version, length_ft, include_cord, include_inlet, include_permit, pom_offered, pom_accepted, require_deposit, show_property_image, deposit_rate, extra_line_items, discount_type, discount_value, notes, superseded_at, superseded_by, signature_revision, lifecycle_revision, approval_source, accepted_at, approval_channel')
           .order('created_at', { ascending: false }).limit(500);
+        if (!canApply()) return;
         if (error) { console.warn('[CRM] realtime proposals refetch failed:', error.message); return; }
         if (request !== __proposalsRealtimeRequest) return;
         window.CRM.proposals = (data || []).map(mapProposal);
@@ -3416,11 +3599,13 @@ async function _loadLiveDataInner() {
   // realtime refetch, while the critical Contacts/Messages/money channels
   // above are already live.
   const installWorkspaceRealtime = () => {
+  if (!canApply()) return;
   // calendar_events realtime, without this, an install scheduled in
   // tab A stays invisible in tab B until a hard refresh, and a cancel
   // in tab A leaves a stale "scheduled" event in tab B's calendar.
   __realtimeChannels.push(__db.channel('v3-calendar-events')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'calendar_events' }, async () => {
+      if (!canApply()) return;
       try {
         const since = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString();
         const { data, error } = await __db.from('calendar_events')
@@ -3428,6 +3613,7 @@ async function _loadLiveDataInner() {
           .gte('start_at', since)
           .order('start_at', { ascending: true })
           .limit(500);
+        if (!canApply()) return;
         if (error) { console.warn('[CRM] realtime calendar refetch failed:', error.message); return; }
         window.CRM.events = (data || []).map(mapEvent);
         window.dispatchEvent(new CustomEvent('crm-data-changed', { detail: { table: 'calendar_events' } }));
@@ -3442,10 +3628,12 @@ async function _loadLiveDataInner() {
   // to propagate.
   __realtimeChannels.push(__db.channel('v3-permits')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'permits' }, async () => {
+      if (!canApply()) return;
       try {
         const { data, error } = await __db.from('permits')
           .select('id, contact_id, jurisdiction_id, jurisdiction_name, permit_number, status, submitted_at, approved_at, cost_cents, blocker_note, created_at, updated_at')
           .order('created_at', { ascending: true }).limit(500);
+        if (!canApply()) return;
         if (error) { console.warn('[CRM] realtime permits refetch failed:', error.message); return; }
         window.CRM.permits = (data || []).map(mapPermit);
         window.dispatchEvent(new CustomEvent('crm-data-changed', { detail: { table: 'permits' } }));
@@ -3455,10 +3643,12 @@ async function _loadLiveDataInner() {
 
   __realtimeChannels.push(__db.channel('v3-materials')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'materials' }, async () => {
+      if (!canApply()) return;
       try {
         const { data, error } = await __db.from('materials')
           .select('id, contact_id, kind, status, ordered_at, received_at, installed_at, notes, created_at, updated_at')
           .order('created_at', { ascending: true }).limit(500);
+        if (!canApply()) return;
         if (error) { console.warn('[CRM] realtime materials refetch failed:', error.message); return; }
         window.CRM.materials = (data || []).map(mapMaterial);
         window.dispatchEvent(new CustomEvent('crm-data-changed', { detail: { table: 'materials' } }));
@@ -3474,11 +3664,13 @@ async function _loadLiveDataInner() {
   let __readinessSeq = 0;
   __realtimeChannels.push(__db.channel('v3-readiness')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'job_readiness' }, async () => {
+      if (!canApply()) return;
       const mySeq = ++__readinessSeq;
       try {
         const { data, error } = await __db.from('job_readiness')
           .select('contact_id, opened_at, permit_verified_at, permit_verified_note, parts_shipped_at, suggested_install_at, suggested_sub, suggestion_reason, suggestion_notified_at, date_confirmed_at')
           .limit(500);
+        if (!canApply()) return;
         if (mySeq !== __readinessSeq) return;   // a newer refetch superseded this one
         if (error) { console.warn('[CRM] realtime job_readiness refetch failed:', error.message); return; }
         window.CRM.readiness = (data || []);
@@ -3492,10 +3684,12 @@ async function _loadLiveDataInner() {
   // so Key uploading on his laptop syncs to his phone within seconds.
   __realtimeChannels.push(__db.channel('v3-job-photos')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'job_photos' }, async () => {
+      if (!canApply()) return;
       try {
         const { data, error } = await __db.from('job_photos')
           .select('id, contact_id, url, storage_path, caption, uploaded_by, uploaded_at, annotated, photo_kind')
           .order('uploaded_at', { ascending: false }).limit(1000);
+        if (!canApply()) return;
         if (error) { console.warn('[CRM] realtime job_photos refetch failed:', error.message); return; }
         window.CRM.jobPhotos = data || [];
         window.dispatchEvent(new CustomEvent('crm-data-changed', { detail: { table: 'job_photos' } }));
@@ -3508,9 +3702,11 @@ async function _loadLiveDataInner() {
   // contact gains every copied image without an app restart.
   __realtimeChannels.push(__db.channel('v3-contact-photos')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_photos' }, async () => {
+      if (!canApply()) return;
       try {
         const { data, error } = await __db.from('contact_photos')
           .select('id, contact_id, url, caption').limit(1000);
+        if (!canApply()) return;
         if (error) { console.warn('[CRM] realtime contact_photos refetch failed:', error.message); return; }
         window.CRM.contactPhotos = data || [];
         window.dispatchEvent(new CustomEvent('crm-data-changed', { detail: { table: 'contact_photos' } }));
@@ -3533,6 +3729,7 @@ async function _loadLiveDataInner() {
   // Every secondary read shares one three-request scheduler. Domains retain
   // separate readiness/error truth, but the database no longer receives the
   // old burst of sixteen simultaneous table reads after sign-in.
+  if (!canApply()) return;
   const secondaryProgressive = startProgressiveDomains({
     domains: {
       proposals: {
@@ -3621,6 +3818,7 @@ async function _loadLiveDataInner() {
   });
 
   const proposalsApplied = secondaryProgressive.domains.proposals.then(domain => {
+    if (!canApply()) return domain;
     if (domain.ok && __proposalsRealtimeGeneration === 0) {
       window.CRM.proposals = (domain.results.proposals.data || []).map(mapProposal);
     }
@@ -3636,6 +3834,7 @@ async function _loadLiveDataInner() {
   });
 
   const moneyApplied = secondaryProgressive.domains.money.then(domain => {
+    if (!canApply()) return domain;
     if (domain.ok && __moneyRealtimeGeneration === 0) {
       applyPaidRows(domain.results.payments.data || []);
       window.CRM.invoices = (domain.results.invoices.data || []).map(mapInvoice);
@@ -3653,6 +3852,7 @@ async function _loadLiveDataInner() {
   });
 
   const messagesApplied = secondaryProgressive.domains.messages.then(domain => {
+    if (!canApply()) return domain;
     if (domain.ok && __messagesRealtimeGeneration === 0) {
       window.CRM.messages = applyLocalReads((domain.results.messages.data || []).map(mapMessage));
     }
@@ -3668,6 +3868,7 @@ async function _loadLiveDataInner() {
   });
 
   const workspaceApplied = secondaryProgressive.domains.workspace.then(domain => {
+    if (!canApply()) return domain;
     if (domain.ok) {
       window.CRM.events = (domain.results.events.data || []).map(mapEvent);
       window.CRM.stageHistory = domain.results.stageHistory.data || [];
@@ -3683,6 +3884,7 @@ async function _loadLiveDataInner() {
   });
 
   const metadataApplied = secondaryProgressive.domains.operatorMetadata.then(domain => {
+    if (!canApply()) return domain;
     const installers = domain.results.installers;
     const lines = domain.results.lines;
     if (installers && !installers.error) {
@@ -3708,6 +3910,8 @@ async function _loadLiveDataInner() {
 // events, and project rows that the visible Contacts home does not need.
 async function refetchAll() {
   if (!__db || !window.CRM.authed) return;
+  const authGeneration = __authGeneration;
+  if (!await __verifyOperatorAccess(authGeneration) || !__operatorLeaseCurrent(authGeneration)) return;
   const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
   try {
     const reconciliation = startProgressiveDomains({
@@ -3738,6 +3942,7 @@ async function refetchAll() {
       taskConcurrency: 3,
     });
     const result = await reconciliation.critical;
+    if (!__operatorLeaseCurrent(authGeneration)) return;
     const contactsDomain = result.domains.contacts;
     const proposalsDomain = result.domains.proposals;
     const moneyDomain = result.domains.money;
@@ -3804,6 +4009,7 @@ const _reconcile = async () => {
 // Expose for pull-to-refresh and any other manual sync gesture.
 window.CRM.__refetch = _reconcile;
 window.addEventListener('online', _reconcile);
+window.addEventListener('offline', () => { if (!TEST_MODE) __clearOperatorAccess(); });
 // 'focus' fires too aggressively (every alt-tab); use 'visibilitychange' +
 // only refetch if it's been more than 30s since the last successful load.
 document.addEventListener('visibilitychange', () => {
@@ -3811,6 +4017,27 @@ document.addEventListener('visibilitychange', () => {
     _reconcile();
   }
 });
+
+// Auth events synchronously revoke the current read lease. Late responses from
+// the old account cannot repopulate memory or persistent customer snapshots.
+if (!TEST_MODE && __db?.auth?.onAuthStateChange) {
+  __db.auth.onAuthStateChange((event, session) => {
+    if (event === 'INITIAL_SESSION') return;
+    // supabase-js also emits SIGNED_IN while recovering the initial session.
+    // Keep its bound snapshot pending verification; this event grants no access.
+    if (event === 'SIGNED_IN' && session && __authGeneration === 0 && !__verifiedOperator
+        && (!__observedAuthSession || session.access_token === __observedAuthSession.accessToken
+          && session.user?.id === __observedAuthSession.id)) {
+      __observedAuthSession = { id: session.user?.id, accessToken: session.access_token };
+      return;
+    }
+    if (session?.access_token === __verifiedOperator?.accessToken
+        && session?.user?.id === __verifiedOperator?.id && event !== 'SIGNED_OUT') return;
+    __clearOperatorAccess();
+    __observedAuthSession = session ? { id: session.user?.id, accessToken: session.access_token } : null;
+    if (session && event !== 'SIGNED_OUT') setTimeout(() => { loadLiveData().catch(() => {}); }, 0);
+  });
+}
 
 // Kick off load (non-blocking).
 loadLiveData().catch(err => {
@@ -3835,7 +4062,7 @@ loadLiveData().catch(err => {
   var timer = null;
   function beat() {
     try {
-      if (!__db || typeof __db.from !== 'function') return;
+      if (!__db || !CRM.authed || !__verifiedOperator || typeof __db.from !== 'function') return;
       var q = __db.from('operator_presence');
       if (!q || typeof q.upsert !== 'function') return;
       var r = q.upsert({ id: 'key', last_seen_at: new Date().toISOString() }, { onConflict: 'id' });

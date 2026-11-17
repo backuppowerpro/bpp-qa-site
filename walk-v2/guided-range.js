@@ -58,8 +58,12 @@
         layout.appendChild(cards.estimate);
 
         var next = element('section', '', 'guided-range-next guided-range-card');
-        next.appendChild(element('h2', 'Next: check your text messages'));
-        next.appendChild(element('p', 'Accept your range and Key will text you to request setup photos. Reply with your photos when you are ready.'));
+        var initialPanelSaved = state.initial_panel_photo_saved === true;
+        next.appendChild(element('h2', initialPanelSaved ? 'Your panel photo is attached' : 'Next: text one panel photo'));
+        next.appendChild(element('p', initialPanelSaved ? 'Review your range and continue. Key has your initial panel photo and may ask for the remaining setup views before preparing your firm proposal.' : 'Accept your range, then reply to Key with one photo of your closed electrical panel. He will check compatibility and help firm up your estimate. Need help or cannot take it safely? Tell him.'));
+        var example = element('figure', '', 'guided-outlet-reference'); example.dataset.panelPhotoExample = '';
+        var image = element('img'); image.addEventListener('error', function () { example.hidden = true; }); image.src = '/walk-v2/closed-panel-example.jpg'; image.alt = 'Illustration of a closed electrical panel on a plain wall'; image.width = image.height = 900; image.loading = 'lazy'; image.decoding = 'async';
+        example.appendChild(image); example.appendChild(element('figcaption', 'Example illustration: keep the whole panel closed.')); if (!initialPanelSaved) next.appendChild(example);
         var button = primary('Accept my range', request, next); button.dataset.requestProposal = '';
         next.appendChild(element('p', 'No payment is due here.', 'guided-range-payment'));
         layout.appendChild(next);

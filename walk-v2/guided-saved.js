@@ -24,7 +24,7 @@
       if (original) { original.setAttribute('inert', ''); original.style.setProperty('display', 'none', 'important'); }
       var handler = kind === 'range' ? window.BPPGuidedRange : window.BPPGuidedPhotos;
       var compatibleCore = window.BPPSaveForLater && typeof BPPSaveForLater.mount === 'function'
-        && handler && typeof handler.mount === 'function' && (kind === 'range' || handler.textReplyOnly === true) && window.WALK && WALK.textReplyOnly === true && typeof window.__BPP_WALK_TOKEN === 'string'
+        && handler && typeof handler.mount === 'function' && (kind === 'range' || handler.textReplyOnly === true) && window.WALK && WALK.textReplyOnly === true && WALK.wholeResponseDeadline === true && typeof window.__BPP_WALK_TOKEN === 'string'
         && ['isGuidedJourney', 'guidedDestination', 'rememberJourneyState'].every(function (name) { return typeof WALK[name] === 'function'; });
       var token = compatibleCore ? WALK.token() : '';
       var priorGuided = document.body.classList.contains('guided-walk');

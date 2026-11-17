@@ -9,17 +9,16 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://*.i.posthog.com https://us-assets.i.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://*.i.posthog.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'">
 <meta name="theme-color" content="#0b1f3b">
 <meta name="description" content="Backup Power Pro sends steady generator inlet and interlock install jobs to licensed, insured electricians in Greenville, Spartanburg, and Pickens counties. Set your own volume, decline any job, fast pay after QC pass.">
-<meta property="og:title" content="Work with Backup Power Pro, Licensed Electricians, Upstate SC">
-<meta property="og:description" content="Steady generator inlet install work for licensed, insured Upstate SC electricians. You set your own volume. Apply in about two minutes.">
-<meta property="og:image" content="https://qa.backuppowerpro.com/assets/images/logo-white-v2.png">
-<meta property="og:url" content="https://qa.backuppowerpro.com/subs/">
-<meta name="twitter:card" content="summary">
 <title>Work with Backup Power Pro, Licensed Electricians, Upstate SC</title>
+<link rel="canonical" href="https://qa.backuppowerpro.com/subs/">
+<link rel="apple-touch-icon" href="/assets/images/icon-192.png" sizes="192x192">
+<link rel="icon" href="/favicon.png" type="image/png" sizes="32x32">
+<link rel="icon" href="/assets/images/icon-192.png" type="image/png" sizes="192x192">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- BPP design system: single source of truth (tokens, reset, primitives, motion). REUSE ONLY, no new tokens defined on this page. -->
-<link rel="stylesheet" href="/assets/css/bpp-ds.css?v=20260713a">
+<link rel="stylesheet" href="/assets/css/bpp-ds.css?v=85adfde9b763">
 <script>document.documentElement.className += ' js'</script>
 <style>
 /* ============================================================================
@@ -117,9 +116,31 @@
 /* kill tap delay on custom controls (Operational DNA 6a) */
 .county-chip,.btn-gold,input{touch-action:manipulation}
 @keyframes spin{to{transform:rotate(360deg)}}
+:root { --text3:#4f5b6e; }
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex="0"]:focus-visible, [tabindex="-1"]:focus { outline:3px solid #005fcc !important; outline-offset:3px !important; box-shadow:0 0 0 3px #fff !important; }
+  h1, h2, h3, input, button { scroll-margin-top:100px; }
 </style>
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://qa.backuppowerpro.com/subs/">
+<meta property="og:site_name" content="Backup Power Pro">
+<meta property="og:title" content="Work with Backup Power Pro, Licensed Electricians, Upstate SC">
+<meta property="og:description" content="Backup Power Pro sends steady generator inlet and interlock install jobs to licensed, insured electricians in Greenville, Spartanburg, and Pickens counties. Set your own volume, decline any job, fast pay after QC pass.">
+<meta property="og:image" content="https://qa.backuppowerpro.com/og-image.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Backup Power Pro logo with a portable generator, inlet box and electrical panel.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Work with Backup Power Pro, Licensed Electricians, Upstate SC">
+<meta name="twitter:description" content="Backup Power Pro sends steady generator inlet and interlock install jobs to licensed, insured electricians in Greenville, Spartanburg, and Pickens counties. Set your own volume, decline any job, fast pay after QC pass.">
+<meta name="twitter:image" content="https://qa.backuppowerpro.com/og-image.png">
+<meta name="twitter:image:alt" content="Backup Power Pro logo with a portable generator, inlet box and electrical panel.">
 </head>
 <body>
+<main>
+<p class="sr-only" id="applicationStatus" role="status" aria-live="polite" aria-atomic="true"></p>
 
 <div class="brand-bar">
   <img src="/assets/images/logo-white-v2.png" alt="Backup Power Pro">
@@ -252,7 +273,7 @@
         <svg fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
       </button>
 
-      <div class="rfallback" id="rFallback">
+      <div class="rfallback" id="rFallback" tabindex="-1" role="alert">
         <div class="ft">That didn't go through.</div>
         <div class="fd">No problem, nothing you typed above was lost. Text Key directly and he'll get you set up personally.</div>
         <a class="btn-gold" href="sms:+18648637800" id="rSmsLink">Text Key: (864) 863-7800</a>
@@ -261,7 +282,7 @@
 
     <div class="rsuccess" id="rSuccess">
       <div class="check-icon">&#9989;</div>
-      <h3>You're in, <span id="rSuccessName"></span>.</h3>
+      <h3 id="applicationSuccess" tabindex="-1">You're in, <span id="rSuccessName"></span>.</h3>
       <p>Key personally reviews every application. He'll text you, usually within a day.</p>
     </div>
   </div>
@@ -277,6 +298,7 @@
 
 <div class="rfoot">Backup Power Pro by Key Electric &middot; Greenville, Spartanburg, Pickens counties<br>Questions? Text or call Key directly at <b><a href="sms:+18648637800">(864) 863-7800</a></b></div>
 
+</main>
 <!-- PostHog Analytics -->
 <script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('phc_qoA51lePZqXYtPJYkrIpdA4U8iMDJ79L1kje7r4pD4O',{api_host:'https://us.i.posthog.com',person_profiles:'identified_only',capture_pageview:true,capture_pageleave:true,enable_heatmaps:true,capture_dead_clicks:true})</script>
 <script>
@@ -299,7 +321,7 @@ document.querySelectorAll('a[href="#apply"]').forEach(function(a){
   a.addEventListener('click',function(e){
     e.preventDefault();
     var t=document.getElementById('apply');
-    if(t) t.scrollIntoView({behavior:'smooth',block:'start'});
+    if(t) { t.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}); var heading=t.querySelector('h2'); if(heading){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});} }
   });
 });
 
@@ -363,8 +385,14 @@ document.querySelectorAll('a[href="#apply"]').forEach(function(a){
     return [].slice.call(document.querySelectorAll('.county-chip.on')).map(function(c){ return c.dataset.county; });
   }
 
-  function clearErr(fieldId){ document.getElementById(fieldId).classList.remove('invalid'); }
-  function setErr(fieldId){ document.getElementById(fieldId).classList.add('invalid'); }
+  document.querySelectorAll('.rfield').forEach(function(field){
+    var input=field.querySelector('input'),error=field.querySelector('.errmsg');
+    if(!input || !error) return;
+    error.id=input.id+'-error'; input.setAttribute('aria-describedby',error.id); input.setAttribute('aria-invalid','false');
+  });
+  nameInput.setAttribute('aria-required','true');
+  function clearErr(fieldId){ var field=document.getElementById(fieldId); field.classList.remove('invalid'); field.querySelector('input').setAttribute('aria-invalid','false'); }
+  function setErr(fieldId){ var field=document.getElementById(fieldId); field.classList.add('invalid'); field.querySelector('input').setAttribute('aria-invalid','true'); }
 
   function normalizeOptionalUrl(raw){
     var s = String(raw || '').trim();
@@ -431,14 +459,21 @@ document.querySelectorAll('a[href="#apply"]').forEach(function(a){
   }
 
   submitBtn.addEventListener('click', function(){
+    if(submitBtn.disabled) return;
     if(!validate()){
       var firstBad = document.querySelector('.rfield.invalid input');
       if(firstBad) firstBad.focus();
       return;
     }
 
+    var submitFocus = document.activeElement;
+    function mayRestoreFocus(){
+      var active = document.activeElement;
+      return active === document.body || active === submitFocus || (active && !active.getClientRects().length);
+    }
     fallback.classList.remove('show');
     submitBtn.disabled = true;
+    document.getElementById('applicationStatus').textContent = 'Sending application.';
     var originalHtml = submitBtn.innerHTML;
     submitBtn.innerHTML = '<div style="width:20px;height:20px;border:2.5px solid rgba(11,31,59,.2);border-top-color:var(--navy);border-radius:50%;animation:spin .6s linear infinite"></div> Sending...';
 
@@ -497,13 +532,19 @@ document.querySelectorAll('a[href="#apply"]').forEach(function(a){
       successName.textContent = nameInput.value.trim().split(' ')[0] || '';
       formWrap.style.display = 'none';
       successEl.style.display = 'block';
+      document.getElementById('applicationStatus').textContent = 'Application submitted.';
+      if(mayRestoreFocus()) document.getElementById('applicationSuccess').focus();
       try { sessionStorage.setItem('bpp_sub_applied', '1'); } catch(e){}
     }
 
     function showFallback(){
       // Failure is first-class: nothing typed above is cleared or hidden.
       fallback.classList.add('show');
-      fallback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      document.getElementById('applicationStatus').textContent = '';
+      if(mayRestoreFocus()){
+        fallback.focus();
+        fallback.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' });
+      }
     }
   });
 
@@ -513,6 +554,7 @@ document.querySelectorAll('a[href="#apply"]').forEach(function(a){
       if(sessionStorage.getItem('bpp_sub_applied')){
         formWrap.style.display = 'none';
         successEl.style.display = 'block';
+        if(document.activeElement === document.body) document.getElementById('applicationSuccess').focus();
       }
     } catch(e){}
   })();

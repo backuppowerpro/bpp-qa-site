@@ -57,9 +57,11 @@
   }
   input { font-family: inherit; -webkit-appearance: none; appearance: none; }
   button:focus-visible, input:focus-visible, a:focus-visible {
-    outline: 2px solid var(--gold);
-    outline-offset: 2px;
+    outline: 3px solid var(--navy);
+    outline-offset: 3px;
   }
+  .site-head a:focus-visible { outline-color: var(--gold); }
+  .page .gift input:focus-visible { outline: 3px solid var(--navy); outline-offset: 3px; }
   svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
 
   .stack {

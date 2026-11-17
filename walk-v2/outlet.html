@@ -4,11 +4,11 @@
 <meta name="robots" content="noindex,nofollow,noarchive">
 <script src="/qa-environment.js"></script>
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-W9buKME34fK9a6lkyZh3JHp7SaCx4qhOPh8gG7ZEuIE='; script-src-attr 'none'; style-src 'self' 'sha256-wai4Szb8SwPzCWBhw/3jNyqgJg/CzjE4jNXzTyp+stQ='; style-src-elem 'self' 'sha256-wai4Szb8SwPzCWBhw/3jNyqgJg/CzjE4jNXzTyp+stQ='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
-<script src="/assets/js/bpp-analytics.js?v=4778878d007c"></script>
-<script src="/walk-v2/no-js-bootstrap.js?v=47a946524088"></script>
-<script src="/walk-v2/token-bootstrap.js?v=5561db666347"></script>
-<link rel="stylesheet" href="/walk-v2/no-js-recovery.css" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'sha256-CbIQqTzoXWifSwUgBcbe5+xHWQkk46AG8cYNtMS2Jk0='; script-src-attr 'none'; style-src 'self' 'sha256-wai4Szb8SwPzCWBhw/3jNyqgJg/CzjE4jNXzTyp+stQ='; style-src-elem 'self' 'sha256-wai4Szb8SwPzCWBhw/3jNyqgJg/CzjE4jNXzTyp+stQ='; style-src-attr 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' https://hfatblrcwytxvijjhpal.supabase.co; worker-src 'self' blob:; media-src 'self' blob: data:; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests" />
+<script src="/walk-v2/token-bootstrap.js?v=e257fb84c862"></script>
+<script src="/walk-v2/no-js-bootstrap.js?v=3ef9fc17b297"></script>
+<script src="/assets/js/bpp-analytics.js?v=c9db468254dd"></script>
+<link rel="stylesheet" href="/walk-v2/no-js-recovery.css?v=3d4e0f8b92ec" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="robots" content="noindex, nofollow" />
 <title>Backup Power Pro · Opening your saved quote walk</title>
@@ -20,16 +20,43 @@
 </style>
 <script>
   (function () {
-    var target = '/walk-v2/connection.html' + window.location.search + window.location.hash;
-    if (window.__QW_NAVIGATE__) window.__QW_NAVIGATE__(target);
-    else window.location.replace(target);
+    function recover() {
+      function showRecovery() {
+        var heading = document.querySelector('[data-alias-status]');
+        var copy = document.querySelector('[data-alias-recovery-copy]');
+        var notice = document.querySelector('.qw-script-recovery');
+        if (heading) heading.textContent = "We couldn't open this saved Quote Walk.";
+        if (copy) copy.textContent = 'Use your original saved Quote Walk link, or call ';
+        // A reload of a scrubbed, ambiguous link cannot select its saved request.
+        var reload = notice && notice.querySelector('button');
+        if (reload) reload.remove();
+        document.documentElement.classList.remove('js');
+        document.documentElement.classList.add('no-js');
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', showRecovery, { once: true });
+      else showRecovery();
+    }
+    var token = window.__BPP_WALK_TOKEN;
+    var capability = window.__BPP_CAPABILITY_ENTRY;
+    // Invalid explicit input must never select an older tab credential.
+    if (window.__BPP_INVALID_CAPABILITY_ENTRY !== false || typeof capability !== 'boolean'
+        || typeof token !== 'string' || (token && !/^[a-zA-Z0-9_-]{32,160}$/.test(token))
+        || (capability && !token)) { recover(); return; }
+    var target = new URL(window.location.href);
+    target.pathname = '/walk-v2/connection.html';
+    target.searchParams.delete('t');
+    // The next document needs this exact captured credential even without storage.
+    if (token) target.searchParams.set('t', token);
+    var relative = target.pathname + target.search + target.hash;
+    if (window.__QW_NAVIGATE__) window.__QW_NAVIGATE__(relative);
+    else window.location.replace(relative);
   })();
 </script>
 </head>
 <body>
 <main>
-  <p>Opening your saved quote walk.</p>
-  <div class="qw-no-js-note qw-script-recovery" role="alert">JavaScript is required to open this saved Quote Walk safely. Your saved answers remain on file. Turn it on and reload, or call <a href="tel:+18648637800">(864) 863-7800</a>.</div>
+  <p data-alias-status>Opening your saved Quote Walk.</p>
+  <div class="qw-no-js-note qw-script-recovery" role="alert"><span data-alias-recovery-copy>JavaScript is required to open this saved Quote Walk safely. Your saved answers remain on file. Turn it on and reload</span>.</div>
 </main>
 </body>
 </html>

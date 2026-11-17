@@ -1,0 +1,4 @@
+# Preserve the verified guide artifacts as binary bytes, including ASCII-encoded PDFs.
+/assets/docs/what-can-my-generator-power-*.pdf binary
+/docs/lead-magnet/v5-review/source/*.pdf binary
+/docs/lead-magnet/v5-review/*.pdf binary

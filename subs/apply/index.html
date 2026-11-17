@@ -45,7 +45,7 @@
     --line-soft: #e8ecf2;
     --ink: #0b1f3b;
     --muted: #4f5b6e;
-    --faint: #6d7889;
+    --faint: #4f5b6e;
 
     --green: #067a4e;
     --green-bg: #e9f7f0;
@@ -252,9 +252,15 @@
   .fullscreen .checklist .tick { flex:0 0 auto; width:22px; height:22px; border-radius:50%; background:var(--green-bg); border:1px solid var(--green-line); color:var(--green); display:flex; align-items:center; justify-content:center; margin-top:1px; }
   .fullscreen .checklist .tick svg { width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
   .fullscreen .primary { margin-top:22px; width:100%; max-width:22rem; text-decoration:none; }
+
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex="0"]:focus-visible, [tabindex="-1"]:focus { outline:3px solid #005fcc !important; outline-offset:3px !important; box-shadow:0 0 0 3px #fff !important; }
+  h1, h2, h3, input, button { scroll-margin-top:100px; }
 </style>
 </head>
 <body>
+<main>
+<p class="sr-only" id="setupStatus" role="status" aria-live="polite" aria-atomic="true"></p>
 
   <!-- LOADING (initial token read) -->
   <div class="fullscreen" id="loadingScreen">
@@ -312,7 +318,7 @@
       <p class="lede">Add each one in order. A PDF or a clear photo both work.</p>
       <p class="help" style="margin:-8px 0 16px;">This is the paperwork part, your office can handle it if that is easier. Everything saves as you go.</p>
       <div id="docList"><!-- doc blocks injected here --></div>
-      <p class="errmsg" id="docsErr" style="display:none; font-size:13px; font-weight:600; color:var(--red); margin:12px 2px 0;">Add every required document, including a photo of your work vehicle or van, to continue.</p>
+      <p class="errmsg" id="docsErr" role="alert" style="display:none; font-size:13px; font-weight:600; color:var(--red); margin:12px 2px 0;">Add every required document, including a photo of your work vehicle or van, to continue.</p>
     </section>
 
     <!-- STEP 3 . COMPANY -->
@@ -383,7 +389,7 @@
         </button>
       </div>
       <p class="areas-note">Picking a county covers the cities inside it too. Not sure? Pick where you can drive today, you can change it anytime.</p>
-      <p class="errmsg" id="areasErr" style="display:none; font-size:13px; font-weight:600; color:var(--red); margin:12px 2px 0;">Tap at least one county to continue.</p>
+      <p class="errmsg" id="areasErr" role="alert" style="display:none; font-size:13px; font-weight:600; color:var(--red); margin:12px 2px 0;">Tap at least one county to continue.</p>
     </section>
 
     <!-- STEP 5 . PEOPLE -->
@@ -450,7 +456,7 @@
         <svg viewBox="0 0 24 24"><path d="M4 12h13"/><path d="M13 6l6 6-6 6"/></svg>
         <span id="handoffLabel">Not the decision maker? Send them this link</span>
       </button>
-      <p class="help" id="handoffMsg" style="display:none; margin-top:8px;">Link ready to send. Whoever finishes picks up right here, and nothing is lost.</p>
+      <p class="help" id="handoffMsg" role="status" aria-live="polite" aria-atomic="true" style="display:none; margin-top:8px;">Link ready to send. Whoever finishes picks up right here, and nothing is lost.</p>
 
       <!-- honeypot: real people never see or fill this (NOT the optional Website field) -->
       <div class="hp" aria-hidden="true">
@@ -497,6 +503,7 @@
     <a class="primary" href="sms:+18648637800" style="margin-top:18px; max-width:22rem;">Text Key now</a>
   </div>
 
+</main>
 <script>
 (function () {
   'use strict';
@@ -532,6 +539,7 @@
   // generic retry error (quality arc 2026-07-21, finding 3). Expired swaps the
   // heading; the "text Key for a fresh one" subtext already fits both.
   function showInvalid(expired) {
+    var active = document.activeElement;
     var t = document.getElementById('invalidTitle');
     if (t) t.textContent = expired ? 'This link has expired.' : 'This link is not valid.';
     els.loading.hidden = true;
@@ -539,7 +547,26 @@
     els.navbar.hidden = true;
     els.success.hidden = true;
     els.invalid.hidden = false;
+    if (!active || active === document.body || !active.getClientRects().length) focusHeading(t);
   }
+
+  function focusHeading(el) {
+    if (!el) return;
+    el.setAttribute('tabindex', '-1');
+    el.focus();
+  }
+  function announce(msg) { document.getElementById('setupStatus').textContent = msg; }
+  document.querySelectorAll('.field').forEach(function (field) {
+    var input = field.querySelector('input');
+    var error = field.querySelector('.errmsg');
+    if (!input || !error) return;
+    error.id = input.id + '-error';
+    input.setAttribute('aria-describedby', error.id);
+    input.setAttribute('aria-invalid', 'false');
+    new MutationObserver(function () { input.setAttribute('aria-invalid', field.classList.contains('invalid') ? 'true' : 'false'); }).observe(field, { attributes: true, attributeFilter: ['class'] });
+  });
+  document.getElementById('company').setAttribute('aria-required', 'true');
+  document.getElementById('sign').setAttribute('aria-required', 'true');
 
   // Token must be well-formed before we even call the server.
   if (!TOKEN_RE.test(token)) { showInvalid(); return; }
@@ -573,6 +600,7 @@
   var resuming = false;           // set true when saved progress exists
   var docTypes = [];              // required_doc_types config from the server
   var docState = {};              // code -> { uploaded, file_name, expiration_date }
+  var docBusy = {};               // code -> upload currently in flight
   var agreementSigned = false;    // from the initial read
   var agreementSignable = false;  // false while draft-0 / PLACEHOLDER (interim join path)
   var agreementVersionLabel = 'Agreement pending';
@@ -641,6 +669,7 @@
   }
 
   function showSuccess(mode, name) {
+    var active = document.activeElement;
     els.app.hidden = true; navbar.hidden = true;
     els.success.hidden = false;
     var title = document.getElementById('successTitle');
@@ -664,6 +693,7 @@
       if (list) list.hidden = true;
       if (sms) sms.hidden = true;
     }
+    if (!active || active === document.body || !active.getClientRects().length) focusHeading(title);
   }
 
   // quiet autosave reassurance appended near the form on every step
@@ -783,11 +813,12 @@
         requirement_detail:'A clear photo of your work truck or van. Proves you have a real fleet vehicle for jobs.',
       }]);
     }
-    docTypes.forEach(function (dt) {
+    docTypes.forEach(function (dt, docIndex) {
       var st = docState[dt.code] || {};
       var block = document.createElement('div');
       block.className = 'doc';
       block.setAttribute('data-doc', dt.code);
+      var docId = 'setup-doc-' + docIndex;
       var mustTxt = dt.is_required === false ? 'Optional' : 'Required';
       var isVehicle = dt.code === 'work_vehicle';
       var dropHint = isVehicle ? 'Clear photo of your truck or van' : 'PDF or clear photo';
@@ -797,31 +828,31 @@
         : (isVehicle ? '<p class="help" style="margin:0 0 10px;">A clear photo of your work truck or van. Proves you have a real fleet vehicle for jobs.</p>' : '');
       var expHtml = dt.requires_expiration ? (
         '<div class="field">' +
-          '<label>Expiration date</label>' +
-          '<input type="date" data-exp' + (st.expiration_date ? ' value="' + esc(st.expiration_date) + '"' : '') + ' />' +
+          '<label id="' + docId + '-expiration-label" for="' + docId + '-expiration">Expiration date</label>' +
+          '<input type="date" id="' + docId + '-expiration" aria-labelledby="' + docId + '-name ' + docId + '-expiration-label" data-exp' + (st.expiration_date ? ' value="' + esc(st.expiration_date) + '"' : '') + ' />' +
         '</div>'
       ) : '';
       var filedHtml =
         '<div class="filed" data-role="filed"' + (st.uploaded ? '' : ' hidden') + '>' +
           '<span class="ic"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5 11-12"/></svg></span>' +
           '<span class="lab"><span class="t" data-fname>' + esc(st.uploaded ? ('Added: ' + (st.file_name || 'your file')) : '') + '</span><span class="h">Looks good</span></span>' +
-          '<span class="acts"><button class="ghost small" type="button" data-replace>Replace</button></span>' +
+          '<span class="acts"><button class="ghost small" type="button" aria-label="Replace ' + esc(dt.label || dt.code) + '" data-replace>Replace</button></span>' +
         '</div>';
       var dropHtml =
-        '<label class="drop" data-role="drop"' + (st.uploaded ? ' hidden' : '') + '>' +
+        '<button type="button" class="drop" aria-label="' + (isVehicle ? 'Add photo: ' : 'Add file: ') + esc(dt.label || dt.code) + '" aria-describedby="' + docId + '-hint ' + docId + '-error" data-role="drop"' + (st.uploaded ? ' hidden' : '') + '>' +
           '<span class="ic"><svg viewBox="0 0 24 24"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></span>' +
-          '<span class="lab"><span class="t">' + (isVehicle ? 'Add photo' : 'Add file') + '</span><span class="h">' + dropHint + '</span></span>' +
+          '<span class="lab"><span class="t">' + (isVehicle ? 'Add photo' : 'Add file') + '</span><span class="h" id="' + docId + '-hint">' + dropHint + '</span></span></button>' +
           '<input type="file" accept="' + accept + '" capture="environment" hidden data-file />' +
-        '</label>';
+        '';
       // capture=environment only helps on mobile cameras; harmless on desktop.
       if (!isVehicle) {
         dropHtml = dropHtml.replace(' capture="environment"', '');
       }
       block.innerHTML =
-        '<div class="req"><span class="name">' + esc(dt.label || dt.code) + '</span><span class="must">' + mustTxt + '</span></div>' +
+        '<div class="req"><span class="name" id="' + docId + '-name">' + esc(dt.label || dt.code) + '</span><span class="must">' + mustTxt + '</span></div>' +
         detail +
         filedHtml + dropHtml +
-        '<p class="uperr" data-role="uperr" hidden><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg> <span></span></p>' +
+        '<p class="uperr" id="' + docId + '-error" role="alert" data-role="uperr" hidden><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg> <span></span></p>' +
         expHtml;
       els.docList.appendChild(block);
       wireDoc(block, dt);
@@ -835,15 +866,45 @@
     var input = block.querySelector('[data-file]');
     var expInput = block.querySelector('[data-exp]');
 
+    var replace = block.querySelector('[data-replace]');
+    var chooserOrigin = null;
+    var restoreFocus = false;
+    replace.setAttribute('aria-describedby', uperr.id);
+    function restoreUploadFocus(target) {
+      var active = document.activeElement;
+      if (restoreFocus && (active === document.body || active === chooserOrigin || active === input) && target.getClientRects().length && !target.disabled) target.focus();
+    }
+    function finishBusy() {
+      docBusy[dt.code] = false;
+      drop.disabled = false; drop.setAttribute('aria-busy', 'false');
+      replace.disabled = false; replace.setAttribute('aria-busy', 'false');
+      if (expInput) expInput.disabled = false;
+      if (step === 2) fwdBtn.disabled = Object.keys(docBusy).some(function (code) { return docBusy[code]; });
+    }
+    function choose(origin) {
+      if (docBusy[dt.code]) return;
+      chooserOrigin = origin;
+      restoreFocus = document.activeElement === origin;
+      clearErr();
+      input.click();
+    }
+    drop.addEventListener('click', function () { if (!drop.disabled) choose(drop); });
+
     function showErr(msg) {
       drop.classList.add('err'); drop.classList.remove('busy');
-      drop.hidden = false; filed.hidden = true;
+      var hasSaved = !!(docState[dt.code] && docState[dt.code].uploaded);
+      drop.hidden = hasSaved; filed.hidden = !hasSaved;
       var span = uperr.querySelector('span'); if (span) span.textContent = msg;
       uperr.hidden = false;
+      finishBusy();
+      drop.setAttribute('aria-invalid', 'true');
+      replace.setAttribute('aria-invalid', 'true');
+      restoreUploadFocus(hasSaved ? replace : drop);
     }
-    function clearErr() { drop.classList.remove('err'); uperr.hidden = true; }
+    function clearErr() { drop.classList.remove('err'); uperr.hidden = true; drop.setAttribute('aria-invalid', 'false'); replace.setAttribute('aria-invalid', 'false'); }
 
     function doUpload(file) {
+      if (docBusy[dt.code]) return;
       clearErr();
       var ct = detectCT(file);
       var isVehicle = dt.code === 'work_vehicle';
@@ -851,6 +912,14 @@
       if (!ct) { showErr(isVehicle ? 'Use a JPG or PNG photo.' : 'Use a PDF, JPG or PNG.'); return; }
       if (file.size > 15 * 1024 * 1024) { showErr('That file is over 15 MB. Try a smaller one. Nothing else you entered was lost.'); return; }
       var exp = (expInput && /^\d{4}-\d{2}-\d{2}$/.test(expInput.value)) ? expInput.value : null;
+      restoreFocus = restoreFocus && (document.activeElement === document.body || document.activeElement === chooserOrigin || document.activeElement === input);
+      docBusy[dt.code] = true;
+      drop.hidden = false; filed.hidden = !(docState[dt.code] && docState[dt.code].uploaded);
+      drop.disabled = true; drop.setAttribute('aria-busy', 'true');
+      replace.disabled = true; replace.setAttribute('aria-busy', 'true');
+      if (expInput) expInput.disabled = true;
+      if (step === 2) fwdBtn.disabled = true;
+      announce('Uploading ' + (dt.label || dt.code) + '.');
       drop.classList.add('busy');
       var t0 = drop.querySelector('.lab .t'); var prev = t0 ? t0.textContent : '';
       if (t0) t0.textContent = 'Uploading...';
@@ -865,7 +934,7 @@
       }).then(function (r) {
         return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, j: j, status: r.status }; });
       }).then(function (res) {
-        drop.classList.remove('busy');
+        drop.classList.remove('busy'); finishBusy();
         if (t0) t0.textContent = prev || 'Add file';
         if (res.status === 401) { showInvalid(); return; }
         if (res.status === 403) { showInvalid(true); return; }
@@ -881,11 +950,13 @@
         docState[dt.code] = { uploaded: true, file_name: file.name, expiration_date: exp };
         var fn = filed.querySelector('[data-fname]'); if (fn) fn.textContent = 'Added: ' + file.name;
         filed.hidden = false; drop.hidden = true;
+        announce((dt.label || dt.code) + ' uploaded: ' + file.name + '.');
+        restoreUploadFocus(replace);
         if (window.posthog) posthog.capture('sub_onboard_doc_uploaded', { doc_type: dt.code });
         var docsErr = document.getElementById('docsErr');
         if (docsErr && docsComplete()) docsErr.style.display = 'none';
       }).catch(function () {
-        drop.classList.remove('busy');
+        drop.classList.remove('busy'); finishBusy();
         if (t0) t0.textContent = prev || 'Add file';
         showErr('That file would not upload. Check your connection and try again. Nothing else you entered was lost.');
       });
@@ -896,11 +967,9 @@
       doUpload(input.files[0]);
       input.value = '';
     });
-    var replace = block.querySelector('[data-replace]');
     if (replace) replace.addEventListener('click', function (e) {
       e.preventDefault();
-      filed.hidden = true; drop.hidden = false; clearErr();
-      input.click();
+      if (!replace.disabled) choose(replace);
     });
     // Expiration change on an already-uploaded doc: keep local state current so a
     // Replace or re-upload carries the right date (the value is sent with uploads).
@@ -921,15 +990,16 @@
     var block = document.createElement('div');
     block.className = 'person';
     block.innerHTML =
-      '<div class="phead"><span class="who">' + (primary ? 'Primary contact' : 'Person ' + idx) + '</span>' +
-      (primary ? '<span class="badge">Primary</span>' : '<button class="ghost small danger" type="button" data-rm>Remove</button>') + '</div>' +
-      '<div class="field"><label>Name</label><input type="text" data-p="name" autocomplete="name" value="' + esc(data.name || '') + '" /></div>' +
-      '<div class="field"><label>Phone</label><input type="tel" data-p="phone" inputmode="tel" autocomplete="tel" placeholder="(864) 010-0123" value="' + esc(data.phone || '') + '" /></div>' +
-      '<div class="field"><label>Email</label><input type="email" data-p="email" inputmode="email" autocomplete="email" value="' + esc(data.email || '') + '" /></div>' +
-      '<div class="field"><label>Role <span class="opt">(optional)</span></label><input type="text" data-p="role" placeholder="Owner, lead installer, office" value="' + esc(data.role || '') + '" /></div>';
+      '<div class="phead"><span class="who" id="person-' + idx + '-heading">' + (primary ? 'Primary contact' : 'Person ' + idx) + '</span>' +
+      (primary ? '<span class="badge">Primary</span>' : '<button class="ghost small danger" type="button" aria-label="Remove person ' + idx + '" data-rm>Remove</button>') + '</div>' +
+      '<div class="field"><label for="person-' + idx + '-name">Name</label><input type="text" id="person-' + idx + '-name" aria-describedby="person-' + idx + '-heading" data-p="name" autocomplete="name" value="' + esc(data.name || '') + '" /></div>' +
+      '<div class="field"><label for="person-' + idx + '-phone">Phone</label><input type="tel" id="person-' + idx + '-phone" aria-describedby="person-' + idx + '-heading" data-p="phone" inputmode="tel" autocomplete="tel" placeholder="(864) 010-0123" value="' + esc(data.phone || '') + '" /></div>' +
+      '<div class="field"><label for="person-' + idx + '-email">Email</label><input type="email" id="person-' + idx + '-email" aria-describedby="person-' + idx + '-heading" data-p="email" inputmode="email" autocomplete="email" value="' + esc(data.email || '') + '" /></div>' +
+      '<div class="field"><label for="person-' + idx + '-role">Role <span class="opt">(optional)</span></label><input type="text" id="person-' + idx + '-role" aria-describedby="person-' + idx + '-heading" data-p="role" placeholder="Owner, lead installer, office" value="' + esc(data.role || '') + '" /></div>';
     els.people.appendChild(block);
     if (primary) block.setAttribute('data-primary', '1');
-    if (!primary) block.querySelector('[data-rm]').addEventListener('click', function () { block.remove(); });
+    if (!primary) block.querySelector('[data-rm]').addEventListener('click', function () { block.remove(); document.getElementById('addPerson').focus(); announce('Person ' + idx + ' removed.'); });
+    return block;
   }
   function collectPeople() {
     var out = [];
@@ -966,6 +1036,7 @@
   function validateAreas() {
     if (document.querySelector('.county-chip.on')) { areasErr.style.display = 'none'; return true; }
     areasErr.style.display = 'block';
+    document.querySelector('.county-chip').focus();
     return false;
   }
 
@@ -1042,6 +1113,7 @@
     return codes;
   }
   function docsComplete() {
+    if (Object.keys(docBusy).some(function (code) { return docBusy[code]; })) return false;
     return requiredDocCodes().every(function (c) { return !!(docState[c] && docState[c].uploaded); });
   }
   function validateDocs() {
@@ -1051,7 +1123,9 @@
       return true;
     }
     if (err) {
-      err.textContent = docState.work_vehicle && docState.work_vehicle.uploaded
+      err.textContent = Object.keys(docBusy).some(function (code) { return docBusy[code]; })
+        ? 'Wait for your document upload to finish before continuing.'
+        : docState.work_vehicle && docState.work_vehicle.uploaded
         ? 'Add every required document to continue.'
         : 'Add a photo of your work vehicle or van (and any other missing required docs) to continue.';
       err.style.display = 'block';
@@ -1059,7 +1133,8 @@
     var missing = requiredDocCodes().find(function (c) { return !(docState[c] && docState[c].uploaded); });
     var block = missing ? document.querySelector('[data-doc="' + missing + '"]') : null;
     if (block) {
-      try { block.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { /* ignore */ }
+      var upload = block.querySelector('[data-role="drop"]'); if (upload) upload.focus();
+      try { block.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' }); } catch (e) { /* ignore */ }
     }
     return false;
   }
@@ -1088,8 +1163,14 @@
     fwdArrow.style.display = (step === 6) ? 'none' : '';
     if (step === 4) reached.areas = true;
     if (step === 5) reached.people = true;
-    if (step === 6) { syncSign(); } else { fwdBtn.disabled = false; }
-    window.scrollTo(0, 0);
+    if (step === 6) { syncSign(); } else { fwdBtn.disabled = step === 2 && Object.keys(docBusy).some(function (code) { return docBusy[code]; }); }
+    var current = screens.find(function (s) { return +s.dataset.step === step; });
+    var title = current && current.querySelector('h1');
+    if (title) {
+      title.setAttribute('aria-describedby', 'stepn');
+      var active = document.activeElement;
+      if (active === document.body || active === fwdBtn || active === backBtn || !active.getClientRects().length) { window.scrollTo(0, 0); focusHeading(title); }
+    }
   }
 
   // On leaving a step forward, persist that step's fields (partial:true). Returns
@@ -1126,7 +1207,7 @@
   });
   backBtn.addEventListener('click', function () { if (step > 1) { step--; render(); } });
 
-  document.getElementById('addPerson').addEventListener('click', function () { addPerson(false); });
+  document.getElementById('addPerson').addEventListener('click', function () { var person = addPerson(false); person.querySelector('[data-p="name"]').focus(); });
 
   // ------------------------------------------------------------------
   // Final submit: sign when attorney text is live; else finish profile +

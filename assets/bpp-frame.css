@@ -1,0 +1,78 @@
+/* Shared identity frame: outlet palette with panel-header geometry. */
+:root{--bpp-header-gradient:linear-gradient(135deg,#17385f 0%,#0b1f3b 42%,#081a33 100%)}
+html:has(body.bpp-guide-frame),body.bpp-guide-frame,body.guided-walk.readiness-landing-active{background:#eef1f6!important}
+body.guided-walk.readiness-landing-active .stack{padding:32px 16px!important}
+body.guided-walk.readiness-landing-active #mainPage.page[data-screen-label]{padding:22px!important;border-radius:28px!important;background:#fafbfc!important;box-shadow:0 18px 48px #0b1f3b1f,inset 0 0 0 1px #0b1f3b0f!important}
+body.guided-walk .page .intro-card{background:none!important;border-radius:0!important}
+body.guided-walk .page .intro-card .site-head,body.guided-walk .page .site-head,#screen-readiness-landing .rl-site-header,body.bpp-guide-frame .masthead{background:var(--bpp-header-gradient)!important;border-radius:18px!important;height:64px!important;min-height:64px!important;padding:0 20px!important;display:flex!important;align-items:center!important;margin:0!important}
+#screen-readiness-landing .rl-site-header .rl-rail,body.bpp-guide-frame .nav{width:100%!important;margin:0!important;padding:0!important;min-height:0!important}
+body.guided-walk .site-head img,#screen-readiness-landing .rl-brand img,body.bpp-guide-frame .brand img{height:28px!important;width:auto!important;max-width:100%!important;display:block!important}
+#screen-readiness-landing .rl-landing-content{margin-top:22px;padding:22px;background:#fff;border-radius:22px;box-shadow:0 4px 12px #0b1f3b0f,inset 0 0 0 1px #0b1f3b12}
+#screen-readiness-landing .rl-landing-content .rl-rail{width:100%!important}
+#screen-readiness-landing .rl-hero{padding-top:0!important}
+body.bpp-guide-frame{width:calc(100% - 32px);max-width:760px;margin:32px auto;padding:22px;border-radius:28px;background:#fafbfc!important;box-shadow:0 18px 48px #0b1f3b1f,inset 0 0 0 1px #0b1f3b0f}
+body.bpp-guide-frame .wrap{width:100%!important;margin:22px 0 0;padding:22px!important;background:#fff;border-radius:22px;box-shadow:0 4px 12px #0b1f3b0f,inset 0 0 0 1px #0b1f3b12}
+body.bpp-guide-frame .intro{margin-top:0}
+body.bpp-guide-frame .footer{width:100%;padding-bottom:0}
+@media(max-width:600px){body.guided-walk.readiness-landing-active .stack{padding:10px 8px!important}body.guided-walk.readiness-landing-active #mainPage.page[data-screen-label]{padding:10px!important;border-radius:20px!important}body.bpp-guide-frame{width:calc(100% - 16px);margin:10px auto;padding:10px;border-radius:20px}#screen-readiness-landing .rl-landing-content,body.bpp-guide-frame .wrap{padding:16px!important;margin-top:16px!important;border-radius:18px}body.guided-walk .page .site-head,#screen-readiness-landing .rl-site-header,body.bpp-guide-frame .masthead{padding-inline:16px!important}body.bpp-guide-frame .intro{padding:14px}body.bpp-guide-frame .intro h1{font-size:24px}}
+@media print{body.bpp-guide-frame{width:100%;max-width:none;margin:0;padding:0;box-shadow:none}body.bpp-guide-frame .wrap{margin:0;padding:0!important;box-shadow:none}}
+
+#screen-readiness-landing{background:transparent!important}#screen-readiness-landing .rl-landing-footer{background:transparent!important;border:0!important;box-shadow:none!important}body.bpp-guide-frame .footer{background:transparent;border:0;box-shadow:none}
+
+/* Remove inline-anchor baseline space so all logos share exact visual center. */
+#screen-readiness-landing .rl-site-header .rl-rail,body.bpp-guide-frame .nav{display:flex!important;align-items:center!important}
+#screen-readiness-landing .rl-brand,body.bpp-guide-frame .brand,body.guided-walk .site-head .lockup{display:flex!important;align-items:center!important;line-height:0!important;margin:0!important;padding:0!important}
+
+/* Same quiet policy footer as the Quote Walk, without a square fill. */
+body .bpp-policy-footer,#screen-readiness-landing .bpp-policy-footer{display:block!important;width:100%!important;margin:18px auto 0!important;padding:4px 18px 10px!important;background:transparent!important;border:0!important;box-shadow:none!important;color:#68758a!important;text-align:center!important;font:400 12px/1.6 Inter,sans-serif!important}
+body .bpp-policy-footer strong,body .bpp-policy-footer span{display:block!important}body .bpp-policy-footer strong{font-weight:650!important}body .bpp-policy-footer span{margin-top:6px!important}body .bpp-policy-footer nav{display:flex!important;justify-content:center!important;flex-wrap:wrap!important;gap:8px 16px!important;margin-top:6px!important}body .bpp-policy-footer nav a{font:inherit!important;min-height:44px;display:inline-flex;align-items:center;padding:0!important;text-decoration:underline;text-underline-offset:3px}
+
+/* Outlet task card aligns with the masthead, as the panel task does. */
+body.guided-walk[data-active-screen="connection"] .guided-flow.form-card{width:100%;max-width:none;margin-inline:0}
+
+/* One task-surface treatment, sampled from the approved outlet card.
+   Desktop downstream screens paint the body-grid instead of its inner form. */
+:root{--bpp-task-radius:20px;--bpp-task-shadow:0 18px 44px rgba(11,31,59,.14),0 4px 12px rgba(11,31,59,.06),inset 0 0 0 1px rgba(11,31,59,.07)}
+body.guided-walk .guided-flow.form-card,
+#screen-readiness-landing .rl-landing-content,
+body.bpp-guide-frame .wrap{border-radius:var(--bpp-task-radius)!important;box-shadow:var(--bpp-task-shadow)!important}
+body.guided-walk .guided-save:not(.guided-save--opening) [data-save-hint]{width:100%;max-width:none!important;text-align:center!important;margin-inline:auto!important}
+@media(min-width:1024px){
+ :root{--bpp-task-radius:22px}
+ body.guided-walk[data-active-screen]:not([data-active-screen="connection"]):not(.readiness-landing-active) .body-grid{border-radius:var(--bpp-task-radius)!important;box-shadow:var(--bpp-task-shadow)!important}
+ body.guided-walk[data-active-screen]:not([data-active-screen="connection"]) .guided-flow.form-card{border-radius:0!important;box-shadow:none!important}
+}
+@media print{body.bpp-guide-frame .wrap{box-shadow:none!important}}
+
+body.guided-walk .guided-save:not(.guided-save--opening) [data-save-hint]{white-space:pre-line}
+
+/* Use the SAME painted card element on every question, not lookalike wrappers. */
+@media(min-width:1024px){
+ body.guided-walk[data-active-screen]:not([data-active-screen="connection"]):not(.readiness-landing-active) .body-grid{padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+ body.guided-walk[data-active-screen]:not([data-active-screen="connection"]) .guided-flow.form-card{width:100%!important;max-width:none!important;margin:0!important;padding:28px!important;background:#fff!important;border:0!important;border-radius:var(--bpp-task-radius)!important;box-shadow:var(--bpp-task-shadow)!important}
+}
+@media(min-width:1024px){body.guided-walk[data-active-screen]:not([data-active-screen="connection"]):not(.readiness-landing-active) .body-grid{margin-top:22px!important}}
+
+/* Compact question frame: inset navy and white surfaces on the same rail. */
+@media(max-width:1023px){
+ html:has(body.guided-walk),body.guided-walk{background:#eef1f6!important}
+ body.guided-walk:not(.readiness-landing-active) .stack{padding:10px 8px 28px!important}
+ body.guided-walk:not(.readiness-landing-active) #mainPage.page[data-screen-label]{padding:10px!important;border-radius:24px!important;background:#fafbfc!important;box-shadow:0 18px 48px #0b1f3b1f,inset 0 0 0 1px #0b1f3b0f!important}
+ body.guided-walk:not(.readiness-landing-active) #mainPage > .body-grid{width:100%!important;max-width:none!important;padding:0!important;margin:22px 0 0!important}
+ body.guided-walk:not(.readiness-landing-active) .guided-flow.form-card{width:100%!important;max-width:none!important;margin-inline:0!important}
+}
+
+/* Deliberate, immediate press feedback. No navigation delay or layout shift. */
+@media(prefers-reduced-motion:no-preference){
+ body.guided-walk :is(button.cta,.choice,.initial-photo-button):not(:disabled),
+ #screen-readiness-landing .rl-cta,
+ body.bpp-guide-frame .button{transition:translate 100ms ease-out,filter 100ms ease-out}
+ body.guided-walk :is(button.cta,.choice,.initial-photo-button):not(:disabled):active,
+ #screen-readiness-landing .rl-cta:active,
+ body.bpp-guide-frame .button:active{translate:0 1px;filter:brightness(.97)}
+}
+@media(prefers-reduced-motion:reduce){
+ body.guided-walk :is(button.cta,.choice,.initial-photo-button),
+ #screen-readiness-landing .rl-cta,
+ body.bpp-guide-frame .button{transition:none!important;translate:none!important}
+}

@@ -65,6 +65,7 @@ function AISummaryCard({ contact }) {
 // malformed or hostile contact_photos.url (javascript:/data:) can never execute.
 function safeMediaUrl(u) {
   if (typeof u !== 'string') return null;
+  if (window.BPPPrivateMedia?.parse(u)) return u;
   try { const parsed = new URL(u, window.location.origin); return parsed.protocol === 'https:' ? parsed.href : null; }
   catch (_) { return null; }
 }
@@ -116,24 +117,26 @@ function CustomerPhotosCard({ contact, bare = false }) {
         )}
       </div>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:8 }}>
-        {shown.map(p => {
-          const safe = safeMediaUrl(p.url);
-          if (!safe) return null;
-          return (
-          <a key={p.id} href={safe} target="_blank" rel="noopener noreferrer"
-             style={{ position:'relative', display:'block', aspectRatio:'1', borderRadius:10, overflow:'hidden', background:'#F4F6F9' }}>
-            <img src={safe} alt={p.caption || 'Customer photo'} loading="lazy"
-                 style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
-            {p.caption && (
-              <span style={{ position:'absolute', left:0, right:0, bottom:0, fontSize:12, color:'#fff', background:'rgba(27,43,75,.55)', padding:'3px 6px', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
-                {p.caption}
-              </span>
-            )}
-          </a>
-          );
-        })}
+        {shown.map(p => <CustomerPhotoTile key={p.id} photo={p} contactId={contact.id} />)}
       </div>
     </div>
+  );
+}
+
+function CustomerPhotoTile({ photo, contactId }) {
+  const media = window.BPPPrivateMedia.useSource(safeMediaUrl(photo.url), contactId);
+  return (
+    <a href={media.url || undefined} target="_blank" rel="noopener noreferrer"
+       style={{ position:'relative', display:'block', aspectRatio:'1', borderRadius:10, overflow:'hidden', background:'#F4F6F9' }}>
+      {media.failed ? <span role="img" aria-label="Photo unavailable">Photo unavailable</span> :
+        <img src={media.url || undefined} alt={photo.caption || 'Customer photo'} loading="lazy"
+             style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />}
+      {photo.caption && (
+        <span style={{ position:'absolute', left:0, right:0, bottom:0, fontSize:12, color:'#fff', background:'rgba(27,43,75,.55)', padding:'3px 6px', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+          {photo.caption}
+        </span>
+      )}
+    </a>
   );
 }
 

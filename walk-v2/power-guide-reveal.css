@@ -1,0 +1,8 @@
+/* No base hiding, timing delay, or layout change. Motion belongs to one JS Animation
+   handle, so cloning or replacing the card cannot clone its movement. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-power-guide-opening].power-guide-revealing { will-change: opacity, transform; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-power-guide-opening].power-guide-revealing { will-change: auto; }
+}

@@ -32,3 +32,36 @@
 .js .qw-script-recovery {
   display: none;
 }
+
+.qw-booting .qw-script-recovery {
+  display: none !important;
+}
+
+/* Reserve the existing opening screen while its controller initializes.
+   Hidden visibility keeps its controls unavailable and removes no proof. */
+.qw-booting [data-guided-flow] {
+  display: block !important;
+  visibility: hidden !important;
+}
+
+.qw-booting [data-screen="connection"] {
+  display: block !important;
+}
+
+.qw-boot-status {
+  position: fixed;
+  z-index: 10000;
+  inset-inline: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  width: fit-content;
+  max-width: calc(100% - 32px);
+  margin: 0 auto;
+  padding: 12px 16px;
+  border: 1px solid #d9dfe9;
+  border-radius: 12px;
+  background: #fff;
+  color: #0b1f3b;
+  box-shadow: 0 8px 24px rgba(11,31,59,.12);
+  font: 400 16px/1.5 Inter, system-ui, sans-serif;
+  text-align: center;
+}

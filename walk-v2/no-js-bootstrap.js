@@ -1,6 +1,40 @@
 (function () {
   var root = document.documentElement;
+  // Entry scripts load after the static hero. A healthy boot is not a failed
+  // controller, and its temporary status must not push that hero down the page.
+  var booting = document.readyState === 'loading' && /^\/walk-v2\/(?:index\.html)?$/.test(location.pathname) && root.classList.contains('no-js');
+  var bootStatus, bootObserver;
+  function mountBootStatus() {
+    if (!booting || !document.body) return;
+    var notice = document.querySelector('.qw-script-recovery');
+    if (notice) notice.hidden = true;
+    if (!bootStatus) {
+      bootStatus = document.createElement('p');
+      bootStatus.className = 'qw-boot-status';
+      bootStatus.setAttribute('role', 'status');
+      bootStatus.setAttribute('aria-live', 'polite');
+      bootStatus.setAttribute('aria-atomic', 'true');
+      bootStatus.textContent = 'Loading Quote Walk...';
+      document.body.appendChild(bootStatus);
+    }
+  }
+  function finishBoot(ready) {
+    if (!booting) return;
+    booting = false;
+    root.classList.remove('qw-booting');
+    if (bootObserver) bootObserver.disconnect();
+    if (bootStatus) { bootStatus.remove(); bootStatus = null; }
+    var notice = document.querySelector('.qw-script-recovery');
+    if (notice) notice.hidden = ready;
+  }
+  if (booting) {
+    root.classList.add('qw-booting');
+    mountBootStatus();
+    bootObserver = new MutationObserver(mountBootStatus);
+    bootObserver.observe(root, { childList: true, subtree: true });
+  }
   window.BPPQuoteWalkMarkReady = function () {
+    finishBoot(true);
     root.classList.remove('no-js');
     root.classList.add('js');
   };
@@ -20,11 +54,18 @@
     reload.className = 'qw-secondary-action'; reload.textContent = 'Reload Quote Walk';
     reload.onclick = function () {
       var target = reloadTarget();
-      if (target) location.replace(target);
+      if (target === location.href) location.reload();
+      else if (target) location.replace(target);
       else { reload.disabled = true; reload.textContent = 'Reopen your original saved link'; }
     };
     notice.appendChild(reload);
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', recoveryControl, { once: true });
+  function documentLoaded() {
+    // Controller dependencies have finished by DOMContentLoaded. If
+    // they did not signal readiness, show the existing safe reload/help path.
+    finishBoot(root.classList.contains('js'));
+    recoveryControl();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', documentLoaded, { once: true });
   else recoveryControl();
 })();

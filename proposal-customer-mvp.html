@@ -11,7 +11,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://*.supabase.co; form-action 'self';">
   <title>Your installation plan | Backup Power Pro</title>
   <link rel="stylesheet" href="assets/css/bpp-money-fonts.css?v=20260808a">
-  <link rel="stylesheet" href="assets/css/bpp-ds.css?v=20260907a">
+  <link rel="stylesheet" href="assets/css/bpp-ds.css?v=85adfde9b763">
   <style>
     :root{
       --bg:#f3f5f9;
@@ -237,7 +237,7 @@
       font-size:13.5px;font-weight:500;line-height:1.55;font-style:italic;letter-spacing:-.008em;
     }
     .review span{
-      display:block;margin-top:7px;color:#748096;
+      display:block;margin-top:7px;color:#5b6473;
       font:600 10.5px/1.35 Outfit,sans-serif;letter-spacing:.01em;
     }
     .review span strong{color:#536078;font-weight:800}
@@ -299,6 +299,8 @@
       text-align:center;font:700 31px/1.15 Dancing Script,cursive;outline:0;
     }
     .sig-input:focus{border-bottom-color:var(--plan-gold);background:#fffdf7}
+    .sig-input:focus-visible{outline:2px solid #1d4ed8;outline-offset:3px}
+    .sig-label{display:block;margin-top:15px;font-size:13px;font-weight:600;color:var(--plan-navy)}
     .approve{
       width:100%;min-height:56px;margin-top:18px;border:0;border-radius:28px;background:var(--plan-gold);
       color:var(--plan-navy);font:800 16px/1 Outfit,sans-serif;box-shadow:0 8px 23px rgba(255,186,0,.32);
@@ -473,7 +475,7 @@
     </section>
 
     <section class="card price-journey-card" id="price" aria-label="Project price and next steps">
-      <div class="price-card card-pad" id="pricePanel" aria-labelledby="priceHeading">
+      <div class="price-card card-pad" id="pricePanel" role="group" aria-labelledby="priceHeading">
         <div class="section-label">Exact project price</div>
         <h2 class="section-title" id="priceHeading">One number, start to finish.</h2>
         <div class="price-total">
@@ -492,7 +494,7 @@
         </div>
         <div id="proposalFinancing"></div>
       </div>
-      <div class="next-panel card-pad" id="next" aria-labelledby="nextHeading">
+      <div class="next-panel card-pad" id="next" role="group" aria-labelledby="nextHeading">
         <div class="section-label">After approval</div>
         <h2 class="section-title" id="nextHeading">I will take it from there.</h2>
         <div class="roadmap">
@@ -533,11 +535,11 @@
       <h2 class="section-title" id="proofHeading">One connection outside. Choose what you power inside.</h2>
       <div class="proof-evidence">
         <div class="review">
-          <div class="review-stars" aria-label="5 out of 5 stars">★★★★★</div>
+          <div class="review-stars" role="img" aria-label="5 out of 5 stars">★★★★★</div>
           <p>"Outstanding service, competent, on time, quick response, professional installation, clean, organized, safety a priority. Highly recommend! Will use again."</p>
           <span><strong>Mark M.</strong> · Google review</span>
         </div>
-        <div class="proof-strip" aria-label="Examples of the finished system">
+        <div class="proof-strip" role="group" aria-label="Examples of the finished system">
           <figure class="proof-item">
             <img src="assets/images/work-inlet-lightbrick.jpg" alt="Weather-rated metal connection box installed on a brick exterior wall">
             <figcaption>Always ready</figcaption>
@@ -563,7 +565,8 @@
           <span class="ack-copy">I understand the <a class="ack-link" href="#safety" data-info="safety">Generator Safety &amp; Compatibility</a>. I authorize <span id="agreementMoney">the $299 deposit today, saving this payment method, and a one-time $1,198 charge after installation. Key personally reviews that charge before it runs, and I can cancel this authorization before installation</span>.<small>This is not a subscription or recurring payment.</small></span>
         </label>
 
-        <input class="sig-input" id="signature" type="text" autocomplete="off" data-lpignore="true" data-1p-ignore="true" value="" placeholder="Type your full name" aria-label="Electronic signature. Type your full name.">
+        <label class="sig-label" for="signature">Full name for your electronic signature</label>
+        <input class="sig-input" id="signature" type="text" autocomplete="name" data-lpignore="true" data-1p-ignore="true" value="" placeholder="Type your full name" aria-required="true">
         <button class="approve" id="approveButton" type="button" disabled>Approve and pay $299</button>
         <div class="approval-error" id="approvalError" role="alert" aria-live="polite"></div>
         <div class="policies"><a href="#deposit-policy" data-info="deposit">Deposit and rescheduling policy</a><a href="#terms" data-info="terms">Terms</a><a href="#privacy" data-info="privacy">Privacy</a></div>
@@ -628,7 +631,6 @@
       var submitting=false;
       var signStatusUncertain=false;
       var signatureDeliberate=false;
-      var signatureTypedCharacters=0;
       var signatureSelectionPrepared=false;
       var signaturePointerActive=false;
       var historyAuthorizationResetPending=false;
@@ -902,7 +904,6 @@
         signature.value=name;
         signature.dataset.edited='false';
         signatureDeliberate=false;
-        signatureTypedCharacters=0;
         signatureSelectionPrepared=false;
         signaturePointerActive=false;
       }
@@ -957,7 +958,7 @@
       function signatureIdentityReady(){
         var entered=document.getElementById('signature').value.trim();
         var proposalName=String(fixture.customerName||'').trim();
-        return entered.length>=3&&(entered===proposalName||signatureDeliberate);
+        return Array.from(entered).length>=2&&(entered===proposalName||signatureDeliberate);
       }
       function approvalReady(){
         return document.getElementById('agreementAck').checked
@@ -975,6 +976,7 @@
         button.setAttribute('aria-pressed',pomSelected?'true':'false');
         button.textContent=pomSelected?'Added to plan':'Add upgrade';
         renderMoney();
+        syncApproval();
       }
       function openInfo(key,trigger){
         var content=infoContent[key];
@@ -1207,13 +1209,15 @@
       function setApprovalError(message){document.getElementById('approvalError').textContent=message||'';}
       function recoveryActionsHtml(){
         return '<a class="state-action" href="sms:+18648637800">Text Key for a fresh link</a>'+
-          '<a class="state-action state-action-secondary" href="tel:+18648637800">Call Key</a>';
+          '';
       }
       function stateView(title,message,actionHtml){
         document.body.classList.remove('booting');
         document.querySelector('.sticky').style.display='none';
         document.querySelector('.page').innerHTML='<section class="card state-card"><h1>'+escapeHtml(title)+'</h1><p>'+escapeHtml(message)+'</p>'+(actionHtml||'')+'</section>';
         syncAuthorizationGateUI();
+        var heading=document.querySelector('.page h1');
+        if(heading){heading.tabIndex=-1;heading.focus();}
       }
       function checkout(button,acceptanceAttemptId){
         if(previewModeActive()||!authorizationGateReady()) return Promise.reject(new Error('Authorization check is not ready.'));
@@ -1522,7 +1526,6 @@
         submitting=false;
         signStatusUncertain=false;
         signatureDeliberate=false;
-        signatureTypedCharacters=0;
         proposal=row;
         fixture=proposalFixture(row);
         pomSelected=row.selected_pom===true&&row.pom_offered!==false;
@@ -1544,7 +1547,6 @@
         submitting=false;
         signStatusUncertain=false;
         signatureDeliberate=false;
-        signatureTypedCharacters=0;
         var acknowledgment=document.getElementById('agreementAck');
         if(acknowledgment)acknowledgment.checked=false;
         prefillSignatureName();
@@ -1775,7 +1777,7 @@
         var status=String(row.status||'').toLowerCase();
         var resetAfterHistoryRestore=historyAuthorizationResetPending&&['sent','viewed','copied'].indexOf(status)>-1;
         if(historyAuthorizationResetPending&&!resetAfterHistoryRestore)historyAuthorizationResetPending=false;
-        if(terminalProposalStatus(status)){if(hasCheckoutReturnHint())scrubCheckoutReturnHints(false);return stateView(status==='expired'?'This quote has expired':'This proposal is closed',status==='expired'?'This proposal cannot be signed. Call Key for a refreshed proposal.':'This proposal is no longer active. Call Key at (864) 863-7800 if you have questions.','<a class="state-action" href="tel:+18648637800">Call Key</a>');}
+        if(terminalProposalStatus(status)){if(hasCheckoutReturnHint())scrubCheckoutReturnHints(false);return stateView(status==='expired'?'This quote has expired':'This proposal is closed',status==='expired'?'This proposal cannot be signed. Call Key for a refreshed proposal.':'This proposal is no longer active. Call Key at (864) 863-7800 if you have questions.','');}
         if(status==='approved'){
           if(hasCheckoutReturnHint())scrubCheckoutReturnHints(false);
           if(row.approval_source==='operator_recorded')return stateView('Approval recorded','Key recorded your approval from '+String(row.approval_channel||'your conversation').replace('_',' ')+'. No electronic signature or card authorization was created. Key will contact you to confirm the next step.');
@@ -1793,7 +1795,7 @@
           proposal=row;fixture=proposalFixture(row);
           if(fixture.requireDeposit!==false){
             if(hasCheckoutReturnHint())scrubCheckoutReturnHints(false);
-            return stateView('Proposal not accepted','Payment was not confirmed, so this proposal was not accepted. Ask Key for a refreshed proposal, then review it, check the acknowledgment, enter your name, and accept again.','<a class="state-action" href="tel:+18648637800">Call Key</a>');
+            return stateView('Proposal not accepted','Payment was not confirmed, so this proposal was not accepted. Ask Key for a refreshed proposal, then review it, check the acknowledgment, enter your name, and accept again.','');
           }
           if(isPreview) return stateView('Payment step preview','This proposal is signed, but preview mode cannot open a real payment or card setup.');
           if(!authorizationFullRedoPending&&hasCheckoutReturnHint()) return reconcileCheckoutReturn(row);
@@ -1887,14 +1889,9 @@
       document.getElementById('signature').addEventListener('blur',function(){
         signaturePointerActive=false;
       });
-      document.getElementById('signature').addEventListener('beforeinput',function(event){
-        if(event.isTrusted&&event.inputType==='insertText'&&typeof event.data==='string'&&event.data.length===1){
-          signatureTypedCharacters+=1;
-        }
-      });
       document.getElementById('signature').addEventListener('input',function(event){
-        if(!event.target.value)signatureTypedCharacters=0;
-        signatureDeliberate=event.isTrusted&&signatureTypedCharacters>=3&&event.target.value.trim().length>=3;
+        // Trusted paste, speech, and IME input are deliberate edits too.
+        signatureDeliberate=event.isTrusted&&Array.from(event.target.value.trim()).length>=2;
         event.target.dataset.edited=signatureDeliberate?'true':'false';
         syncApproval();
       });
@@ -1927,6 +1924,8 @@
       });
       document.getElementById('reviewButton').addEventListener('click',function(){
         document.getElementById('approve').scrollIntoView({behavior:'smooth',block:'start'});
+        var heading=document.getElementById('approveHeading');
+        heading.tabIndex=-1;heading.focus({preventScroll:true});
       });
       document.getElementById('approveButton').addEventListener('click',approveProposal);
       window.addEventListener('scroll',function(){
@@ -1983,8 +1982,7 @@
           }
           historyAuthorizationResetPending=true;
           signatureDeliberate=false;
-          signatureTypedCharacters=0;
-          var acknowledgment=document.getElementById('agreementAck');
+            var acknowledgment=document.getElementById('agreementAck');
           if(acknowledgment)acknowledgment.checked=false;
           prefillSignatureName();
           var button=document.getElementById('approveButton');

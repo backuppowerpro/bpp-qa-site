@@ -21,10 +21,11 @@
   var NEW_JOURNEY_VERSION = 'intake-no-upload-v1';
   var GUIDED_JOURNEY_VERSION = 'guided-quote-walk-v1';
   var memoryStates = Object.create(null);
+  var savedReadSequences = Object.create(null);
   /* Public policy mirror for NEW_JOURNEY_VERSION. The server owns delivery and
      permits only the post-Yes photo opener. */
   var NEW_JOURNEY_OPENER_POLICY = Object.freeze({
-    opener: "Hey {first name}, it’s Key. Text me a couple photos of the panel with the doors open and the path where you want the outlet. I’ll send your proposal once I have those. Reply STOP to opt out.",
+    opener: "Hey {first name}, it’s Key. Text me a couple photos of the panel and the path where you want the outlet. Open only the hinged outer panel door if safe. Never remove screws or the inner cover. I’ll send your proposal once I have those. Reply STOP to opt out.",
     trigger: 'accepted_range',
     pre_yes_automated_sms: false,
     automated_follow_ups: false,
@@ -35,6 +36,7 @@
   function setToken(value) {
     var next = /^[a-zA-Z0-9_-]{32,160}$/.test(String(value || '')) ? String(value) : '';
     window.__BPP_WALK_TOKEN = next;
+    window.__BPP_INVALID_CAPABILITY_ENTRY = false;
     window.__BPP_CAPABILITY_ENTRY = Boolean(next);
     try {
       if (next) {
@@ -48,13 +50,11 @@
     }
   }
   function token() {
-    // Bootstrap's current document authority wins even when writing a new link
-    // over an older stored credential failed. An explicit clear also wins.
-    var t = typeof window.__BPP_WALK_TOKEN === 'string' ? window.__BPP_WALK_TOKEN : null;
-    if (t === null) {
-      try { t = sessionStorage.getItem(TOKEN_STORAGE_KEY) || ''; } catch (_) {}
-      if (!t) t = new URLSearchParams(window.location.search).get('t') || '';
-    }
+    if (window.__BPP_INVALID_CAPABILITY_ENTRY === true) return '';
+    // Only a captured or explicitly issued current-document token is authority.
+    // Missing bootstrap must not select older storage or interpret the raw URL.
+    // A recognized empty string is an explicit no-token entry.
+    var t = typeof window.__BPP_WALK_TOKEN === 'string' ? window.__BPP_WALK_TOKEN : '';
     return /^[a-zA-Z0-9_-]{32,160}$/.test(t) ? t : '';
   }
   var insideWalkNav = false;
@@ -174,11 +174,6 @@
       });
       actions.appendChild(startOver);
     }
-    var help = document.createElement('a');
-    help.className = 'qw-secondary-action';
-    help.href = 'tel:+18648637800';
-    help.textContent = 'Call or text Key';
-    actions.appendChild(help);
     container.appendChild(actions);
     container.style.display = '';
     return state;
@@ -338,15 +333,36 @@
     if (memoryStates[t]) return memoryStates[t];
     try { return JSON.parse(sessionStorage.getItem(journeyStateKey(t)) || 'null') || {}; } catch (_) { return {}; }
   }
+  function authoritativeJourneyVersion(value) {
+    var v2 = value && value.quote_walk_v2 || {};
+    var raw = value && value.expected_version || value && value.version || v2.version;
+    if (typeof raw !== 'number' && typeof raw !== 'string') return null;
+    var version = Number(raw);
+    return Number.isSafeInteger(version) && version > 0 ? version : null;
+  }
+  function staleJourneyRead(reason) {
+    var error = new Error('stale_journey_read');
+    error.name = 'StaleReadError'; error.code = 'stale_journey_read'; error.reason = reason;
+    return error;
+  }
+  function staleCustomerAuthorization(value, reason) {
+    var error = new Error('stale_customer_authorization');
+    error.code = 'stale_customer_authorization';
+    error.body = { error: 'stale_customer_authorization' };
+    if (value) error.currentState = value;
+    if (reason) error.reason = reason;
+    return error;
+  }
   function rememberJourneyState(t, value) {
-    if (value && typeof value.ownerTest === 'boolean' && typeof window.BPPAnalytics?.setOwnerTestMode === 'function') {
-      window.BPPAnalytics.setOwnerTestMode(value.ownerTest);
-    }
     var current = readJourneyState(t);
     var v2 = value && value.quote_walk_v2 || {};
+    var incomingVersion = authoritativeJourneyVersion(value);
+    var currentVersion = authoritativeJourneyVersion(current);
+    // Late read/mutation receipts cannot lower authority for the next server CAS.
+    if (incomingVersion && currentVersion && incomingVersion < currentVersion) return current;
     var receivedIntakeContract = value && value.quote_walk_v2
       && Object.prototype.hasOwnProperty.call(value.quote_walk_v2, 'intake_contract');
-    var version = Number(value && value.expected_version || value && value.version || v2.version || current.version || 0);
+    var version = incomingVersion || currentVersion;
     var next = {
       version: version || null,
       panels: Array.isArray(v2.panels) ? v2.panels : (current.panels || []),
@@ -360,6 +376,15 @@
     };
     memoryStates[t] = next;
     try { sessionStorage.setItem(journeyStateKey(t), JSON.stringify(next)); } catch (_) {}
+    // Owner classification is optional. Its object/method getters and callback
+    // must not turn an acknowledged server read into an application failure.
+    try {
+      if (value && typeof value.ownerTest === 'boolean') {
+        var analytics = window.BPPAnalytics;
+        var classifyOwner = analytics && analytics.setOwnerTestMode;
+        if (typeof classifyOwner === 'function') classifyOwner.call(analytics, value.ownerTest);
+      }
+    } catch (_) {}
     return next;
   }
   function requestKey(t, action, payload, journeyVersion) {
@@ -488,22 +513,31 @@
     progress.setAttribute('data-position-ready', ready ? 'true' : 'false');
     return progressTruth(view);
   }
-  function fetchWithTimeout(url, options, timeoutMs) {
+  function fetchWithTimeout(url, options, timeoutMs, readResponse) {
     var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     var requestOptions = Object.assign({}, options || {});
     if (ctrl) requestOptions.signal = ctrl.signal;
     return new Promise(function (resolve, reject) {
       var settled = false;
-      var timer = setTimeout(function () {
+      var deadline = Date.now() + timeoutMs;
+      function timeout() {
         if (settled) return;
         settled = true;
+        clearTimeout(timer);
         if (ctrl) ctrl.abort();
         var error = new Error('request_timeout');
         error.name = 'TimeoutError';
         reject(error);
-      }, timeoutMs);
-      fetch(url, requestOptions).then(function (value) {
+      }
+      var timer = setTimeout(timeout, timeoutMs);
+      fetch(url, requestOptions).then(function (response) {
         if (settled) return;
+        // JSON headers are not a receipt. Keep the same deadline and abort
+        // signal until the entire response body has been read and validated.
+        return readResponse ? readResponse(response) : response;
+      }).then(function (value) {
+        if (settled) return;
+        if (Date.now() >= deadline) { timeout(); return; }
         settled = true;
         clearTimeout(timer);
         resolve(value);
@@ -516,7 +550,7 @@
     });
   }
   function getJson(url, timeoutMs, options) {
-    return fetchWithTimeout(url, options || {}, timeoutMs || 12000).then(function (r) {
+    return fetchWithTimeout(url, options || {}, timeoutMs || 12000, function (r) {
       return r.json().catch(function () { return {}; }).then(function (body) {
         if (!r.ok) {
           var error = new Error(body && body.error || 'http_' + r.status);
@@ -538,7 +572,7 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-    }, timeoutMs || 30000).then(function (r) {
+    }, timeoutMs || 30000, function (r) {
       return r.json().then(function (j) {
         if (!r.ok) { var e = new Error(j && j.error || 'http_' + r.status); e.body = j; throw e; }
         return j;
@@ -651,7 +685,7 @@
         }
         attempts += 1;
         emit({ type: 'checking', upload: upload, attempt: attempts });
-        return postJson(BASE + '/pre-read-photo', {
+        return postJson(BASE + '/pre-read-photo-r20261019-b333e9d32697', {
           token: t,
           mode: 'recover',
           reservation_id: upload.reservation_id,
@@ -788,6 +822,7 @@
         return { reason: 'deeper', url: target.pathname + target.search };
       }
     }
+    if (state.service_area_pending_review === true) return { reason: 'area_review', page: 'index.html', extra: { area: 'review' } };
     if (state.service_area_status === 'verified_out_of_area') return { reason: 'area', page: 'index.html', extra: { area: 'out' } };
     if (review.followup && review.followup.current === true) return { reason: 'submitted', page: 'photos-later.html' };
     if (activeCorrection) return { reason: 'correction', page: 'photos-later.html', extra: { correction: '1' } };
@@ -828,6 +863,11 @@
       });
     },
     textReplyOnly: true,
+    initialPhotoTimeExtension: true,
+    initialPhotoPreviews: true,
+    wholeResponseDeadline: true,
+    savedReadMonotonic: true,
+    guidedAnswerVersionPinned: true,
     token: token,
     setToken: setToken,
     go: go,
@@ -868,12 +908,23 @@
     newJourneyOpenerPolicy: NEW_JOURNEY_OPENER_POLICY,
     reconcilePendingUploads: reconcilePendingUploads,
     view: function (t) {
+      var reads = savedReadSequences[t] || (savedReadSequences[t] = { started: 0, accepted: 0 });
+      var sequence = ++reads.started;
+      var startedToken = token();
       return getJson(BASE + '/pre-read-view?token=' + encodeURIComponent(t)).then(function (value) {
+        var version = authoritativeJourneyVersion(value);
+        var currentVersion = authoritativeJourneyVersion(readJourneyState(t));
+        // Callers must receive a complete current server view or a typed failure,
+        // never an obsolete view or one synthesized from the remembered hints.
+        if (token() !== startedToken) throw staleJourneyRead('token_changed');
+        if (currentVersion && (!version || version < currentVersion)) throw staleJourneyRead('version_obsolete');
+        if (sequence < reads.accepted && (!version || version === currentVersion)) throw staleJourneyRead('read_superseded');
+        reads.accepted = Math.max(reads.accepted, sequence);
         rememberJourneyState(t, value);
         applyNewJourneyProgress(t, value);
         var state = value && value.quote_walk_v2 || {};
         var path = String(window.location && window.location.pathname || '').replace(/\/index\.html$/, '/');
-        if (state.service_area_status === 'verified_out_of_area' && path !== '/walk-v2/') {
+        if ((state.service_area_status === 'verified_out_of_area' || state.service_area_pending_review === true) && path !== '/walk-v2/') {
           go('index.html', t, { area: 'out' });
         }
         return value;
@@ -910,6 +961,23 @@
       }
       return send(false);
     },
+    initialPhoto: function (action, payload) {
+      var modes = { upload: 'stage_initial_photo', status: 'read_initial_photo', preview: 'read_initial_photo_preview', remove: 'remove_initial_photo', extend: 'extend_initial_photo' };
+      if (!modes[action]) return Promise.reject(new Error('invalid_initial_photo_action'));
+      var body = Object.assign({}, payload, { mode: modes[action] }), retries = 0;
+      function send() {
+        return postJson(BASE + '/pre-read-photo-r20261019-b333e9d32697', body, 30000).catch(function (error) {
+          if (error && error.body && error.body.error === 'rate limited' && retries < 2) {
+            retries += 1;
+            // The unchanged photo bucket refills one token every six seconds.
+            // Retry this same intent; a rate response never grants readiness.
+            return new Promise(function (resolve) { setTimeout(resolve, 6100); }).then(send);
+          }
+          throw error;
+        });
+      }
+      return send();
+    },
     previewRange: function (draft) {
       return postJson(BASE + '/quote-walk-v2-state', { action: 'preview_range', payload: { walkDraft: draft } });
     },
@@ -918,7 +986,25 @@
         expected_version: version, request_key: operationKey, payload: { preview_hash: previewHash } })
         .then(function (value) { rememberJourneyState(t, value); return value; });
     },
-    stateAction: function (t, action, fields) {
+    smsConfirmation: function (t, operation) {
+      // Retry the customer's exact accepted-request choice, never a newer revision.
+      var payload = operation && operation.payload, choice = payload && payload.sms_confirmation;
+      if (!/^[a-zA-Z0-9_-]{32,160}$/.test(t || '') || !operation || typeof operation !== 'object' || Array.isArray(operation)
+          || Object.keys(operation).sort().join(',') !== 'expected_version,payload,request_key'
+          || !Number.isSafeInteger(operation.expected_version) || operation.expected_version < 1
+          || !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(operation.request_key || '')
+          || !payload || Object.keys(payload).sort().join(',') !== 'expected_preference_revision,sms_confirmation'
+          || !Number.isSafeInteger(payload.expected_preference_revision) || payload.expected_preference_revision < 0
+          || !choice || Object.keys(choice).sort().join(',') !== 'decision,disclosure_version,recipient_phone'
+          || ['grant', 'dismiss'].indexOf(choice.decision) === -1
+          || choice.disclosure_version !== 'bpp-confirmation-sms-2026-10-16-v1'
+          || !/^\+1[2-9]\d{2}[2-9]\d{6}$/.test(choice.recipient_phone || '')) {
+        return Promise.reject(new Error('invalid_sms_confirmation'));
+      }
+      return postJson(BASE + '/quote-walk-v2-state', { action: 'update_project_contact', credential: t,
+        expected_version: operation.expected_version, request_key: operation.request_key, payload: payload });
+    },
+    stateAction: function (t, action, fields, authorization) {
       if (['create_range', 'accept_range', 'supersede_media', 'update_phone', 'handoff', 'save_guided_answers', 'submit_photos', 'remove_guided_photo', 'cancel_guided_upload'].indexOf(action) === -1) {
         return Promise.reject(new Error('invalid_state_action'));
       }
@@ -965,20 +1051,38 @@
       if (!validCreateRange && !validSupersedeMedia && !validUpdatePhone && !validAccept && !validEmpty && !validGuidedAnswers && !validPhotoOperation) {
         return Promise.reject(new Error('invalid_state_payload'));
       }
+      var displayedVersion = null;
+      if (action === 'save_guided_answers') {
+        // A full setup draft authorizes the version displayed to this customer,
+        // never a newer version learned by a different pending read.
+        if (!authorization || typeof authorization !== 'object' || Array.isArray(authorization)
+            || !Number.isSafeInteger(authorization.expectedVersion) || authorization.expectedVersion <= 0) {
+          return Promise.reject(staleCustomerAuthorization(null, 'invalid_displayed_version'));
+        }
+        displayedVersion = authorization.expectedVersion;
+      }
       function send(retried) {
         var state = readJourneyState(t);
-        if (!state.version) {
+        var currentVersion = authoritativeJourneyVersion(state);
+        if (displayedVersion && currentVersion && displayedVersion !== currentVersion) {
+          return Promise.reject(staleCustomerAuthorization(null, 'displayed_version_changed'));
+        }
+        if (displayedVersion ? !currentVersion : !state.version) {
           return getJson(BASE + '/pre-read-view?token=' + encodeURIComponent(t))
             .then(function (value) {
+              if (displayedVersion && !authoritativeJourneyVersion(value)) {
+                throw staleCustomerAuthorization(null, 'invalid_server_version');
+              }
               rememberJourneyState(t, value);
               return send(retried);
             });
         }
+        var operationVersion = displayedVersion || state.version;
         var body = {
           action: action,
           credential: t,
-          expected_version: state.version,
-          request_key: requestKey(t, action, payloadFields, state.version),
+          expected_version: operationVersion,
+          request_key: requestKey(t, action, payloadFields, operationVersion),
           payload: payloadFields
         };
         return postJson(BASE + '/quote-walk-v2-state', body).then(function (value) {
@@ -990,11 +1094,7 @@
               .then(function (value) {
                 rememberJourneyState(t, value);
                 if (action === 'accept_range' || action === 'handoff' || action === 'save_guided_answers' || ['submit_photos', 'remove_guided_photo', 'cancel_guided_upload'].indexOf(action) !== -1) {
-                  var staleAuthorization = new Error('stale_customer_authorization');
-                  staleAuthorization.code = 'stale_customer_authorization';
-                  staleAuthorization.body = { error: 'stale_customer_authorization' };
-                  staleAuthorization.currentState = value;
-                  throw staleAuthorization;
+                  throw staleCustomerAuthorization(value);
                 }
                 return send(true);
               });
@@ -1073,7 +1173,7 @@
               payload.expected_version = state.version;
               payload.request_key = requestKey(t, 'register_media', identity, state.version);
             }
-            return postJson(BASE + '/pre-read-photo', payload, 30000).then(function (signed) {
+            return postJson(BASE + '/pre-read-photo-r20261019-b333e9d32697', payload, 30000).then(function (signed) {
               if (!signed || !signed.upload_url) throw new Error('media_sign_failed');
               return fetchWithTimeout(signed.upload_url, {
                 method: 'PUT',
@@ -1081,7 +1181,7 @@
                 body: file
               }, 45000).then(function (uploaded) {
                 if (!uploaded.ok) throw new Error('media_upload_failed');
-                return postJson(BASE + '/pre-read-photo', {
+                return postJson(BASE + '/pre-read-photo-r20261019-b333e9d32697', {
                   token: t,
                   mode: 'complete',
                   reservation_id: signed.reservation_id,
@@ -1116,7 +1216,7 @@
         if (!signed || !signed.reservation_id || !signed.lease_id) {
           return Promise.reject(new Error('media_reservation_missing'));
         }
-        return postJson(BASE + '/pre-read-photo', {
+        return postJson(BASE + '/pre-read-photo-r20261019-b333e9d32697', {
           token: t,
           mode: 'recover',
           reservation_id: signed.reservation_id,
@@ -1141,7 +1241,7 @@
           if (capsule && capsule.payload) payload = capsule.payload;
           else if (capsule) capsule.payload = JSON.parse(JSON.stringify(payload));
         }
-        return postJson(BASE + '/pre-read-photo', payload, 30000).then(function (value) {
+        return postJson(BASE + '/pre-read-photo-r20261019-b333e9d32697', payload, 30000).then(function (value) {
           if (state.version && (!value || value.receipt_settled !== true)) {
             throw new Error('media_receipt_unsettled');
           }
@@ -1171,7 +1271,7 @@
     textPhotoAction: function (t, mode, fields) {
       if (['prepare_text_photos', 'check_text_photos', 'import_text_photo'].indexOf(mode) === -1 || !isGuidedJourney(null, t)) return Promise.reject(new Error('invalid_text_photo_action'));
       var payload = Object.assign({}, fields || {}, { token: t, mode: mode });
-      return postJson(BASE + '/pre-read-photo', payload, 30000).then(function (value) { rememberJourneyState(t, value); return value; });
+      return postJson(BASE + '/pre-read-photo-r20261019-b333e9d32697', payload, 30000).then(function (value) { rememberJourneyState(t, value); return value; });
     },
     saveLater: function (t) { return postJson(BASE + '/pre-read-save-later', { token: t }); },
     emailCapture: function (t, email) { return postJson(BASE + '/walk-email-capture', { token: t, email: email }); },
@@ -1197,7 +1297,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: q }),
         referrerPolicy: 'no-referrer'
-      }, timeoutMs || 8000).then(function (response) {
+      }, timeoutMs || 8000, function (response) {
         return response.json().catch(function () { return {}; }).then(function (body) {
           if (!response.ok) {
             var error = new Error(body && body.error || 'http_' + response.status);
@@ -1273,7 +1373,7 @@
       return fetchWithTimeout(BASE + '/quo-ai-new-lead', {
         method: 'POST', keepalive: true,
         headers: { 'Content-Type': 'application/json' }, body: body
-      }, timeoutMs || 20000).then(function (response) {
+      }, timeoutMs || 20000, function (response) {
         return response.json().catch(function () { return {}; }).then(function (value) {
           return { ok: response.ok, status: response.status, body: value };
         });
@@ -1285,7 +1385,7 @@
         keepalive: true,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-      }, timeoutMs || 20000).then(function (response) {
+      }, timeoutMs || 20000, function (response) {
         return response.json().catch(function () { return {}; }).then(function (body) {
           return { ok: response.ok, status: response.status, body: body };
         });
@@ -1297,7 +1397,7 @@
       return postJson(BASE + '/pre-read-confirm', { token: t, mark_thankyou: true });
     },
     touchActivity: function (t, keepalive) {
-      return fetch(BASE + '/quote-walk-v2-state', {
+      return fetchWithTimeout(BASE + '/quote-walk-v2-state', {
         method: 'POST',
         keepalive: keepalive === true,
         headers: { 'Content-Type': 'application/json' },
@@ -1308,13 +1408,23 @@
           request_key: requestKey(t, 'touch_activity', {}, 0),
           payload: {}
         })
-      }).then(function (response) {
+      }, 30000, function (response) {
         if (!response.ok) throw new Error('activity_touch_failed');
         return response.json();
       });
     },
     /* require a token or bounce to the start (no dead ends) */
     requireToken: function () {
+      if (typeof window.__BPP_WALK_TOKEN !== 'string') {
+        // Let the guarded main capture the original entry. Do not arm activity
+        // or overwrite storage when this document's bootstrap did not run.
+        window.location.replace('/walk-v2/' + String(window.location.search || '') + String(window.location.hash || ''));
+        return null;
+      }
+      if (window.__BPP_INVALID_CAPABILITY_ENTRY === true) {
+        window.location.replace('/walk-v2/?t=invalid');
+        return null;
+      }
       var t = token();
       if (!t) { window.location.replace('/walk-v2/'); return null; }
       if (!window.__BPP_WALK_ABANDON_ARMED__) {
@@ -1367,7 +1477,7 @@
       var v2 = v.quote_walk_v2 || {};
       var newJourney = isNewJourney(v, t);
       if (isGuidedJourney(v, t)) return routeGuided(t, v, replaceHistory);
-      if (v2.service_area_status === 'verified_out_of_area') {
+      if (v2.service_area_status === 'verified_out_of_area' || v2.service_area_pending_review === true) {
         go('index.html', t, { area: 'out' }, replaceHistory);
         return;
       }
@@ -1386,7 +1496,7 @@
     routeRecoveryFromState: function (t, v) {
       if (isGuidedJourney(v, t)) return routeGuided(t, v, true);
       var state = v && v.quote_walk_v2 || {};
-      if (state.service_area_status === 'verified_out_of_area') {
+      if (state.service_area_status === 'verified_out_of_area' || state.service_area_pending_review === true) {
         go('index.html', t, { area: 'out' });
         return;
       }
@@ -1413,12 +1523,19 @@
       return new Promise(function (resolve, reject) {
         var url = URL.createObjectURL(file);
         var img = new Image();
+        var cv = null;
+        var reader = null;
         var finished = false;
         var timer = setTimeout(function () { settle(new Error('image_decode_timeout')); }, 30000);
         function settle(error, value) {
           if (finished) return;
           finished = true; clearTimeout(timer); img.onload = img.onerror = null;
           URL.revokeObjectURL(url); img.removeAttribute('src');
+          if (cv) cv.width = cv.height = 0;
+          if (reader) {
+            reader.onload = reader.onerror = reader.onabort = null;
+            if (reader.readyState === 1) reader.abort();
+          }
           if (error) reject(error); else resolve(value);
         }
         img.onload = function () {
@@ -1427,15 +1544,30 @@
             var scale = Math.min(1, maxPx / Math.max(img.width, img.height));
             var w = Math.max(1, Math.round(img.width * scale));
             var h = Math.max(1, Math.round(img.height * scale));
-            var cv = document.createElement('canvas');
+            cv = document.createElement('canvas');
             cv.width = w; cv.height = h;
             var context = cv.getContext('2d');
             if (!context) throw new Error('canvas_unavailable');
             context.drawImage(img, 0, 0, w, h);
-            var data = cv.toDataURL('image/jpeg', 0.85);
-            cv.width = cv.height = 0;
-            if (!/^data:image\/jpeg;base64,/.test(data)) throw new Error('image_encoding_failed');
-            settle(null, data);
+            function encoded(data) {
+              if (!/^data:image\/jpeg;base64,/.test(data)) return settle(new Error('image_encoding_failed'));
+              settle(null, data);
+            }
+            if (typeof cv.toBlob === 'function' && typeof FileReader === 'function') {
+              // Let the browser schedule JPEG encoding without a synchronous base64 conversion.
+              // The existing watchdog covers decode, encoding and the data-URL reader together.
+              cv.toBlob(function (blob) {
+                if (finished) return;
+                if (!blob || blob.type !== 'image/jpeg' || !blob.size) return settle(new Error('image_encoding_failed'));
+                cv.width = cv.height = 0;
+                try {
+                  reader = new FileReader();
+                  reader.onload = function () { encoded(reader.result); };
+                  reader.onerror = reader.onabort = function () { settle(new Error('image_encoding_failed')); };
+                  reader.readAsDataURL(blob);
+                } catch (e) { settle(e); }
+              }, 'image/jpeg', 0.85);
+            } else encoded(cv.toDataURL('image/jpeg', 0.85));
           } catch (e) { settle(e); }
         };
         img.onerror = function () { settle(new Error('bad_image')); };

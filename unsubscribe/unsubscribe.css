@@ -1,0 +1,29 @@
+:root{--bg:#eef1f7}
+body{font-size:16px;line-height:1.6}
+.brand-bar{padding:16px max(20px,calc((100% - 640px)/2))}
+.brand-bar img{width:192px;height:auto;max-height:52px;object-fit:contain}
+main{max-width:640px;margin:0 auto;padding:40px 20px 24px}
+.unsubscribe-card{padding:36px}
+.eyebrow{font-size:12px;color:var(--text2);letter-spacing:.1em}
+h1,h2{font-family:var(--font-display);color:var(--navy);font-weight:700;line-height:1.15;letter-spacing:-.02em}
+h1{font-size:clamp(30px,6vw,40px);margin:0 0 20px;overflow-wrap:break-word}
+h2{font-size:23px;margin:0 0 8px}
+#unsubscribe-status{min-height:78px}
+#unsubscribe-controls{display:grid;gap:12px;margin:24px 0}
+#unsubscribe-controls:empty{display:none}
+button.btn-navy,button.btn-ghost{height:auto;min-height:54px;padding:14px 20px;line-height:1.4;border-radius:12px}
+[hidden]{display:none!important}
+.service-note{font-size:14px;color:var(--text2)}
+.guide-access{border-top:1px solid var(--border);padding-top:24px;margin-top:28px}
+.guide-access p{font-size:14px;color:var(--text2)}
+a{color:#1d4ed8;text-underline-offset:3px}
+a:hover{text-decoration-thickness:2px}
+.guide-access a,nav a{display:inline-flex;align-items:center;min-height:44px}
+.guide-access a{font-weight:600;margin-top:6px}
+nav{display:flex;flex-wrap:wrap;gap:4px 24px;margin-top:20px;font-size:14px}
+.notice{padding:16px;border:1px solid var(--border);border-radius:10px;background:#fff8e0;margin-bottom:20px}
+footer{max-width:640px;margin:0 auto;padding:0 20px 32px;color:var(--text2);font-size:12px}
+:focus-visible{outline:3px solid #1d4ed8;outline-offset:4px}
+main:focus,h1:focus{outline:none}
+@media(max-width:420px){main{padding:24px 16px 20px}.unsubscribe-card{padding:26px 20px}.brand-bar img{width:174px}h1{font-size:clamp(26px,8vw,30px);hyphens:auto}#unsubscribe-status{min-height:0}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}

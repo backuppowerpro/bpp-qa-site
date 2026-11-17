@@ -88,15 +88,22 @@
     return null;
   }
 
+  function trackingPrivacyBlocked() {
+    return navigator.globalPrivacyControl === true
+      || [navigator.doNotTrack, window.doNotTrack, navigator.msDoNotTrack].some(function (value) {
+        var dnt = String(value || '').trim().toLowerCase();
+        return dnt === '1' || dnt === 'yes';
+      });
+  }
+
   function savedMarketingTouches() {
     var host = String(location.hostname || '').toLowerCase();
     var params = new URLSearchParams(entryURL.search);
-    var dnt = String(navigator.doNotTrack || window.doNotTrack || '').toLowerCase();
     // Attribution cannot turn a private return, QA visit, or privacy opt-out
     // into an advertising touch. Keep contact capture independent of storage.
     if (window.__BPP_CAPABILITY_ENTRY || window.__BPP_OWNER_TEST
         || (host !== 'backuppowerpro.com' && host !== 'www.backuppowerpro.com')
-        || navigator.globalPrivacyControl === true || dnt === '1' || dnt === 'yes'
+        || trackingPrivacyBlocked()
         || params.get('preview') === '1' || params.get('analytics_test') === '1') {
       return { first: null, current: null };
     }
@@ -121,16 +128,103 @@
     return { first: first, current: current };
   }
 
+  var smsReminderSequence = 0;
+  var SMS_REMINDER_VERSION = 'bpp-pre-submit-sms-2026-10-16-v1';
+  function createSmsSubmitReminder(main) {
+    var active = null;
+    function cancel() { if (active) active.finish(null, false); }
+    function ask(opener, current, lifecycle) {
+      if (active) return Promise.resolve(null);
+      var original = main.querySelector('[data-quote-sms-consent]');
+      var originalLabel = original && original.closest('label');
+      var details = main.querySelector('#guided-sms-details');
+      var optional = main.querySelector('#guided-consent');
+      if (!originalLabel || !details || !optional) return Promise.resolve(null);
+      var dialog = document.createElement('dialog');
+      if (typeof dialog.showModal !== 'function') return Promise.resolve(null);
+      var id = 'qw-sms-submit-' + (++smsReminderSequence);
+      dialog.className = 'qw-save-dialog qw-sms-submit-dialog';
+      dialog.setAttribute('data-sms-submit-reminder', SMS_REMINDER_VERSION);
+      dialog.setAttribute('aria-labelledby', id + '-title');
+      dialog.setAttribute('aria-describedby', id + '-explanation');
+      dialog.setAttribute('aria-modal', 'true');
+      var heading = document.createElement('h2'); heading.id = id + '-title'; heading.textContent = 'Text updates (optional)';
+      var explanation = document.createElement('p'); explanation.id = id + '-explanation';
+      explanation.textContent = 'Texting is how we usually communicate about your quote and installation.';
+      var fieldset = document.createElement('fieldset'); fieldset.className = 'guided-communication-choices';
+      var label = originalLabel.cloneNode(true), checkbox = label.querySelector('input');
+      checkbox.removeAttribute('data-quote-sms-consent'); checkbox.removeAttribute('checked');
+      checkbox.setAttribute('data-sms-submit-choice', ''); checkbox.checked = false; checkbox.disabled = false; checkbox.required = false;
+      checkbox.removeAttribute('required'); checkbox.removeAttribute('aria-required');
+      checkbox.setAttribute('aria-describedby', id + '-details ' + id + '-optional');
+      var disclosure = details.cloneNode(true); disclosure.id = id + '-details';
+      var optionalCopy = optional.cloneNode(true); optionalCopy.id = id + '-optional';
+      fieldset.append(label, disclosure, optionalCopy);
+      var actions = document.createElement('div'); actions.className = 'qw-sms-submit-actions';
+      var allow = document.createElement('button'); allow.type = 'button'; allow.dataset.smsSubmitAllow = '';
+      allow.textContent = 'Allow texts and submit'; allow.disabled = true;
+      var without = document.createElement('button'); without.type = 'button'; without.dataset.smsSubmitWithout = '';
+      without.textContent = 'Continue without texts'; without.className = 'guided-link';
+      var back = document.createElement('button'); back.type = 'button'; back.dataset.smsSubmitCancel = '';
+      back.textContent = 'Back to form'; back.className = 'guided-link';
+      actions.append(allow, without, back); dialog.append(heading, explanation, fieldset, actions);
+      return new Promise(function (resolve) {
+        var settled = false, presented = false;
+        function report(name) { try { if (lifecycle && typeof lifecycle[name] === 'function') lifecycle[name](); } catch (_) {} }
+        function finish(decision, restoreFocus) {
+          if (settled) return;
+          settled = true; active = null;
+          if (decision === null && restoreFocus && presented && (!current || current())) report('dismissed');
+          if (dialog.open) dialog.close();
+          dialog.remove();
+          if (restoreFocus && (!current || current()) && opener && opener.isConnected && !opener.disabled && opener.getClientRects().length) opener.focus();
+          resolve(decision);
+        }
+        active = { finish: finish };
+        checkbox.addEventListener('change', function () { allow.disabled = checkbox.checked !== true; });
+        allow.addEventListener('click', function () {
+          if (current && !current()) { finish(null, false); return; }
+          if (checkbox.checked === true) finish('allow', false);
+        });
+        without.addEventListener('click', function () { finish(current && !current() ? null : 'continue_without_texts', false); });
+        back.addEventListener('click', function () { finish(null, true); });
+        dialog.addEventListener('cancel', function (event) { event.preventDefault(); finish(null, true); });
+        dialog.addEventListener('close', function () { finish(null, true); });
+        dialog.addEventListener('click', function (event) { if (event.target === dialog) finish(null, true); });
+        dialog.addEventListener('keydown', function (event) {
+          if (event.key !== 'Tab') return;
+          var controls = Array.from(dialog.querySelectorAll('input, button, a[href]')).filter(function (node) { return !node.disabled && node.getClientRects().length; });
+          var first = controls[0], last = controls[controls.length - 1];
+          if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+          else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        });
+        document.body.appendChild(dialog);
+        try { dialog.showModal(); presented = true; report('shown'); checkbox.focus(); }
+        catch (_) { finish(null, true); }
+      });
+    }
+    return { ask: ask, cancel: cancel };
+  }
+
   // Capture the public ad entry before any questions or contact form mount.
   // The clean Save for later link intentionally contains no tracking identity.
   savedMarketingTouches();
 
   window.BPPContactDetails = {
+    preSubmitSmsChoice: true,
+    createSmsSubmitReminder: createSmsSubmitReminder,
+    versionedConsentCapture: true,
+    emailPromotionsCapture: true,
+    requiredEmailCapture: true,
+    completeNameRecovery: true,
+    anonymousAddressConfirmation: true,
+    addressLookupDismissalSafe: true,
     mount: function (main, options) {
   options = options || {};
   var entryURL = new URL(options.entryURL || window.location.href);
   var nameIn = main.querySelector('[data-f="name"]');
   var phoneIn = main.querySelector('[data-f="phone"]');
+  var emailIn = main.querySelector('[data-f="email"]');
   var addrIn = main.querySelector('[data-f="addr"]');
   var resumeT = options.token || '';
   var editDetails = Boolean(resumeT);
@@ -141,15 +235,43 @@
   var phoneField = main.querySelector('[data-phone-field]');
   var phoneError = phoneField.querySelector('[data-phone-error]');
   var phoneAnnouncement = phoneField.querySelector('[data-phone-announcement]');
+  var emailField = main.querySelector('[data-email-field]');
+  var emailError = main.querySelector('[data-email-error]');
+  var emailAnnouncement = main.querySelector('[data-email-announcement]');
+  var emailTouched = false;
+  function emailRequired() { return Boolean(options.requireEmail && !editDetails); }
+  function normalizedEmail(value) {
+    var email = String(value || '').trim(), parts = email.split('@');
+    if (!email || email.length > 254 || /[\u0000-\u001f\u007f]/.test(email) || parts.length !== 2
+        || parts[0].length > 64 || !/^[A-Za-z0-9!#$%&'*+\/=?^_{|}~.-]+$/.test(parts[0])
+        || parts[0].startsWith('.') || parts[0].endsWith('.') || parts[0].includes('..')
+        || !parts[1].includes('.') || parts[1].split('.').some(function (label) {
+          return !/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$/.test(label);
+        })) return '';
+    return parts[0] + '@' + parts[1].toLowerCase();
+  }
+  function emailFeedback(message) {
+    if (!emailIn || !emailField) return;
+    emailField.classList.toggle('has-error', Boolean(message));
+    emailIn.setAttribute('aria-invalid', String(Boolean(message)));
+    if (emailError) emailError.textContent = message || 'Enter an email like you@example.com.';
+    if (emailAnnouncement && emailAnnouncement.textContent !== (message || '')) emailAnnouncement.textContent = message || '';
+  }
   var nameField = nameIn ? nameIn.closest('.field') : null;
   var addrField = main.querySelector('[data-addr-field]');
   var drop = main.querySelector('[data-addr-drop]');
   var cta = main.querySelector('[data-cta]');
   var ctaLabelEl = cta.querySelector('[data-cta-label]');
   var ctaHint = main.querySelector('[data-cta-hint]');
+  var submitStatus = main.querySelector('[data-submit-status]');
+  var submissionInvalidInput = null;
+  var nameLengthInvalid = false;
+  var nameLimitDescriptionAdded = false;
   var processCopy = main.querySelector('.hero .process');
   var unconfirmedAddressNote = main.querySelector('[data-unconfirmed-address]');
   var submitting = false;
+  var smsReminder = createSmsSubmitReminder(main), smsReminderPending = false, smsReminderDecision = null;
+  var busyConsentControls = [];
   var okSvg = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.5l2.6 2.6L10 3.5"></path></svg>';
   function ensureOkMark(field) {
     if (!field || field.querySelector('.ok-mark')) return;
@@ -159,10 +281,11 @@
     m.innerHTML = okSvg;
     field.appendChild(m);
   }
-  [nameField, phoneField, addrField].forEach(ensureOkMark);
+  [nameField, phoneField, emailField, addrField].forEach(ensureOkMark);
   function paintFieldOk() {
-    if (nameField) nameField.classList.toggle('ok', nameIn.value.trim().length > 0);
+    if (nameField) nameField.classList.toggle('ok', nameIn.value.trim().length > 0 && (editDetails || namePartsFit(nameIn.value)));
     if (phoneField) phoneField.classList.toggle('ok', phoneValid(phoneIn.value));
+    if (emailField) emailField.classList.toggle('ok', emailRequired() && Boolean(normalizedEmail(emailIn.value)) && !emailField.classList.contains('has-error'));
     if (addrField) addrField.classList.toggle('ok', addrOk());
   }
   /* funnel step events, each at most once per visit (drop-off tracking) */
@@ -173,6 +296,7 @@
      structured geography, while the explicit escape still lets a real address
      continue if the provider cannot find it. */
   var addrTimer = null, addrLookupSequence = 0, addrPicked = false, addrSel = { city: '', state: '', zip: '' }, lastAddrPreds = [];
+  var dismissedAddressValue = null;
   var lastDropSignature = '', viewportFitTimer = null;
   var lastAddressInputMethod = 'unknown';
   var lastAddressLookupTrigger = 'unknown';
@@ -192,14 +316,16 @@
     var anchor = addrField.getBoundingClientRect();
     var below = Math.floor(viewportBottom - anchor.bottom - 6 - 10);
     var above = Math.floor(anchor.top - viewportTop - 6 - 10);
-    var firstOption = drop.querySelector('.addr-opt');
+    var options = drop.querySelectorAll('.addr-opt');
     var listStyle = window.getComputedStyle(drop);
-    var minimumHeight = (firstOption ? firstOption.getBoundingClientRect().height : 0)
-      + parseFloat(listStyle.paddingTop || '0') + parseFloat(listStyle.paddingBottom || '0');
-    // Use the rendered option and responsive padding, not a stale CSS minimum.
-    // Flip the existing dropdown above its field when there is no room below;
+    var preferredHeight = parseFloat(listStyle.paddingTop || '0') + parseFloat(listStyle.paddingBottom || '0');
+    for (var i = 0; i < Math.min(2, options.length); i++) {
+      preferredHeight += options[i].getBoundingClientRect().height;
+    }
+    // Show up to two actual choices so a cramped list still reveals alternatives.
+    // Prefer the roomier side when those rendered rows do not fit below;
     // do not scroll the page or move the typing caret to manufacture space.
-    var opensAbove = below < Math.ceil(minimumHeight) && above > below;
+    var opensAbove = below < Math.ceil(preferredHeight) && above > below;
     drop.style.top = opensAbove ? 'auto' : 'calc(100% + 6px)';
     drop.style.bottom = opensAbove ? 'calc(100% + 6px)' : 'auto';
     var nextHeight = Math.max(0, opensAbove ? above : below) + 'px';
@@ -210,6 +336,12 @@
     viewportFitTimer = setTimeout(fitDropToViewport, 120);
   }
   function closeDrop() {
+    // Dismiss the lookup as well as its visible options. A delayed response or
+    // queued focus callback must wait for a new, deliberate address interaction.
+    addrLookupSequence += 1;
+    dismissedAddressValue = addrIn.value;
+    if (addrTimer) clearTimeout(addrTimer);
+    addrTimer = null;
     if (viewportFitTimer) clearTimeout(viewportFitTimer);
     viewportFitTimer = null;
     lastDropSignature = '';
@@ -396,6 +528,11 @@
     closeDrop(); refresh();
   }
   function suggest(trigger) {
+    // Autofill probes can observe a value after its list was dismissed, even
+    // without an input event. Only a changed value or deliberate input/focus
+    // should start another lookup for that dismissed value.
+    if (dismissedAddressValue === addrIn.value && trigger !== 'typing' && trigger !== 'focus') return;
+    dismissedAddressValue = null;
     invalidateAddressEdit();
     var q = addrIn.value.trim();
     var matchQuery = cleanAddressLookupValue(q);
@@ -406,12 +543,16 @@
     if (q.length < 3 || !lookupQueries.length) { closeDrop(); return; }
     var lookupDelay = trigger === 'typing' && lastAddressInputMethod === 'typed' ? 900 : 120;
     addrTimer = setTimeout(function () {
+      addrTimer = null;
+      if (lookupSequence !== addrLookupSequence || addrIn.value.trim() !== q) return;
       function lookupNext(index, predictions) {
+        if (lookupSequence !== addrLookupSequence || addrIn.value.trim() !== q) return Promise.resolve([]);
         if (index >= lookupQueries.length) return Promise.resolve(predictions);
         return WALK.addrSuggest(lookupQueries[index], 8000, {
           input_method: lastAddressInputMethod,
           trigger: index === 0 ? lastAddressLookupTrigger : 'formatted_address_recovery'
         }).then(function (nextPredictions) {
+          if (lookupSequence !== addrLookupSequence || addrIn.value.trim() !== q) return [];
           var merged = mergeAddressPredictions(predictions, nextPredictions);
           if (matchingExactPrediction(matchQuery, merged)) return merged;
           return lookupNext(index + 1, merged);
@@ -462,12 +603,14 @@
   });
   addrIn.addEventListener('blur', function () {
     syncBrowserFilledValues('blur');
-    setTimeout(function () { if (!drop.contains(document.activeElement)) closeDrop(); }, 150);
+    setTimeout(function () { if (document.activeElement !== addrIn && !drop.contains(document.activeElement)) closeDrop(); }, 150);
   });
   /* Re-open the list on focus when the address is typed but not yet validated, so
      "Pick your address from the list" is never a dead end with no visible list. */
   addrIn.addEventListener('focus', function () {
+    var focusSequence = addrLookupSequence;
     setTimeout(function () {
+      if (focusSequence !== addrLookupSequence || document.activeElement !== addrIn) return;
       syncBrowserFilledValues('focus');
       if (!addrOk() && addrIn.value.trim().length >= 3) suggest('focus');
     }, 0);
@@ -511,26 +654,53 @@
     return addrOk();
   }
   function part1Done() {
-    return nameIn.value.trim().length > 0 && phoneValid(phoneIn.value) && addrLooksReady();
+    return nameIn.value.trim().length > 0 && (editDetails || namePartsFit(nameIn.value)) && phoneValid(phoneIn.value)
+      && (!emailRequired() || Boolean(normalizedEmail(emailIn.value))) && addrLooksReady();
   }
   /* names the one thing still missing so the disabled gold button is never a silent dead
      end. A disabled button cannot be tapped for feedback, so the hint is always-visible once
      they have begun. Ruth (78) fills her name, stumbles on the phone, and now sees why. */
   function missingMsg() {
     if (!nameIn.value.trim()) return 'Add your name to continue.';
+    if (!editDetails && !namePartsFit(nameIn.value)) return 'Use up to 50 characters for your first name and up to 50 for the rest of your name.';
     if (!phoneValid(phoneIn.value)) return 'Enter a 10-digit phone number.';
+    if (emailRequired() && !emailIn.value.trim()) return 'Add your email to continue.';
+    if (emailRequired() && !normalizedEmail(emailIn.value)) return 'Enter an email like you@example.com.';
     if (addrIn.value.trim().length < 3) return 'Add your address to continue.';
     if (!addrLooksReady()) return "Choose your address, or use My address isn't listed.";;
     return '';
   }
   function sizeAddrBox() {
-    if (!addrIn) return;
-    addrIn.style.height = '52px';
-    var next = addrIn.scrollHeight;
-    if (next < 52) next = 52;
+    if (!addrIn || !addrIn.getClientRects().length) return;
+    var style = getComputedStyle(addrIn);
+    var line = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.5;
+    var padding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+    var border = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+    // Native empty-field scrollHeight can omit wrapped placeholder lines. Measure
+    // the displayed text at this field's current width without changing its value.
+    var measure = document.createElement('div');
+    Object.assign(measure.style, {
+      position: 'absolute', visibility: 'hidden', pointerEvents: 'none',
+      fontFamily: style.fontFamily, fontSize: style.fontSize, fontWeight: style.fontWeight,
+      lineHeight: style.lineHeight, letterSpacing: style.letterSpacing,
+      whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', wordBreak: 'break-word',
+      width: (addrIn.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)) + 'px'
+    });
+    measure.textContent = (addrIn.value || addrIn.placeholder) + '\u200b';
+    addrIn.parentNode.appendChild(measure);
+    var next = Math.ceil(Math.max(52, Math.max(line, measure.getBoundingClientRect().height) + padding + border));
+    measure.remove();
     addrIn.style.height = next + 'px';
   }
+  var addrResizeFrame = 0;
+  if (typeof ResizeObserver === 'function') new ResizeObserver(function () {
+    if (!addrResizeFrame) addrResizeFrame = requestAnimationFrame(function () {
+      addrResizeFrame = 0; sizeAddrBox();
+    });
+  }).observe(addrIn);
   function refresh() {
+    if (emailField) emailField.hidden = !emailRequired();
+    if (emailIn) { emailIn.required = emailRequired(); emailIn.setAttribute('aria-required', String(emailRequired())); }
     if (areaBoundary) {
       if (ctaHint) {
         ctaHint.textContent = '';
@@ -549,8 +719,28 @@
       ) _se.style.display = 'none';
     }
     paintFieldOk();
+    var invalidNameLength = !editDetails && nameIn.value.trim().length > 0 && !namePartsFit(nameIn.value);
+    if (invalidNameLength && ctaHint) {
+      if (!ctaHint.id) ctaHint.id = 'guided-contact-hint';
+      var nameDescriptions = (nameIn.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean);
+      if (nameDescriptions.indexOf(ctaHint.id) === -1) {
+        nameDescriptions.push(ctaHint.id); nameLimitDescriptionAdded = true;
+        nameIn.setAttribute('aria-describedby', nameDescriptions.join(' '));
+      }
+      nameIn.setAttribute('aria-invalid', 'true');
+    } else if (nameLengthInvalid) {
+      if (submissionInvalidInput !== nameIn) nameIn.removeAttribute('aria-invalid');
+      if (nameLimitDescriptionAdded && ctaHint) {
+        var remainingDescriptions = (nameIn.getAttribute('aria-describedby') || '').split(/\s+/).filter(function (id) { return id && id !== ctaHint.id; });
+        if (remainingDescriptions.length) nameIn.setAttribute('aria-describedby', remainingDescriptions.join(' '));
+        else nameIn.removeAttribute('aria-describedby');
+        nameLimitDescriptionAdded = false;
+      }
+    }
+    nameLengthInvalid = invalidNameLength;
     sizeAddrBox();
-    ctaLabelEl.textContent = options.submitLabel || 'See my estimate';
+    var nextSubmitLabel = options.submitLabel || 'See my estimate';
+    if (ctaLabelEl.textContent !== nextSubmitLabel) ctaLabelEl.textContent = nextSubmitLabel;
     var ready = part1Done();
     cta.disabled = submitting || !ready || Boolean(options.canSubmit && !options.canSubmit());
     if (ready && !submitting) closeDrop();
@@ -558,8 +748,8 @@
       unconfirmedAddressNote.style.display = addrUnverified && ready ? '' : 'none';
     }
     if (ctaHint) {
-      var begun = nameIn.value.trim() || phoneIn.value.trim() || addrIn.value.trim();
-      var hasSpecificError = phoneField.classList.contains('has-error');
+      var begun = nameIn.value.trim() || phoneIn.value.trim() || (emailIn && emailIn.value.trim()) || addrIn.value.trim();
+      var hasSpecificError = phoneField.classList.contains('has-error') || emailField && emailField.classList.contains('has-error');
       if (!ready && !submitting && begun && !hasSpecificError) { ctaHint.textContent = missingMsg(); ctaHint.style.display = ''; }
       else { ctaHint.style.display = 'none'; }
     }
@@ -574,12 +764,28 @@
     var parts = String(value || '').trim().split(/\s+/).filter(Boolean);
     return {
       firstName: parts[0] || '',
-      lastName: parts.length > 1 ? parts[parts.length - 1] : ''
+      lastName: parts.slice(1).join(' ')
     };
+  }
+  function namePartsFit(value) {
+    var name = splitNameForTracking(value);
+    return name.firstName.length > 0 && name.firstName.length <= 50 && name.lastName.length <= 50;
   }
   var lastSyncedName = '';
   var lastSyncedPhone = '';
+  var lastSyncedEmail = '';
   var lastSyncedAddress = '';
+  var hydratedValues = { name: null, phone: null, email: null, address: null };
+  var lastHydratedVersion = 0;
+  var authorityRevision = 0;
+  function hydrateKnownField(input, key, value) {
+    if (typeof value !== 'string' || !value.trim()) return false;
+    var previous = hydratedValues[key];
+    if (previous === null ? input.value.trim().length > 0 : input.value !== previous) return false;
+    input.value = value;
+    hydratedValues[key] = value;
+    return true;
+  }
   var phoneBeforeEdit = null;
   function phoneCaret(value, count) {
     if (!count) return 0;
@@ -649,8 +855,15 @@
     if (main.hidden || submitting) return;
     var rawName = nameIn.value;
     var rawPhone = phoneIn.value;
+    var rawEmail = emailIn ? emailIn.value : '';
     var rawAddress = addrIn.value;
-    var changed = rawName !== lastSyncedName || rawPhone !== lastSyncedPhone || rawAddress !== lastSyncedAddress;
+    var changed = rawName !== lastSyncedName || rawPhone !== lastSyncedPhone || rawEmail !== lastSyncedEmail || rawAddress !== lastSyncedAddress;
+    if (submissionInvalidInput && ((submissionInvalidInput === nameIn && rawName !== lastSyncedName)
+        || (submissionInvalidInput === phoneIn && rawPhone !== lastSyncedPhone)
+        || (submissionInvalidInput === emailIn && rawEmail !== lastSyncedEmail)
+        || (submissionInvalidInput === addrIn && rawAddress !== lastSyncedAddress))) {
+      clearSubmissionError();
+    }
 
     var nameCursor = document.activeElement === nameIn ? nameIn.selectionStart : null;
     var capitalized = capitalizeName(rawName);
@@ -672,9 +885,13 @@
       phoneFeedback(phoneIn.value.trim() && !phoneValid(phoneIn.value) && (trigger !== 'input' || digits(phoneIn.value).length >= 10)
         ? 'Enter a valid 10-digit mobile number.' : '');
     }
+    if (emailRequired() && rawEmail !== lastSyncedEmail) {
+      emailFeedback(emailTouched && !normalizedEmail(rawEmail)
+        ? rawEmail.trim() ? 'Enter an email like you@example.com.' : 'Add your email to continue.' : '');
+    }
 
     var addressChanged = rawAddress !== lastSyncedAddress;
-    if (addressChanged) {
+    if (addressChanged && (rawAddress !== dismissedAddressValue || trigger === 'input')) {
       lastAddressInputMethod = trigger === 'input'
         ? inputMethod(event, lastSyncedAddress, rawAddress)
         : 'autofill_or_unknown';
@@ -690,8 +907,9 @@
 
     lastSyncedName = nameIn.value;
     lastSyncedPhone = phoneIn.value;
+    lastSyncedEmail = emailIn ? emailIn.value : '';
     lastSyncedAddress = addrIn.value;
-    if (changed && (lastSyncedName.trim() || lastSyncedPhone.trim() || lastSyncedAddress.trim())) once('walk_v2_form_started');
+    if (changed && (lastSyncedName.trim() || lastSyncedPhone.trim() || lastSyncedEmail.trim() || lastSyncedAddress.trim())) once('walk_v2_form_started');
     if (changed) {
       persistDraft();
       refresh();
@@ -701,6 +919,25 @@
     syncBrowserFilledValues('input');
   });
   nameIn.addEventListener('change', function () { syncBrowserFilledValues('change'); });
+  if (emailIn) {
+    emailIn.addEventListener('input', function () { syncBrowserFilledValues('input'); });
+    emailIn.addEventListener('change', function () { syncBrowserFilledValues('change'); });
+    emailIn.addEventListener('blur', function () {
+      if (!emailRequired()) return;
+      emailTouched = true;
+      var email = normalizedEmail(emailIn.value);
+      if (email) emailIn.value = email;
+      syncBrowserFilledValues('blur');
+      emailFeedback(email ? '' : emailIn.value.trim() ? 'Enter an email like you@example.com.' : 'Add your email to continue.');
+      refresh();
+    });
+    emailIn.addEventListener('keydown', function (event) {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      if (normalizedEmail(emailIn.value)) addrIn.focus();
+      else { emailTouched = true; emailFeedback(emailIn.value.trim() ? 'Enter an email like you@example.com.' : 'Add your email to continue.'); }
+    });
+  }
   phoneIn.addEventListener('keydown', function (event) {
     if (!/^[0-9]$/.test(event.key) || event.ctrlKey || event.metaKey || event.altKey) return;
     var candidate = phoneEditValue(phoneIn.value, phoneIn.selectionStart, phoneIn.selectionEnd, event.key);
@@ -797,7 +1034,7 @@
     } else if (event.key === 'Escape') { event.preventDefault(); closeDrop(); }
   });
   nameIn.addEventListener('keydown', function (event) { if (event.key === 'Enter') { event.preventDefault(); phoneIn.focus(); } });
-  phoneIn.addEventListener('keydown', function (event) { if (event.key === 'Enter') { event.preventDefault(); addrIn.focus(); } });
+  phoneIn.addEventListener('keydown', function (event) { if (event.key === 'Enter') { event.preventDefault(); (emailRequired() ? emailIn : addrIn).focus(); } });
   sizeAddrBox();
   addrIn.addEventListener('change', function (event) { syncBrowserFilledValues('change', event); });
   main.querySelector('form').addEventListener('focusin', function () {
@@ -826,26 +1063,110 @@
   }
   startBrowserFillProbe();
   window.addEventListener('pagehide', function () { window.clearInterval(browserFillProbe); });
-  /* single submit path: tapping the button submits AND grants SMS consent via the
-     disclosure beneath it. The texts are about the customer's own requested quote;
-     the disclosure is explicit and STOP + the by-phone DNC gate are honored on every
-     send. (The prior separate no-consent "Continue without texts" link was removed
-     per Key 2026-06-29; consent posture is confirmed at activation, TCPA.) */
+  /* New forms read their separate optional quote-text choice. Retained legacy
+     forms without that control keep their existing disclosed submission path. */
   main.querySelector('form').addEventListener('submit', function (e) {
     e.preventDefault();
     closeDrop();
-    doSubmit(true);
+    var smsChoice = main.querySelector('[data-quote-sms-consent]');
+    doSubmit(smsChoice ? smsChoice.checked === true : true);
   });
 
   async function doSubmit(smsGiven) {
+    if (!submitting && emailRequired() && !normalizedEmail(emailIn.value) && (!options.canSubmit || options.canSubmit())) {
+      emailTouched = true; emailFeedback(emailIn.value.trim() ? 'Enter an email like you@example.com.' : 'Add your email to continue.'); emailIn.focus(); return;
+    }
     if (submitting || !part1Done() || (options.canSubmit && !options.canSubmit())) return;
+    // Capture the explicit new guided-form choice before callbacks or address
+    // backfill can change the controls. Retained request bytes own every retry.
+    var guideOffer = !editDetails && typeof options.walkDraft === 'function'
+      ? main.querySelector('[data-power-guide-offer]') : null;
+    var guideGiven = guideOffer ? guideOffer.checked === true : undefined;
+    var promotionsOffer = !editDetails && typeof options.walkDraft === 'function'
+      ? main.querySelector('[data-email-promotions-offer]') : null;
+    var promotionsGiven = promotionsOffer ? promotionsOffer.checked === true : undefined;
+    var promotionsVersion = promotionsOffer && promotionsOffer.getAttribute('data-consent-version');
+    // The rendered form owns its copy revision, including an older open page.
+    var guideConsentVersion = guideOffer && typeof guideOffer.getAttribute === 'function'
+      ? guideOffer.getAttribute('data-consent-version') : null;
+    guideConsentVersion = guideConsentVersion || 'bpp-guide-consent-2026-10-15';
+    var smsControl = main.querySelector('[data-quote-sms-consent]');
+    var reminderAddressPrepared = false;
+    var reminderFlow = typeof main.closest === 'function' ? main.closest('[data-guided-flow]') : null;
+    var smsReminderEligible = !editDetails && typeof options.walkDraft === 'function' && smsControl
+        && reminderFlow && reminderFlow.getAttribute('data-sms-submit-reminder-version') === SMS_REMINDER_VERSION
+        && (guideConsentVersion === 'bpp-guide-consent-2026-10-16' || guideConsentVersion === 'bpp-guide-consent-2026-10-19' || promotionsVersion === 'bpp-email-promotions-2026-11-11');
+    if (smsReminderEligible) {
+      if (smsReminderPending) return;
+      if (smsReminderDecision && (smsReminderDecision.decision === 'allow') !== smsGiven) smsReminderDecision = null;
+      // Complete optional address lookup before asking. Once a choice is made,
+      // this invocation freezes its exact body without another asynchronous gap.
+      if (!smsGiven) {
+        reminderAddressPrepared = true;
+        if (!addrUnverified && addrValidated && !addrSel.state) {
+          var preparationAuthority = authorityRevision;
+          var preparationValues = [nameIn.value, phoneIn.value, emailIn && emailIn.value, addrIn.value];
+          var preparationControls = [guideOffer, promotionsOffer, smsControl].filter(Boolean).map(function (control) { return { control: control, disabled: control.disabled }; });
+          var preparedPredictions = [];
+          smsReminderPending = true;
+          preparationControls.forEach(function (saved) { saved.control.disabled = true; });
+          try { preparedPredictions = await WALK.addrSuggest(addrIn.value.trim(), 8000, { input_method: lastAddressInputMethod, trigger: 'submit_backfill' }); }
+          catch (_) { /* The typed address remains available for review. */ }
+          finally {
+            smsReminderPending = false;
+            preparationControls.forEach(function (saved) { saved.control.disabled = saved.disabled; });
+          }
+          if (preparationAuthority !== authorityRevision || !preparationValues.every(function (value, index) { return value === [nameIn.value, phoneIn.value, emailIn && emailIn.value, addrIn.value][index]; })
+              || smsControl.checked !== false || !part1Done() || (options.canSubmit && !options.canSubmit())) return;
+          var preparedHit = Array.isArray(preparedPredictions) && preparedPredictions.find(function (feature) { return featureMatchesTyped(feature, addrIn.value); });
+          addrSel = preparedHit ? { city: preparedHit.city || '', state: preparedHit.state || '', zip: preparedHit.zip || '' } : { city: '', state: '', zip: '' };
+        }
+      }
+      if (!smsGiven && !smsReminderDecision) {
+        var reminderAuthority = authorityRevision;
+        var reminderValues = [nameIn.value, phoneIn.value, emailIn && emailIn.value, addrIn.value];
+        var reminderGuide = main.querySelector('[data-power-guide-offer]');
+        var reminderPromotions = promotionsOffer && promotionsOffer.checked;
+        var reminderGuideChoice = reminderGuide && reminderGuide.checked;
+        var reminderAddress = JSON.stringify([addrUnverified, addrValidated, addrSel]);
+        function reminderCurrent() {
+          return reminderAuthority === authorityRevision && !editDetails && !submitting
+            && reminderValues.every(function (value, index) { return value === [nameIn.value, phoneIn.value, emailIn && emailIn.value, addrIn.value][index]; })
+            && smsControl.checked === false && (!reminderGuide || reminderGuide.checked === reminderGuideChoice)
+            && (!promotionsOffer || promotionsOffer.checked === reminderPromotions)
+            && reminderAddress === JSON.stringify([addrUnverified, addrValidated, addrSel])
+            && (!emailRequired() || Boolean(normalizedEmail(emailIn.value))) && part1Done()
+            && (!options.canSubmit || options.canSubmit())
+            && main.isConnected !== false && (typeof main.getClientRects !== 'function' || main.getClientRects().length > 0);
+        }
+        smsReminderPending = true;
+        var reminderOutcome;
+        try { reminderOutcome = await smsReminder.ask(cta, reminderCurrent, {
+          shown: function () { WALK.ph('walk_v2_sms_reminder_shown', { source: 'pre_submit_reminder', version: SMS_REMINDER_VERSION }); },
+          dismissed: function () { WALK.ph('walk_v2_sms_reminder_dismissed', { source: 'pre_submit_reminder', version: SMS_REMINDER_VERSION }); }
+        }); }
+        finally { smsReminderPending = false; }
+        if (['allow', 'continue_without_texts'].indexOf(reminderOutcome) === -1 || !reminderCurrent()) return;
+        smsGiven = reminderOutcome === 'allow';
+        smsControl.checked = smsGiven;
+        smsControl.dispatchEvent(new Event('change', { bubbles: true }));
+        smsReminderDecision = { source: 'pre_submit_reminder', version: SMS_REMINDER_VERSION, decision: reminderOutcome };
+        WALK.ph('walk_v2_sms_reminder_decided', { source: 'pre_submit_reminder', version: SMS_REMINDER_VERSION, decision: reminderOutcome });
+      }
+    }
+    var submitAuthorityRevision = authorityRevision;
     if (smsGiven) once('walk_v2_consent_checked');
     submitting = true;
+    busyConsentControls = [guideOffer, promotionsOffer, main.querySelector('[data-quote-sms-consent]')].filter(Boolean).map(function (control) {
+      return { control: control, disabled: control.disabled };
+    });
+    busyConsentControls.forEach(function (saved) { saved.control.disabled = true; });
     if (options.onBusy) options.onBusy(true);
-    [nameIn, phoneIn, addrIn].forEach(function (field) { field.disabled = true; });
+    [nameIn, phoneIn, emailIn, addrIn].filter(Boolean).forEach(function (field) { field.disabled = true; });
     cta.disabled = true;
     /* Honest network wait only (Fresh Air: no fake beat). Copy names the real work. */
     ctaLabelEl.textContent = 'Saving your details...';
+    if (submitStatus) submitStatus.textContent = 'Saving your details...';
 
     var name = nameIn.value.trim();
     var attr = attribution();
@@ -880,12 +1201,13 @@
     }
     if (addrUnverified || !addrValidated) {
       addrSel = { city: '', state: '', zip: '' };
-    } else if (!addrSel.state) {
+    } else if (!addrSel.state && !reminderAddressPrepared) {
       try {
         var bf = await WALK.addrSuggest(addrIn.value.trim(), 8000, {
           input_method: lastAddressInputMethod,
           trigger: 'submit_backfill'
         });
+        if (submitAuthorityRevision !== authorityRevision) return releaseStaleSubmission();
         var hit = null;
         for (var bi = 0; bf && bi < bf.length; bi++) {
           if (featureMatchesTyped(bf[bi], addrIn.value)) { hit = bf[bi]; break; }
@@ -901,16 +1223,20 @@
         }
       } catch (_) { /* leave state empty */ }
     }
+    if (submitAuthorityRevision !== authorityRevision) return releaseStaleSubmission();
 
     var trackingName = splitNameForTracking(name);
     var trackingHost = String(window.location.hostname || '').toLowerCase();
     var trackingParams = new URLSearchParams(entryURL.search || '');
-    var trackingDnt = String(navigator.doNotTrack || window.doNotTrack || '').toLowerCase();
-    var analyticsOptOut = navigator.globalPrivacyControl === true || trackingDnt === '1' || trackingDnt === 'yes'
+    var analyticsOptOut = trackingPrivacyBlocked()
       || (trackingHost !== 'backuppowerpro.com' && trackingHost !== 'www.backuppowerpro.com')
       || trackingParams.get('preview') === '1' || trackingParams.get('analytics_test') === '1';
+    var analyticsDistinctId = '';
+    try {
+      if (!analyticsOptOut && typeof window.BPPAnalytics?.anonymousId === 'function') analyticsDistinctId = window.BPPAnalytics.anonymousId();
+    } catch (_) {}
     var payload = {
-      firstName: trackingName.firstName, lastName: trackingName.lastName, phone: natDigits(phoneIn.value), email: '',
+      firstName: trackingName.firstName, lastName: trackingName.lastName, phone: natDigits(phoneIn.value), email: emailRequired() ? normalizedEmail(emailIn.value) : '',
       existingToken: editDetails ? resumeT : '',
       address: addrIn.value.trim(), addressStreet: '', addressCity: addrSel.city || '', addressCounty: '', addressState: addrSel.state || '', addressZip: addrSel.zip || '', addressCountry: 'US', addressUnverified: addrUnverified ? 'true' : '',
       leadChannel: attr.channel, utmSource: analyticsOptOut ? '' : attr.source, utmMedium: analyticsOptOut ? '' : attr.medium, utmCampaign: analyticsOptOut ? '' : attr.campaign,
@@ -922,10 +1248,11 @@
       smsConsent: smsGiven ? 'true' : '',
       submittedAt: new Date().toISOString(), eventTimestamp: Math.floor(Date.now() / 1000),
       source: 'walkv2-landing',
+      serviceAreaPolicy: 'bpp-seven-counties-2026-11-11-v1',
       actionSource: 'website', eventName: 'QuoteWalkStarted', eventId: eventId,
       intakeNonce: intakeNonce,
       analyticsOptOut: analyticsOptOut,
-      analyticsDistinctId: !analyticsOptOut && typeof window.BPPAnalytics?.anonymousId === 'function' ? window.BPPAnalytics.anonymousId() : '',
+      analyticsDistinctId: analyticsDistinctId,
       journeyVersion: 'intake-no-upload-v1',
       journey_version: 'intake-no-upload-v1',
       clientUserAgent: navigator.userAgent || '',
@@ -940,7 +1267,13 @@
       firstTouch: analyticsOptOut ? null : touches.first,
       currentTouch: analyticsOptOut ? null : touches.current
     };
-
+    if (smsReminderEligible && smsReminderDecision) payload.smsConsentSelection = Object.assign({}, smsReminderDecision);
+    if (typeof guideGiven === 'boolean') {
+      payload.powerGuideChoice = { version: guideConsentVersion, guideAndNewsletter: guideGiven };
+    }
+    if (typeof promotionsGiven === 'boolean') {
+      payload.emailPromotionsChoice = { version: promotionsVersion, promotions: promotionsGiven };
+    }
 
     if (options.walkDraft) {
       payload.walkDraft = options.walkDraft();
@@ -954,34 +1287,120 @@
     catch (_) { showError('Your details did not save. Please try again.'); }
     finally {
       submitting = false;
-      [nameIn, phoneIn, addrIn].forEach(function (field) { field.disabled = false; });
+      if (submitStatus) submitStatus.textContent = '';
+      [nameIn, phoneIn, emailIn, addrIn].filter(Boolean).forEach(function (field) { field.disabled = false; });
+      busyConsentControls.forEach(function (saved) { saved.control.disabled = saved.disabled; });
+      busyConsentControls = [];
       if (options.onBusy) options.onBusy(false);
       refresh();
     }
   }
+  function clearSubmissionError() {
+    if (!submissionInvalidInput) return;
+    var error = main.querySelector('[data-submit-error]');
+    var descriptions = (submissionInvalidInput.getAttribute('aria-describedby') || '').split(/\s+/).filter(function (id) { return id && id !== error.id; });
+    if (descriptions.length) submissionInvalidInput.setAttribute('aria-describedby', descriptions.join(' '));
+    else submissionInvalidInput.removeAttribute('aria-describedby');
+    submissionInvalidInput.removeAttribute('aria-invalid');
+    submissionInvalidInput = null;
+    error.textContent = '';
+    error.style.display = 'none';
+    error.removeAttribute('data-return-recovery');
+  }
+  function releaseStaleSubmission() {
+    submitting = false;
+    if (submitStatus) submitStatus.textContent = '';
+    [nameIn, phoneIn, emailIn, addrIn].filter(Boolean).forEach(function (field) { field.disabled = false; });
+    busyConsentControls.forEach(function (saved) { saved.control.disabled = saved.disabled; });
+    busyConsentControls = [];
+    if (options.onBusy) options.onBusy(false);
+    refresh();
+  }
+  function setAuthority(token) {
+    var nextToken = typeof token === 'string' ? token : '';
+    if (nextToken !== resumeT) {
+      smsReminder.cancel(); smsReminderDecision = null;
+      authorityRevision += 1;
+      addrLookupSequence += 1;
+      if (addrTimer) clearTimeout(addrTimer);
+      addrTimer = null;
+      closeDrop();
+      dismissedAddressValue = null;
+      lastAddrPreds = [];
+      clearSubmissionError();
+      var previousError = main.querySelector('[data-submit-error]');
+      if (previousError) { previousError.textContent = ''; previousError.style.display = 'none'; previousError.removeAttribute('data-return-recovery'); }
+      nameIn.value = ''; phoneIn.value = ''; addrIn.value = '';
+      if (emailIn) emailIn.value = '';
+      emailTouched = false; emailFeedback('');
+      addrPicked = false;
+      addrSel = { city: '', state: '', zip: '' };
+      addrValidated = false; addrValidatedValue = ''; addrUnverified = false;
+      areaBoundary = false;
+      hydratedValues = { name: null, phone: null, email: null, address: null };
+      lastHydratedVersion = 0;
+      lastSyncedName = ''; lastSyncedPhone = ''; lastSyncedAddress = '';
+      lastSyncedEmail = '';
+      phoneBeforeEdit = null;
+      lastAddressInputMethod = 'unknown'; lastAddressLookupTrigger = 'unknown';
+      if (addressAnnouncement) addressAnnouncement.textContent = '';
+      phoneFeedback('');
+    }
+    resumeT = nextToken;
+    editDetails = Boolean(resumeT);
+    if (editDetails) { options.walkDraft = null; options.submitLabel = 'Save my details'; }
+    refresh();
+  }
   function showError(message, field) {
+    clearSubmissionError();
+    if (field === 'email' && emailIn && emailRequired()) {
+      emailTouched = true; emailFeedback(message); submissionInvalidInput = emailIn;
+      emailIn.disabled = false; emailIn.focus(); return;
+    }
     var error = main.querySelector('[data-submit-error]');
     error.textContent = message;
     error.style.display = '';
     error.setAttribute('data-return-recovery', 'submission');
     var input = field === 'phone' ? phoneIn : field === 'address' ? addrIn : field === 'name' ? nameIn : error;
     if (input === error) input.tabIndex = -1;
+    else {
+      if (!error.id) error.id = 'guided-submit-error';
+      var descriptions = (input.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean);
+      if (descriptions.indexOf(error.id) === -1) descriptions.push(error.id);
+      input.setAttribute('aria-describedby', descriptions.join(' '));
+      input.setAttribute('aria-invalid', 'true');
+      submissionInvalidInput = input;
+      // The submit wait disabled the fields. Re-enable the correction target
+      // before focusing it; doSubmit's existing guard still prevents re-entry.
+      input.disabled = false;
+    }
     input.focus();
   }
   refresh();
   return {
-    setAuthority: function (token) { resumeT = token || ''; editDetails = Boolean(resumeT); if (editDetails) { options.walkDraft = null; options.submitLabel = 'Save my details'; } },
+    setAuthority: setAuthority,
     refresh: function () { syncBrowserFilledValues('screen_visible'); refresh(); },
-    closeSuggestions: closeDrop,
+    closeSuggestions: function () { closeDrop(); smsReminder.cancel(); },
     showError: showError,
-    hydrate: function (value) {
-      nameIn.value = value.first_name || '';
-      phoneIn.value = formatPhone(value.phone || '');
-      addrIn.value = value.address || '';
-      addrValidated = Boolean(addrIn.value.trim());
-      addrValidatedValue = addrIn.value.trim();
-      addrUnverified = value.service_area_status === 'pending_verification';
+    hydrate: function (value, hydrationOptions) {
+      if (!value || typeof value !== 'object') return;
+      var version = value.quote_walk_v2 && value.quote_walk_v2.version;
+      if (Number.isSafeInteger(version) && version > 0) {
+        if (version < lastHydratedVersion) return;
+        lastHydratedVersion = version;
+      }
+      if (typeof value.contact_name === 'string') hydrateKnownField(nameIn, 'name', value.contact_name.trim().replace(/\s+/g, ' '));
+      if (typeof value.phone === 'string') hydrateKnownField(phoneIn, 'phone', formatPhone(value.phone));
+      if (emailIn && typeof value.email === 'string') hydrateKnownField(emailIn, 'email', value.email);
+      if (hydrateKnownField(addrIn, 'address', value.address)) {
+        var needsAddressConfirmation = hydrationOptions && hydrationOptions.requiresAddressConfirmation === true;
+        addrValidated = !needsAddressConfirmation && Boolean(addrIn.value.trim());
+        addrValidatedValue = addrValidated ? addrIn.value.trim() : '';
+        var areaState = value.quote_walk_v2 || value;
+        addrUnverified = !needsAddressConfirmation && (areaState.service_area_pending_review === true || areaState.service_area_status === 'unconfirmed' || areaState.service_area_status === 'pending_verification');
+      }
       lastSyncedName = nameIn.value; lastSyncedPhone = phoneIn.value; lastSyncedAddress = addrIn.value;
+      lastSyncedEmail = emailIn ? emailIn.value : '';
       refresh();
     }
   };

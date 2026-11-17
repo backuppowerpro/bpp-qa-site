@@ -3,12 +3,13 @@
 <head>
 <meta name="robots" content="noindex,nofollow,noarchive">
 <script src="/qa-environment.js"></script>
+<meta name="robots" content="noindex,nofollow" />
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://js.stripe.com 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://api.stripe.com https://maps.googleapis.com; frame-src https://js.stripe.com;">
-<script src="/assets/js/bpp-analytics.js?v=4778878d007c"></script>
+<script src="/assets/js/bpp-analytics.js?v=c9db468254dd"></script>
 <title>Invoice | Backup Power Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -24,7 +25,7 @@
 :root {
   --navy:#0b1f3b; --navy2:#1a3a5c; --gold:#ffba00;
   --green:#059669; --red:#dc2626; --border:#e4e8f0;
-  --bg:#f4f6fa; --text:#1a2a42; --text2:#4a5568; --text3:#6b7280;
+  --bg:#f4f6fa; --text:#1a2a42; --text2:#4a5568; --text3:#5b6473;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100%}
@@ -175,16 +176,18 @@ body.checkout-open{overflow:hidden}
 .checkout-modal-title{font-family:'Outfit',sans-serif;font-size:18px;font-weight:800;color:var(--navy)}
 .checkout-close{background:none;border:none;cursor:pointer;color:var(--text2);font-size:22px;line-height:1;padding:0;border-radius:8px;width:44px;height:44px;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
 .checkout-close:hover{background:#f0f0f0;color:var(--navy)}
-.checkout-close:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.checkout-close:focus-visible{outline:3px solid #1d4ed8;outline-offset:3px;box-shadow:0 0 0 2px #fff}
 .checkout-modal-scroll{overflow-y:auto;flex:1;padding:0 24px 28px}
 #checkout-container{min-height:120px}
-:where(button, a[href], input, textarea, select):focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+:root :where(button, a[href], input, textarea, select):focus-visible{outline:3px solid #1d4ed8;outline-offset:3px;box-shadow:0 0 0 2px #fff}
 .btn-pay,.btn-pay-card,.dl-btn{min-height:44px}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 
 /* TOAST */
 .inv-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--navy);color:#fff;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;padding:12px 22px;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.25);opacity:0;transition:opacity .2s,transform .2s;z-index:2000;white-space:nowrap;pointer-events:none}
 .inv-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.inv-toast{box-sizing:border-box;width:max-content;max-width:calc(100% - 32px);white-space:normal;line-height:1.5;text-align:center}
+.checkout-return{min-height:44px;margin:12px 20px;padding:10px 16px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--navy);font:600 14px/1.5 Inter,sans-serif;cursor:pointer}
 .preview-bar{position:fixed;top:0;left:0;right:0;z-index:99999;background:#f59e0b;color:#1c1003;font-family:'Outfit',sans-serif;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-align:center;padding:8px 16px;box-shadow:0 2px 12px rgba(0,0,0,.18)}
 .preview-bar[hidden],.preview-watermark[hidden]{display:none}
 .preview-watermark{position:fixed;inset:0;pointer-events:none;z-index:99998;display:flex;align-items:center;justify-content:center;overflow:hidden}
@@ -195,7 +198,7 @@ body.preview-mode .btn-pay,body.preview-mode .btn-pay-card,body.preview-mode .ch
 <link rel="icon" href="/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.jpg">
 <script src="assets/js/bpp-financing.js?v=20260907a"></script>
-<link rel="stylesheet" href="assets/css/bpp-financing.css?v=20260907a">
+<link rel="stylesheet" href="assets/css/bpp-financing.css?v=4d6e3e61dba1">
 </head>
 <body>
 <div class="preview-bar" id="preview-bar" data-preview-banner="true" hidden>Preview mode, not sent to client, read only</div>
@@ -210,7 +213,7 @@ body.preview-mode .btn-pay,body.preview-mode .btn-pay-card,body.preview-mode .ch
 <div id="property-banner-wrap"></div>
 
 <main class="page" id="main">
-  <div class="state-wrap">
+  <div class="state-wrap" role="status">
     <div class="spinner-large"></div>
     <p>Loading your invoice...</p>
   </div>
@@ -226,6 +229,7 @@ body.preview-mode .btn-pay,body.preview-mode .btn-pay-card,body.preview-mode .ch
     <div class="checkout-modal-scroll">
       <div id="checkout-container"></div>
     </div>
+    <button class="checkout-return" type="button" onclick="closeCheckout()">Return to invoice</button>
   </div>
 </div>
 
@@ -235,6 +239,7 @@ body.preview-mode .btn-pay,body.preview-mode .btn-pay-card,body.preview-mode .ch
   <div class="cred-address"><a href="tel:8648637800">(864) 863-7800</a> &nbsp;&middot;&nbsp; <a href="https://qa.backuppowerpro.com">backuppowerpro.com</a></div>
   <div class="cred-license">SC Electrical Contractor License #2942 &nbsp;&middot;&nbsp; Fully Licensed &amp; Insured</div>
 </footer>
+<div id="inv-toast" class="inv-toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script src="https://js.stripe.com/v3/"></script>
 <script>
@@ -248,6 +253,9 @@ function showToast(msg) {
     t = document.createElement('div');
     t.id = 'inv-toast';
     t.className = 'inv-toast';
+    t.setAttribute('role', 'status');
+    t.setAttribute('aria-live', 'polite');
+    t.setAttribute('aria-atomic', 'true');
     document.body.appendChild(t);
   }
   t.textContent = msg;
@@ -381,12 +389,10 @@ function showError(title, msg) {
   text.className = 'dl-btn';
   text.href = 'sms:+18648637800';
   text.textContent = 'Text Key for a fresh link';
-  const call = document.createElement('a');
-  call.className = 'dl-btn';
-  call.href = 'tel:+18648637800';
-  call.textContent = 'Call Key';
-  actions.appendChild(text); actions.appendChild(call); wrap.appendChild(actions);
+  actions.appendChild(text); wrap.appendChild(actions);
   main.appendChild(wrap);
+  h2.tabIndex = -1;
+  h2.focus();
 }
 
 function showClosedInvoice(title, message) {
@@ -576,7 +582,7 @@ function renderInvoice() {
         <h2>Invoice Details</h2>
       </div>
       <div class="card-body">
-        <div style="font-size:13px;color:var(--green);font-weight:600;text-align:center;margin-bottom:14px;line-height:1.5">
+        <div style="font-size:13px;color:#067a52;font-weight:600;text-align:center;margin-bottom:14px;line-height:1.5">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           This is your final price, everything is included: materials, permit, inspection, and cleanup.
         </div>
@@ -638,7 +644,7 @@ function renderInvoice() {
 
     <div style="font-size:12px;color:var(--text3);text-align:center;line-height:1.6">
       Questions? Call or text <strong style="color:var(--navy)">(864) 863-7800</strong>
-      <div style="margin-top:12px"><a href="/assets/docs/the-portable-generator-power-guide.pdf" target="_blank" style="color:#1d4ed8;font-weight:600;text-decoration:none" rel="noopener noreferrer">📘 Generator Safety Guide (PDF)</a></div>
+      <div style="margin-top:12px"><a href="/generator-guide/" target="_blank" style="color:#1d4ed8;font-weight:600;text-decoration:none" rel="noopener noreferrer">📘 Your Guide to Home Generator Power</a></div>
     </div>
 
     <!-- Download Invoice -->
@@ -808,7 +814,7 @@ function renderPaidInvoice() {
 
     <div style="font-size:12px;color:var(--text3);text-align:center;line-height:1.6;margin-top:8px">
       Questions? Call or text <strong style="color:var(--navy)">(864) 863-7800</strong>
-      <div style="margin-top:12px"><a href="/assets/docs/the-portable-generator-power-guide.pdf" target="_blank" style="color:#1d4ed8;font-weight:600;text-decoration:none" rel="noopener noreferrer">📘 Generator Safety Guide (PDF)</a></div>
+      <div style="margin-top:12px"><a href="/generator-guide/" target="_blank" style="color:#1d4ed8;font-weight:600;text-decoration:none" rel="noopener noreferrer">📘 Your Guide to Home Generator Power</a></div>
     </div>
   `;
 }
@@ -827,8 +833,9 @@ let _checkoutBackground = [];
 let _checkoutGeneration = 0;
 
 function checkoutFocusableElements(overlay) {
-  return Array.from(overlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]'))
-    .filter((element) => !element.disabled && element.getAttribute('tabindex') !== '-1' && !element.hidden);
+  // Stripe owns the controls inside its frame. Keep that frame in the tab order.
+  return Array.from(overlay.querySelectorAll('button, [href], input, select, textarea, iframe, [tabindex]'))
+    .filter((element) => !element.disabled && element.getAttribute('tabindex') !== '-1' && !element.hidden && element.getClientRects().length > 0);
 }
 
 function openCheckout(returnFocus) {
@@ -907,7 +914,7 @@ async function payOnline(prefer_ach = true) {
     if (!_stripe) _stripe = Stripe(STRIPE_PK);
 
     openCheckout(btn);
-    document.getElementById('checkout-container').innerHTML = '<div style="text-align:center;padding:40px 0"><div class="spinner-large" style="margin:0 auto 12px"></div><div style="font-size:13px;color:var(--text3)">Loading secure checkout…</div></div>';
+    document.getElementById('checkout-container').innerHTML = '<div role="status" style="text-align:center;padding:40px 0"><div class="spinner-large" aria-hidden="true" style="margin:0 auto 12px"></div><div style="font-size:13px;color:var(--text3)">Loading secure checkout…</div></div>';
 
     const checkout = await _stripe.initEmbeddedCheckout({
       fetchClientSecret: async () => {

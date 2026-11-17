@@ -28,7 +28,7 @@
   in a browser as it did as a comp. JS binds real data into the marked slots and removes the sample.
 
   Inline token equivalents of bpp-ds.css:
-    navy #0b1f3b | gold #ffba00 | ink #1a2a42 | text2 #4a5568 | text3 #6b7280 | line #eef1f6
+    navy #0b1f3b | gold #ffba00 | ink #1a2a42 | text2 #4a5568 | text3 #5b6473 | line #eef1f6
     page #eef1f7 | card #ffffff | ok-bg #f0fdf6 | ok-ink #067a52 | chip-bg #f4f6fa | radius 16px
     display 'Outfit',Arial | body 'Inter',Arial | script 'Dancing Script','Brush Script MT',cursive
 
@@ -44,14 +44,28 @@
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Inter:wght@400;500;600&family=Dancing+Script:wght@700&display=swap');
   body{margin:0;padding:0;width:100%!important;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
   a{text-decoration:none}
+  :where(button,a[href],input):focus-visible{outline:2px solid #1d4ed8;outline-offset:3px}
   .display{font-family:'Outfit',Arial,Helvetica,sans-serif}
   .body-font{font-family:'Inter',Arial,Helvetica,sans-serif}
   .script{font-family:'Dancing Script','Brush Script MT',cursive}
   .num{font-variant-numeric:tabular-nums}
+  table{max-width:100%}
   @media only screen and (max-width:600px){
     .wrap{width:100%!important}
     .px{padding-left:24px!important;padding-right:24px!important}
     .h1{font-size:26px!important}
+  }
+  @media only screen and (max-width:360px){
+    .receipt-shell{padding-left:4px!important;padding-right:4px!important}
+    .brandbar{padding:14px 12px!important}
+    .brandlogo{width:118px!important;max-width:118px!important}
+    #paid-pill{font-size:9px!important;padding:5px 8px!important}
+    .px{padding-left:16px!important;padding-right:16px!important}
+    #billed-to{overflow-wrap:anywhere}
+    #receipt-num{max-width:72px;overflow-wrap:anywhere}
+    #breakdown{table-layout:fixed}
+    #breakdown td:first-child{overflow-wrap:anywhere;padding-right:8px!important}
+    #breakdown td:last-child{width:76px;white-space:nowrap}
   }
   /* Dark-mode survival: the receipt facts, the navy bar, and the white card must never wash out. */
   @media (prefers-color-scheme:dark){
@@ -60,7 +74,7 @@
     .dm-navy{background:#0b1f3b!important}
     .dm-ink{color:#0b1f3b!important}
     .dm-ink2{color:#4a5568!important}
-    .dm-ink3{color:#6b7280!important}
+    .dm-ink3{color:#5b6473!important}
     .dm-okbg{background:#f0fdf6!important}
     .dm-chip{background:#f4f6fa!important}
   }
@@ -71,7 +85,7 @@
   @keyframes rspin{to{transform:rotate(360deg)}}
   @media (prefers-reduced-motion:reduce){.state-spin{animation:none}}
   .state-card h2{margin:0 0 8px;font-family:'Outfit',Arial,sans-serif;font-size:21px;font-weight:800;color:#0b1f3b}
-  .state-card p{margin:0 auto;font-family:'Inter',Arial,sans-serif;font-size:14px;line-height:1.6;color:#6b7280;max-width:34em}
+  .state-card p{margin:0 auto;font-family:'Inter',Arial,sans-serif;font-size:14px;line-height:1.6;color:#5b6473;max-width:34em}
   .state-card a{color:#0b1f3b;font-weight:600}
 </style>
 </head>
@@ -81,13 +95,14 @@
 <div id="preheader" style="display:none;max-height:0;overflow:hidden;opacity:0;font-size:1px;line-height:1px;color:#eef1f7;"></div>
 
 <!-- STATE LAYER (loading / error / not-yet-paid). Shown until the paid receipt is ready. -->
+<main id="receipt-main">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" id="state-root" class="dm-page" style="background:#eef1f7;">
   <tr>
     <td align="center" style="padding:48px 12px;">
       <div class="state-card" id="state-card">
-        <div class="state-spin" id="state-spin"></div>
-        <h2 id="state-title">Loading your receipt...</h2>
-        <p id="state-msg">One moment while we pull up your receipt.</p>
+        <div class="state-spin" id="state-spin" aria-hidden="true"></div>
+        <h2 id="state-title" tabindex="-1">Loading your receipt...</h2>
+        <p id="state-msg" role="status" aria-live="polite">One moment while we pull up your receipt.</p>
       </div>
     </td>
   </tr>
@@ -96,18 +111,18 @@
 <!-- RECEIPT (the full paid receipt; hidden until real data binds) -->
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" id="receipt-root" class="dm-page" style="display:none;background:#eef1f7;">
   <tr>
-    <td align="center" style="padding:24px 12px 40px;">
+    <td align="center" class="receipt-shell" style="padding:24px 12px 40px;">
 
       <!-- 600px column -->
       <table role="presentation" width="600" class="wrap" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;">
 
         <!-- BRAND BAR (navy + logo + Paid pill) -->
         <tr>
-          <td bgcolor="#0b1f3b" class="dm-navy" style="background:#0b1f3b;border-radius:16px 16px 0 0;padding:16px 28px;">
+          <td bgcolor="#0b1f3b" class="dm-navy brandbar" style="background:#0b1f3b;border-radius:16px 16px 0 0;padding:16px 28px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
                 <td align="left" valign="middle">
-                  <img src="assets/images/logo-white-v2.png" width="150" alt="Backup Power Pro" style="display:block;border:0;height:auto;width:150px;max-width:150px;">
+                  <img src="assets/images/logo-white-v2.png" class="brandlogo" width="150" alt="Backup Power Pro" style="display:block;border:0;height:auto;width:150px;max-width:150px;">
                 </td>
                 <td align="right" valign="middle">
                   <span class="display" id="paid-pill" style="font-family:'Outfit',Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:.03em;color:#9be7c4;background:#16352b;border-radius:20px;padding:6px 12px;white-space:nowrap;">&#10003; Paid in full</span>
@@ -124,7 +139,7 @@
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 16px;">
               <tr><td width="64" height="64" align="center" valign="middle" bgcolor="#f0fdf6" class="dm-okbg" style="width:64px;height:64px;border-radius:50%;color:#067a52;font-family:Arial,sans-serif;font-size:30px;font-weight:bold;line-height:64px;text-align:center;">&#10003;</td></tr>
             </table>
-            <h1 class="display h1 dm-ink" id="hero-title" style="margin:0 0 8px;font-family:'Outfit',Arial,sans-serif;font-size:28px;line-height:1.16;font-weight:800;color:#0b1f3b;letter-spacing:-.01em;">You're all set. Paid in full.</h1>
+            <h1 class="display h1 dm-ink" id="hero-title" tabindex="-1" style="margin:0 0 8px;font-family:'Outfit',Arial,sans-serif;font-size:28px;line-height:1.16;font-weight:800;color:#0b1f3b;letter-spacing:-.01em;">You're all set. Paid in full.</h1>
             <p class="body-font dm-ink2" id="hero-sub" style="margin:0 0 4px;font-family:'Inter',Arial,sans-serif;font-size:15px;line-height:1.55;color:#4a5568;max-width:32em;">
               Your generator inlet install is done and now paid in full. Nothing else is owed. I handle the permit and the county inspection from here, so there is nothing left on your plate.
             </p>
@@ -137,11 +152,11 @@
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #eef1f6;">
               <tr>
                 <td valign="top" style="padding:16px 0 0;">
-                  <p class="display dm-ink3" style="margin:0 0 4px;font-family:'Outfit',Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6b7280;">Billed to</p>
+                  <p class="display dm-ink3" style="margin:0 0 4px;font-family:'Outfit',Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5b6473;">Billed to</p>
                   <p class="body-font dm-ink" id="billed-to" style="margin:0;font-family:'Inter',Arial,sans-serif;font-size:13.5px;line-height:1.6;color:#1a2a42;"></p>
                 </td>
                 <td valign="top" align="right" style="padding:16px 0 0;">
-                  <p class="display dm-ink3" style="margin:0 0 4px;font-family:'Outfit',Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6b7280;">Receipt</p>
+                  <p class="display dm-ink3" style="margin:0 0 4px;font-family:'Outfit',Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5b6473;">Receipt</p>
                   <p class="body-font num dm-ink2" id="receipt-num" style="margin:0;font-family:'Inter',Arial,sans-serif;font-size:13.5px;color:#4a5568;"></p>
                 </td>
               </tr>
@@ -155,9 +170,9 @@
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f8fafc" style="background:#f8fafc;border:1px solid #eef1f6;border-radius:14px;">
               <tr><td style="padding:20px 22px 16px;">
 
-                <p class="display dm-ink3" style="margin:0 0 4px;font-family:'Outfit',Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6b7280;">Payment received</p>
+                <p class="display dm-ink3" style="margin:0 0 4px;font-family:'Outfit',Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5b6473;">Payment received</p>
                 <p class="display num dm-ink" id="amount-paid" style="margin:0 0 2px;font-family:'Outfit',Arial,sans-serif;font-size:44px;line-height:1;font-weight:900;color:#0b1f3b;letter-spacing:-.02em;">$0</p>
-                <p class="body-font dm-ink3" id="paid-meta" style="margin:0 0 16px;font-family:'Inter',Arial,sans-serif;font-size:12.5px;color:#6b7280;"></p>
+                <p class="body-font dm-ink3" id="paid-meta" style="margin:0 0 16px;font-family:'Inter',Arial,sans-serif;font-size:12.5px;color:#5b6473;"></p>
 
                 <!-- proof breakdown so 'paid in full' is verifiable, not asserted (bound to line_items + total) -->
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="num" id="breakdown" style="font-family:'Inter',Arial,sans-serif;font-size:14px;">
@@ -170,7 +185,7 @@
 
               </td></tr>
             </table>
-            <p class="body-font dm-ink3" id="receipt-summary" style="margin:12px 2px 0;font-family:'Inter',Arial,sans-serif;font-size:13px;line-height:1.55;color:#6b7280;">
+            <p class="body-font dm-ink3" id="receipt-summary" style="margin:12px 2px 0;font-family:'Inter',Arial,sans-serif;font-size:13px;line-height:1.55;color:#5b6473;">
               Questions on this receipt? Text Key at <a href="sms:+18648637800" class="dm-ink" style="color:#0b1f3b;font-weight:600;text-decoration:none;">(864) 863-7800</a>.
             </p>
           </td>
@@ -212,8 +227,8 @@
           <td bgcolor="#ffffff" class="dm-card px" style="background:#ffffff;padding:18px 36px 4px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #eef1f6;">
               <tr>
-                <td align="center" class="body-font dm-ink3" style="font-family:'Inter',Arial,sans-serif;font-size:13px;color:#6b7280;padding-top:16px;line-height:1.6;">
-                  <span style="color:#ffba00;font-weight:700;">&#9733; 4.9</span>&nbsp; 100+ Google reviews&nbsp;&nbsp;&middot;&nbsp;&nbsp;Licensed SC #2942&nbsp;&nbsp;&middot;&nbsp;&nbsp;Fully insured
+                <td align="center" class="body-font dm-ink3" style="font-family:'Inter',Arial,sans-serif;font-size:13px;color:#5b6473;padding-top:16px;line-height:1.6;">
+                  <span style="color:#8a5a00;font-weight:700;">&#9733; 4.9</span>&nbsp; 100+ Google reviews&nbsp;&nbsp;&middot;&nbsp;&nbsp;Licensed SC #2942&nbsp;&nbsp;&middot;&nbsp;&nbsp;Fully insured
                 </td>
               </tr>
             </table>
@@ -231,16 +246,16 @@
             </p>
             <p class="body-font dm-ink2" id="signoff" style="margin:0 0 2px;font-family:'Inter',Arial,sans-serif;font-size:15px;line-height:1.6;color:#4a5568;">Glad your home is ready. Stay warm when the next one hits.</p>
             <p class="script dm-ink" style="margin:6px 0 2px 20px;font-family:'Dancing Script','Brush Script MT',cursive;font-size:30px;line-height:1.1;color:#0b1f3b;">Key Goodson</p>
-            <p class="body-font dm-ink3" style="margin:0;font-family:'Inter',Arial,sans-serif;font-size:12px;color:#6b7280;">Backup Power Pro by Key Electric</p>
+            <p class="body-font dm-ink3" style="margin:0;font-family:'Inter',Arial,sans-serif;font-size:12px;color:#5b6473;">Backup Power Pro by Key Electric</p>
           </td>
         </tr>
 
         <!-- FOOTER -->
         <tr>
-          <td align="center" class="body-font dm-ink3" style="font-family:'Inter',Arial,sans-serif;font-size:12px;line-height:1.8;color:#6b7280;padding:22px 24px 0;">
+          <td align="center" class="body-font dm-ink3" style="font-family:'Inter',Arial,sans-serif;font-size:12px;line-height:1.8;color:#5b6473;padding:22px 24px 0;">
             Backup Power Pro by Key Electric &middot; Greenville, Spartanburg &amp; Pickens counties<br>
             Questions? Text Key at <a href="sms:+18648637800" class="dm-ink" style="color:#0b1f3b;font-weight:600;text-decoration:none;">(864) 863-7800</a><br>
-            <span style="font-size:11px;color:#9aa3af;">Secure card payment, processed by Stripe</span>
+            <span style="font-size:11px;color:#5b6473;">Secure card payment, processed by Stripe</span>
           </td>
         </tr>
 
@@ -249,6 +264,7 @@
   </tr>
 </table>
 
+</main>
 <script>
 // ── CONFIG (mirrors invoice-comp.html / invoice.html exactly) ───────
 var SUPABASE_URL = 'https://hfatblrcwytxvijjhpal.supabase.co';
@@ -281,6 +297,7 @@ function showState(title,msg,spin){
   if(spinEl) spinEl.style.display = spin ? 'block' : 'none';
   var t=document.getElementById('state-title'); if(t) t.textContent=String(title||'');
   var m=document.getElementById('state-msg');   if(m) m.innerHTML=String(msg||'');
+  if(!spin && t) t.focus();
 }
 
 // Swap to the rendered receipt (hide state layer).
@@ -289,6 +306,8 @@ function showReceipt(){
   var rr=document.getElementById('receipt-root');
   if(sr) sr.style.display='none';
   if(rr) rr.style.display='table';
+  var heading=document.getElementById('hero-title');
+  if(heading) heading.focus();
 }
 
 // ── INIT ────────────────────────────────────────────────────────────
@@ -375,7 +394,7 @@ function renderBreakdownRows(){
     var amtTxt=(credit?'−':'')+fmt(Math.abs(amt));
     var topBorder = i===0 ? '' : 'border-top:1px solid #eef1f6;';
     var nameHtml=esc(li.name||'');
-    if(li.sub) nameHtml+='<br><span style="font-size:12px;color:#9aa3af;">'+esc(li.sub)+'</span>';
+    if(li.sub) nameHtml+='<br><span style="font-size:12px;color:#5b6473;">'+esc(li.sub)+'</span>';
     var tr=document.createElement('tr');
     tr.innerHTML=
       '<td align="left"  style="padding:7px 0;color:#4a5568;'+topBorder+'">'+nameHtml+'</td>'+
