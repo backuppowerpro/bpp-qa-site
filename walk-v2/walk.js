@@ -685,7 +685,7 @@
         }
         attempts += 1;
         emit({ type: 'checking', upload: upload, attempt: attempts });
-        return postJson(BASE + '/pre-read-photo-r20261019-b333e9d32697', {
+        return postJson(BASE + '/pre-read-photo', {
           token: t,
           mode: 'recover',
           reservation_id: upload.reservation_id,
@@ -966,7 +966,7 @@
       if (!modes[action]) return Promise.reject(new Error('invalid_initial_photo_action'));
       var body = Object.assign({}, payload, { mode: modes[action] }), retries = 0;
       function send() {
-        return postJson(BASE + '/pre-read-photo-r20261019-b333e9d32697', body, 30000).catch(function (error) {
+        return postJson(BASE + '/pre-read-photo', body, 30000).catch(function (error) {
           if (error && error.body && error.body.error === 'rate limited' && retries < 2) {
             retries += 1;
             // The unchanged photo bucket refills one token every six seconds.
@@ -1173,7 +1173,7 @@
               payload.expected_version = state.version;
               payload.request_key = requestKey(t, 'register_media', identity, state.version);
             }
-            return postJson(BASE + '/pre-read-photo-r20261019-b333e9d32697', payload, 30000).then(function (signed) {
+            return postJson(BASE + '/pre-read-photo', payload, 30000).then(function (signed) {
               if (!signed || !signed.upload_url) throw new Error('media_sign_failed');
               return fetchWithTimeout(signed.upload_url, {
                 method: 'PUT',
@@ -1181,7 +1181,7 @@
                 body: file
               }, 45000).then(function (uploaded) {
                 if (!uploaded.ok) throw new Error('media_upload_failed');
-                return postJson(BASE + '/pre-read-photo-r20261019-b333e9d32697', {
+                return postJson(BASE + '/pre-read-photo', {
                   token: t,
                   mode: 'complete',
                   reservation_id: signed.reservation_id,
@@ -1216,7 +1216,7 @@
         if (!signed || !signed.reservation_id || !signed.lease_id) {
           return Promise.reject(new Error('media_reservation_missing'));
         }
-        return postJson(BASE + '/pre-read-photo-r20261019-b333e9d32697', {
+        return postJson(BASE + '/pre-read-photo', {
           token: t,
           mode: 'recover',
           reservation_id: signed.reservation_id,
@@ -1241,7 +1241,7 @@
           if (capsule && capsule.payload) payload = capsule.payload;
           else if (capsule) capsule.payload = JSON.parse(JSON.stringify(payload));
         }
-        return postJson(BASE + '/pre-read-photo-r20261019-b333e9d32697', payload, 30000).then(function (value) {
+        return postJson(BASE + '/pre-read-photo', payload, 30000).then(function (value) {
           if (state.version && (!value || value.receipt_settled !== true)) {
             throw new Error('media_receipt_unsettled');
           }
@@ -1271,7 +1271,7 @@
     textPhotoAction: function (t, mode, fields) {
       if (['prepare_text_photos', 'check_text_photos', 'import_text_photo'].indexOf(mode) === -1 || !isGuidedJourney(null, t)) return Promise.reject(new Error('invalid_text_photo_action'));
       var payload = Object.assign({}, fields || {}, { token: t, mode: mode });
-      return postJson(BASE + '/pre-read-photo-r20261019-b333e9d32697', payload, 30000).then(function (value) { rememberJourneyState(t, value); return value; });
+      return postJson(BASE + '/pre-read-photo', payload, 30000).then(function (value) { rememberJourneyState(t, value); return value; });
     },
     saveLater: function (t) { return postJson(BASE + '/pre-read-save-later', { token: t }); },
     emailCapture: function (t, email) { return postJson(BASE + '/walk-email-capture', { token: t, email: email }); },
